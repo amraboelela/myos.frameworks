@@ -1,0 +1,94 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		F564A68919D0D2300069E9BB /* clean.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
+		F57545F719C7A91C000DDF29 /* build.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
+		F57545F819C7A91C000DDF29 /* CoreAnimation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreAnimation; sourceTree = "<group>"; };
+		F57545F919C7A91C000DDF29 /* CoreFoundation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreFoundation; sourceTree = "<group>"; };
+		F57545FA19C7A91C000DDF29 /* CoreGraphics */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreGraphics; sourceTree = "<group>"; };
+		F57545FB19C7A91C000DDF29 /* CoreText */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreText; sourceTree = "<group>"; };
+		F57545FC19C7A91C000DDF29 /* Foundation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Foundation; sourceTree = "<group>"; };
+		F57545FD19C7A91C000DDF29 /* IOKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = IOKit; sourceTree = "<group>"; };
+		F57545FE19C7A91C000DDF29 /* libs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = libs; sourceTree = "<group>"; };
+		F57545FF19C7A91C000DDF29 /* OpenGLES */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OpenGLES; sourceTree = "<group>"; };
+		F575460019C7A91C000DDF29 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		F575460119C7A91C000DDF29 /* UIKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = UIKit; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		4C7AEA5918BEA828007CFB3D = {
+			isa = PBXGroup;
+			children = (
+				F57545F719C7A91C000DDF29 /* build.sh */,
+				F564A68919D0D2300069E9BB /* clean.sh */,
+				F57545F819C7A91C000DDF29 /* CoreAnimation */,
+				F57545F919C7A91C000DDF29 /* CoreFoundation */,
+				F57545FA19C7A91C000DDF29 /* CoreGraphics */,
+				F57545FB19C7A91C000DDF29 /* CoreText */,
+				F57545FC19C7A91C000DDF29 /* Foundation */,
+				F57545FD19C7A91C000DDF29 /* IOKit */,
+				F57545FE19C7A91C000DDF29 /* libs */,
+				F57545FF19C7A91C000DDF29 /* OpenGLES */,
+				F575460019C7A91C000DDF29 /* README.md */,
+				F575460119C7A91C000DDF29 /* UIKit */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		4C7AEA5A18BEA828007CFB3D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0500;
+			};
+			buildConfigurationList = 4C7AEA5D18BEA828007CFB3D /* Build configuration list for PBXProject "frameworks" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 4C7AEA5918BEA828007CFB3D;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		4C7AEA5E18BEA828007CFB3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		4C7AEA5F18BEA828007CFB3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4C7AEA5D18BEA828007CFB3D /* Build configuration list for PBXProject "frameworks" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4C7AEA5E18BEA828007CFB3D /* Debug */,
+				4C7AEA5F18BEA828007CFB3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4C7AEA5A18BEA828007CFB3D /* Project object */;
+}

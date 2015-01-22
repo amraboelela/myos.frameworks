@@ -1,0 +1,4 @@
+*.so
+!libGLESv1_enc.so
+!libc.so
+

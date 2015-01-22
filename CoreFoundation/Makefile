@@ -1,0 +1,56 @@
+#
+# Copyright © 2014 myOS Group.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# Contributor(s):
+# Amr Aboelela <amraboelela@gmail.com>
+#
+
+LIB_NAME=CoreFoundation
+CFLAGS=-DDEBUG
+LDLIBS=-licu -lobjc -llog
+#LDFLAGS=-v -Wl,--no-undefined
+OBJECTS = \
+    CFArray.o \
+    CFAttributedString.o \
+    CFBag.o \
+    CFBase.o \
+    CFBinaryHeap.o \
+    CFBitVector.o \
+    CFCalendar.o \
+    CFCharacterSet.o \
+    CFData.o \
+    CFDate.o \
+    CFDateFormatter.o \
+    CFDictionary.o \
+    CFError.o \
+    CFLocale.o \
+    CFNumber.o \
+    CFNumberFormatter.o \
+    CFRunLoop.o \
+    CFRuntime.o \
+    CFSet.o \
+    CFSocket.o \
+    CFString.o \
+    CFStringEncoding.o \
+    CFStringFormat.o \
+    CFStringUtilities.o \
+    CFTimeZone.o \
+    CFTree.o \
+    CFURL.o \
+    CFURLAccess.o \
+    CFUUID.o \
+    CFXMLNode.o \
+    CFXMLParser.o \
+    GSHashTable.o \
+
+include ${MYOS_PATH}/android/sdk/resources/makefile-shared
