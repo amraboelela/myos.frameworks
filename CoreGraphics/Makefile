@@ -18,9 +18,9 @@
 CFLAGS=-DDEBUG -DRD
 LDLIBS=-landroid -lCoreFoundation -lFoundation -lcairo -lpng -llcms -lpixman -lz -lfontconfig -lexpat -lfreetype -llog
 
-ifeq ($(TARGET),NativeActivity)
+ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreGraphics
-    CFLAGS+=-DNA
+    CFLAGS+=-DNATIVE_APP
 else
     LIB_NAME=CoreGraphics
 endif
@@ -70,4 +70,4 @@ OBJECTS = \
     CairoFontX11.o \
     CoreGraphics.o \
 
-include ${MYOS_PATH}/android/sdk/resources/makefile-shared
+include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared

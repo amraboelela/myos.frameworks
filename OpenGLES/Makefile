@@ -18,9 +18,9 @@
 CFLAGS=-DDEBUG -I$(ANDROID_SOURCE_PATH)/development/tools/emulator/opengl/host/include/libOpenglRender
 LDLIBS=-llog -landroid -lCoreFoundation -lFoundation
 OBJECTS=EAGL.o EAGLTexture.o
-ifeq ($(TARGET),NativeActivity)
+ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAOpenGLES
-    CFLAGS+=-DNA
+    CFLAGS+=-DNATIVE_APP
     LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc -lNAIOKit -lNACoreGraphics
     OBJECTS+=EAGLML.o
 else
@@ -32,4 +32,5 @@ else
     
     #MAEGL MAOpenglSystemCommon MARenderControl_enc MAGLESv1_enc MAOpenglCodecCommon
 endif
-include ${MYOS_PATH}/android/sdk/resources/makefile-shared
+
+include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared

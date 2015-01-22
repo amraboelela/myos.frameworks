@@ -18,9 +18,9 @@
 CFLAGS=-DDEBUG
 LDLIBS=-lCoreFoundation -lFoundation
 
-ifeq ($(TARGET),NativeActivity)
+ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreAnimation
-    CFLAGS+=-DNA
+    CFLAGS+=-DNATIVE_APP
     LDLIBS+=-lEGL -lGLESv1_CM -lNAIOKit -lNAOpenGLES -lNACoreGraphics -lNACoreText
 else
     LIB_NAME=CoreAnimation
@@ -55,4 +55,4 @@ OBJECTS = \
     CACompositor.o \
     CAGeometry.o \
 
-include ${MYOS_PATH}/android/sdk/resources/makefile-shared
+include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared

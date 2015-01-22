@@ -17,9 +17,9 @@
 
 CFLAGS=-DDEBUG -fblocks
 
-ifeq ($(TARGET),NativeActivity)
+ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAUIKit
-    CFLAGS+=-DNA
+    CFLAGS+=-DNATIVE_APP
     LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc -landroid -lCoreFoundation -lFoundation -lNAIOKit -lNAOpenGLES -lNACoreAnimation -lNACoreGraphics -lNACoreText
 else
     LIB_NAME=UIKit
@@ -87,4 +87,4 @@ OBJECTS = \
     UIActivityIndicatorView.o \
     UIDevice.o \
 
-include ${MYOS_PATH}/android/sdk/resources/makefile-shared
+include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared

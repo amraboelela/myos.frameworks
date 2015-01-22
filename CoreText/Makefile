@@ -19,9 +19,9 @@ LIB_NAME=CoreText
 CFLAGS=-DDEBUG
 LDLIBS= -lCoreFoundation -lFoundation
 
-ifeq ($(TARGET),NativeActivity)
+ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreText
-    CFLAGS+=-DNA
+    CFLAGS+=-DNATIVE_APP
     LDLIBS+=-lNACoreGraphics
 else
     LIB_NAME=CoreText
@@ -47,4 +47,4 @@ OBJECTS = \
 	CTTypesetter.o \
 	OPSimpleLayoutEngine.o \
 
-include ${MYOS_PATH}/android/sdk/resources/makefile-shared
+include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared

@@ -53,4 +53,4 @@ OBJECTS = \
     CFXMLParser.o \
     GSHashTable.o \
 
-include ${MYOS_PATH}/android/sdk/resources/makefile-shared
+include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared

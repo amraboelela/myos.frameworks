@@ -10,14 +10,14 @@
 	<string>frameworks</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>8E0AAE0F013BDBE780B447972B8995FEFC4ACAF2</key>
+		<key>30EA9F400AE367D855B1B9B16961DCCB3E8D280F</key>
 		<string>https://github.com/amraboelela/myos.android.frameworks.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>frameworks.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>8E0AAE0F013BDBE780B447972B8995FEFC4ACAF2</key>
+		<key>30EA9F400AE367D855B1B9B16961DCCB3E8D280F</key>
 		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
@@ -25,14 +25,14 @@
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>8E0AAE0F013BDBE780B447972B8995FEFC4ACAF2</string>
+	<string>30EA9F400AE367D855B1B9B16961DCCB3E8D280F</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>8E0AAE0F013BDBE780B447972B8995FEFC4ACAF2</string>
+			<string>30EA9F400AE367D855B1B9B16961DCCB3E8D280F</string>
 			<key>IDESourceControlWCCName</key>
 			<string>frameworks</string>
 		</dict>
