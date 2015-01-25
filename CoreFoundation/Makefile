@@ -18,7 +18,7 @@
 LIB_NAME=CoreFoundation
 CFLAGS=-DDEBUG
 LDLIBS=-licu -lobjc -llog
-#LDFLAGS=-v -Wl,--no-undefined
+
 OBJECTS = \
     CFArray.o \
     CFAttributedString.o \
