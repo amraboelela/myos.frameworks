@@ -1,6 +1,6 @@
 
 LIB_NAME=Foundation
-CFLAGS=-DDEBUG -DGNUSTEP -DRD
+#CFLAGS=-DDEBUG -DGNUSTEP -DRD
 LDLIBS=-lffi -lz -lCoreFoundation -llog
 
 OBJECTS = \

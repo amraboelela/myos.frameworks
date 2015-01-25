@@ -15,7 +15,7 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-CFLAGS=-DDEBUG
+#CFLAGS=-DDEBUG
 LDLIBS=-llog -landroid -lCoreFoundation -lFoundation
 OBJECTS=NSFileHandle+IOKit.o IOWindow.o IOPipe.o
 ifeq ($(TARGET),NativeApp)
