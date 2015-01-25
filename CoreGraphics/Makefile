@@ -15,7 +15,7 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-CFLAGS=-DDEBUG -DRD
+#CFLAGS=-DDEBUG -DRD
 LDLIBS=-landroid -lCoreFoundation -lFoundation -lcairo -lpng -llcms -lpixman -lz -lfontconfig -lexpat -lfreetype -llog
 
 ifeq ($(TARGET),NativeApp)

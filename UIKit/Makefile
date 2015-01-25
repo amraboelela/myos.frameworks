@@ -15,7 +15,7 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-CFLAGS=-DDEBUG -fblocks
+CFLAGS=-fblocks
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAUIKit

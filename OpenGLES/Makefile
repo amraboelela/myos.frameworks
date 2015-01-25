@@ -15,7 +15,7 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-CFLAGS=-DDEBUG -I$(ANDROID_SOURCE_PATH)/development/tools/emulator/opengl/host/include/libOpenglRender
+CFLAGS=-I$(ANDROID_SOURCE_PATH)/development/tools/emulator/opengl/host/include/libOpenglRender
 LDLIBS=-llog -landroid -lCoreFoundation -lFoundation
 OBJECTS=EAGL.o EAGLTexture.o
 ifeq ($(TARGET),NativeApp)

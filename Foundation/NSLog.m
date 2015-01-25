@@ -302,7 +302,7 @@ void NSLogv(NSString* format, va_list args)
                       [[NSProcessInfo processInfo] processName],
                       pid, GSCurrentThread()];
         } else {
-#ifdef RD
+#ifdef ANDROID
             prefix = [NSString
                       stringWithFormat: @"%d %@ ",
                       gettid(),
@@ -324,7 +324,7 @@ void NSLogv(NSString* format, va_list args)
     }
     message = [NSString stringWithFormat:format arguments:args];
     prefix = [prefix stringByAppendingString: message];
-#ifdef RD
+#ifdef ANDROID
     printfWithProcess([[[NSProcessInfo processInfo] processName] cString], [prefix cString]);
 #else
     if (myLock == nil) {

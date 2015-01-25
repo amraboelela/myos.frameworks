@@ -88,7 +88,7 @@ static FcPattern *opal_FcPatternCreateFromName(const char *name)
         }
         if (strstr(traits, "Italic")) {
             success |= FcPatternAddInteger(pat, FC_SLANT, FC_SLANT_ITALIC);
-#ifdef RD
+#ifdef ANDROID
             if (isCondensed) {
                 if (isBold) {
                     FcPatternAddString(pat, FC_FILE, (FcChar8 *)"/system/fonts/RobotoCondensed-BoldItalic.ttf");
@@ -121,7 +121,7 @@ static FcPattern *opal_FcPatternCreateFromName(const char *name)
             goto error;
         }
     }
-#ifdef RD
+#ifdef ANDROID
     FcPatternAddString(pat, FC_FILE, (FcChar8 *)"/system/fonts/Roboto-Regular.ttf");
     return pat;
 #endif
