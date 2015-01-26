@@ -15,12 +15,16 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
+source ${MYOS_PATH}/sdk/config.sh
+echo BASE_OS: ${BASE_OS}
+echo DEBUG_MODE: ${DEBUG_MODE}
+
 echo
 echo "****************************** Cleaning frameworks ******************************"
 
-#cd CoreFoundation
-#make clean
-#cd ..
+cd CoreFoundation
+make clean
+cd ..
 
 cd Foundation
 make clean
