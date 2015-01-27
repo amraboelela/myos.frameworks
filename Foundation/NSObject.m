@@ -34,7 +34,11 @@
 #endif
 
 #import "common.h"
+
+#ifdef ANDROID
 #include <objc/protocol.h>
+#endif
+
 #import "NSMethodSignature.h"
 #import "NSInvocation.h"
 #import "NSLock.h"
