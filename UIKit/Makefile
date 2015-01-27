@@ -20,10 +20,10 @@ CFLAGS=-fblocks
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAUIKit
     CFLAGS+=-DNATIVE_APP
-    LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc -landroid -lCoreFoundation -lFoundation -lNAIOKit -lNAOpenGLES -lNACoreAnimation -lNACoreGraphics -lNACoreText
+    LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc -lCoreFoundation -lFoundation -lNAIOKit -lNAOpenGLES -lNACoreAnimation -lNACoreGraphics -lNACoreText
 else
     LIB_NAME=UIKit
-    LDLIBS=-landroid -lCoreFoundation -lFoundation -lIOKit -lOpenGLES -lCoreAnimation -lCoreGraphics -lCoreText
+    LDLIBS=-lCoreFoundation -lFoundation -lIOKit -lOpenGLES -lCoreAnimation -lCoreGraphics -lCoreText
 endif
 
 OBJECTS = \

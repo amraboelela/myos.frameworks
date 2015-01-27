@@ -16,7 +16,6 @@
 #
 
 LIB_NAME=CoreFoundation
-#CFLAGS=-DDEBUG
 LDLIBS=-licu -lobjc
 
 OBJECTS = \

@@ -1,7 +1,19 @@
 
 LIB_NAME=Foundation
-#CFLAGS=-DDEBUG -DGNUSTEP -DRD
-LDLIBS=-lffi -lz -lCoreFoundation -llog
+CFLAGS=-DGNUSTEP_BASE_INTERNAL=1 -DNO_GNUSTEP=1 -DGNUSTEP -DGSWARN -DGSDIAGNOSE -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1 -fexceptions -fobjc-exceptions -pthread -D_NATIVE_OBJC_EXCEPTIONS -fconstant-string-class=NSConstantString -DGNUSTEP_TARGET_DIR=\".\" -DGNUSTEP_IS_FLATTENED=\"yes\"
+
+#-DLIBRARY_COMBO=\"gnu-gnu-gnu\"
+
+LDLIBS=-lffi -lz -lCoreFoundation
+
+ifed ($(BASE_OS),android)
+    CFLAGS+=-DGNUSTEP_TARGET_CPU=\"arm\"
+    -DGNUSTEP_TARGET_OS=\"linux-android\"
+else
+    CFLAGS+=-DGNUSTEP_TARGET_CPU=\"x86_64\"
+    -DGNUSTEP_TARGET_OS=\"linux-gnu\"
+    LDLIBS+=-lxml2 -lpthread -licui18n -licuuc -licudata
+endif
 
 OBJECTS = \
     NSObject.o \

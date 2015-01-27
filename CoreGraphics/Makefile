@@ -15,8 +15,7 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-#CFLAGS=-DDEBUG -DRD
-LDLIBS=-landroid -lCoreFoundation -lFoundation -lcairo -lpng -llcms -lpixman -lz -lfontconfig -lexpat -lfreetype -llog
+LDLIBS=-lCoreFoundation -lFoundation -lcairo -lpng -llcms -lpixman -lz -lfontconfig -lexpat -lfreetype
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreGraphics
