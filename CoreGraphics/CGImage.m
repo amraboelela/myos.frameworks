@@ -31,7 +31,7 @@
 //#import <stdlib.h>
 //#import <cairo/cairo.h>
 #import "OPImageConversion.h"
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
 #import <android/asset_manager.h>
 #endif
 

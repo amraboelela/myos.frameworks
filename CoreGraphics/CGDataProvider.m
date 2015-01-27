@@ -30,10 +30,8 @@
 #import <Foundation/NSURL.h>
 #import <CoreGraphics/CoreGraphics-private.h>
 
-#ifdef ANDROID
-#ifdef NATIVE_APPTIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
 #import <android/asset_manager.h>
-#endif
 #endif
 
 /**
