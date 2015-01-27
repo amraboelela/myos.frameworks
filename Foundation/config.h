@@ -624,7 +624,7 @@
 /* #undef HAVE_SYS_SYSCTL_H */
 
 /* Define to 1 if you have the <sys/syslimits.h> header file. */
-#define HAVE_SYS_SYSLIMITS_H 1
+//#define HAVE_SYS_SYSLIMITS_H 1
 
 /* Define to 1 if you have the <sys/time.h> header file. */
 #define HAVE_SYS_TIME_H 1
