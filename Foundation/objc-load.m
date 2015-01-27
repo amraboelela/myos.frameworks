@@ -39,7 +39,7 @@
 #import "NSException.h"
 
 #import "GSPrivate.h"
-//#import <objc/category.h>
+#import <objc/category.h>
 
 /* include the interface to the dynamic linker */
 #include "dynamic-load.h"
