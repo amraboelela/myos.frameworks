@@ -36,7 +36,6 @@
 #import "NSData.h"
 #import "NSThread.h"
 #import "NSString+GNUstepBase.h"
-//#import <android/log.h>
 
 #ifdef	HAVE_SYSLOG_H
 #include <syslog.h>

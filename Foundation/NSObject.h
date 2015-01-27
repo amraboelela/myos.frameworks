@@ -30,9 +30,10 @@
 #import	<Foundation/NSObjCRuntime.h>
 #import <objc/objc.h>
 #import	<Foundation/NSZone.h>
-#import <android/log.h>
 
 #ifdef ANDROID
+
+#import <android/log.h>
 
 #ifndef RD_LOG
 #define RD_LOG
