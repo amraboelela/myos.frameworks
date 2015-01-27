@@ -309,7 +309,7 @@ long CFGetFreeMemory()
         size_t bufsize = 1024 * sizeof(char);
         char *buf = (char *)malloc(bufsize);
         long value = -1L;
-//#ifdef NA
+//#ifdef NATIVE_APP
         while (getline(&buf, &bufsize, fp) >= 0) {
             if (strncmp(buf, "MemFree", 7) != 0) {
                 continue;

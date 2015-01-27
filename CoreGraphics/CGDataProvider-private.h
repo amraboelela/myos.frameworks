@@ -102,3 +102,7 @@ const void *OPDataProviderGetBytePointer(CGDataProviderRef dp);
 size_t OPDataProviderGetBytesAtPosition(CGDataProviderRef dp, void *buffer, off_t position, size_t count);
 void OPDataProviderReleaseBytePointer(CGDataProviderRef dp, const void *pointer);
 void _CGDataProviderSetMAAppName(NSString *maAppName);
+
+#ifdef ANDROID
+CGDataProviderRef CGDataProviderCreateWithFilenameWithAsset(const char *filename);
+#endif

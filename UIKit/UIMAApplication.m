@@ -325,7 +325,7 @@ static void UIMAApplicationRunApp(NSString *appName)
     //DLog(@"indexOfObject:_currentMAApplication: %d", _CFArrayGetIndexOfValue(_openedApplications, _currentMAApplication));
     _running = YES;
     //DLog(@"self: %@", self);
-#ifdef NA
+#ifdef NATIVE_APP
     EAGLMLSetPipes(_animationPipeRead, _animationPipeWrite);
     if (withSignal) {
         kill(_pid, SIGALRM);

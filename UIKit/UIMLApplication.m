@@ -99,7 +99,7 @@ void UIMLApplicationSetChildAppIsRunning(BOOL isRunning)
     _startTime = CACurrentMediaTime();
     //DLog(@"_startTime: %f", _startTime);
     _childAppRunning = isRunning;
-#ifdef NA
+#ifdef NATIVE_APP
     EAGLMLSetChildAppIsRunning(isRunning);
 #endif
 }
@@ -147,14 +147,14 @@ void UIMLApplicationPresentAppScreen(UIMAApplication *maApp, BOOL coldStart)
     } else {
         [maApp setAsCurrent:YES];
     }
-#ifdef NA
+#ifdef NATIVE_APP
     [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
 #endif
 }
 
 void UIMLApplicationHandleMessages()
 {
-#ifdef NA
+#ifdef NATIVE_APP
     if (!_childAppRunning) {
         //DLog();
         return;
@@ -190,7 +190,7 @@ void UIMLApplicationShowLauncher()
     _launcherView.hidden = NO;
     //DLog();
     //[_uiApplication->_keyWindow bringSubviewToFront:_launcherView];
-#ifdef NA
+#ifdef NATIVE_APP
     if ([_CAAnimatorNAConditionLock condition] == _CAAnimatorConditionLockHasWork) {
         [_CAAnimatorNAConditionLock lockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }
@@ -244,7 +244,7 @@ void UIMLApplicationMoveCurrentAppToTop()
 
 void UIMLApplicationTerminateApps()
 {
-#ifdef NA
+#ifdef NATIVE_APP
     if ([_CAAnimatorNAConditionLock condition] == _CAAnimatorConditionLockHasWork) {
         [_CAAnimatorNAConditionLock lockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }

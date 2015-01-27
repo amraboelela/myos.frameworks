@@ -95,7 +95,8 @@ static UIImage *_UIImageLoadImageNamed(NSString *name)
 {
     CGDataProviderRef pngData;
     //DLog();
-#ifdef NA
+    
+#if defined(ANDROID) && defined(NATIVE_APP)
     if ([path rangeOfString:@"/"].length > 0) {
         pngData = CGDataProviderCreateWithFilename([path cString]);
         //DLog(@"pngData: %@", pngData);
@@ -185,7 +186,7 @@ static UIImage *_UIImageLoadImageNamed(NSString *name)
 
     if (!img) {
         // as per the iOS docs, if it fails to find a match with the bare name, it re-tries by appending a png file extension
-#ifdef NA
+#ifdef NATIVE_APP
         img = _UIImageNALoadImageNamed(name) ?: _UIImageNALoadImageNamed([name stringByAppendingPathExtension:@"png"]);
 #else
         //DLog();

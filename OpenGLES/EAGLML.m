@@ -47,7 +47,7 @@ void EAGLMLHandleMessages()
         return;
     }
     //DLog();
-#ifdef NA
+#ifdef NATIVE_APP
     int message = IOPipeReadMessageWithPipe(_pipeRead);
     switch (message) {
         case EAGLMLMessageEndOfMessage:

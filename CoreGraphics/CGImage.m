@@ -31,13 +31,13 @@
 //#import <stdlib.h>
 //#import <cairo/cairo.h>
 #import "OPImageConversion.h"
-#ifdef NA
+#ifdef NATIVE_APP
 #import <android/asset_manager.h>
 #endif
 
 #pragma mark - static functions
 
-#ifdef NA
+#ifdef NATIVE_APP
 static void stream_read_func(png_structp png, png_bytep data, png_size_t size)
 {
     AAsset *asset = png_get_io_ptr(png);
@@ -384,7 +384,7 @@ CGImageRef CGImageCreateWithJPEGDataProvider(
 CGImageRef CGImageCreateWithPNGDataProviderWithAsset(CGDataProviderRef source, const CGFloat decode[], bool shouldInterpolate, CGColorRenderingIntent intent)
 {
     //DLog();
-#ifdef NA
+#ifdef NATIVE_APP
     AAsset *asset = ((CGDataProviderSequential *)source)->info;
     png_uint_32 width, height;
     int bit_depth, color_type, interlace_type;

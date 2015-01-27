@@ -29,7 +29,7 @@ void CADisplayLinkStartTimer(CADisplayLink *displayLink)
         //DLog();
         [displayLink->_timer invalidate];
     }
-//#ifdef NA
+//#ifdef NATIVE_APP
 //    float interval = (displayLink->_frameInterval * 1.0) / 60.0;
 //#else
     float interval = (displayLink->_frameInterval * 1.0) / 15.0;

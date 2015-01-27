@@ -116,7 +116,6 @@ CGDataProviderRef CGDataProviderCreateWithData(void *info, const void *data, siz
 CGDataProviderRef CGDataProviderCreateWithCFData(CFDataRef data);
 CGDataProviderRef CGDataProviderCreateWithURL(CFURLRef url);
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename);
-CGDataProviderRef CGDataProviderCreateWithFilenameWithAsset(const char *filename);
 CFDataRef CGDataProviderCopyData(CGDataProviderRef provider);
 CGDataProviderRef CGDataProviderRetain(CGDataProviderRef provider);
 void CGDataProviderRelease(CGDataProviderRef provider);

@@ -23,7 +23,7 @@
 
 NSConditionLock *_CAAnimatorConditionLock = nil;
 
-#ifdef NA
+#ifdef NATIVE_APP
 NSConditionLock *_CAAnimatorNAConditionLock = nil;
 #endif
 
@@ -107,7 +107,7 @@ static void reportFPS(BOOL withCondition)
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
-#ifdef NA
+#ifdef NATIVE_APP
         if ([_CAAnimatorNAConditionLock tryLockWhenCondition:_CAAnimatorConditionLockHasWork]) {
             EAGLMLHandleMessages();
             [_CAAnimatorNAConditionLock unlock];
@@ -121,7 +121,7 @@ static void reportFPS(BOOL withCondition)
 + (void)display
 {
     //DLog();
-#ifdef NA
+#ifdef NATIVE_APP
     if ([_CAAnimatorConditionLock condition] != _CAAnimatorConditionLockHasWork) {
         //beforeLockTime = CACurrentMediaTime();
         return;
@@ -181,7 +181,7 @@ static void reportFPS(BOOL withCondition)
 void _CAAnimatorInitialize()
 {
     _CAAnimatorConditionLock = [[NSConditionLock alloc] initWithCondition:_CAAnimatorConditionLockStartup];
-#ifdef NA
+#ifdef NATIVE_APP
     _CAAnimatorNAConditionLock = [[NSConditionLock alloc] initWithCondition:_CAAnimatorConditionLockStartup];
     [_CAAnimatorNAConditionLock lock];
 #endif

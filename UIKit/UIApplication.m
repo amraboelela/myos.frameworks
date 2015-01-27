@@ -670,7 +670,7 @@ static int _UIApplicationHandleMessages()
 - (void)setAsCurrent:(BOOL)withSignal
 {
     IOPipeSetPipes(0, 0);
-#ifdef NA
+#ifdef NATIVE_APP
     EAGLMLSetPipes(0, 0);
 #endif
 }
@@ -694,8 +694,8 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     //DLog(@"");
     _UIApplicationInitialize();
     //DLog(@"");
-#ifdef NA
-    DLog(@"#ifdef NA");
+#ifdef NATIVE_APP
+    DLog(@"#ifdef NATIVE_APP");
 #else
     int events;
 

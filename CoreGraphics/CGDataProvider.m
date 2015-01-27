@@ -30,8 +30,10 @@
 #import <Foundation/NSURL.h>
 #import <CoreGraphics/CoreGraphics-private.h>
 
-#ifdef NA
+#ifdef ANDROID
+#ifdef NATIVE_APPTIVE_APP
 #import <android/asset_manager.h>
+#endif
 #endif
 
 /**
@@ -152,20 +154,9 @@ static size_t opal_fileGetBytes(void *info, void *buffer, size_t count)
     return fread(buffer, 1, count, (FILE*)info);
 }
 
-static size_t asset_fileGetBytes(void *info, void *buffer, size_t count)
-{
-    return AAsset_read((AAsset *)info, buffer, count);
-}
-
 static off_t opal_fileSkipForward(void *info, off_t count)
 {
     fseek((FILE*)info, count, SEEK_CUR);
-    return count;
-}
-
-static off_t asset_fileSkipForward(void *info, off_t count)
-{
-    AAsset_seek((AAsset *)info, count, SEEK_CUR);
     return count;
 }
 
@@ -174,22 +165,10 @@ static void opal_fileRewind(void *info)
     rewind((FILE*)info);
 }
 
-static void asset_fileRewind(void *info)
-{
-    //DLog();
-    AAsset_seek((AAsset *)info, 0, SEEK_SET);
-}
-
 static void opal_fileReleaseInfo(void *info)
 {
     //DLog();
     fclose((FILE*)info);
-}
-
-static void asset_fileReleaseInfo(void *info)
-{
-    //DLog();
-    AAsset_close((AAsset *)info);
 }
 
 static const CGDataProviderSequentialCallbacks opal_fileCallbacks = {
@@ -200,6 +179,31 @@ static const CGDataProviderSequentialCallbacks opal_fileCallbacks = {
     opal_fileReleaseInfo
 };
 
+#ifdef ANDROID
+
+static size_t asset_fileGetBytes(void *info, void *buffer, size_t count)
+{
+    return AAsset_read((AAsset *)info, buffer, count);
+}
+
+static off_t asset_fileSkipForward(void *info, off_t count)
+{
+    AAsset_seek((AAsset *)info, count, SEEK_CUR);
+    return count;
+}
+
+static void asset_fileRewind(void *info)
+{
+    //DLog();
+    AAsset_seek((AAsset *)info, 0, SEEK_SET);
+}
+
+static void asset_fileReleaseInfo(void *info)
+{
+    //DLog();
+    AAsset_close((AAsset *)info);
+}
+
 static const CGDataProviderSequentialCallbacks asset_fileCallbacks = {
     0,
     asset_fileGetBytes,
@@ -207,6 +211,8 @@ static const CGDataProviderSequentialCallbacks asset_fileCallbacks = {
     asset_fileRewind,
     asset_fileReleaseInfo
 };
+
+#endif
 
 @implementation CGDataProvider
 
@@ -593,6 +599,8 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
     return CGDataProviderCreateSequential(info, &opal_fileCallbacks);
 }
 
+#ifdef ANDROID
+
 CGDataProviderRef CGDataProviderCreateWithFilenameWithAsset(const char *filename)
 {
     //DLog(@"filename: %s", filename);
@@ -604,6 +612,8 @@ CGDataProviderRef CGDataProviderCreateWithFilenameWithAsset(const char *filename
     }
     return CGDataProviderCreateSequential(asset, &asset_fileCallbacks);
 }
+
+#endif
 
 CGDataProviderRef CGDataProviderRetain(CGDataProviderRef provider)
 {
