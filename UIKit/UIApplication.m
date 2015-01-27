@@ -727,6 +727,8 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     return 0;
 }
 
+#ifdef NATIVE_APP
+
 void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *delegateClassName)
 {
     _UIApplicationProcessInitialize();
@@ -757,8 +759,11 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
     _application->_delegate = appDelegate;
     //NSTimeInterval currentTime = CACurrentMediaTime();
     //DLog();
+    
+#ifdef ANDROID
     _CoreGraphicsInitialize(app);
-
+#endif
+    
     //DLog();
     //_startTime = EAGLCurrentTime();
     while (YES) {
@@ -793,6 +798,8 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
     
     [pool release];
 }
+
+#endif
 
 void _UIApplicationSetKeyWindow(UIApplication *application, UIWindow *newKeyWindow)
 {
