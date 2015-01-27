@@ -17,7 +17,9 @@
 
 #import <CoreGraphics/CGGeometry.h>
 #import <CoreGraphics/CGContext-private.h>
+#ifdef ANDROID
 #import <rd_app_glue.h>
+#endif
 
 @interface IOWindow : NSObject
 {

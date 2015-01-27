@@ -30,8 +30,11 @@
 #import <CoreGraphics/CGGradient-private.h>
 #import <CoreGraphics/CGGeometry-private.h>
 #import <CoreGraphics/CGImage-private.h>
-#import <rd_app_glue.h>
 #import <cairo/cairo.h>
+
+#ifdef ANDROID
+#import <rd_app_glue.h>
+#endif
 
 void _CoreGraphicsInitialize(struct android_app *app);
 

@@ -16,7 +16,9 @@
  */
 
 #import <UIKit/UIApplication.h>
+#ifdef ANDROID
 #import <rd_app_glue.h>
+#endif
 
 typedef enum {
     _UIApplicationScreenModeActive,
