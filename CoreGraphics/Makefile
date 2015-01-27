@@ -15,7 +15,8 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-LDLIBS=-lCoreFoundation -lFoundation -lcairo -lpng -llcms -lpixman -lz -lfontconfig -lexpat -lfreetype
+LDLIBS=-lCoreFoundation -lFoundation -lcairo
+#-lpng -llcms -lz -lfontconfig -lexpat -lfreetype
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreGraphics
