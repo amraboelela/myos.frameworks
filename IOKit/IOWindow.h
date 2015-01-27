@@ -1,5 +1,5 @@
 /*
- Copyright © 2014 myOS Group.
+ Copyright © 2014-2015 myOS Group.
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -17,15 +17,26 @@
 
 #import <CoreGraphics/CGGeometry.h>
 #import <CoreGraphics/CGContext-private.h>
+
 #ifdef ANDROID
 #import <rd_app_glue.h>
+#else
+#import <X11/Xlib.h>
+#import <cairo-xlib.h>
 #endif
 
 @interface IOWindow : NSObject
 {
 @public
+#ifdef ANDROID
     ANativeWindow *_nWindow;
     CGContextRef _context;
+#else
+    Window xwindow;
+    cairo_user_data_key_t cwindow;
+    CGContextRef context;
+    Display *display;
+#endif
     CGRect _rect;
 }
 @end
@@ -34,7 +45,6 @@ CGContextRef IOWindowCreateContext();
 void *IOWindowCreateNativeWindow(int pipeRead);
 void IOWindowDestroyNativeWindow(void *nWindow);
 void IOWindowSetNativeWindow(void* nWindow);
-//void IOWindowInitWithRdApp(struct android_app* app);
 IOWindow *IOWindowCreateSharedWindow();
 IOWindow *IOWindowGetSharedWindow();
 void IOWindowDestroySharedWindow();
@@ -42,7 +52,12 @@ void IOWindowDestroySharedWindow();
 CGContextRef IOWindowCreateContextWithRect(CGRect aRect);
 CGContextRef IOWindowContext();
 
-/*void IOWindowSetContextSize(CGSize size);
+#ifdef ANDROID
+#else
+void IOWindowSetContextSize(CGSize size);
 void IOWindowFlush();
 void IOWindowClear();
-*/
+#endif
+
+
+

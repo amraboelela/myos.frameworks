@@ -1,5 +1,5 @@
 #
-# Copyright © 2014 myOS Group.
+# Copyright © 2014-2015 myOS Group.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,10 @@
 #
 
 LDLIBS=-lCoreFoundation -lFoundation -lcairo
-#-lpng -llcms -lz -lfontconfig -lexpat -lfreetype
+
+ifeq ($(BASE_OS),android)
+    LDLIBS+=-lpng -llcms -lpixman -lz -lfontconfig -lexpat -lfreetype
+endif
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreGraphics
@@ -70,4 +73,4 @@ OBJECTS = \
     CairoFontX11.o \
     CoreGraphics.o \
 
-include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared
+include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

@@ -1,5 +1,5 @@
 #
-# Copyright © 2014 myOS Group.
+# Copyright © 2014-2015 myOS Group.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,7 +16,9 @@
 #
 
 LDLIBS=-lCoreFoundation -lFoundation
-OBJECTS=NSFileHandle+IOKit.o IOWindow.o IOPipe.o
+OBJECTS = \
+    IOWindow.o \
+
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAIOKit
     CFLAGS+=-DNATIVE_APP
@@ -24,7 +26,26 @@ ifeq ($(TARGET),NativeApp)
 else
     LIB_NAME=IOKit
     LDLIBS+=-lCoreGraphics
-    SLIBS=MAKit
 endif
 
-include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared
+ifeq ($(BASE_OS),android)
+    OBJECTS+= \
+        NSFileHandle+IOKit.o \
+        IOPipe.o \
+
+    ifeq ($(TARGET),NativeApp)
+    else
+        SLIBS=MAKit
+    endif
+else
+    OBJECTS+= \
+        IOEvent.o \
+        IOFont.o \
+        opal-x11.o \
+
+    ifeq ($(TARGET),NativeApp)
+    else
+    endif
+endif
+
+include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

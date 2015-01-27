@@ -1,5 +1,5 @@
 #
-# Copyright © 2014 myOS Group.
+# Copyright © 2014-2015 myOS Group.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -47,4 +47,4 @@ OBJECTS = \
 	CTTypesetter.o \
 	OPSimpleLayoutEngine.o \
 
-include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared
+include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

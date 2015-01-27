@@ -1,5 +1,5 @@
 #
-# Copyright © 2014 myOS Group.
+# Copyright © 2014-2015 myOS Group.
 #
 # This is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,35 +21,35 @@ echo "****************************** Building frameworks ***********************
 TARGET=Universal
 
 cd CoreFoundation
-source ${MYOS_PATH}/sdk/scripts/library-build.sh
+source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 
 cd Foundation
-source ${MYOS_PATH}/sdk/scripts/library-build.sh
+source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 
 TARGET=All
 
 cd CoreGraphics
-source ${MYOS_PATH}/sdk/scripts/library-build.sh
+source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 
 cd CoreText
-source ${MYOS_PATH}/sdk/scripts/library-build.sh
+source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 
 cd IOKit
-source ${MYOS_PATH}/sdk/scripts/library-build.sh
+source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 
 cd OpenGLES
-source ${MYOS_PATH}/sdk/scripts/library-build.sh
+source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 
 cd CoreAnimation
-source ${MYOS_PATH}/sdk/scripts/library-build.sh
+source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 
 cd UIKit
-source ${MYOS_PATH}/sdk/scripts/library-build.sh
+source ${MYOS_PATH}/sdk/library-build.sh
 cd ..

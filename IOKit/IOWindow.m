@@ -1,5 +1,5 @@
 /*
- Copyright © 2014 myOS Group.
+ Copyright © 2014-2015 myOS Group.
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -16,32 +16,16 @@
  */
 
 #import <IOKit/IOKit.h>
+
+#ifdef ANDROID
 #import <MAKit/MAKit.h>
+#endif
 
 static IOWindow *_window = nil;
 
 #pragma mark - Static functions
-/*
-static void _IOWindowGetBuffers()
-{
-    DLog();
-    int myuid = getuid();
-    DLog(@"myuid: %d", myuid);
-    execv("su");
-    DLog(@"myuid 2: %d", myuid);
-    IOPipeRunCommand(@"dumpsys SurfaceFlinger", YES);
-}*/
 
 @implementation IOWindow
-/*
-- (id)init
-{
-    self = [super init];
-    if (self) {
-        _nWindow = nil;
-    }
-    return self;
-}*/
 
 - (void)dealloc
 {
@@ -67,6 +51,11 @@ IOWindow *IOWindowGetSharedWindow()
     return _window;
 }
 
+CGContextRef IOWindowContext()
+{
+    return _window->_context;
+}
+
 void IOWindowDestroySharedWindow()
 {
     if (_window) {
@@ -75,28 +64,31 @@ void IOWindowDestroySharedWindow()
     _window = nil;
 }
 
+#ifdef ANDROID
+
+
 void *IOWindowCreateNativeWindow(int pipeRead)
 {
     /*ANativeWindow *nWindow = nil;
+     
+     mComposerClient = new SurfaceComposerClient;
+     ASSERT_EQ(NO_ERROR, mComposerClient->initCheck());
+     mSurfaceControl = mComposerClient->createSurface(String8("MN Surface"),
+     getSurfaceWidth(), getSurfaceHeight(),
+     PIXEL_FORMAT_RGB_888, 0);
+     
+     ASSERT_TRUE(mSurfaceControl != NULL);
+     ASSERT_TRUE(mSurfaceControl->isValid());
+     
+     SurfaceComposerClient::openGlobalTransaction();
+     ASSERT_EQ(NO_ERROR, mSurfaceControl->setLayer(0x7FFFFFFF));
+     ASSERT_EQ(NO_ERROR, mSurfaceControl->show());
+     SurfaceComposerClient::closeGlobalTransaction();
+     
+     sp<ANativeWindow> window = mSurfaceControl->getSurface();
+     _window->_nWindow = window.get();*/
     
-    mComposerClient = new SurfaceComposerClient;
-    ASSERT_EQ(NO_ERROR, mComposerClient->initCheck());
-    mSurfaceControl = mComposerClient->createSurface(String8("MN Surface"),
-                                                     getSurfaceWidth(), getSurfaceHeight(),
-                                                     PIXEL_FORMAT_RGB_888, 0);
-    
-    ASSERT_TRUE(mSurfaceControl != NULL);
-    ASSERT_TRUE(mSurfaceControl->isValid());
-    
-    SurfaceComposerClient::openGlobalTransaction();
-    ASSERT_EQ(NO_ERROR, mSurfaceControl->setLayer(0x7FFFFFFF));
-    ASSERT_EQ(NO_ERROR, mSurfaceControl->show());
-    SurfaceComposerClient::closeGlobalTransaction();
-    
-    sp<ANativeWindow> window = mSurfaceControl->getSurface();
-    _window->_nWindow = window.get();*/
-    
-#ifndef NA
+#ifdef NATIVE_APP
     //DLog();
     _window->_nWindow = getNativeWindow(pipeRead);
 #endif
@@ -124,55 +116,108 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
 CGContextRef IOWindowCreateContext()
 {
     CGContextRef ctx;
-    //DLog(@"_window->rect.size: %@", NSStringFromSize(NSSizeFromCGSize(_window->rect.size)));
     return _CGBitmapContextCreateWithOptions(_window->_rect.size, YES, 1.0);
-    /*
+}
+
+#else
+
+CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
+{
+    XSetWindowAttributes wa;
+    
+    _window->_rect = aRect;
+    _window->display = XOpenDisplay(NULL);
+    //DLog(@"display: %p", _window->display);
+    if (!_window->display) {
+        fprintf(stderr, "Cannot open display: %s\n", XDisplayName(NULL));
+        exit(EXIT_FAILURE);
+    }
+    //printf("Opened display %s\n", DisplayString(_window->display));
+    
+    //cr = CGRectMake(0,0,640,480);
+    wa.background_pixel = WhitePixel(_window->display, DefaultScreen(_window->display));
+    wa.event_mask = ExposureMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask;
+    
+    /* Create a window */
+    _window->xwindow = XCreateWindow(_window->display, /* Display */
+                                     DefaultRootWindow(_window->display), /* Parent */
+                                     _window->_rect.origin.x, _window->_rect.origin.y, /* x, y */
+                                     _window->_rect.size.width, _window->_rect.size.height, /* width, height */
+                                     0, /* border_width */
+                                     CopyFromParent, /* depth */
+                                     InputOutput, /* class */
+                                     CopyFromParent, /* visual */
+                                     CWBackPixel | CWEventMask, /* valuemask */
+                                     &wa); /* attributes */
+    //printf("XCreateWindow returned: %lx\n", _window->xwindow);
+    XSelectInput(_window->display, _window->xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
+    /* Map the window */
+    int ret = XMapRaised(_window->display, _window->xwindow);
+    //printf("XMapRaised returned: %x\n", ret);
+    
+    /* Create a CGContext */
+    _window->context = IOWindowCreateContext();
+    if (!_window->context) {
+        fprintf(stderr,"Cannot create context\n");
+        exit(EXIT_FAILURE);
+    }
+    //printf("Created context\n");
+    return _window->context;
+}
+
+CGContextRef IOWindowCreateContext()
+{
     CGContextRef ctx;
     XWindowAttributes wa;
     cairo_surface_t *target;
     int ret;
-
+    
     ret = XGetWindowAttributes(_window->display, _window->xwindow, &wa);
     if (!ret) {
         NSLog(@"XGetWindowAttributes returned %d", ret);
         return NULL;
     }
     target = cairo_xlib_surface_create(_window->display, _window->xwindow, wa.visual, wa.width, wa.height);
+    /* May not need this but left here for reference */
     ret = cairo_surface_set_user_data(target, &_window->cwindow, (void *)_window->xwindow, NULL);
     if (ret) {
         NSLog(@"cairo_surface_set_user_data %s", cairo_status_to_string(CAIRO_STATUS_NO_MEMORY));
         cairo_surface_destroy(target);
         return NULL;
     }
+    /* Flip coordinate system */
+    //cairo_surface_set_device_offset(target, 0, wa.height);
+    /* FIXME: The scale part of device transform does not work correctly in
+     * cairo so for now we have to patch the CTM! This should really be fixed
+     * in cairo and then the ScaleCTM call below and the hacks in GetCTM in
+     * CGContext should be removed in favour of the following line: */
+    /* _cairo_surface_set_device_scale(target, 1.0, -1.0); */
     
-    // NOTE: It doesn't looks like cairo will support using both device_scale and 
+    // NOTE: It doesn't looks like cairo will support using both device_scale and
     //             device_offset any time soon, so I moved the translation part of the
     //             flip to the transformation matrix, to be consistent.
     //             - Eric
     ctx = opal_new_CGContext(target, CGSizeMake(wa.width, wa.height));
     cairo_surface_destroy(target);
-    return ctx;*/
+    return ctx;
 }
-/*
+
 void IOWindowSetContextSize(CGSize size)
 {
-    _window->rect.size = size;
+    _window->_rect.size = size;
     OPContextSetSize(_window->context, size); // Updates CTM
     cairo_xlib_surface_set_size(cairo_get_target(_window->context->ct), size.width, size.height);
-}*/
-
-CGContextRef IOWindowContext()
-{
-    return _window->_context;
 }
-/*
+
 void IOWindowFlush()
 {
-//    XFlushGC(_window->display, _window->context);
+    //    XFlushGC(_window->display, _window->context);
     XFlush(_window->display);
 }
 
 void IOWindowClear()
 {
     XClearWindow(_window->display, _window->xwindow);
-}*/
+}
+#endif
+

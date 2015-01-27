@@ -1,5 +1,5 @@
 #
-# Copyright © 2014 myOS Group.
+# Copyright © 2014-2015 myOS Group.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,11 +26,10 @@ ifeq ($(TARGET),NativeApp)
 else
     LIB_NAME=OpenGLES
     LDLIBS+=-lIOKit -lCoreGraphics
-    #-lcutils -lutils
     OBJECTS+=EAGLMA.o
     SLIBS=MAEGL MAGLESv1_enc
     
     #MAEGL MAOpenglSystemCommon MARenderControl_enc MAGLESv1_enc MAOpenglCodecCommon
 endif
 
-include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared
+include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

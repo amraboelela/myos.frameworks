@@ -195,4 +195,4 @@ OBJECTS = \
     GSXML.o \
     GSStream.o \
 
-include ${MYOS_PATH}/sdk/makefiles/$(BASE_OS)/makefile-shared
+include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared
