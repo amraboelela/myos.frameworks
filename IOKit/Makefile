@@ -15,8 +15,7 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-#CFLAGS=-DDEBUG
-LDLIBS=-llog -landroid -lCoreFoundation -lFoundation
+LDLIBS=-lCoreFoundation -lFoundation
 OBJECTS=NSFileHandle+IOKit.o IOWindow.o IOPipe.o
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAIOKit

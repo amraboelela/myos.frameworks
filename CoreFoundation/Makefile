@@ -16,8 +16,7 @@
 #
 
 LIB_NAME=CoreFoundation
-#CFLAGS=-DDEBUG
-LDLIBS=-licu -lobjc -llog
+LDLIBS=-licu -lobjc
 
 OBJECTS = \
     CFArray.o \

@@ -15,7 +15,6 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-#CFLAGS=-DDEBUG
 LDLIBS=-lCoreFoundation -lFoundation
 
 ifeq ($(TARGET),NativeApp)

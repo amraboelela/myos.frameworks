@@ -16,7 +16,7 @@
 #
 
 CFLAGS=-I$(ANDROID_SOURCE_PATH)/development/tools/emulator/opengl/host/include/libOpenglRender
-LDLIBS=-llog -landroid -lCoreFoundation -lFoundation
+LDLIBS=-lCoreFoundation -lFoundation
 OBJECTS=EAGL.o EAGLTexture.o
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAOpenGLES
