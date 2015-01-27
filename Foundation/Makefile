@@ -6,7 +6,7 @@ CFLAGS=-DGNUSTEP_BASE_INTERNAL=1 -DNO_GNUSTEP=1 -DGNUSTEP -DGSWARN -DGSDIAGNOSE 
 
 LDLIBS=-lffi -lz -lCoreFoundation
 
-ifed ($(BASE_OS),android)
+ifeq ($(BASE_OS),android)
     CFLAGS+=-DGNUSTEP_TARGET_CPU=\"arm\"
     -DGNUSTEP_TARGET_OS=\"linux-android\"
 else
