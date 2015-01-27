@@ -37,7 +37,7 @@
 
 #pragma mark - static functions
 
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
 static void stream_read_func(png_structp png, png_bytep data, png_size_t size)
 {
     AAsset *asset = png_get_io_ptr(png);
@@ -380,7 +380,7 @@ CGImageRef CGImageCreateWithJPEGDataProvider(
 }
 
 //#define PNG_BYTES_TO_CHECK 4
-
+#ifdef ANDROID
 CGImageRef CGImageCreateWithPNGDataProviderWithAsset(CGDataProviderRef source, const CGFloat decode[], bool shouldInterpolate, CGColorRenderingIntent intent)
 {
     //DLog();
@@ -454,6 +454,7 @@ CGImageRef CGImageCreateWithPNGDataProviderWithAsset(CGDataProviderRef source, c
     return NULL;
 #endif
 }
+#endif
 
 CGImageRef CGImageCreateWithPNGDataProvider(CGDataProviderRef source, const CGFloat decode[], bool shouldInterpolate, CGColorRenderingIntent intent)
 {
