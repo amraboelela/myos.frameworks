@@ -16,11 +16,13 @@
 #
 
 source ${MYOS_PATH}/sdk/config.sh
-echo BASE_OS: ${BASE_OS}
-echo DEBUG_MODE: ${DEBUG_MODE}
+#echo BASE_OS: ${BASE_OS}
+#echo DEBUG_MODE: ${DEBUG_MODE}
 
 echo
 echo "****************************** Cleaning frameworks ******************************"
+
+rm ${MYOS_PATH}/frameworks/libs/*.so
 
 cd CoreFoundation
 make clean
