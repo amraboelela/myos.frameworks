@@ -16,7 +16,7 @@
 #
 
 LIB_NAME=CoreFoundation
-LDLIBS=-licu -lobjc
+LDLIBS=-lobjc
 
 OBJECTS = \
     CFArray.o \
