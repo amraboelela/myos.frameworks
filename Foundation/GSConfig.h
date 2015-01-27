@@ -226,7 +226,7 @@ typedef	struct {
 } gs_mutex_t	__attribute__((aligned (4)));
 
 #define	OBJC2RUNTIME 1
-#define BASE_NATIVE_OBJC_EXCEPTIONS     0
+//#define BASE_NATIVE_OBJC_EXCEPTIONS     0
 #define GS_NONFRAGILE     0
 #define GS_MIXEDABI     0
 #define GS_USE_LIBXML 0
