@@ -159,7 +159,33 @@ static BOOL TouchIsActive(UITouch *touch)
     return TouchIsActiveGesture(touch) || TouchIsActiveNonGesture(touch);
 }
 
-#pragma mark Native Activity
+static void _UIApplicationSetCurrentEventTouchedView()
+{
+    UIEvent *currentEvent = _application->_currentEvent;
+    //DLog(@"currentEvent: %@", currentEvent);
+    NSSet *touches = [currentEvent allTouches];
+    UITouch *touch = [touches anyObject];
+    //DLog(@"touch: %@", touch);
+    //DLog(@"touch.view: %@", touch.view);
+    UIView *previousView = [touch.view retain];
+    CGPoint screenLocation = touch->_location;
+    UIScreen *theScreen = _application->_keyWindow->_screen;
+    UIView *hitView = _UIScreenHitTest(theScreen, screenLocation, currentEvent);
+    //DLog(@"hitView: %@", hitView);
+    _UITouchSetTouchedView(touch, hitView);
+    if (hitView != previousView) {
+        UITouchPhase phase = touch.phase;
+        //DLog(@"phase: %d", phase);
+        if (phase == UITouchPhaseMoved) {
+            //DLog(@"phase == UITouchPhaseMoved");
+            [previousView touchesMoved:touches withEvent:currentEvent];
+        }
+    }
+    _UIApplicationSendEvent(currentEvent);
+    [previousView release];
+}
+
+#if defined(ANDROID) && defined(NATIVE_APP)
 
 /**
  * Tear down the EGL context currently associated with the display.
@@ -216,34 +242,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
             break;
     }
 }
-
-static void _UIApplicationSetCurrentEventTouchedView()
-{
-    UIEvent *currentEvent = _application->_currentEvent;
-    //DLog(@"currentEvent: %@", currentEvent);
-    NSSet *touches = [currentEvent allTouches];
-    UITouch *touch = [touches anyObject];
-    //DLog(@"touch: %@", touch);
-    //DLog(@"touch.view: %@", touch.view);
-    UIView *previousView = [touch.view retain];
-    CGPoint screenLocation = touch->_location;
-    UIScreen *theScreen = _application->_keyWindow->_screen;
-    UIView *hitView = _UIScreenHitTest(theScreen, screenLocation, currentEvent);
-    //DLog(@"hitView: %@", hitView);
-    _UITouchSetTouchedView(touch, hitView);
-    if (hitView != previousView) {
-        UITouchPhase phase = touch.phase;
-        //DLog(@"phase: %d", phase);
-        if (phase == UITouchPhaseMoved) {
-            //DLog(@"phase == UITouchPhaseMoved");
-            [previousView touchesMoved:touches withEvent:currentEvent];
-        }
-    }
-    _UIApplicationSendEvent(currentEvent);
-    [previousView release];
-}
-
-#ifdef ANDROID
 
 static int32_t engine_handle_input(struct android_app* app, AInputEvent *event)
 {
@@ -310,8 +308,6 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent *event)
 }
 
 #endif
-
-#pragma mark Native Application
 
 static void _UIApplicationInitWindow()
 {
