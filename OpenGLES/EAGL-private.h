@@ -16,10 +16,10 @@
  */
 
 #import <OpenGLES/EAGL.h>
+#import <OpenGLES/EAGLTexture.h>
 
 #ifdef ANDROID
 #import <GLES/gl.h>
-#import <OpenGLES/EAGLTexture.h>
 #import <OpenGLES/EAGLML.h>
 #import <OpenGLES/EAGLMA.h>
 #endif
