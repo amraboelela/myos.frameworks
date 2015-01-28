@@ -39,19 +39,27 @@ extern void EAGLGetVersion(unsigned int *major, unsigned int *minor);
 
 @class IOWindow;
 
-@interface EAGLContext : NSObject
-{
+@interface EAGLContext : NSObject {
 @public
     EAGLRenderingAPI API;
     EAGLSharegroup *_sharegroup;
     IOWindow *_window;
+#ifdef ANDROID
     EGLDisplay _eglDisplay;
     EGLConfig _eglFBConfig[1];
     EGLSurface _eglSurface;
     EGLContext _eglContext;
     int _width;
     int _height;
+#else
+    GLXContext _glXContext;
+    Display *_display;
+#endif
     BOOL _vSyncEnabled;
+    
+    
+    GLXContext _glXContext;
+    Display *_display;
 }
 
 @property (readonly) EAGLRenderingAPI API;
