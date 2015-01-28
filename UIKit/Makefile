@@ -19,11 +19,18 @@ CFLAGS=-fblocks
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAUIKit
-    LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc -lCoreFoundation -lFoundation -lNAIOKit -lNAOpenGLES -lNACoreAnimation -lNACoreGraphics -lNACoreText
+    LDLIBS+=-lEGL -lCoreFoundation -lFoundation -lNAIOKit -lNAOpenGLES -lNACoreAnimation -lNACoreGraphics -lNACoreText
 else
     LIB_NAME=UIKit
     LDLIBS=-lCoreFoundation -lFoundation -lIOKit -lOpenGLES -lCoreAnimation -lCoreGraphics -lCoreText
 endif
+
+ifeq ($(BASE_OS),android)
+    ifeq ($(TARGET),NativeApp)
+        LDLIBS+=-lGLESv1_CM -lGLESv1_enc
+    endif
+endif
+
 
 OBJECTS = \
     UIApplication.o \
