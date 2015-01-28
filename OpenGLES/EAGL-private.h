@@ -16,10 +16,13 @@
  */
 
 #import <OpenGLES/EAGL.h>
+
+#ifdef ANDROID
 #import <GLES/gl.h>
 #import <OpenGLES/EAGLTexture.h>
 #import <OpenGLES/EAGLML.h>
 #import <OpenGLES/EAGLMA.h>
+#endif
 
 extern BOOL _EAGLSwappingBuffers;
 
