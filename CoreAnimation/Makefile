@@ -19,10 +19,16 @@ LDLIBS=-lCoreFoundation -lFoundation
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreAnimation
-    LDLIBS+=-lEGL -lGLESv1_CM -lNAIOKit -lNAOpenGLES -lNACoreGraphics -lNACoreText
+    LDLIBS+=-lEGL -lNAIOKit -lNAOpenGLES -lNACoreGraphics -lNACoreText
 else
     LIB_NAME=CoreAnimation
     LDLIBS+=-lIOKit -lOpenGLES -lCoreGraphics -lCoreText
+endif
+
+ifeq ($(BASE_OS),android)
+    ifeq ($(TARGET),NativeApp)
+        LDLIBS+=-lGLESv1_CM
+    endif
 endif
 
 OBJECTS = \
