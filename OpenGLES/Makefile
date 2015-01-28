@@ -15,21 +15,29 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-CFLAGS=-I$(ANDROID_SOURCE_PATH)/development/tools/emulator/opengl/host/include/libOpenglRender
 LDLIBS=-lCoreFoundation -lFoundation
-OBJECTS=EAGL.o EAGLTexture.o
+OBJECTS = \
+    EAGL.o \
+    EAGLTexture.o \
+
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAOpenGLES
-    CFLAGS+=-DNATIVE_APP
-    LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc -lNAIOKit -lNACoreGraphics
-    OBJECTS+=EAGLML.o
+    LDLIBS+=-lEGL -lNAIOKit -lNACoreGraphics
 else
     LIB_NAME=OpenGLES
     LDLIBS+=-lIOKit -lCoreGraphics
-    OBJECTS+=EAGLMA.o
-    SLIBS=MAEGL MAGLESv1_enc
-    
-    #MAEGL MAOpenglSystemCommon MARenderControl_enc MAGLESv1_enc MAOpenglCodecCommon
+endif
+
+ifeq ($(BASE_OS),android)
+    CFLAGS=-I$(ANDROID_SOURCE_PATH)/development/tools/emulator/opengl/host/include/libOpenglRender
+    ifeq ($(TARGET),NativeApp)
+        LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc
+        OBJECTS+=EAGLML.o
+    else
+        OBJECTS+=EAGLMA.o
+        SLIBS=MAEGL MAGLESv1_enc
+        #MAEGL MAOpenglSystemCommon MARenderControl_enc MAGLESv1_enc MAOpenglCodecCommon
+    endif
 endif
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

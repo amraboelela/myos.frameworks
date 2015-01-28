@@ -186,13 +186,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
     //DLog(@"_CATransactionUnloadIfNeeded");
     _CATransactionUnloadIfNeeded(rootLayer);
     _CATransactionRemoveLayers();
-#ifndef NA
-    //DLog(@"_CATransactionRemoveLayers");
-#endif
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
-#ifndef NA
-    //DLog(@"unlockWithCondition:_CAAnimatorConditionLockHasWork");
-#endif
     // Removing last transaction group, as this is a stack. In a stack, you add and remove from same place, in our case from 0
     //DLog(@"_transactions: %@", _transactions);
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);

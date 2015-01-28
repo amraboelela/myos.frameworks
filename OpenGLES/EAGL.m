@@ -17,14 +17,19 @@
 
 #import <IOKit/IOKit.h>
 #import "EAGL-private.h"
+
+#ifdef ANDROID
 #import <EGL/egl.h>
 #import <GLES/gl.h>
+#endif
 
 BOOL _EAGLSwappingBuffers = NO;
 
 static EAGLContext *_currentContext = nil;
 
 #pragma mark - Static functions
+
+#ifdef ANDROID
 
 static void _EAGLCreateContext(EAGLContext *context)
 {
@@ -104,6 +109,34 @@ static void _EAGLCreateContext(EAGLContext *context)
     context->_height = h;
 }
 
+#else
+
+static void _EAGLCreateContext(EAGLContext *context)
+{
+    int attribList[] = {
+        GLX_DEPTH_SIZE, 1,
+        GLX_RGBA,
+        GLX_RED_SIZE, 1,
+        GLX_GREEN_SIZE, 1,
+        GLX_BLUE_SIZE, 1,
+        None
+    };
+    context->_window = [IOWindowGetSharedWindow() retain];
+    context->_display = XOpenDisplay(NULL);
+    //Display *display = context->_window->display;
+    int screen = DefaultScreen(context->_display);
+    XVisualInfo *visualInfo;
+    visualInfo = glXChooseVisual(context->_display, screen, attribList);
+    if (!visualInfo) {
+        NSLog(@"glXChooseVisual failed");
+        return;
+    }
+    context->_glXContext = glXCreateContext(context->_display, visualInfo, NULL, GL_TRUE);
+    DLog(@"created GLX context: %p", context->_glXContext);
+}
+
+#endif
+
 static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *otherContext)
 {
     // initialize OpenGL ES and EGL
@@ -172,6 +205,35 @@ static void _EAGLDestroyContext(EAGLContext *context)
     }
 }
 
+static bool checkGLXExtension(const char* extName)
+{
+    /*
+     Search for extName in the extensions string.  Use of strstr()
+     is not sufficient because extension names can be prefixes of
+     other extension names.  Could use strtok() but the constant
+     string returned by glGetString can be in read-only memory.
+     */
+    
+    EAGLContext *context = _EAGLGetCurrentContext();
+    Display *display = context->_display;
+    int screen = DefaultScreen(display);
+    char *list = (char*) glXQueryExtensionsString(display, screen);
+    //NSLog(@"list: %s", list);
+    char *end;
+    int extNameLen;
+    extNameLen = strlen(extName);
+    end = list + strlen(list);
+    while (list < end) {
+        int n = strcspn(list, " ");
+        
+        if ((extNameLen == n) && (strncmp(extName, list, n) == 0))
+            return true;
+        
+        list += (n + 1);
+    };
+    return false;
+};
+
 @implementation EAGLSharegroup
 
 @end
@@ -215,11 +277,34 @@ static void _EAGLDestroyContext(EAGLContext *context)
     }
     return self;
 }
+/*
+- (id)initWithAPI:(EAGLRenderingAPI)api
+{
+    self = [super init];
+    if (self) {
+        API = api;
+        shareGroup = [[EAGLShareGroup alloc] init];
+        _EAGLContextCreateContext(self);
+    }
+    return self;
+}
+
+- (id)initWithAPI:(EAGLRenderingAPI)api sharegroup:(EAGLShareGroup *)aSharegroup
+{
+    self = [super init];
+    if (self) {
+        API = api;
+        shareGroup = [aSharegroup retain];
+        _EAGLContextCreateContext(self);
+    }
+    return self;
+}*/
 
 - (void)dealloc
 {
     [_sharegroup release];
     [_window release];
+#ifdef ANDROID
     if (_eglDisplay != EGL_NO_DISPLAY) {
         eglMakeCurrent(_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         if (_eglContext != EGL_NO_CONTEXT) {
@@ -230,10 +315,15 @@ static void _EAGLDestroyContext(EAGLContext *context)
         }
         eglTerminate(_eglDisplay);
     }
+#else
+    glXDestroyContext(_window->display, _glXContext);
+#endif
     [super dealloc];
 }
 
 #pragma mark - Class methods
+
+#ifdef ANDROID
 
 + (BOOL)setCurrentContext:(EAGLContext *)context
 {
@@ -256,6 +346,32 @@ static void _EAGLDestroyContext(EAGLContext *context)
     }
     return NO;
 }
+
+#else
+
++ (BOOL)setCurrentContext:(EAGLContext *)context
+{
+    if (_currentContext) {
+        [_currentContext release];
+    }
+    _currentContext = [context retain];
+    //DLog(@"_currentContext: %@", _currentContext);
+    if (context) {
+        //DLog(@"context: %@", context);
+        BOOL result = glXMakeCurrent(context->_display, context->_window->xwindow, context->_glXContext);
+        //DLog(@"result: %d", result);
+        if (result) {
+            //DLog(@"Success");
+            return YES;
+        } else {
+            //DLog(@"Failed to make current context");
+            return NO;
+        }
+    }
+    return NO;
+}
+
+#endif
 
 + (EAGLContext *)currentContext
 {
@@ -282,6 +398,8 @@ EAGLContext *_EAGLGetCurrentContext()
     //DLog();
     return _currentContext;
 }
+
+#ifdef ANDROID
 
 void _EAGLSetup()
 {
@@ -319,8 +437,33 @@ void _EAGLSetup()
     //DLog(@"glGetError: %d", glGetError());
 }
 
+#else
+
+void _EAGLSetup()
+{
+    //DLog();
+    glMatrixMode(GL_MODELVIEW);
+    
+    glLoadIdentity();
+    
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_TEXTURE_2D);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    //DLog(@"glGetError: %d", glGetError());
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+    glAlphaFunc(GL_GREATER, 0);
+    glEnable(GL_ALPHA_TEST);
+    _EAGLSetSwapInterval(1);
+}
+
+#endif
+
 void _EAGLSetSwapInterval(int interval)
-{/*
+{
+#ifndef ANDROID
     void(*swapInterval)(int);
     if (checkGLXExtension("GLX_MESA_swap_control")) {
         swapInterval = (void (*)(int)) glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
@@ -335,18 +478,21 @@ void _EAGLSetSwapInterval(int interval)
         _currentContext->_vSyncEnabled = NO;
         return;
     }
-    swapInterval(interval);*/
+    swapInterval(interval);
+#endif
 }
 
 void _EAGLClear()
 {
-    glClearColor(0,0,0,1);
+    glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void _EAGLFlush()
 {
+#ifdef ANDROID
     glFlush();
+#endif
 }
 
 void _EAGLSwapBuffers()
@@ -355,10 +501,10 @@ void _EAGLSwapBuffers()
     _EAGLSwappingBuffers = YES;
     glFlush();
     //DLog();
-    //DLog();
-    //EAGLContext *currentContext = _EAGLGetCurrentContext();
     //DLog(@"currentContext->_eglDisplay: %p, currentContext->_eglSurface: %p", currentContext->_eglDisplay, currentContext->_eglSurface);
+#ifdef ANDROID
     eglSwapBuffers(_currentContext->_eglDisplay, _currentContext->_eglSurface);
+#endif
     //DLog();
 
 //    EAGLMASwapBuffers();

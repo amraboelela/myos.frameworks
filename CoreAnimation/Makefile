@@ -19,7 +19,6 @@ LDLIBS=-lCoreFoundation -lFoundation
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreAnimation
-    CFLAGS+=-DNATIVE_APP
     LDLIBS+=-lEGL -lGLESv1_CM -lNAIOKit -lNAOpenGLES -lNACoreGraphics -lNACoreText
 else
     LIB_NAME=CoreAnimation

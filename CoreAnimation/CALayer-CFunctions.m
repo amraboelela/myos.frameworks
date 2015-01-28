@@ -146,9 +146,6 @@ void _CALayerSetNeedsUnload(CALayer *layer)
 
 void _CALayerSetNeedsComposite(CALayer *layer)
 {
-#ifndef NA
-    //DLog(@"layer: %@", layer);
-#endif
     layer->_needsComposite = YES;
     _CATransactionCreateImplicitTransactionIfNeeded();
 }

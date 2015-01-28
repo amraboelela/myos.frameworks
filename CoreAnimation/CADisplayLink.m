@@ -142,9 +142,6 @@ void CADisplayLinkStartTimer(CADisplayLink *displayLink)
 
 - (void)displayFrame
 {
-#ifndef NA
-    //DLog();
-#endif
     //NSTimeInterval timeBefore = CACurrentMediaTime();
     //_CAAnimatorFrameCount++;
     //_EAGLSwapBuffers();

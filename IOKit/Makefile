@@ -21,7 +21,6 @@ OBJECTS = \
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAIOKit
-    CFLAGS+=-DNATIVE_APP
     LDLIBS+=-lNACoreGraphics
 else
     LIB_NAME=IOKit

@@ -274,9 +274,6 @@ static void UIMAApplicationRunApp(NSString *appName)
         
         //DLog(@"dup2");
         IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
-        //#ifndef NA
-        //EAGLMASetPipes(kAnimationPipeRead, kAnimationPipeWrite);
-        //#endif
         //DLog();
         IOPipeWriteMessage(MLPipeMessageChildIsReady, YES);
         //DLog();

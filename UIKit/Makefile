@@ -19,7 +19,6 @@ CFLAGS=-fblocks
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAUIKit
-    CFLAGS+=-DNATIVE_APP
     LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc -lCoreFoundation -lFoundation -lNAIOKit -lNAOpenGLES -lNACoreAnimation -lNACoreGraphics -lNACoreText
 else
     LIB_NAME=UIKit

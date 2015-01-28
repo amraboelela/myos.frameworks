@@ -23,7 +23,6 @@ endif
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NACoreGraphics
-    CFLAGS+=-DNATIVE_APP
 else
     LIB_NAME=CoreGraphics
 endif

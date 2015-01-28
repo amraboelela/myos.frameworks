@@ -16,7 +16,12 @@
  */
 
 #import <Foundation/Foundation.h>
+
+#ifdef ANDROID
 #import <EGL/egl.h>
+#else
+#import <GL/glx.h>
+#endif
 
 #define EAGL_MAJOR_VERSION      1
 #define EAGL_MINOR_VERSION      0
