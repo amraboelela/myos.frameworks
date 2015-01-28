@@ -56,10 +56,6 @@ extern void EAGLGetVersion(unsigned int *major, unsigned int *minor);
     Display *_display;
 #endif
     BOOL _vSyncEnabled;
-    
-    
-    GLXContext _glXContext;
-    Display *_display;
 }
 
 @property (readonly) EAGLRenderingAPI API;
