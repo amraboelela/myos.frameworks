@@ -873,7 +873,6 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     DLog(@"outside. exiting");
     UIChildApplicationClosePipes();
     [pool release];
-    //exit(0);
     return 0;
 }
 
@@ -953,7 +952,9 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     [pool release];
 }
 
-#endif
+#endif /* ANDROID */
+
+#endif /* NATIVE_APP */
 
 void _UIApplicationSetKeyWindow(UIApplication *application, UIWindow *newKeyWindow)
 {
