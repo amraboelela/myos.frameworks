@@ -29,7 +29,9 @@ static IOWindow *_window = nil;
 
 - (void)dealloc
 {
+#ifdef ANDROID
     IOWindowDestroyNativeWindow(_nWindow);
+#endif
     [super dealloc];
 }
 
