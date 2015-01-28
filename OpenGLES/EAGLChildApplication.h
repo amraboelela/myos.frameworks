@@ -15,7 +15,11 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
+#ifdef ANDROID
 #import <GLES/gl.h>
+#else
+#import <GL/gl.h>
+#endif
 
 typedef enum {
     EAGLChildApplicationMessageEndOfMessage,
@@ -28,8 +32,6 @@ typedef enum {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    //void EAGLChildApplicationHandleMessages();
-    //void EAGLChildApplicationSetPipes(int pipeRead, int pipeWrite);
     int EAGLChildApplicationGenTexture();
     void EAGLChildApplicationLoadImage(int textureID, int width, int height, const GLvoid *pixels);
     void EAGLChildApplicationDraw(int textureID, const GLvoid *texCoords, const GLvoid *vertices, GLfloat opacity);
