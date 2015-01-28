@@ -28,13 +28,13 @@
 @interface IOWindow : NSObject
 {
 @public
+    CGContextRef _context;
 #ifdef ANDROID
     ANativeWindow *_nWindow;
-    CGContextRef _context;
+
 #else
     Window xwindow;
     cairo_user_data_key_t cwindow;
-    CGContextRef context;
     Display *display;
 #endif
     CGRect _rect;

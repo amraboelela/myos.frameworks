@@ -156,13 +156,13 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     //printf("XMapRaised returned: %x\n", ret);
     
     /* Create a CGContext */
-    _window->context = IOWindowCreateContext();
-    if (!_window->context) {
+    _window->_context = IOWindowCreateContext();
+    if (!_window->_context) {
         fprintf(stderr,"Cannot create context\n");
         exit(EXIT_FAILURE);
     }
     //printf("Created context\n");
-    return _window->context;
+    return _window->_context;
 }
 
 CGContextRef IOWindowCreateContext()
@@ -205,13 +205,13 @@ CGContextRef IOWindowCreateContext()
 void IOWindowSetContextSize(CGSize size)
 {
     _window->_rect.size = size;
-    OPContextSetSize(_window->context, size); // Updates CTM
-    cairo_xlib_surface_set_size(cairo_get_target(_window->context->ct), size.width, size.height);
+    OPContextSetSize(_window->_context, size); // Updates CTM
+    cairo_xlib_surface_set_size(cairo_get_target(_window->_context->ct), size.width, size.height);
 }
 
 void IOWindowFlush()
 {
-    //    XFlushGC(_window->display, _window->context);
+    //    XFlushGC(_window->display, _window->_context);
     XFlush(_window->display);
 }
 
