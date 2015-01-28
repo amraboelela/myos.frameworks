@@ -25,7 +25,7 @@ static BOOL _childAppRunning = NO;
 
 #pragma mark - Shared functions
 
-void EAGLMLSetChildAppIsRunning(BOOL isRunning)
+void EAGLLauncherSetChildAppIsRunning(BOOL isRunning)
 {
     //DLog();
     //_startTime = CACurrentMediaTime();
@@ -33,14 +33,14 @@ void EAGLMLSetChildAppIsRunning(BOOL isRunning)
     _childAppRunning = isRunning;
 }
 
-void EAGLMLSetPipes(int pipeRead, int pipeWrite)
+void EAGLLauncherSetPipes(int pipeRead, int pipeWrite)
 {
     //DLog(@"pipeRead: %d, pipeWrite: %d", pipeRead, pipeWrite);
     _pipeRead = pipeRead;
     _pipeWrite = pipeWrite;
 }
 
-void EAGLMLHandleMessages()
+void EAGLLauncherHandleMessages()
 {
     //DLog();
     if (!_childAppRunning) {
@@ -50,26 +50,26 @@ void EAGLMLHandleMessages()
 #ifdef NATIVE_APP
     int message = IOPipeReadMessageWithPipe(_pipeRead);
     switch (message) {
-        case EAGLMLMessageEndOfMessage:
-            //DLog(@"EAGLMLMessageEndOfMessage");
+        case EAGLLauncherMessageEndOfMessage:
+            //DLog(@"EAGLLauncherMessageEndOfMessage");
             break;
-        case EAGLMLMessageChildIsReady:
-            DLog(@"EAGLMLMessageChildIsReady");
+        case EAGLLauncherMessageChildIsReady:
+            DLog(@"EAGLLauncherMessageChildIsReady");
             break;
-        case EAGLMLMessageGenTexture:
-            //DLog(@"EAGLMLMessageGenTexture");
-            EAGLMLGenTexture();
+        case EAGLLauncherMessageGenTexture:
+            //DLog(@"EAGLLauncherMessageGenTexture");
+            EAGLLauncherGenTexture();
             break;
-        case EAGLMLMessageLoadImage:
-            //DLog(@"EAGLMLMessageLoadImage");
-            EAGLMLLoadImage();
+        case EAGLLauncherMessageLoadImage:
+            //DLog(@"EAGLLauncherMessageLoadImage");
+            EAGLLauncherLoadImage();
             break;
-        case EAGLMLMessageDraw:
-            //DLog(@"EAGLMLMessageDraw");
-            EAGLMLDraw();
+        case EAGLLauncherMessageDraw:
+            //DLog(@"EAGLLauncherMessageDraw");
+            EAGLLauncherDraw();
             break;
-        case EAGLMLMessageSwapBuffers:
-            //DLog(@"EAGLMLMessageSwapBuffers");
+        case EAGLLauncherMessageSwapBuffers:
+            //DLog(@"EAGLLauncherMessageSwapBuffers");
             _EAGLSwapBuffers();
             break;
         default:
@@ -78,18 +78,18 @@ void EAGLMLHandleMessages()
 #endif
 }
 
-void EAGLMLGenTexture()
+void EAGLLauncherGenTexture()
 {
     //DLog();
     GLuint textureID;
     glGenTextures(1, &textureID);
     //DLog(@"textureID: %d", textureID);
-    IOPipeWriteMessageWithPipe(EAGLMAMessageGenTexture, NO, _pipeWrite);
+    IOPipeWriteMessageWithPipe(EAGLChildApplicationMessageGenTexture, NO, _pipeWrite);
     IOPipeWriteIntWithPipe(textureID, _pipeWrite);
-    IOPipeWriteMessageWithPipe(EAGLMAMessageEndOfMessage, NO, _pipeWrite);
+    IOPipeWriteMessageWithPipe(EAGLChildApplicationMessageEndOfMessage, NO, _pipeWrite);
 }
 
-void EAGLMLLoadImage()
+void EAGLLauncherLoadImage()
 {
     //DLog();
     //CATransactionGroup *group = [[CATransactionGroup alloc] init];
@@ -111,7 +111,7 @@ void EAGLMLLoadImage()
     free(pixels);
 }
 
-void EAGLMLDraw()
+void EAGLLauncherDraw()
 {
     //DLog();
     int i;
@@ -145,10 +145,10 @@ void EAGLMLDraw()
     glColor4f(opacity, opacity, opacity, opacity);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     //DLog();
-    //[_EAGLMLLock unlock];
+    //[_EAGLLauncherLock unlock];
 }
 
-void EAGLMLDeleteTexture()
+void EAGLLauncherDeleteTexture()
 {
     DLog();
 }

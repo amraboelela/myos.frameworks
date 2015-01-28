@@ -20,9 +20,11 @@
 
 #ifdef ANDROID
 #import <GLES/gl.h>
-#import <OpenGLES/EAGLML.h>
-#import <OpenGLES/EAGLMA.h>
 #endif
+
+#import <OpenGLES/EAGLLauncher.h>
+#import <OpenGLES/EAGLChildApplication.h>
+
 
 extern BOOL _EAGLSwappingBuffers;
 

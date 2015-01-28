@@ -20,13 +20,13 @@
 #define kMainPipeRead           10
 #define kMainPipeWrite          21
 
-@class UIApplicationIcon, UIMAApplication;
+@class UIApplicationIcon, UIChildApplication;
 
 extern NSMutableDictionary *_allApplicationsDictionary;
-extern UIMAApplication *_currentMAApplication;
+extern UIChildApplication *_currentMAApplication;
 extern NSMutableArray *_openedApplications;
 
-@interface UIMAApplication : NSObject {
+@interface UIChildApplication : NSObject {
 @package
     NSString *_name;
     NSMutableDictionary *_data;
@@ -51,7 +51,7 @@ extern NSMutableArray *_openedApplications;
 @property BOOL running;
 
 - (id)initWithAppName:name;
-- (void)swapLocationWithApp:(UIMAApplication *)anotherApp;
+- (void)swapLocationWithApp:(UIChildApplication *)anotherApp;
 - (BOOL)isCurrent;
 - (void)startApp;
 - (void)setAsCurrent:(BOOL)withSignal;
@@ -64,6 +64,6 @@ extern NSMutableArray *_openedApplications;
 
 @end
 
-//void UIMAApplicationTakeScreenCaptureIfNeeded(UIMAApplication *app);
-void UIMAApplicationSaveData(UIMAApplication *app);
-void UIMAApplicationClosePipes();
+//void UIChildApplicationTakeScreenCaptureIfNeeded(UIChildApplication *app);
+void UIChildApplicationSaveData(UIChildApplication *app);
+void UIChildApplicationClosePipes();

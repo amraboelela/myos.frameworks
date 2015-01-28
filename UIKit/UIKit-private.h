@@ -35,8 +35,8 @@
 #import <UIKit/UIViewBlockAnimationDelegate.h>
 #import <UIKit/UIViewAnimationGroup.h>
 
-#import <UIKit/UIMAApplication.h>
-#import <UIKit/UIMLApplication.h>
+#import <UIKit/UIChildApplication.h>
+#import <UIKit/UILauncherApplication.h>
 
 #import <UIKit/NSArray+UIKit.h>
 #import <UIKit/UIScroller.h>

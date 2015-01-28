@@ -23,18 +23,18 @@ OBJECTS = \
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAOpenGLES
     LDLIBS+=-lEGL -lNAIOKit -lNACoreGraphics
+    OBJECTS+=EAGLLauncher.o
 else
     LIB_NAME=OpenGLES
     LDLIBS+=-lIOKit -lCoreGraphics
+    OBJECTS+=EAGLChildApplication.o
 endif
 
 ifeq ($(BASE_OS),android)
     CFLAGS=-I$(ANDROID_SOURCE_PATH)/development/tools/emulator/opengl/host/include/libOpenglRender
     ifeq ($(TARGET),NativeApp)
         LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc
-        OBJECTS+=EAGLML.o
     else
-        OBJECTS+=EAGLMA.o
         SLIBS=MAEGL MAGLESv1_enc
         #MAEGL MAOpenglSystemCommon MARenderControl_enc MAGLESv1_enc MAOpenglCodecCommon
     endif

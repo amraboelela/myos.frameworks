@@ -531,7 +531,7 @@ void _EAGLSwapBuffers()
 #endif
     //DLog();
 
-//    EAGLMASwapBuffers();
+//    EAGLChildApplicationSwapBuffers();
 
     _EAGLSwappingBuffers = NO;
 }

@@ -26,7 +26,7 @@
 
 #pragma mark - Life cycle
 
-- (id)initWithApplication:(UIMAApplication *)application
+- (id)initWithApplication:(UIChildApplication *)application
 {
     self = [super initWithFrame:CGRectMake(0,0,_kIconWidth,_kIconHeight)];
     if (self) {

@@ -22,18 +22,18 @@
 #import <CoreGraphics/CoreGraphics-private.h>
 
 NSMutableDictionary *_allApplicationsDictionary;
-UIMAApplication *_currentMAApplication = nil;
+UIChildApplication *_currentMAApplication = nil;
 NSMutableArray *_openedApplications;
 
-static NSString *const _kUIMAApplicationPageNumberPath = @"page.pageNumber";
-static NSString *const _kUIMAApplicationXLocationPath = @"page.xLocation";
-static NSString *const _kUIMAApplicationYLocationPath = @"page.yLocation";
-static NSString *const _kUIMAApplicationAnchoredPath = @"page.anchored";
-static NSString *const _kUIMAApplicationScorePath = @"application.score";
+static NSString *const _kUIChildApplicationPageNumberPath = @"page.pageNumber";
+static NSString *const _kUIChildApplicationXLocationPath = @"page.xLocation";
+static NSString *const _kUIChildApplicationYLocationPath = @"page.yLocation";
+static NSString *const _kUIChildApplicationAnchoredPath = @"page.anchored";
+static NSString *const _kUIChildApplicationScorePath = @"application.score";
 
 #pragma mark - Static functions
 
-static void UIMAApplicationRunApp(NSString *appName)
+static void UIChildApplicationRunApp(NSString *appName)
 {
     const char *appPath = [[NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", appName, appName] cString];
     const char *cAppName = [appName cString];
@@ -44,7 +44,7 @@ static void UIMAApplicationRunApp(NSString *appName)
     //DLog();
 }
 
-@implementation UIMAApplication
+@implementation UIChildApplication
 
 @synthesize name=_name;
 @synthesize score=_score;
@@ -72,9 +72,9 @@ static void UIMAApplicationRunApp(NSString *appName)
         NSData *data = [NSData dataWithContentsOfFile:dataPath];
         _data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
         //DLog(@"_data: %@", _data);
-        int x = [[_data valueForKeyPath:_kUIMAApplicationXLocationPath] intValue];
-        int y = [[_data valueForKeyPath:_kUIMAApplicationYLocationPath] intValue];
-        _score = [[_data valueForKeyPath:_kUIMAApplicationScorePath] intValue];
+        int x = [[_data valueForKeyPath:_kUIChildApplicationXLocationPath] intValue];
+        int y = [[_data valueForKeyPath:_kUIChildApplicationYLocationPath] intValue];
+        _score = [[_data valueForKeyPath:_kUIChildApplicationScorePath] intValue];
         
         _applicationIcon = [[UIApplicationIcon alloc] initWithApplication:self];
         
@@ -101,45 +101,45 @@ static void UIMAApplicationRunApp(NSString *appName)
 - (int)pageNumber
 {
     //DLog(@"self: %p", self);
-    return [[_data valueForKeyPath:_kUIMAApplicationPageNumberPath] intValue];
+    return [[_data valueForKeyPath:_kUIChildApplicationPageNumberPath] intValue];
 }
 
 - (void)setPageNumber:(int)pageNumber
 {
-    [_data setValue:[NSNumber numberWithInt:pageNumber] forKeyPath:_kUIMAApplicationPageNumberPath];
+    [_data setValue:[NSNumber numberWithInt:pageNumber] forKeyPath:_kUIChildApplicationPageNumberPath];
 }
 
 - (int)xLocation
 {
     //DLog();
-    return [[_data valueForKeyPath:_kUIMAApplicationXLocationPath] intValue];
+    return [[_data valueForKeyPath:_kUIChildApplicationXLocationPath] intValue];
 }
 
 - (void)setXLocation:(int)x
 {
-    [_data setValue:[NSNumber numberWithInt:x] forKeyPath:_kUIMAApplicationXLocationPath];
+    [_data setValue:[NSNumber numberWithInt:x] forKeyPath:_kUIChildApplicationXLocationPath];
 }
 
 - (int)yLocation
 {
     //DLog();
-    return [[_data valueForKeyPath:_kUIMAApplicationYLocationPath] intValue];
+    return [[_data valueForKeyPath:_kUIChildApplicationYLocationPath] intValue];
 }
 
 - (void)setYLocation:(int)y
 {
-    [_data setValue:[NSNumber numberWithInt:y] forKeyPath:_kUIMAApplicationYLocationPath];
+    [_data setValue:[NSNumber numberWithInt:y] forKeyPath:_kUIChildApplicationYLocationPath];
 }
 
 - (BOOL)anchored
 {
     //DLog();
-    return [[_data valueForKeyPath:_kUIMAApplicationAnchoredPath] boolValue];
+    return [[_data valueForKeyPath:_kUIChildApplicationAnchoredPath] boolValue];
 }
 
 - (void)setAnchored:(BOOL)anchored
 {
-    [_data setValue:[NSNumber numberWithBool:anchored] forKeyPath:_kUIMAApplicationAnchoredPath];
+    [_data setValue:[NSNumber numberWithBool:anchored] forKeyPath:_kUIChildApplicationAnchoredPath];
 }
 
 - (UIImageView *)defaultScreenView
@@ -176,7 +176,7 @@ static void UIMAApplicationRunApp(NSString *appName)
 
 #pragma mark - Data
 
-- (void)swapLocationWithApp:(UIMAApplication *)anotherApp
+- (void)swapLocationWithApp:(UIChildApplication *)anotherApp
 {
     int tempPageNumber = self.pageNumber;
     self.pageNumber = anotherApp.pageNumber;
@@ -214,17 +214,17 @@ static void UIMAApplicationRunApp(NSString *appName)
     if (!_opened) {
         self.opened = YES;
         [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
-        //UIMLApplicationPresentAppScreen(self, YES);
+        //UILauncherApplicationPresentAppScreen(self, YES);
     } else {
         //DLog();
         _CFArrayMoveValueToTop(_openedApplications, self);
-        UIMLApplicationPresentAppScreen(self, NO);
+        UILauncherApplicationPresentAppScreen(self, NO);
     }
 }
 
 - (void)presentAppScreen
 {
-    UIMLApplicationPresentAppScreen(self, YES);
+    UILauncherApplicationPresentAppScreen(self, YES);
 }
 
 #pragma mark - Public methods
@@ -269,15 +269,15 @@ static void UIMAApplicationRunApp(NSString *appName)
         flags = fcntl(animationPipe1[0], F_GETFL);
         fcntl(animationPipe1[0], F_SETFL, flags | O_NONBLOCK);
         //dup(mypipe[0]);
-        dup2(animationPipe1[0], _kEAGLMAPipeRead);
-        dup2(animationPipe2[1], _kEAGLMAPipeWrite);
+        dup2(animationPipe1[0], _kEAGLChildApplicationPipeRead);
+        dup2(animationPipe2[1], _kEAGLChildApplicationPipeWrite);
         
         //DLog(@"dup2");
         IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
         //DLog();
         IOPipeWriteMessage(MLPipeMessageChildIsReady, YES);
         //DLog();
-        UIMAApplicationRunApp(_name);
+        UIChildApplicationRunApp(_name);
     } else {
         int pipeRead = pipe2[0];
         int pipeWrite = pipe1[1];
@@ -306,7 +306,7 @@ static void UIMAApplicationRunApp(NSString *appName)
         [self setAsCurrent:NO];
         IOPipeWriteMessage(MAPipeMessageCharString, NO);
         IOPipeWriteCharString(_name);
-        UIMLApplicationSetChildAppIsRunning(YES);
+        UILauncherApplicationSetChildAppIsRunning(YES);
     }
 }
 
@@ -323,7 +323,7 @@ static void UIMAApplicationRunApp(NSString *appName)
     _running = YES;
     //DLog(@"self: %@", self);
 #ifdef NATIVE_APP
-    EAGLMLSetPipes(_animationPipeRead, _animationPipeWrite);
+    EAGLLauncherSetPipes(_animationPipeRead, _animationPipeWrite);
     if (withSignal) {
         kill(_pid, SIGALRM);
     }
@@ -341,7 +341,7 @@ static void UIMAApplicationRunApp(NSString *appName)
 {
     DLog(@"%@", self);
     self.opened = NO;
-    UIMAApplicationSaveData(self);
+    UIChildApplicationSaveData(self);
     kill(_pid, SIGTERM);
     if (wait(NULL) == -1) {
         NSLog(@"wait error");
@@ -352,17 +352,17 @@ static void UIMAApplicationRunApp(NSString *appName)
 
 #pragma mark - Shared functions
 
-void UIMAApplicationSaveData(UIMAApplication *app)
+void UIChildApplicationSaveData(UIChildApplication *app)
 {
     NSString *dataPath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/data.json", app->_name];
     //DLog(@"dataPath: %@", dataPath);
-    [app->_data setValue:[NSNumber numberWithInt:app->_score] forKeyPath:_kUIMAApplicationScorePath];
+    [app->_data setValue:[NSNumber numberWithInt:app->_score] forKeyPath:_kUIChildApplicationScorePath];
     //DLog(@"app->_data: %@", app->_data);
     NSData *data = [NSJSONSerialization dataWithJSONObject:app->_data options:0 error:NULL];
     [data writeToFile:dataPath atomically:YES];
 }
 
-void UIMAApplicationClosePipes()
+void UIChildApplicationClosePipes()
 {
     close(kMainPipeRead);
     close(kMainPipeWrite);

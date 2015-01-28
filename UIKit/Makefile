@@ -71,8 +71,8 @@ OBJECTS = \
     UIToolbarButton.o \
     UITabBar.o \
     UIBarItem.o \
-    UIMLApplication.o \
-    UIMAApplication.o \
+    UILauncherApplication.o \
+    UIChildApplication.o \
     NSArray+UIKit.o \
     UIPageControl.o \
     UIScrollView.o \

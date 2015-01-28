@@ -15,26 +15,20 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#import <GLES/gl.h>
-
 typedef enum {
-    EAGLMAMessageEndOfMessage,
-    EAGLMAMessageGenTexture,
-} EAGLMAMessage;
+    EAGLLauncherMessageEndOfMessage,
+    EAGLLauncherMessageChildIsReady,
+    EAGLLauncherMessageGenTexture,
+    EAGLLauncherMessageLoadImage,
+    EAGLLauncherMessageDraw,
+    EAGLLauncherMessageSwapBuffers,
+    EAGLLauncherMessageDeleteTexture,
+} EAGLLauncherMessage;
 
-#define _kEAGLMAPipeRead   110
-#define _kEAGLMAPipeWrite  121
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-    //void EAGLMAHandleMessages();
-    //void EAGLMASetPipes(int pipeRead, int pipeWrite);
-    int EAGLMAGenTexture();
-    void EAGLMALoadImage(int textureID, int width, int height, const GLvoid *pixels);
-    void EAGLMADraw(int textureID, const GLvoid *texCoords, const GLvoid *vertices, GLfloat opacity);
-    void EAGLMASwapBuffers();
-    void EAGLMADeleteTexture();
-#ifdef __cplusplus
-}
-#endif
+void EAGLLauncherSetChildAppIsRunning(BOOL isRunning);
+void EAGLLauncherHandleMessages();
+void EAGLLauncherSetPipes(int pipeRead, int pipeWrite);
+void EAGLLauncherGenTexture();
+void EAGLLauncherLoadImage();
+void EAGLLauncherDraw();
+void EAGLLauncherDeleteTexture();

@@ -109,7 +109,7 @@ static void reportFPS(BOOL withCondition)
         [limit release];
 #ifdef NATIVE_APP
         if ([_CAAnimatorNAConditionLock tryLockWhenCondition:_CAAnimatorConditionLockHasWork]) {
-            EAGLMLHandleMessages();
+            EAGLLauncherHandleMessages();
             [_CAAnimatorNAConditionLock unlock];
         }
 #endif

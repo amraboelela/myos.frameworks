@@ -25,12 +25,12 @@
 //#define _kGobackTimeLimit               1.0
 
 static BOOL _childAppRunning = NO;
-static UIMLApplication *_mlApp = nil;
+static UILauncherApplication *_mlApp = nil;
 static CFTimeInterval _startTime;
 //static CFTimeInterval _lastGobackTime = 0;
 static UIApplication *_uiApplication = nil;
-static UIMLApplication *_uiMLApplication = nil;
-static UIMAApplication *_uiMAApplication = nil;
+static UILauncherApplication *_UILauncherApplication = nil;
+static UIChildApplication *_UIChildApplication = nil;
 static UIView *_launcherView = nil;
 static UIView *_maAppView = nil;
 static long _freeMemory = NSIntegerMax;
@@ -38,7 +38,7 @@ static int _freeMemoryCount = 0;
 
 #pragma mark - Static functions
 
-@implementation UIMLApplication
+@implementation UILauncherApplication
 
 #pragma mark - Life cycle
 /*
@@ -57,10 +57,10 @@ static int _freeMemoryCount = 0;
 
 #pragma mark - Class methods
 
-+ (UIMLApplication *)sharedMLApplication
++ (UILauncherApplication *)sharedMLApplication
 {
     if (!_mlApp) {
-        _mlApp = [[UIMLApplication alloc] init];
+        _mlApp = [[UILauncherApplication alloc] init];
     }
     return _mlApp;
 }
@@ -73,18 +73,18 @@ static int _freeMemoryCount = 0;
 
 #pragma mark - Shared functions
 
-void UIMLApplicationInitialize()
+void UILauncherApplicationInitialize()
 {
-    //DLog(@"UIMLApplicationInitialize");
+    //DLog(@"UILauncherApplicationInitialize");
     _uiApplication = [UIApplication sharedApplication];
-    _uiMAApplication = [[UIMAApplication alloc] init];
+    _UIChildApplication = [[UIChildApplication alloc] init];
     //CFArrayAppendValue(_openedApplications, _launcherApp);
     //_openedApplicationsDictionary = [[NSMutableDictionary alloc] init];
 }
 
-void UIMLApplicationLauncherViewDidAdded()
+void UILauncherApplicationLauncherViewDidAdded()
 {
-    //UIMLApplication *mlApplication = [UIMLApplication sharedMLApplication];
+    //UILauncherApplication *mlApplication = [UILauncherApplication sharedMLApplication];
     //DLog();
     _launcherView = [[_uiApplication->_keyWindow subviews] objectAtIndex:0];
     _maAppView = [[UIView alloc] initWithFrame:_launcherView.frame];
@@ -94,24 +94,24 @@ void UIMLApplicationLauncherViewDidAdded()
     //DLog(@"_maAppView: %@", _maAppView);
 }
 
-void UIMLApplicationSetChildAppIsRunning(BOOL isRunning)
+void UILauncherApplicationSetChildAppIsRunning(BOOL isRunning)
 {
     _startTime = CACurrentMediaTime();
     //DLog(@"_startTime: %f", _startTime);
     _childAppRunning = isRunning;
 #ifdef NATIVE_APP
-    EAGLMLSetChildAppIsRunning(isRunning);
+    EAGLLauncherSetChildAppIsRunning(isRunning);
 #endif
 }
 
-void UIMLApplicationTerminateSomeApps()
+void UILauncherApplicationTerminateSomeApps()
 {
     //DLog(@"_openedApplications 1: %@", _openedApplications);
     //NSMutableArray *openedApplications = CFArrayCreateCopy(kCFAllocatorDefault, _openedApplications);
     _freeMemoryCount++;
     int count = _openedApplications.count;
     for (int i=0; i<=count; i++) {
-        UIMAApplication *maApp = CFArrayGetValueAtIndex(_openedApplications, 0);
+        UIChildApplication *maApp = CFArrayGetValueAtIndex(_openedApplications, 0);
         if (maApp != _currentMAApplication) {
         //DLog(@"Terminating app: %@", maApp);
             [maApp terminate];
@@ -122,23 +122,23 @@ void UIMLApplicationTerminateSomeApps()
     }
 }
 
-void UIMLApplicationPresentAppScreen(UIMAApplication *maApp, BOOL coldStart)
+void UILauncherApplicationPresentAppScreen(UIChildApplication *maApp, BOOL coldStart)
 {
     //DLog(@"uiApplication: %@", uiApplication);
-    //_uiMAApplication = maApp;
+    //_UIChildApplication = maApp;
     //[_uiApplication->_keyWindow bringSubviewToFront:_maAppView];
     _launcherView.hidden = YES;
     _UIApplicationEnterBackground();
     if (coldStart) {
         //DLog(@"%@", maApp->_name);
-        //UIMLApplicationCheckMemory();
+        //UILauncherApplicationCheckMemory();
         [_maAppView addSubview:maApp.defaultScreenView];
         long freeMemory = CFGetFreeMemory();
         DLog(@"%@ Free memory: %ld KB", maApp->_name, freeMemory);
         if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
             freeMemory < 5000 && (_freeMemoryCount % 2 == 1)) {
             DLog(@"Low memory");
-            UIMLApplicationTerminateSomeApps();
+            UILauncherApplicationTerminateSomeApps();
             freeMemory = CFGetFreeMemory();
             DLog(@"%@ Free memory 2: %ld KB", maApp->_name, freeMemory);
         }
@@ -152,7 +152,7 @@ void UIMLApplicationPresentAppScreen(UIMAApplication *maApp, BOOL coldStart)
 #endif
 }
 
-void UIMLApplicationHandleMessages()
+void UILauncherApplicationHandleMessages()
 {
 #ifdef NATIVE_APP
     if (!_childAppRunning) {
@@ -178,7 +178,7 @@ void UIMLApplicationHandleMessages()
 #endif
 }
 
-void UIMLApplicationShowLauncher()
+void UILauncherApplicationShowLauncher()
 {
     //DLog();
     if ([[_maAppView subviews] count] > 0) {
@@ -197,7 +197,7 @@ void UIMLApplicationShowLauncher()
 #endif
 }
 
-void UIMLApplicationGoBack()
+void UILauncherApplicationGoBack()
 {
     _maAppView.hidden = NO;
     if (!_launcherView.hidden) {
@@ -206,7 +206,7 @@ void UIMLApplicationGoBack()
             return;
         } else {
             //DLog(@"_currentMAApplication: %@", _currentMAApplication);
-            UIMLApplicationPresentAppScreen(_currentMAApplication, NO);
+            UILauncherApplicationPresentAppScreen(_currentMAApplication, NO);
         }
     } else {
         _maAppView.hidden = NO;
@@ -217,16 +217,16 @@ void UIMLApplicationGoBack()
         int currentAppIndex = _CFArrayGetIndexOfValue(_openedApplications, _currentMAApplication);
         //DLog(@"currentAppIndex: %d", currentAppIndex);
         if (currentAppIndex == 0) {
-            _uiMAApplication = _CFArrayGetLastValue(_openedApplications);
+            _UIChildApplication = _CFArrayGetLastValue(_openedApplications);
         } else {
-            _uiMAApplication = CFArrayGetValueAtIndex(_openedApplications, currentAppIndex-1);
-            //DLog(@"_uiMAApplication: %@", _uiMAApplication);
+            _UIChildApplication = CFArrayGetValueAtIndex(_openedApplications, currentAppIndex-1);
+            //DLog(@"_UIChildApplication: %@", _UIChildApplication);
         }
-        [_uiMAApplication setAsCurrent:YES];
+        [_UIChildApplication setAsCurrent:YES];
     }
 }
 
-void UIMLApplicationMoveCurrentAppToTop()
+void UILauncherApplicationMoveCurrentAppToTop()
 {
     //DLog(@"_currentMAApplication: %@", _currentMAApplication);
     if (!_launcherView.hidden) {
@@ -242,7 +242,7 @@ void UIMLApplicationMoveCurrentAppToTop()
     //DLog(@"_openedApplications: %@", _openedApplications);
 }
 
-void UIMLApplicationTerminateApps()
+void UILauncherApplicationTerminateApps()
 {
 #ifdef NATIVE_APP
     if ([_CAAnimatorNAConditionLock condition] == _CAAnimatorConditionLockHasWork) {
@@ -256,7 +256,7 @@ void UIMLApplicationTerminateApps()
     if (_currentMAApplication->_running) {
         IOPipeWriteMessage(MAPipeMessageTerminateApp, YES);
     }
-    for (UIMAApplication *maApp in _openedApplications) {
+    for (UIChildApplication *maApp in _openedApplications) {
         //DLog(@"maApp: %@", maApp);
         if (maApp != _currentMAApplication || !_currentMAApplication->_running) {
             [maApp terminate];

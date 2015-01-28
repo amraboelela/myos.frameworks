@@ -28,13 +28,13 @@ typedef enum {
     UIApplicationIconModeDelete
 } UIApplicationIconMode;
 
-@class UIMAApplication; 
+@class UIChildApplication; 
 //@class UIIconControl;
 
 @interface UIApplicationIcon : UIView {
 @package
     UIImageView *_iconImage;
-    UIMAApplication *_application;
+    UIChildApplication *_application;
     UILabel *_iconLabel;
     UIApplicationIconMode _mode;
     UIScrollView *_parentScrollView;
@@ -44,6 +44,6 @@ typedef enum {
 
 @property (nonatomic, assign) UIScrollView *parentScrollView;
 
-- (id)initWithApplication:(UIMAApplication *)application;
+- (id)initWithApplication:(UIChildApplication *)application;
 
 @end
