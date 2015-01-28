@@ -189,6 +189,30 @@ static void _EAGLCreateContext(EAGLContext *context)
     DLog(@"created GLX context: %p", context->_glXContext);
 }
 
+static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *otherContext)
+{
+    int attribList[] = {
+        GLX_DEPTH_SIZE, 1,
+        GLX_RGBA,
+        GLX_RED_SIZE, 1,
+        GLX_GREEN_SIZE, 1,
+        GLX_BLUE_SIZE, 1,
+        None
+    };
+    context->_window = [otherContext->_window retain];
+    context->_display = XOpenDisplay(NULL);
+    //Display *display = context->_window->display;
+    int screen = DefaultScreen(context->_display);
+    XVisualInfo *visualInfo;
+    visualInfo = glXChooseVisual(context->_display, screen, attribList);
+    if (!visualInfo) {
+        NSLog(@"glXChooseVisual failed");
+        return;
+    }
+    context->_glXContext = glXCreateContext(context->_display, visualInfo, NULL, GL_TRUE);
+    DLog(@"created GLX context: %p", context->_glXContext);
+}
+
 #endif
 
 static void _EAGLDestroyContext(EAGLContext *context)
