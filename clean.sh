@@ -16,29 +16,27 @@
 #
 
 source ${MYOS_PATH}/sdk/config.sh
-#echo BASE_OS: ${BASE_OS}
-#echo DEBUG_MODE: ${DEBUG_MODE}
 
 echo
 echo "****************************** Cleaning frameworks ******************************"
 
-rm ${MYOS_PATH}/frameworks/libs/*.so
+#rm ${MYOS_PATH}/frameworks/libs/*.so
 
-cd CoreFoundation
-make clean
-cd ..
+#cd CoreFoundation
+#make clean
+#cd ..
 
-cd Foundation
-make clean
-cd ..
+#cd Foundation
+#make clean
+#cd ..
 
-cd CoreGraphics
-make clean
-cd ..
+#cd CoreGraphics
+#make clean
+#cd ..
 
-cd CoreText
-make clean
-cd ..
+#cd CoreText
+#make clean
+#cd ..
 
 cd IOKit
 make clean

@@ -16,6 +16,7 @@
  */
 
 #import <CoreAnimation/CoreAnimation-private.h>
+#import <OpenGLES/EAGL-private.h>
 
 @implementation CABackingStore
 
