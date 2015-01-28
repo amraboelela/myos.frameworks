@@ -44,13 +44,13 @@ extern void EAGLGetVersion(unsigned int *major, unsigned int *minor);
     EAGLRenderingAPI API;
     EAGLSharegroup *_sharegroup;
     IOWindow *_window;
+    int _width;
+    int _height;
 #ifdef ANDROID
     EGLDisplay _eglDisplay;
     EGLConfig _eglFBConfig[1];
     EGLSurface _eglSurface;
     EGLContext _eglContext;
-    int _width;
-    int _height;
 #else
     GLXContext _glXContext;
     Display *_display;
