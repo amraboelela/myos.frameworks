@@ -214,7 +214,7 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
 }
 
 #endif
-
+/*
 static void _EAGLDestroyContext(EAGLContext *context)
 {
     if (context->_eglDisplay != EGL_NO_DISPLAY) {
@@ -227,7 +227,7 @@ static void _EAGLDestroyContext(EAGLContext *context)
         }
         eglTerminate(context->_eglDisplay);
     }
-}
+}*/
 
 static bool checkGLXExtension(const char* extName)
 {
