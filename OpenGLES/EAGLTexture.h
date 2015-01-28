@@ -16,7 +16,12 @@
  */
 
 #import <CoreGraphics/CoreGraphics.h>
+
+#ifdef ANDROID
 #import <GLES/gl.h>
+#else
+#import <GL/gl.h>
+#endif
 
 @interface EAGLTexture : NSObject
 {
