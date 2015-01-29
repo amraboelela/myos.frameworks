@@ -214,17 +214,17 @@ static void UIChildApplicationRunApp(NSString *appName)
     if (!_opened) {
         self.opened = YES;
         [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
-        //UILauncherApplicationPresentAppScreen(self, YES);
+        //UIParentApplicationPresentAppScreen(self, YES);
     } else {
         //DLog();
         _CFArrayMoveValueToTop(_openedApplications, self);
-        UILauncherApplicationPresentAppScreen(self, NO);
+        UIParentApplicationPresentAppScreen(self, NO);
     }
 }
 
 - (void)presentAppScreen
 {
-    UILauncherApplicationPresentAppScreen(self, YES);
+    UIParentApplicationPresentAppScreen(self, YES);
 }
 
 #pragma mark - Public methods
@@ -306,7 +306,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         [self setAsCurrent:NO];
         IOPipeWriteMessage(MAPipeMessageCharString, NO);
         IOPipeWriteCharString(_name);
-        UILauncherApplicationSetChildAppIsRunning(YES);
+        UIParentApplicationSetChildAppIsRunning(YES);
     }
 }
 
@@ -323,7 +323,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     _running = YES;
     //DLog(@"self: %@", self);
 #ifdef NATIVE_APP
-    EAGLLauncherSetPipes(_animationPipeRead, _animationPipeWrite);
+    EAGLParentSetPipes(_animationPipeRead, _animationPipeWrite);
     if (withSignal) {
         kill(_pid, SIGALRM);
     }

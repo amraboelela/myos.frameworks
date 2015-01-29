@@ -23,7 +23,7 @@ OBJECTS = \
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAOpenGLES
     LDLIBS+=-lEGL -lNAIOKit -lNACoreGraphics
-    OBJECTS+=EAGLLauncher.o
+    OBJECTS+=EAGLParent.o
 else
     LIB_NAME=OpenGLES
     LDLIBS+=-lIOKit -lCoreGraphics

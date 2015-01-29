@@ -22,7 +22,7 @@
 #import <GLES/gl.h>
 #endif
 
-#import <OpenGLES/EAGLLauncher.h>
+#import <OpenGLES/EAGLParent.h>
 #import <OpenGLES/EAGLChildApplication.h>
 
 

@@ -36,7 +36,7 @@
 #import <UIKit/UIViewAnimationGroup.h>
 
 #import <UIKit/UIChildApplication.h>
-#import <UIKit/UILauncherApplication.h>
+#import <UIKit/UIParentApplication.h>
 
 #import <UIKit/NSArray+UIKit.h>
 #import <UIKit/UIScroller.h>

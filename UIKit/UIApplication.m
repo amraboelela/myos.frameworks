@@ -193,7 +193,7 @@ static void _UIApplicationSetCurrentEventTouchedView()
 static void engine_term_display(engine* myEngine)
 {
     //DLog(@"engine_term_display");
-    UILauncherApplicationTerminateApps();
+    UIParentApplicationTerminateApps();
     [EAGLContext setCurrentContext:nil];
     exit(0);
 }
@@ -214,7 +214,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
                 IOWindow *window = IOWindowCreateSharedWindow();
                 IOWindowSetNativeWindow(app->window);
                 _CAAnimatorInitialize();
-                UILauncherApplicationInitialize();
+                UIParentApplicationInitialize();
                 [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
                 //DLog();
                 myEngine->context = _EAGLGetCurrentContext();
@@ -256,11 +256,11 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent *event)
             switch (keyCode) {
                 case AKEYCODE_BACK:
                     //DLog(@"Back button clicked");
-                    UILauncherApplicationGoBack();
+                    UIParentApplicationGoBack();
                     return 1;
                 case AKEYCODE_MENU:
                     //DLog(@"Menu button clicked");
-                    UILauncherApplicationShowLauncher();
+                    UIParentApplicationShowLauncher();
                     return 1;
                 default:
                     break;
@@ -283,7 +283,7 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent *event)
             //DLog(@"AMOTION_EVENT_ACTION_UP");
             IOPipeWriteMessage(MAPipeMessageEventActionUp, NO);
             _UITouchUpdatePhase(touch, UITouchPhaseEnded, screenLocation, timestamp);
-            UILauncherApplicationMoveCurrentAppToTop();
+            UIParentApplicationMoveCurrentAppToTop();
         } else if (action == AMOTION_EVENT_ACTION_DOWN) {
             //DLog(@"AMOTION_EVENT_ACTION_DOWN");
             IOPipeWriteMessage(MAPipeMessageEventActionDown, NO);
@@ -671,7 +671,7 @@ static int _UIApplicationHandleMessages()
 {
     IOPipeSetPipes(0, 0);
 #ifdef NATIVE_APP
-    EAGLLauncherSetPipes(0, 0);
+    EAGLParentSetPipes(0, 0);
 #endif
 }
 
@@ -714,7 +714,7 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
     }
     //DLog();
     _application = [[UIApplication alloc] init];
-    //UILauncherApplicationInitialize();
+    //UIParentApplicationInitialize();
     //DLog();
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
@@ -744,7 +744,7 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
             }
         }
         //DLog();
-        UILauncherApplicationHandleMessages();
+        UIParentApplicationHandleMessages();
         //DLog();
         [pool2 release];
     }

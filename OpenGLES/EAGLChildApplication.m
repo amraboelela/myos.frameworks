@@ -27,7 +27,7 @@
 int EAGLChildApplicationGenTexture()
 {
     //DLog();
-    IOPipeWriteMessageWithPipe(EAGLLauncherMessageGenTexture, YES, _kEAGLChildApplicationPipeWrite);
+    IOPipeWriteMessageWithPipe(EAGLParentMessageGenTexture, YES, _kEAGLChildApplicationPipeWrite);
     NSTimeInterval startTime = EAGLCurrentTime();
     int message;
     while (YES) {
@@ -56,7 +56,7 @@ int EAGLChildApplicationGenTexture()
 void EAGLChildApplicationLoadImage(int textureID, int width, int height, const GLvoid *pixels)
 {
     //DLog(@"pixels: %p", pixels);
-    IOPipeWriteMessageWithPipe(EAGLLauncherMessageLoadImage, NO, _kEAGLChildApplicationPipeWrite);
+    IOPipeWriteMessageWithPipe(EAGLParentMessageLoadImage, NO, _kEAGLChildApplicationPipeWrite);
     IOPipeWriteIntWithPipe(textureID, _kEAGLChildApplicationPipeWrite);
     IOPipeWriteIntWithPipe(width, _kEAGLChildApplicationPipeWrite);
     IOPipeWriteIntWithPipe(height, _kEAGLChildApplicationPipeWrite);
@@ -66,7 +66,7 @@ void EAGLChildApplicationLoadImage(int textureID, int width, int height, const G
 void EAGLChildApplicationDraw(int textureID, const GLvoid *texCoords, const GLvoid *vertices, GLfloat opacity)
 {
     //DLog();
-    IOPipeWriteMessageWithPipe(EAGLLauncherMessageDraw, NO, _kEAGLChildApplicationPipeWrite);
+    IOPipeWriteMessageWithPipe(EAGLParentMessageDraw, NO, _kEAGLChildApplicationPipeWrite);
     IOPipeWriteIntWithPipe(textureID, _kEAGLChildApplicationPipeWrite);
     IOPipeWriteDataWithPipe(texCoords, sizeof(GLfloat)*8, _kEAGLChildApplicationPipeWrite);
     IOPipeWriteDataWithPipe(vertices, sizeof(GLfloat)*8, _kEAGLChildApplicationPipeWrite);
@@ -77,7 +77,7 @@ void EAGLChildApplicationDraw(int textureID, const GLvoid *texCoords, const GLvo
 void EAGLChildApplicationSwapBuffers()
 {
     //DLog();
-    IOPipeWriteMessageWithPipe(EAGLLauncherMessageSwapBuffers, YES, _kEAGLChildApplicationPipeWrite);
+    IOPipeWriteMessageWithPipe(EAGLParentMessageSwapBuffers, YES, _kEAGLChildApplicationPipeWrite);
 }
 
 void EAGLChildApplicationDeleteTexture()

@@ -25,7 +25,7 @@ static BOOL _childAppRunning = NO;
 
 #pragma mark - Shared functions
 
-void EAGLLauncherSetChildAppIsRunning(BOOL isRunning)
+void EAGLParentSetChildAppIsRunning(BOOL isRunning)
 {
     //DLog();
     //_startTime = CACurrentMediaTime();
@@ -33,14 +33,14 @@ void EAGLLauncherSetChildAppIsRunning(BOOL isRunning)
     _childAppRunning = isRunning;
 }
 
-void EAGLLauncherSetPipes(int pipeRead, int pipeWrite)
+void EAGLParentSetPipes(int pipeRead, int pipeWrite)
 {
     //DLog(@"pipeRead: %d, pipeWrite: %d", pipeRead, pipeWrite);
     _pipeRead = pipeRead;
     _pipeWrite = pipeWrite;
 }
 
-void EAGLLauncherHandleMessages()
+void EAGLParentHandleMessages()
 {
     //DLog();
     if (!_childAppRunning) {
@@ -50,26 +50,26 @@ void EAGLLauncherHandleMessages()
 #ifdef NATIVE_APP
     int message = IOPipeReadMessageWithPipe(_pipeRead);
     switch (message) {
-        case EAGLLauncherMessageEndOfMessage:
-            //DLog(@"EAGLLauncherMessageEndOfMessage");
+        case EAGLParentMessageEndOfMessage:
+            //DLog(@"EAGLParentMessageEndOfMessage");
             break;
-        case EAGLLauncherMessageChildIsReady:
-            DLog(@"EAGLLauncherMessageChildIsReady");
+        case EAGLParentMessageChildIsReady:
+            DLog(@"EAGLParentMessageChildIsReady");
             break;
-        case EAGLLauncherMessageGenTexture:
-            //DLog(@"EAGLLauncherMessageGenTexture");
-            EAGLLauncherGenTexture();
+        case EAGLParentMessageGenTexture:
+            //DLog(@"EAGLParentMessageGenTexture");
+            EAGLParentGenTexture();
             break;
-        case EAGLLauncherMessageLoadImage:
-            //DLog(@"EAGLLauncherMessageLoadImage");
-            EAGLLauncherLoadImage();
+        case EAGLParentMessageLoadImage:
+            //DLog(@"EAGLParentMessageLoadImage");
+            EAGLParentLoadImage();
             break;
-        case EAGLLauncherMessageDraw:
-            //DLog(@"EAGLLauncherMessageDraw");
-            EAGLLauncherDraw();
+        case EAGLParentMessageDraw:
+            //DLog(@"EAGLParentMessageDraw");
+            EAGLParentDraw();
             break;
-        case EAGLLauncherMessageSwapBuffers:
-            //DLog(@"EAGLLauncherMessageSwapBuffers");
+        case EAGLParentMessageSwapBuffers:
+            //DLog(@"EAGLParentMessageSwapBuffers");
             _EAGLSwapBuffers();
             break;
         default:
@@ -78,7 +78,7 @@ void EAGLLauncherHandleMessages()
 #endif
 }
 
-void EAGLLauncherGenTexture()
+void EAGLParentGenTexture()
 {
     //DLog();
     GLuint textureID;
@@ -89,7 +89,7 @@ void EAGLLauncherGenTexture()
     IOPipeWriteMessageWithPipe(EAGLChildApplicationMessageEndOfMessage, NO, _pipeWrite);
 }
 
-void EAGLLauncherLoadImage()
+void EAGLParentLoadImage()
 {
     //DLog();
     //CATransactionGroup *group = [[CATransactionGroup alloc] init];
@@ -111,7 +111,7 @@ void EAGLLauncherLoadImage()
     free(pixels);
 }
 
-void EAGLLauncherDraw()
+void EAGLParentDraw()
 {
     //DLog();
     int i;
@@ -145,10 +145,10 @@ void EAGLLauncherDraw()
     glColor4f(opacity, opacity, opacity, opacity);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     //DLog();
-    //[_EAGLLauncherLock unlock];
+    //[_EAGLParentLock unlock];
 }
 
-void EAGLLauncherDeleteTexture()
+void EAGLParentDeleteTexture()
 {
     DLog();
 }

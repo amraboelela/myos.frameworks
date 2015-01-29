@@ -16,19 +16,19 @@
  */
 
 typedef enum {
-    EAGLLauncherMessageEndOfMessage,
-    EAGLLauncherMessageChildIsReady,
-    EAGLLauncherMessageGenTexture,
-    EAGLLauncherMessageLoadImage,
-    EAGLLauncherMessageDraw,
-    EAGLLauncherMessageSwapBuffers,
-    EAGLLauncherMessageDeleteTexture,
-} EAGLLauncherMessage;
+    EAGLParentMessageEndOfMessage,
+    EAGLParentMessageChildIsReady,
+    EAGLParentMessageGenTexture,
+    EAGLParentMessageLoadImage,
+    EAGLParentMessageDraw,
+    EAGLParentMessageSwapBuffers,
+    EAGLParentMessageDeleteTexture,
+} EAGLParentMessage;
 
-void EAGLLauncherSetChildAppIsRunning(BOOL isRunning);
-void EAGLLauncherHandleMessages();
-void EAGLLauncherSetPipes(int pipeRead, int pipeWrite);
-void EAGLLauncherGenTexture();
-void EAGLLauncherLoadImage();
-void EAGLLauncherDraw();
-void EAGLLauncherDeleteTexture();
+void EAGLParentSetChildAppIsRunning(BOOL isRunning);
+void EAGLParentHandleMessages();
+void EAGLParentSetPipes(int pipeRead, int pipeWrite);
+void EAGLParentGenTexture();
+void EAGLParentLoadImage();
+void EAGLParentDraw();
+void EAGLParentDeleteTexture();
