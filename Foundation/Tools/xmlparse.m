@@ -28,7 +28,7 @@
 #import	"Foundation/NSPathUtilities.h"
 #import	"Foundation/NSProcessInfo.h"
 #import	"Foundation/NSUserDefaults.h"
-#import "GNUstepBase/Additions.h"
+#import "Additions.h"
 
 @interface GSXMLParser (Loader)
 + (NSString*) loadEntity: (NSString*)publicId

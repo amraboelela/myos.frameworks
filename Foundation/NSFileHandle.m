@@ -32,7 +32,7 @@
 #import "Foundation/NSHost.h"
 #import "Foundation/NSFileHandle.h"
 #import "Foundation/NSPathUtilities.h"
-#import "GNUstepBase/NSString+GNUstepBase.h"
+#import "NSString+GNUstepBase.h"
 #import "GSPrivate.h"
 #import "GSNetwork.h"
 #import "GSTLS.h"

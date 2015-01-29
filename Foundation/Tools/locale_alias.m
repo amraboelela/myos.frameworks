@@ -33,7 +33,7 @@
 
 #import	"Foundation/NSAutoreleasePool.h"
 #import	"Foundation/NSDictionary.h"
-#import "GNUstepBase/GSLocale.h"
+#import "GSLocale.h"
 
 #define MAXSTRING 100
 

@@ -23,7 +23,7 @@
    */
 
 #import "Foundation/NSObject.h"
-#import "GNUstepBase/GSXML.h"
+#import "GSXML.h"
 
 @class	NSDictionary;
 @class	NSMutableArray;

@@ -41,7 +41,7 @@
 */
 
 #import "common.h"
-#import "GNUstepBase/Unicode.h"
+#import "Unicode.h"
 
 #ifndef	_XOPEN_SOURCE
 #define	_XOPEN_SOURCE 600
@@ -52,10 +52,10 @@
 #ifdef	HAVE_LIBXML
 
 // #undef	HAVE_LIBXML_SAX2_H
-#import "GNUstepBase/GSObjCRuntime.h"
-#import "GNUstepBase/NSObject+GNUstepBase.h"
-#import "GNUstepBase/GSMime.h"
-#import "GNUstepBase/GSXML.h"
+#import "GSObjCRuntime.h"
+#import "NSObject+GNUstepBase.h"
+#import "GSMime.h"
+#import "GSXML.h"
 #import "Foundation/NSArray.h"
 #import "Foundation/NSCalendarDate.h"
 #import "Foundation/NSCharacterSet.h"

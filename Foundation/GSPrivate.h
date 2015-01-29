@@ -54,7 +54,7 @@
 
 NSTimeInterval   GSPrivateTimeNow() GS_ATTRIB_PRIVATE;
 
-#include "GNUstepBase/GSObjCRuntime.h"
+#include "GSObjCRuntime.h"
 
 #include "Foundation/NSArray.h"
 

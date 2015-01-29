@@ -27,7 +27,7 @@
 #import	"Foundation/NSException.h"
 #import	"Foundation/NSFileManager.h"
 #import	"Foundation/NSProcessInfo.h"
-#import "GNUstepBase/Additions.h"
+#import "Additions.h"
 
 
 /** <p> This tool merges text property lists into a single property list.

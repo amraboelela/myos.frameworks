@@ -33,8 +33,8 @@
 #import "Foundation/NSSet.h"
 #import "Foundation/NSValue.h"
 #import "AGSParser.h"
-#import "GNUstepBase/NSString+GNUstepBase.h"
-#import "GNUstepBase/NSMutableString+GNUstepBase.h"
+#import "NSString+GNUstepBase.h"
+#import "NSMutableString+GNUstepBase.h"
 
 /**
  *  The AGSParser class parses Objective-C header and source files

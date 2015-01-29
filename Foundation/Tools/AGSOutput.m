@@ -32,8 +32,8 @@
 #import "Foundation/NSPathUtilities.h"
 #import "Foundation/NSUserDefaults.h"
 #import "AGSOutput.h"
-#import "GNUstepBase/NSString+GNUstepBase.h"
-#import "GNUstepBase/NSMutableString+GNUstepBase.h"
+#import "NSString+GNUstepBase.h"
+#import "NSMutableString+GNUstepBase.h"
 
 @interface AGSOutput (Private)
 - (NSString*) mergeMarkup: (NSString*)markup

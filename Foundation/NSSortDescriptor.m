@@ -31,7 +31,7 @@
 #import "Foundation/NSException.h"
 #import "Foundation/NSKeyValueCoding.h"
 
-#import "GNUstepBase/GSObjCRuntime.h"
+#import "GSObjCRuntime.h"
 #import "GSPrivate.h"
 #import "GSSorting.h"
 

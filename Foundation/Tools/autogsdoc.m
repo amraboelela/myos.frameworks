@@ -614,9 +614,9 @@
 #import "AGSOutput.h"
 #import "AGSIndex.h"
 #import "AGSHtml.h"
-#import "GNUstepBase/GSObjCRuntime.h"
-#import "GNUstepBase/NSString+GNUstepBase.h"
-#import "GNUstepBase/NSMutableString+GNUstepBase.h"
+#import "GSObjCRuntime.h"
+#import "NSString+GNUstepBase.h"
+#import "NSMutableString+GNUstepBase.h"
 
 /** Invokes the autogsdoc tool. */
 int

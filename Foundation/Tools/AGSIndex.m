@@ -26,8 +26,8 @@
 #import	"Foundation/NSAutoreleasePool.h"
 #import	"Foundation/NSDictionary.h"
 #import "AGSIndex.h"
-#import "GNUstepBase/NSString+GNUstepBase.h"
-#import "GNUstepBase/NSMutableString+GNUstepBase.h"
+#import "NSString+GNUstepBase.h"
+#import "NSMutableString+GNUstepBase.h"
 
 static int      XML_ELEMENT_NODE;
 static int      XML_TEXT_NODE;

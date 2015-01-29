@@ -28,10 +28,10 @@
 #import	"Foundation/NSUserDefaults.h"
 #import	"Foundation/NSFileHandle.h"
 #import	"Foundation/NSAutoreleasePool.h"
-#import "GNUstepBase/NSString+GNUstepBase.h"
-#import "GNUstepBase/GSMime.h"
+#import "NSString+GNUstepBase.h"
+#import "GSMime.h"
 #ifdef NeXT_Foundation_LIBRARY
-#import "GNUstepBase/Additions.h"
+#import "Additions.h"
 #endif
 
 #include	<ctype.h>
