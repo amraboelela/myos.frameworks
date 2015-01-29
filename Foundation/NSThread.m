@@ -46,6 +46,11 @@
 #import <pthread.h>
 #endif
 
+#ifndef ANDROID
+#include <unistd.h>
+#include <sys/syscall.h>
+#endif
+
 #if	defined(HAVE_SYS_FILE_H)
 #  include	<sys/file.h>
 #endif
@@ -326,7 +331,11 @@ inline NSThread *GSCurrentThread(void)
         thr = pthread_getspecific(thread_object_key);
         if ((nil == defaultThread) && IS_MAIN_PTHREAD) {
             defaultThread = [thr retain];
+#ifdef ANDROID
             defaultThread->_threadID = gettid();
+#else
+            defaultThread->_threadID = syscall(SYS_gettid);
+#endif
         }
     }
     assert(nil != thr && "No main thread");
@@ -699,7 +708,13 @@ static void unregisterActiveThread(NSThread *thread)
          NSStringFromClass([self class]),
          NSStringFromSelector(_cmd)];
     }
+    
+#ifdef ANDROID
     _threadID = gettid();
+#else
+    _threadID = syscall(SYS_gettid);
+#endif
+    
     [_target performSelector:_selector withObject:_arg];
 }
 
@@ -827,7 +842,11 @@ static void *nsthreadLauncher(void* thread)
     if (_stackSize > 0) {
         pthread_attr_setstacksize(&attr, _stackSize);
     }
+#ifdef ANDROID
     _threadID = gettid();
+#else
+    _threadID = syscall(SYS_gettid);
+#endif
     if (pthread_create(&thr, &attr, nsthreadLauncher, self)) {
         DESTROY(self);
         [NSException raise: NSInternalInconsistencyException
