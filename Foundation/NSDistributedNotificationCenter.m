@@ -43,7 +43,7 @@
 #import	"Foundation/NSHost.h"
 #import	"Foundation/NSPortNameServer.h"
 #import "Foundation/NSThread.h"
-#import	"../Tools/gdnc.h"
+#import	"Tools/gdnc.h"
 
 
 @interface	NSDistributedNotificationCenter (Private)

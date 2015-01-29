@@ -108,7 +108,7 @@
 #import	"GNUstepBase/NSMutableString+GNUstepBase.h"
 #import	"GNUstepBase/Unicode.h"
 
-#import "../GSPrivate.h"
+#import "GSPrivate.h"
 
 static	NSCharacterSet	*whitespace = nil;
 static	NSCharacterSet	*rfc822Specials = nil;

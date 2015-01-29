@@ -28,7 +28,7 @@
 #define __NSCFTYPE_H__
 
 #import <Foundation/NSObject.h>
-#import "GSObjCRuntime.h"
+#import <GNUstepBase/GSObjCRuntime.h>
 
 #include <CoreFoundation/CFBase.h>
 #include <CoreFoundation/CFRuntime.h>

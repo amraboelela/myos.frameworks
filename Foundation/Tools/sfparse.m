@@ -27,7 +27,7 @@
 #import	"Foundation/NSProcessInfo.h"
 #import	"Foundation/NSUserDefaults.h"
 #import	"Foundation/NSAutoreleasePool.h"
-#import "Additions.h"
+#import "GNUstepBase/Additions.h"
 
 int
 convert_unicode(NSArray *args)

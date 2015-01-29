@@ -65,26 +65,8 @@ BaseTools_AGSDOC_FLAGS = \
 	-DocumentationDirectory ../Documentation/BaseTools \
 	-HeaderDirectory ../Tools \
 	-Standards YES \
+	-DTDs ../Tools \
 	-WordMap '{\
-	FOUNDATION_EXPORT=extern;\
-	FOUNDATION_STATIC_INLINE="";\
-	GS_ATTRIB_DEPRECATED="";\
-	GS_DECLARE="";\
-	GS_EXPORT=extern;\
-	GS_GEOM_ATTR="";\
-	GS_GEOM_SCOPE=extern;\
-	GS_NORETURN_METHOD="";\
-	GS_RANGE_ATTR="";\
-	GS_RANGE_SCOPE=extern;\
-	GS_STATIC_INLINE="";\
-	GS_UNUSED_IVAR="";\
-	GS_ZONE_ATTR="";\
-	GS_ZONE_SCOPE=extern;\
-	INLINE=inline;\
-	NS_CONSUMED="";\
-	NS_CONSUMES_SELF="";\
-	NS_RETURNS_NOT_RETAINED="";\
-	NS_RETURNS_RETAINED="";\
 	WINAPI="";\
 	}' -Up BaseTools
 

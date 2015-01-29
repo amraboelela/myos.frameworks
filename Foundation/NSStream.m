@@ -22,19 +22,28 @@
 
    */
 
-#import "common.h"
+#include "common.h"
 
-#import "NSData.h"
-#import "NSArray.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSRunLoop.h"
-#import "NSException.h"
-#import "NSError.h"
-#import "NSValue.h"
-#import "NSHost.h"
-#import "NSByteOrder.h"
-#import "NSObject+GNUstepBase.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#if	defined(HAVE_FCNTL_H)
+#  include	<fcntl.h>
+#elif defined(HAVE_SYS_FCNTL_H)
+#  include	<sys/fcntl.h>
+#endif
+
+#import "Foundation/NSData.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSError.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSHost.h"
+#import "Foundation/NSByteOrder.h"
+#import "GNUstepBase/NSObject+GNUstepBase.h"
 
 #import "GSPrivate.h"
 #import "GSStream.h"

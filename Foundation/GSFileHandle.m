@@ -40,7 +40,7 @@
 #import "GSNetwork.h"
 #import "GSFileHandle.h"
 
-#import "../Tools/gdomap.h"
+#import "Tools/gdomap.h"
 
 #include <time.h>
 #include <sys/time.h>

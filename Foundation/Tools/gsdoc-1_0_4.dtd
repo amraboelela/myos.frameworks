@@ -27,7 +27,7 @@
 <!--
   gsdoc is an XML language - Typical usage:
   <?xml version="1.0"?>
-  <!DOCTYPE gsdoc PUBLIC "-//GNUstep//DTD gsdoc 1.0.0//EN"
+  <!DOCTYPE gsdoc PUBLIC "-//GNUstep//DTD gsdoc 1.0.3//EN"
 	"http://www.gnustep.org/gsdoc.xml">
   <gsdoc base="myDocName">
   </gsdoc>
@@ -149,7 +149,7 @@
 <!ELEMENT ref (%text;)*>
 <!ATTLIST ref
   id CDATA #REQUIRED
-  type (class|category|protocol|method|ivariable|function|type|macro|variable|constant|label|EOModel|EOEntity) "label"
+  type (class|category|protocol|method|ivariable|function|type|macro|variable|constant|label|EOModel|EOEntity|tool) "label"
   class CDATA #IMPLIED
 >
 
@@ -203,16 +203,17 @@
   id CDATA #IMPLIED
 >
 
-<!-- Entity for standard elements. -->
+<!-- OBSOLETE ... do not use -->
 <!ELEMENT GNUstep EMPTY>
 <!ELEMENT OpenStep EMPTY>
 <!ELEMENT NotOpenStep EMPTY>
 <!ELEMENT MacOS-X EMPTY>
 <!ELEMENT NotMacOS-X EMPTY>
 
-<!-- A standard that something is or isn't  compliant with. -->
+<!-- OBSOLETE ... do not use -->
 <!ENTITY % standard "GNUstep | OpenStep | NotOpenStep | MacOS-X | NotMacOS-X">
 
+<!-- OBSOLETE ... do not use -->
 <!ELEMENT standards (%standard;)*>
 
 <!--***** Argument elements. *****-->
@@ -244,7 +245,13 @@
   type CDATA #IMPLIED
   factory %boolean; "no"
   init %boolean; "no"
-  override (subclass|never) #IMPLIED
+  override (subclass|dummy|never) #IMPLIED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
 <!--***** Elements for definitions of classes, functions, etc. *****-->
@@ -252,17 +259,31 @@
 <!-- Show what header file something lives in. -->
 <!ELEMENT declared (#PCDATA)*>
 
-<!-- A macro definition. -->
+<!-- A macro definition.
+-->
 <!ELEMENT macro ((arg*, vararg?), declared?, desc?, standards?)>
 <!ATTLIST macro
   name CDATA #REQUIRED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
-<!-- A type definition. -->
+<!-- A type definition.
+-->
 <!ELEMENT type (declared?, desc?, standards?)>
 <!ATTLIST type
   name CDATA #REQUIRED
   type CDATA #REQUIRED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
 <!-- Variable definition.
@@ -273,6 +294,12 @@
   name CDATA #REQUIRED
   type CDATA #REQUIRED
   value CDATA #IMPLIED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
 <!-- Ivariable definition.
@@ -281,7 +308,13 @@
 <!ATTLIST ivariable
   name CDATA #REQUIRED
   type CDATA #REQUIRED
-  validity (public|protected|private) "public"
+  validity (public|package|protected|private) "public"
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
 <!-- Constant definition.
@@ -293,35 +326,69 @@
   type CDATA #REQUIRED
   value CDATA #IMPLIED
   role (except|defaults|notify|key) #IMPLIED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
-<!-- A function definition. -->
+<!-- A function definition.
+-->
 <!ELEMENT function ((arg*, vararg?), declared?, desc?, standards?)>
 <!ATTLIST function
   name CDATA #REQUIRED
   type CDATA #REQUIRED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
-<!-- Protocol definition. -->
+<!-- Protocol definition.
+-->
 <!ELEMENT protocol (declared?, conform*, desc?, method*, standards?)>
 <!ATTLIST protocol
   name CDATA #REQUIRED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
-<!-- Category definition. -->
+<!-- Category definition.
+-->
 <!ELEMENT category (declared?, conform*, desc?, method*, standards?)>
 <!ATTLIST category
   name CDATA #REQUIRED
   class CDATA #REQUIRED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
-<!-- Show a protocol a class conforms to. -->
+<!-- Show a protocol a class conforms to.
+-->
 <!ELEMENT conform (#PCDATA)*>
 
 <!ELEMENT class (declared?, conform*, desc?, ivariable*, method*, standards?)>
 <!ATTLIST class
   name CDATA #REQUIRED
   super CDATA #IMPLIED
+  gvadd CDATA #IMPLIED
+  gvdep CDATA #IMPLIED
+  gvrem CDATA #IMPLIED
+  ovadd CDATA #IMPLIED
+  ovdep CDATA #IMPLIED
+  ovrem CDATA #IMPLIED
 >
 
 <!--***** Elements for definitions of EOModels, etc. *****-->
@@ -493,8 +560,10 @@
 -->
 <!ELEMENT index EMPTY>
 <!ATTLIST index
-  type (class | category | protocol | method | ivariable | function | type | macro | variable | constant | EOModel | EOEntity | label | title) "label"
+  type (class | category | protocol | method | ivariable | function | type | macro | variable | constant | EOModel | EOEntity | label | title | tool) "label"
   scope (file | project | global) "file"
+  style ( normal | bare ) "normal"
+  target CDATA #IMPLIED
 >
 
 
@@ -536,7 +605,7 @@
 <!--***** The topmost structures for the document. *****-->
 
 <!-- The head containing general information about the document. -->
-<!ELEMENT head (title, author+, version?, date?, abstract?, copy?)>
+<!ELEMENT head (title, author*, version?, date?, abstract?, copy?)>
 
 <!-- The main part of the document. -->
 <!ELEMENT body (front?, chapter+, back?)>

@@ -64,7 +64,7 @@
 /*
  *	Protocol definition stuff for talking to gdomap process.
  */
-#include        "../Tools/gdomap.h"
+#include        "Tools/gdomap.h"
 
 #define stringify_it(X) #X
 #define	make_gdomap_port(X)	stringify_it(X)

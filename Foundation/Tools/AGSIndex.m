@@ -26,8 +26,8 @@
 #import	"Foundation/NSAutoreleasePool.h"
 #import	"Foundation/NSDictionary.h"
 #import "AGSIndex.h"
-#import "NSString+GNUstepBase.h"
-#import "NSMutableString+GNUstepBase.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
+#import "GNUstepBase/NSMutableString+GNUstepBase.h"
 
 static int      XML_ELEMENT_NODE;
 static int      XML_TEXT_NODE;
@@ -83,7 +83,7 @@ mergeDictionaries(NSMutableDictionary *dst, NSDictionary *src, BOOL override)
 	    {
 	      if ([s isKindOfClass: [NSString class]] == NO)
 		{
-		  NSLog(@"Class missmatch in merge for %@.", stack);
+		  NSLog(@"Class mismatch in merge for %@.", stack);
 		}
 	      else if ([d isEqual: s] == NO)
 		{
@@ -93,7 +93,7 @@ mergeDictionaries(NSMutableDictionary *dst, NSDictionary *src, BOOL override)
 		    }
 		  else
 		    {
-		      NSLog(@"String missmatch in merge for %@. S:%@, D:%@",
+		      NSLog(@"String mismatch in merge for %@. S:%@, D:%@",
 			stack, s, d);
 		      [dst setObject: s forKey: k];
 		    }
@@ -103,7 +103,7 @@ mergeDictionaries(NSMutableDictionary *dst, NSDictionary *src, BOOL override)
 	    {
 	      if ([s isKindOfClass: [NSArray class]] == NO)
 		{
-		  NSLog(@"Class missmatch in merge for %@.", stack);
+		  NSLog(@"Class mismatch in merge for %@.", stack);
 		}
 	      else if ([d isEqual: s] == NO)
 		{
@@ -113,7 +113,7 @@ mergeDictionaries(NSMutableDictionary *dst, NSDictionary *src, BOOL override)
 		    }
 		  else
 		    {
-		      NSLog(@"Array missmatch in merge for %@. S:%@, D:%@",
+		      NSLog(@"Array mismatch in merge for %@. S:%@, D:%@",
 			stack, s, d);
 		    }
 		}
@@ -122,7 +122,7 @@ mergeDictionaries(NSMutableDictionary *dst, NSDictionary *src, BOOL override)
 	    {
 	      if ([s isKindOfClass: [NSDictionary class]] == NO)
 		{
-		  NSLog(@"Class missmatch in merge for %@.", stack);
+		  NSLog(@"Class mismatch in merge for %@.", stack);
 		}
 	      else
 		{

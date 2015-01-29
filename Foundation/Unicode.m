@@ -44,7 +44,7 @@
 #import "GNUstepBase/NSLock+GNUstepBase.h"
 #import "GNUstepBase/Unicode.h"
 
-#import "../GSPrivate.h"
+#import "GSPrivate.h"
 
 #include <stdio.h>
 
