@@ -26,12 +26,12 @@
 
 #import "common.h"
 #ifndef NeXT_Foundation_LIBRARY
-#import "NSException.h"
-#import "NSRange.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSRange.h"
 #endif
 
-#import "GSObjCRuntime.h"
-#import "GCObject.h"
+#import "GNUstepBase/GSObjCRuntime.h"
+#import "GNUstepBase/GCObject.h"
 
 @implementation GCArray
 
@@ -408,7 +408,7 @@ static Class	gcClass = 0;
   _count -= range.length;
 }
 
-- (void)replaceObjectAtIndex:(NSUInteger)index  withObject:(id)anObject
+- (void) replaceObjectAtIndex: (NSUInteger)index  withObject: (id)anObject
 {
   if (anObject == nil)
     {

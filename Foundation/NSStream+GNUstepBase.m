@@ -24,8 +24,8 @@
 */
 
 #import "common.h"
-#import "NSObject+GNUstepBase.h"
-#import "NSStream+GNUstepBase.h"
+#import "GNUstepBase/NSObject+GNUstepBase.h"
+#import "GNUstepBase/NSStream+GNUstepBase.h"
 
 /* Code used in GNUstepBase
  */

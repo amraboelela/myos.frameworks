@@ -24,12 +24,12 @@
 
 */
 #import "common.h"
-#import "NSArray.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSPathUtilities.h"
-#import "NSSet.h"
-#import "NSBundle+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSSet.h"
+#import "GNUstepBase/NSBundle+GNUstepBase.h"
 
 @implementation NSBundle(GNUstepBase)
 

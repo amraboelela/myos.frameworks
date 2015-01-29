@@ -23,8 +23,8 @@
 
 */
 #import "common.h"
-#import "NSException.h"
-#import "NSArray+GNUstepBase.h"
+#import "Foundation/NSException.h"
+#import "GNUstepBase/NSArray+GNUstepBase.h"
 #import "GSPrivate.h"
 
 @implementation NSArray (GNUstepBase)

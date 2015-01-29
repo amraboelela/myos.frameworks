@@ -25,9 +25,9 @@
 
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSSet.h"
-#import "NSProcessInfo+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSSet.h"
+#import "GNUstepBase/NSProcessInfo+GNUstepBase.h"
 
 #include <stdio.h>
 

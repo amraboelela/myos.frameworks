@@ -48,7 +48,7 @@
         </desc>
       </deflist>
    </chapter>
-   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+   $Date: 2014-03-11 02:46:54 -0700 (Tue, 11 Mar 2014) $ $Revision: 37740 $
 */
 
 #import "common.h"
@@ -84,31 +84,31 @@
 
 #include <ctype.h>
 
-#import	"NSArray.h"
-#import	"NSAutoreleasePool.h"
-#import	"NSCharacterSet.h"
-#import	"NSData.h"
-#import	"NSDictionary.h"
-#import	"NSEnumerator.h"
-#import	"NSException.h"
-#import	"NSHost.h"
-#import	"NSRunLoop.h"
-#import	"NSScanner.h"
-#import	"NSStream.h"
-#import	"NSTimer.h"
-#import	"NSUserDefaults.h"
-#import	"NSValue.h"
-#import	"GSObjCRuntime.h"
-#import	"GSMime.h"
-#import	"GSXML.h"
-#import	"NSObject+GNUstepBase.h"
-#import	"NSData+GNUstepBase.h"
-#import	"NSDebug+GNUstepBase.h"
-#import	"NSString+GNUstepBase.h"
-#import	"NSMutableString+GNUstepBase.h"
-#import	"Unicode.h"
+#import	"Foundation/NSArray.h"
+#import	"Foundation/NSAutoreleasePool.h"
+#import	"Foundation/NSCharacterSet.h"
+#import	"Foundation/NSData.h"
+#import	"Foundation/NSDictionary.h"
+#import	"Foundation/NSEnumerator.h"
+#import	"Foundation/NSException.h"
+#import	"Foundation/NSHost.h"
+#import	"Foundation/NSRunLoop.h"
+#import	"Foundation/NSScanner.h"
+#import	"Foundation/NSStream.h"
+#import	"Foundation/NSTimer.h"
+#import	"Foundation/NSUserDefaults.h"
+#import	"Foundation/NSValue.h"
+#import	"GNUstepBase/GSObjCRuntime.h"
+#import	"GNUstepBase/GSMime.h"
+#import	"GNUstepBase/GSXML.h"
+#import	"GNUstepBase/NSObject+GNUstepBase.h"
+#import	"GNUstepBase/NSData+GNUstepBase.h"
+#import	"GNUstepBase/NSDebug+GNUstepBase.h"
+#import	"GNUstepBase/NSString+GNUstepBase.h"
+#import	"GNUstepBase/NSMutableString+GNUstepBase.h"
+#import	"GNUstepBase/Unicode.h"
 
-#import "GSPrivate.h"
+#import "../GSPrivate.h"
 
 static	NSCharacterSet	*whitespace = nil;
 static	NSCharacterSet	*rfc822Specials = nil;
@@ -509,7 +509,7 @@ selectCharacterSet(NSString *str, NSData **d)
  * For an ascii word, we just return the data.
  */
 static NSData*
-wordData(NSString *word)
+wordData(NSString *word, BOOL *encoded)
 {
   NSData	*d = nil;
   NSString	*charset;
@@ -517,6 +517,7 @@ wordData(NSString *word)
   charset = selectCharacterSet(word, &d);
   if ([charset isEqualToString: @"us-ascii"] == YES)
     {
+      *encoded = NO;
       return d;
     }
   else
@@ -525,6 +526,7 @@ wordData(NSString *word)
       char		buf[len + 1];
       NSMutableData	*md;
 
+      *encoded = YES;
       [charset getCString: buf
 		maxLength: len + 1
 		 encoding: NSISOLatin1StringEncoding];
@@ -2324,7 +2326,7 @@ NSDebugMLLog(@"GSMime", @"Header parsed - %@", info);
  * header (which are treated as text/plain) should use the specified
  * characterset rather than the default (us-ascii).<br />
  * This also controls the parsing of headers ... in a legal MIME document
- * these must consst solely of us-ascii characters, but setting a different
+ * these must consist solely of us-ascii characters, but setting a different
  * default characterset (such as latin1) will permit many illegal header
  * lines (produced by faulty mail clients) to be parsed.<br />
  * HTTP requests use headers in the latin1 characterset,  so this is the
@@ -2370,9 +2372,13 @@ NSDebugMLLog(@"GSMime", @"Header parsed - %@", info);
 {
   DESTROY(child);
   child = [GSMimeParser new];
-  if (flags.buggyQuotes == 1)
+  if (1 == flags.buggyQuotes)
     {
       [child setBuggyQuotes: YES];
+    }
+  if (1 == flags.isHttp)
+    {
+      [child setIsHttp];
     }
   /*
    * Tell child parser the default encoding to use.
@@ -2916,33 +2922,54 @@ unfold(const unsigned char *src, const unsigned char *end, BOOL *folded)
 	   */
 	  if (src > beg)
 	    {
-	      s = [NSStringClass allocWithZone: NSDefaultMallocZone()];
-	      if (flags.isHttp == 1)
+              s = nil;
+	      if (1 == flags.isHttp)
 		{
-		  s = [s initWithBytes: beg
-				length: src - beg
-			      encoding: NSISOLatin1StringEncoding];
+                  /* Old web code tends to use latin1 (and RFCs say we
+                   * should use latin1 for headers).  However newer systems
+                   * tend to use utf-8. We try any explicitly set encoding,
+                   * then the modern utf-8, and finally fall back to latin1.
+                   */
+                  if (NSUTF8StringEncoding != _defaultEncoding)
+                    {
+                      s = [NSStringClass allocWithZone: NSDefaultMallocZone()];
+                      s = [s initWithBytes: beg
+                                    length: src - beg
+                                  encoding: _defaultEncoding];
+                    }
+                  if (nil == s)
+                    {
+                      s = [NSStringClass allocWithZone: NSDefaultMallocZone()];
+                      s = [s initWithBytes: beg
+                                    length: src - beg
+                                  encoding: NSUTF8StringEncoding];
+                    }
+                  if (nil == s)
+                    {
+                      s = [NSStringClass allocWithZone: NSDefaultMallocZone()];
+                      s = [s initWithBytes: beg
+                                    length: src - beg
+                                  encoding: NSISOLatin1StringEncoding];
+                    }
 		}
 	      else
 		{
+                  s = [NSStringClass allocWithZone: NSDefaultMallocZone()];
 		  s = [s initWithBytes: beg
 				length: src - beg
 			      encoding: NSASCIIStringEncoding];
-		}
-	      if (s == nil && _defaultEncoding != NSASCIIStringEncoding)
-		{
-		  s = [NSStringClass allocWithZone: NSDefaultMallocZone()];
-		  s = [s initWithBytes: beg
-				length: src - beg
-			      encoding: _defaultEncoding];
-		  if (s == nil && _defaultEncoding != NSUTF8StringEncoding)
-		    {
-		      s = [NSStringClass allocWithZone: NSDefaultMallocZone()];
-		      s = [s initWithBytes: beg
-				    length: src - beg
-				  encoding: NSUTF8StringEncoding];
-		    }
-		}
+                  if (nil == s && _defaultEncoding != NSASCIIStringEncoding)
+                    {
+                      /* The parser has been explicitly set to accept an
+                       * alternative coding ... Try the encoding we were
+                       * given.
+                       */
+                      s = [NSStringClass allocWithZone: NSDefaultMallocZone()];
+                      s = [s initWithBytes: beg
+                                    length: src - beg
+                                  encoding: _defaultEncoding];
+                    }
+                }
               if (nil == s)
                 {
                   NSLog(@"Bad header ... illegal characters in %@",
@@ -3014,6 +3041,14 @@ unfold(const unsigned char *src, const unsigned char *end, BOOL *folded)
 		  NSLog(@"Bad encoded word - data terminator missing");
 		  break;
 		}
+              /* If we are expecting to have white space after an encoded
+               * word, we must get rid of it between words.
+               */
+              if (1 == flags.encodedWord && expect > 0)
+                {
+                  [hdr deleteCharactersInRange:
+                    NSMakeRange([hdr length] - expect, expect)];
+                }
 	      /* If the data part is not empty, decode it and append to header.
 	       */
 	      if (tmp > src)
@@ -3033,6 +3068,8 @@ unfold(const unsigned char *src, const unsigned char *end, BOOL *folded)
 	       */
 	      src = tmp + 2;
 	      beg = src;
+              flags.encodedWord = 1;    // We just parsed an encoded word
+              expect = 0;               // No space expected after word yet
 	      continue;
 	    }
 	  else
@@ -3048,6 +3085,8 @@ unfold(const unsigned char *src, const unsigned char *end, BOOL *folded)
 		   * between headers and body.
 		   */
 		  flags.inBody = 1;
+		  flags.encodedWord = 0;
+                  expect = 0;
 		  input = src - bytes;
 		  return nil;
 		}
@@ -3061,15 +3100,36 @@ unfold(const unsigned char *src, const unsigned char *end, BOOL *folded)
 		  /* End of line ... return this header.
 		   */
 		  input = src - bytes;
+		  flags.encodedWord = 0;
+                  expect = 0;
 		  return hdr;
 		}
 	      /* Folded line ... add space at fold and continue parsing.
 	       */
 	      [hdr appendString: @" "];
+              if (1 == flags.encodedWord)
+                {
+                  /* NB Space is ignored between encoded words;
+                   * count expected space but don't reset flag.
+                   */
+                  expect++;
+                }
 	      beg = src;
 	      continue;
 	    }
 	}
+      else if (1 == flags.encodedWord)
+        {
+          if (isspace(src[0]))
+            {
+              expect++;                 // Count expected space after word
+            }
+          else
+            {
+              flags.encodedWord = 0;    // No longer in encoded word
+              expect = 0;
+            }
+        }
       src++;
     }
 
@@ -3676,13 +3736,18 @@ static NSUInteger
 appendString(NSMutableData *m, NSUInteger offset, NSUInteger fold,
   NSString *str, BOOL *ok)
 {
-  NSUInteger      pos = 0;
-  NSUInteger      size = [str length];
+  NSUInteger    pos = 0;
+  NSUInteger    size = [str length];
+  BOOL          hadEncodedWord = NO;
+  BOOL          needSpace = NO;
 
   *ok = YES;
   while (pos < size)
     {
       NSRange   r = NSMakeRange(pos, size - pos);
+      NSString  *s = nil;
+      NSData    *d = nil;
+      BOOL      e = NO;
 
       r = [str rangeOfCharacterFromSet: whitespace
                                options: NSLiteralSearch
@@ -3691,7 +3756,7 @@ appendString(NSMutableData *m, NSUInteger offset, NSUInteger fold,
         {
           /* Found space at the start of the string, so we reduce
            * it to a single space in the output, or omit it entirely
-           * if the string is nothing but space.
+           * if the string is contains nothing more but space.
            */
           pos++;
           while (pos < size
@@ -3701,37 +3766,60 @@ appendString(NSMutableData *m, NSUInteger offset, NSUInteger fold,
             }
           if (pos < size)
             {
-              offset = appendBytes(m, offset, fold, " ", 1);
+              needSpace = YES;  // We need a space before the next word.
             }
         }
       else if (r.length == 0)
         {
-          NSString      *sub;
-          NSData        *d;
-
-          /* No space found ... we must output the entire string without
-           * folding it.
+          /* No more space found ... we must output the remaining string
+           * without folding it.
            */
-          sub = [str substringWithRange: NSMakeRange(pos, size - pos)];
+          s = [str substringWithRange: NSMakeRange(pos, size - pos)];
           pos = size;
-          d = wordData(sub);
-          offset = appendBytes(m, offset, fold, [d bytes], [d length]);
+          d = wordData(s, &e);
         }
       else
         {
-          NSString      *sub;
-          NSData        *d;
-
-          /* Output the substring up to the first space.
+          /* Output the substring up to the next space.
            */
-          sub = [str substringWithRange: NSMakeRange(pos, r.location - pos)];
+          s = [str substringWithRange: NSMakeRange(pos, r.location - pos)];
           pos = r.location;
-          d = wordData(sub);
-          offset = appendBytes(m, offset, fold, [d bytes], [d length]);
+          d = wordData(s, &e);
         }
-      if (fold > 0 && offset > fold)
+      if (nil != d)
         {
-          *ok = NO;
+          /* We have a 'word' to output ... do that after dealing with any
+           * space needede between the last word and the new one.
+           */
+          if (YES == needSpace)
+            {
+              if (YES == e && YES == hadEncodedWord)
+                {
+                  /* We can't have space between two encoded words, so
+                   * we incorporate the space at the start of the next
+                   * encoded word.
+                   */
+                  s = [@" " stringByAppendingString: s];
+                  d = wordData(s, &e);
+                }
+              else
+                {
+                  /* Add the needed space before the next word.
+                   */
+                  offset = appendBytes(m, offset, fold, " ", 1);
+                  if (fold > 0 && offset > fold)
+                    {
+                      *ok = NO;
+                    }
+                }
+              needSpace = NO;
+            }
+          hadEncodedWord = e;
+          offset = appendBytes(m, offset, fold, [d bytes], [d length]);
+          if (fold > 0 && offset > fold)
+            {
+              *ok = NO;
+            }
         }
     }
   return offset;
@@ -4309,9 +4397,10 @@ appendString(NSMutableData *m, NSUInteger offset, NSUInteger fold,
 }
 
 /**
- * Converts the base64 encoded data in source to a decoded ASCII string
- * using the +decodeBase64: method.  If the encoded data does not represent
- * an ASCII string, you should use the +decodeBase64: method directly.
+ * Converts the base64 encoded data in source to a decoded ASCII or UTF8
+ * string using the +decodeBase64: method.  If the encoded data does not
+ * represent an ASCII or UTF8 string, you should use the +decodeBase64:
+ * method directly.
  */
 + (NSString*) decodeBase64String: (NSString*)source
 {
@@ -4322,7 +4411,7 @@ appendString(NSMutableData *m, NSUInteger offset, NSUInteger fold,
   if (d != nil)
     {
       r = [NSStringClass allocWithZone: NSDefaultMallocZone()];
-      r = [r initWithData: d encoding: NSASCIIStringEncoding];
+      r = [r initWithData: d encoding: NSUTF8StringEncoding];
       IF_NO_GC([r autorelease];)
     }
   return r;
@@ -4374,13 +4463,13 @@ appendString(NSMutableData *m, NSUInteger offset, NSUInteger fold,
 }
 
 /**
- * Converts the ASCII string source into base64 encoded data using the
- * +encodeBase64: method.  If the original data is not an ASCII string,
- * you should use the +encodeBase64: method directly.
+ * Converts the ASCII or UTF8 string source into base64 encoded data using
+ * the +encodeBase64: method.  If the original data is not an ASCII or UTF8
+ * string, you should use the +encodeBase64: method directly.
  */
 + (NSString*) encodeBase64String: (NSString*)source
 {
-  NSData	*d = [source dataUsingEncoding: NSASCIIStringEncoding];
+  NSData	*d = [source dataUsingEncoding: NSUTF8StringEncoding];
   NSString	*r = nil;
 
   d = [self encodeBase64: d];
@@ -5458,21 +5547,21 @@ appendString(NSMutableData *m, NSUInteger offset, NSUInteger fold,
 
 - (NSString*) description
 {
-    NSMutableString	*desc;
-    NSDictionary *locale;
-    
-    desc = [NSMutableString
-            stringWithFormat: @"GSMimeDocument <0x%"PRIxPTR"> -\n",
-            (NSUInteger)self];
-    locale = [[NSUserDefaults standardUserDefaults] dictionaryRepresentation];
-    [desc appendString: [headers descriptionWithLocale: locale]];
-    [desc appendFormat: @"\nDocument content -\n%@", content];
-    return desc;
+  NSMutableString	*desc;
+  NSDictionary		*locale;
+
+  desc = [NSMutableString
+    stringWithFormat: @"GSMimeDocument <0x%"PRIxPTR"> -\n",
+    (NSUInteger)self];
+  locale = [[NSUserDefaults standardUserDefaults] dictionaryRepresentation];
+  [desc appendString: [headers descriptionWithLocale: locale]];
+  [desc appendFormat: @"\nDocument content -\n%@", content];
+  return desc;
 }
 
-- (NSUInteger)hash
+- (NSUInteger) hash
 {
-    return [[self content] hash];
+  return [[self content] hash];
 }
 
 /**

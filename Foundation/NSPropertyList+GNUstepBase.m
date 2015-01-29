@@ -24,18 +24,18 @@
 */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSCharacterSet.h"
-#import "NSData.h"
-#import "NSDate.h"
-#import "NSDictionary.h"
-#import "NSPropertyList.h"
-#import "NSString.h"
-#import "NSTimeZone.h"
-#import "NSUserDefaults.h"
-#import "NSValue.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSCharacterSet.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSPropertyList.h"
+#import "Foundation/NSString.h"
+#import "Foundation/NSTimeZone.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/NSValue.h"
 
-#import "GSObjCRuntime.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 #if	defined(NeXT_Foundation_LIBRARY)
 

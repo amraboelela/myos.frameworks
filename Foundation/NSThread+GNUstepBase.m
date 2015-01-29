@@ -24,7 +24,7 @@
 */
 
 #import "common.h"
-#import "NSThread.h"
+#import "Foundation/NSThread.h"
 
 #if	defined(NeXT_Foundation_LIBRARY)
 

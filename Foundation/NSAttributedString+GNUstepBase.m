@@ -23,10 +23,10 @@
 
 */
 #import "common.h"
-#import "NSDebug.h"
-#import "NSException.h"
-#import "NSAttributedString+GNUstepBase.h"
-#import "NSDebug+GNUstepBase.h"
+#import "Foundation/NSDebug.h"
+#import "Foundation/NSException.h"
+#import "GNUstepBase/NSAttributedString+GNUstepBase.h"
+#import "GNUstepBase/NSDebug+GNUstepBase.h"
 
 @implementation	NSAttributedString (GNUstepBase)
 - (NSAttributedString*) attributedSubstringWithRange: (NSRange)aRange

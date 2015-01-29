@@ -27,13 +27,13 @@
    */
 
 #import "common.h"
-#import "GSFunctions.h"
-#import "NSDebug+GNUstepBase.h"
+#import "GNUstepBase/GSFunctions.h"
+#import "GNUstepBase/NSDebug+GNUstepBase.h"
 #ifndef NeXT_Foundation_LIBRARY
-#import "NSArray.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSFileManager.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileManager.h"
 #endif
 
 NSString *

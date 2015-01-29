@@ -30,12 +30,12 @@
 
 #import "common.h"
 #ifndef NeXT_Foundation_LIBRARY
-#import "NSAutoreleasePool.h"
-#import "NSNotification.h"
-#import "NSThread.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSThread.h"
 #endif
 
-#import "GCObject.h"
+#import "GNUstepBase/GCObject.h"
 
 #include <pthread.h>
 

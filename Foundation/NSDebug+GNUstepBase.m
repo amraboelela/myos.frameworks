@@ -27,7 +27,7 @@
    */
 
 #import "common.h"
-#import "NSDebug+GNUstepBase.h"
+#import "GNUstepBase/NSDebug+GNUstepBase.h"
 
 NSString*
 GSDebugFunctionMsg(const char *func, const char *file, int line, NSString *fmt)

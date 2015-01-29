@@ -23,12 +23,12 @@
 
 */
 #import "common.h"
-#import "NSArray.h"
-#import "NSException.h"
-#import "NSLock.h"
-#import "NSObject+GNUstepBase.h"
-#import "NSDebug+GNUstepBase.h"
-#import "NSThread+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSLock.h"
+#import "GNUstepBase/NSObject+GNUstepBase.h"
+#import "GNUstepBase/NSDebug+GNUstepBase.h"
+#import "GNUstepBase/NSThread+GNUstepBase.h"
 
 /**
  * Extension methods for the NSObject class

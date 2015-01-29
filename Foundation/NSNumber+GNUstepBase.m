@@ -26,7 +26,7 @@
 
 #include <ctype.h>
 
-#import "NSNumber+GNUstepBase.h"
+#import "GNUstepBase/NSNumber+GNUstepBase.h"
 
 /**
  * GNUstep specific (non-standard) additions to the NSNumber class.

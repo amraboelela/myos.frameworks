@@ -26,11 +26,11 @@
 
 #if	defined(NeXT_Foundation_LIBRARY)
 
-#import "NSByteOrder.h"
-#import "NSHost.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSHost.h"
 #import "GSNetwork.h"
 #import "GSPrivate.h"
-#import "NSFileHandle+GNUstepBase.h"
+#import "GNUstepBase/NSFileHandle+GNUstepBase.h"
 
 /* Not defined on Solaris 2.7 */
 #ifndef INADDR_NONE

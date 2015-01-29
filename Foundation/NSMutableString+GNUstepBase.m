@@ -25,8 +25,8 @@
 #import "common.h"
 #include <ctype.h>
 
-#import "NSException.h"
-#import "NSMutableString+GNUstepBase.h"
+#import "Foundation/NSException.h"
+#import "GNUstepBase/NSMutableString+GNUstepBase.h"
 
 /* Test for ASCII whitespace which is safe for unicode characters */
 #define	space(C)	((C) > 127 ? NO : isspace(C))

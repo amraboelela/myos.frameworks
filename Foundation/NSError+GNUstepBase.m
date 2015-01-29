@@ -26,8 +26,8 @@
 #import "common.h"
 #include <stdio.h>
 
-#import "NSDictionary.h"
-#import "NSError.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSError.h"
 #import "GSPrivate.h"
 
 /**
