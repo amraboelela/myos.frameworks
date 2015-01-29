@@ -199,5 +199,6 @@ OBJECTS = \
     GSStream.o \
     GSTLS.o \
     GSShellSort.o \
+    GSTimSort.o \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared
