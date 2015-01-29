@@ -31,8 +31,8 @@
 
 #ifndef __NSLock_h_GNUSTEP_BASE_INCLUDE
 #define __NSLock_h_GNUSTEP_BASE_INCLUDE
-#import  <GNUstepBase/GSVersionMacros.h>
-#import  <GNUstepBase/GSConfig.h>
+#import  "GSVersionMacros.h"
+#import  "GSConfig.h"
 
 #import  <Foundation/NSObject.h>
 
@@ -303,7 +303,7 @@ extern "C" {
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <GNUstepBase/NSLock+GNUstepBase.h>
+#import "NSLock+GNUstepBase.h"
 #endif
 
 #endif /* __NSLock_h_GNUSTEP_BASE_INCLUDE */

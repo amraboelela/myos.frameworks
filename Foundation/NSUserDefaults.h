@@ -25,7 +25,7 @@
 
 #ifndef __NSUserDefaults_h_OBJECTS_INCLUDE
 #define __NSUserDefaults_h_OBJECTS_INCLUDE
-#import <GNUstepBase/GSVersionMacros.h>
+#import "GSVersionMacros.h"
 
 #import <Foundation/NSObject.h>
 #import <Foundation/NSString.h>

@@ -35,9 +35,9 @@
 #endif
 #endif
 
-#import	<GNUstepBase/GSVersionMacros.h>
-#import	<GNUstepBase/GSConfig.h>
-#import	<GNUstepBase/GSBlocks.h>
+#import	"GSVersionMacros.h"
+#import	"GSConfig.h"
+#import	"GSBlocks.h"
 
 #include <stdarg.h>
 #include <limits.h>
@@ -155,7 +155,7 @@ enum
  */
 typedef NSUInteger NSSortOptions;
 
-#import <GNUstepBase/GSObjCRuntime.h>
+#import "GSObjCRuntime.h"
 
 #if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST)
 GS_EXPORT NSString	*NSStringFromProtocol(Protocol *aProtocol);

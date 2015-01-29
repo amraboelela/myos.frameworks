@@ -27,7 +27,7 @@
 #ifndef	INCLUDED_NSLock_GNUstepBase_h
 #define	INCLUDED_NSLock_GNUstepBase_h
 
-#import <GNUstepBase/GSVersionMacros.h>
+#import "GSVersionMacros.h"
 #import <Foundation/NSLock.h>
 
 #if	defined(__cplusplus)

@@ -24,7 +24,7 @@
 
 #ifndef __NSDistributedNotificationCenter_h_GNUSTEP_BASE_INCLUDE
 #define __NSDistributedNotificationCenter_h_GNUSTEP_BASE_INCLUDE
-#import	<GNUstepBase/GSVersionMacros.h>
+#import	"GSVersionMacros.h"
 
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 

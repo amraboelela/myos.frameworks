@@ -28,7 +28,7 @@
 
 #ifndef __NSPort_h_GNUSTEP_BASE_INCLUDE
 #define __NSPort_h_GNUSTEP_BASE_INCLUDE
-#import	<GNUstepBase/GSVersionMacros.h>
+#import	"GSVersionMacros.h"
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSMapTable.h>

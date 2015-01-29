@@ -35,7 +35,7 @@
 #define	GS_WITH_GC	0
 #endif
 
-#import	<GNUstepBase/GNUstep.h>
+#import	"GNUstep.h"
 
 #if	defined(__cplusplus)
 extern "C" {
@@ -585,7 +585,7 @@ GS_EXPORT NSRecursiveLock *gnustep_global_lock;
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <GNUstepBase/NSObject+GNUstepBase.h>
+#import "NSObject+GNUstepBase.h"
 #endif
 
 #endif /* __NSObject_h_GNUSTEP_BASE_INCLUDE */
