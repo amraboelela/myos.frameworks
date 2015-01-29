@@ -258,11 +258,11 @@ extern "C" {
  */
 @interface NSRecursiveLock : NSObject <NSLocking>
 {
-#if	GS_EXPOSE(NSRecursiveLock)
+//#if	GS_EXPOSE(NSRecursiveLock)
 @private
   gs_mutex_t	_mutex;
   NSString      *_name;
-#endif
+//#endif
 }
 
 /**
