@@ -27,7 +27,7 @@
 #ifndef	INCLUDED_NSNumber_GNUstepBase_h
 #define	INCLUDED_NSNumber_GNUstepBase_h
 
-#import "GSVersionMacros.h"
+#import <GNUstepBase/GSVersionMacros.h>
 #import <Foundation/NSValue.h>
 
 #if	defined(__cplusplus)

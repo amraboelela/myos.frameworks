@@ -46,7 +46,7 @@
 #define GS_PASS_ARGUMENTS 0
 #endif
 
-#define GS_FAKE_MAIN	1
+#define GS_FAKE_MAIN	0
 #if	GS_FAKE_MAIN
 
 /*
@@ -87,7 +87,7 @@
  * not be used.
  */
 
-//#define main gnustep_base_user_main
+#define main gnustep_base_user_main
 
 #endif	/* GS_FAKE_MAIN */
 #endif
@@ -103,11 +103,11 @@
  */
 #define	GS_SIZEOF_SHORT		2
 #define	GS_SIZEOF_INT		4
-#define	GS_SIZEOF_LONG		4
+#define	GS_SIZEOF_LONG		8
 #define	GS_SIZEOF_LONG_LONG	8
 #define	GS_SIZEOF_FLOAT		4
 #define	GS_SIZEOF_DOUBLE	8
-#define	GS_SIZEOF_VOIDP		4
+#define	GS_SIZEOF_VOIDP		8
 
 /*
  *	Size information to be places in bits 5 and 6 of type encoding bytes
@@ -116,7 +116,7 @@
  */
 #define	_GSC_S_SHT	_GSC_I16
 #define	_GSC_S_INT	_GSC_I32
-#define	_GSC_S_LNG	_GSC_I32
+#define	_GSC_S_LNG	_GSC_I64
 #define	_GSC_S_LNG_LNG	_GSC_I64
 
 /*
@@ -128,8 +128,8 @@ typedef signed short gss16;
 typedef unsigned short gsu16;
 typedef signed int gss32;
 typedef unsigned int gsu32;
-typedef signed long long gss64;
-typedef unsigned long long gsu64;
+typedef signed long gss64;
+typedef unsigned long gsu64;
 typedef struct { gsu8 a[16]; } gss128;
 typedef struct { gsu8 a[16]; } gsu128;
 typedef float gsf32;
@@ -138,8 +138,8 @@ typedef double gsf64;
 /*
  * Integer type with same size as a pointer
  */
-typedef	unsigned int gsuaddr;
-typedef	int gssaddr;
+typedef	unsigned long gsuaddr;
+typedef	long gssaddr;
 typedef	gsuaddr gsaddr;
 
 /*
@@ -147,6 +147,34 @@ typedef	gsuaddr gsaddr;
  */
 #define GS_HAVE_I64	1
 #define GS_HAVE_I128	0
+
+/*
+ * Ensure some standard types are defined.
+ */
+#include <inttypes.h>
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * PTR Limit information replacements for buggy headers
+ */ 
+#if 0
+#undef INTPTR_MAX
+#define INTPTR_MAX 
+#undef INTPTR_MIN
+#define INTPTR_MIN 
+#undef UINTPTR_MAX
+#define UINTPTR_MAX 
+#endif
+
 
 /*
  *	Do we have zlib for file handle compression?
@@ -179,21 +207,7 @@ typedef	gsuaddr gsaddr;
 /*
  * Define to say if we use NXConstantString or NSConstantString
  */
-#define NXConstantString	NXConstantString
-
-/*
- * Ensure some standard types are defined.
- */
-#include <stdint.h>
-
-
-
-
-
-
-
-
-
+#define NXConstantString	NSConstantString
 
 
 /*
@@ -219,27 +233,21 @@ typedef	gsuaddr gsaddr;
  * implementation of the current platform.
  */
 typedef	struct {
-  uint8_t	dummy[4];
-} gs_cond_t	__attribute__((aligned (4)));
+  uint8_t	dummy[48];
+} gs_cond_t	__attribute__((aligned (8)));
 typedef	struct {
-  uint8_t	dummy[4];
-} gs_mutex_t	__attribute__((aligned (4)));
+  uint8_t	dummy[40];
+} gs_mutex_t	__attribute__((aligned (8)));
 
 #define	OBJC2RUNTIME 1
-
-#ifdef ANDROID
-    #define BASE_NATIVE_OBJC_EXCEPTIONS     0
-#else
-    #define BASE_NATIVE_OBJC_EXCEPTIONS     1
-#endif
-
+#define BASE_NATIVE_OBJC_EXCEPTIONS     1
 #define GS_NONFRAGILE     0
 #define GS_MIXEDABI     0
-#define GS_USE_LIBXML 0
+#define GS_USE_LIBXML 1
 #define GS_USE_GNUTLS 0
 #define GS_USE_AVAHI 0
 #define GS_USE_MDNS 0
-#define GS_USE_ICU 0
+#define GS_USE_ICU 1
 #define GS_USE_LIBDISPATCH 0
 #define GS_HAVE_OBJC_ROOT_CLASS_ATTR 1
 
@@ -269,6 +277,7 @@ typedef	struct {
 #endif
 
 #if defined(__WIN32__)
+#define BOOL WinBOOL
 #include <w32api.h>
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT Windows2000
@@ -280,6 +289,7 @@ typedef	struct {
 #define WINVER Windows2000
 #endif
 #include <windows.h>
+#undef  BOOL
 #endif
 
 // Include the blocks runtime header if it's available (It shouldn't matter
@@ -294,10 +304,10 @@ typedef	struct {
 #endif
 
 /* The following group of lines maintained by the gstep-base configure */
-#define GNUSTEP_BASE_VERSION            1.24.5
+#define GNUSTEP_BASE_VERSION            1.24.7
 #define GNUSTEP_BASE_MAJOR_VERSION      1
 #define GNUSTEP_BASE_MINOR_VERSION      24
-#define GNUSTEP_BASE_SUBMINOR_VERSION   5
+#define GNUSTEP_BASE_SUBMINOR_VERSION   7
 #define GNUSTEP_BASE_GCC_VERSION        4.0.0
 
 /* Do not use the following macros!
@@ -387,9 +397,7 @@ typedef	struct {
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <inttypes.h>
 #include <stdbool.h>
-#include <stdint.h>
 #endif
 
 // Strong has different semantics in GC and ARC modes, so we need to have a

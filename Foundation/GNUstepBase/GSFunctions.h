@@ -26,9 +26,9 @@
 
 #ifndef __GSFunctions_h_GNUSTEP_BASE_INCLUDE
 #define __GSFunctions_h_GNUSTEP_BASE_INCLUDE
-#import "GNUstep.h"
+#import "GNUstepBase/GNUstep.h"
 
-#import "GSObjCRuntime.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 #if	defined(__cplusplus)
 extern "C" {

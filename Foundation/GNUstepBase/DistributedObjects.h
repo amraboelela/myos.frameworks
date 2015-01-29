@@ -30,7 +30,7 @@
  *	This file should not be installed.  The only reason why it is
  *	located here, is to allow target specific headers (like mframe.h), 
  *	which are located according to dis/enabled-flattened,
- *	may include this file via standard "DistributedObjects.h"
+ *	may include this file via standard "GNUstepBase/DistributedObjects.h"
  *	and won't require an extra -I flag.
  *	
  *	Classes should implement [-classForPortCoder] to return the class

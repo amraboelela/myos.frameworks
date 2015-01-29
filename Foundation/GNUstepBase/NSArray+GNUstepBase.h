@@ -27,7 +27,7 @@
 #ifndef	INCLUDED_NSArray_GNUstepBase_h
 #define	INCLUDED_NSArray_GNUstepBase_h
 
-#import "GSVersionMacros.h"
+#import <GNUstepBase/GSVersionMacros.h>
 #import <Foundation/NSArray.h>
 
 #if	defined(__cplusplus)

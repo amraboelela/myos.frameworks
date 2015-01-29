@@ -34,7 +34,7 @@
 #import <Foundation/Foundation.h>
 #endif
 
-#import "GSObjCRuntime.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 #if	defined(__cplusplus)
 extern "C" {

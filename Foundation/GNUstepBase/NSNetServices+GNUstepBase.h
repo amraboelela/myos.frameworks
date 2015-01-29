@@ -23,7 +23,7 @@
    */
 
 #import <Foundation/NSNetServices.h>
-#import "GSConfig.h"
+#import <GNUstepBase/GSConfig.h>
 
 /*
  * Only enable extensions if the Avahi API is used. The mDNS based NSNetService
@@ -80,13 +80,13 @@
 @end
 
 
-@protocol  GSNetServiceDelegate <Foundation/NSNetServiceDelegate>
-#ifdef __clang__
+@protocol  GSNetServiceDelegate <NSNetServiceDelegate>
+#if GS_PROTOCOLS_HAVE_OPTIONAL
 @optional
 #else
 @end
 @interface NSObject (GSNetServiceDelegateMethods)
-#endif // __clang__
+#endif // GS_PROTOCOLS_HAVE_OPTIONAL
 
 /**
  * Notifies the delegate that the addresses for the <var>service</var> have

@@ -34,7 +34,7 @@
 
 #ifndef __GSXML_h_GNUSTEP_BASE_INCLUDE
 #define __GSXML_h_GNUSTEP_BASE_INCLUDE
-#import "GSVersionMacros.h"
+#import <GNUstepBase/GSVersionMacros.h>
 
 #if	OS_API_VERSION(GS_API_NONE,GS_API_LATEST)
 

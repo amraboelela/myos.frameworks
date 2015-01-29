@@ -27,34 +27,34 @@
 #ifndef __Additions_h_GNUSTEP_BASE_INCLUDE
 #define __Additions_h_GNUSTEP_BASE_INCLUDE
 
-#import	"GSVersionMacros.h"
-#import	<Foundation/GNUstep.h>
+#import	<GNUstepBase/GSVersionMacros.h>
+#import	<GNUstepBase/GNUstep.h>
 
-#import	<Foundation/GSBlocks.h>
-#import	<Foundation/GSFunctions.h>
-#import	<Foundation/GSLocale.h>
-#import	<Foundation/GSLock.h>
-#import	<Foundation/GSMime.h>
-#import	<Foundation/GSXML.h>
-#import	<Foundation/Unicode.h>
+#import	<GNUstepBase/GSBlocks.h>
+#import	<GNUstepBase/GSFunctions.h>
+#import	<GNUstepBase/GSLocale.h>
+#import	<GNUstepBase/GSLock.h>
+#import	<GNUstepBase/GSMime.h>
+#import	<GNUstepBase/GSXML.h>
+#import	<GNUstepBase/Unicode.h>
 
-#import	<Foundation/NSArray+GNUstepBase.h>
-#import	<Foundation/NSAttributedString+GNUstepBase.h>
-#import	<Foundation/NSBundle+GNUstepBase.h>
-#import	<Foundation/NSCalendarDate+GNUstepBase.h>
-#import	<Foundation/NSData+GNUstepBase.h>
-#import	<Foundation/NSDebug+GNUstepBase.h>
-#import	<Foundation/NSFileHandle+GNUstepBase.h>
-#import	<Foundation/NSLock+GNUstepBase.h>
-#import	<Foundation/NSMutableString+GNUstepBase.h>
-#import	<Foundation/NSNetServices+GNUstepBase.h>
-#import	<Foundation/NSNumber+GNUstepBase.h>
-#import	<Foundation/NSObject+GNUstepBase.h>
-#import	<Foundation/NSProcessInfo+GNUstepBase.h>
-#import	<Foundation/NSStream+GNUstepBase.h>
-#import	<Foundation/NSString+GNUstepBase.h>
-#import	<Foundation/NSTask+GNUstepBase.h>
-#import	<Foundation/NSThread+GNUstepBase.h>
-#import	<Foundation/NSURL+GNUstepBase.h>
+#import	<GNUstepBase/NSArray+GNUstepBase.h>
+#import	<GNUstepBase/NSAttributedString+GNUstepBase.h>
+#import	<GNUstepBase/NSBundle+GNUstepBase.h>
+#import	<GNUstepBase/NSCalendarDate+GNUstepBase.h>
+#import	<GNUstepBase/NSData+GNUstepBase.h>
+#import	<GNUstepBase/NSDebug+GNUstepBase.h>
+#import	<GNUstepBase/NSFileHandle+GNUstepBase.h>
+#import	<GNUstepBase/NSLock+GNUstepBase.h>
+#import	<GNUstepBase/NSMutableString+GNUstepBase.h>
+#import	<GNUstepBase/NSNetServices+GNUstepBase.h>
+#import	<GNUstepBase/NSNumber+GNUstepBase.h>
+#import	<GNUstepBase/NSObject+GNUstepBase.h>
+#import	<GNUstepBase/NSProcessInfo+GNUstepBase.h>
+#import	<GNUstepBase/NSStream+GNUstepBase.h>
+#import	<GNUstepBase/NSString+GNUstepBase.h>
+#import	<GNUstepBase/NSTask+GNUstepBase.h>
+#import	<GNUstepBase/NSThread+GNUstepBase.h>
+#import	<GNUstepBase/NSURL+GNUstepBase.h>
 
 #endif /* __Additions_h_GNUSTEP_BASE_INCLUDE */

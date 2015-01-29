@@ -27,7 +27,7 @@
 #ifndef	INCLUDED_NSAttributedString_GNUstepBase_h
 #define	INCLUDED_NSAttributedString_GNUstepBase_h
 
-#import "GSVersionMacros.h"
+#import <GNUstepBase/GSVersionMacros.h>
 #import <Foundation/NSAttributedString.h>
 
 #if	defined(__cplusplus)

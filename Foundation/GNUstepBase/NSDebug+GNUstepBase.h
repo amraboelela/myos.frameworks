@@ -27,10 +27,10 @@
 #ifndef	INCLUDED_NSDebug_GNUstepBase_h
 #define	INCLUDED_NSDebug_GNUstepBase_h
 
-#import "GSVersionMacros.h"
+#import <GNUstepBase/GSVersionMacros.h>
 #if   defined(GNUSTEP_BASE_INTERNAL)
-#  import "NSDebug.h"
-#  import "NSProcessInfo.h"
+#  import "Foundation/NSDebug.h"
+#  import "Foundation/NSProcessInfo.h"
 #else
 #  import <Foundation/NSDebug.h>
 #  import <Foundation/NSProcessInfo.h>

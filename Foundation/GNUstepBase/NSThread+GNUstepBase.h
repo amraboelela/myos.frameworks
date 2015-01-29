@@ -27,7 +27,7 @@
 #ifndef	INCLUDED_NSThread_GNUstepBase_h
 #define	INCLUDED_NSThread_GNUstepBase_h
 
-#import "GSVersionMacros.h"
+#import <GNUstepBase/GSVersionMacros.h>
 #import <Foundation/NSThread.h>
 
 #if	defined(__cplusplus)
