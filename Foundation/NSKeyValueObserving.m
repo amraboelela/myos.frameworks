@@ -21,28 +21,31 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2011-07-24 06:09:22 -0700 (Sun, 24 Jul 2011) $ $Revision: 33621 $
+   $Date: 2014-01-26 05:50:26 -0800 (Sun, 26 Jan 2014) $ $Revision: 37637 $
 */
 
 #import "common.h"
-#import "NSCharacterSet.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSHashTable.h"
-#import "NSKeyValueCoding.h"
-#import "NSKeyValueObserving.h"
-#import "NSLock.h"
-#import "NSMapTable.h"
-#import "NSMethodSignature.h"
-#import "NSNull.h"
-#import "NSSet.h"
-#import "NSValue.h"
-#import "GSObjCRuntime.h"
-#import "Unicode.h"
-#import "GSLock.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSCharacterSet.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSHashTable.h"
+#import "Foundation/NSKeyValueCoding.h"
+#import "Foundation/NSKeyValueObserving.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSMethodSignature.h"
+#import "Foundation/NSNull.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSValue.h"
+#import "GNUstepBase/GSObjCRuntime.h"
+#import "GNUstepBase/Unicode.h"
+#import "GNUstepBase/GSLock.h"
 #import "GSInvocation.h"
+
+#if defined(USE_LIBFFI)
+#import "cifframe.h"
+#endif
 
 /*
  * IMPLEMENTATION NOTES
@@ -311,21 +314,31 @@ setup()
 static NSString *newKey(SEL _cmd)
 {
   const char	*name = sel_getName(_cmd);
-  unsigned	len = strlen(name);
+  unsigned	len;
   NSString	*key;
   unsigned	i;
-  NSCAssert(len > 0, @"Invalid selector name!");
 
+  if (0 == _cmd || 0 == (name = sel_getName(_cmd)))
+    {
+      [NSException raise: NSInvalidArgumentException
+		  format: @"Missing selector name"];
+    }
+  len = strlen(name);
   if (*name == '_')
     {
       name++;
       len--;
     }
+  if (len < 5 || name[len-1] != ':' || strncmp(name, "set", 3) != 0)
+    {
+      [NSException raise: NSInvalidArgumentException
+		  format: @"Invalid selector name"];
+    }
   name += 3;			// Step past 'set'
   len -= 4;			// allow for 'set' and trailing ':'
   for (i = 0; i < len; i++)
     {
-      if (name[i] < 0)
+      if (name[i] & 0x80)
 	{
 	  break;
 	}
@@ -384,6 +397,38 @@ replacementForClass(Class c)
   [kvoLock unlock];
   return r;
 }
+
+#if defined(USE_LIBFFI)
+static void
+cifframe_callback(ffi_cif *cif, void *retp, void **args, void *user)
+{
+  id            obj;
+  SEL           sel;
+  NSString	*key;
+  Class		c;
+  void		(*imp)(id,SEL,void*);
+
+  obj = *(id *)args[0];
+  sel = *(SEL *)args[1];
+  c = [obj class];
+
+  imp = (void (*)(id,SEL,void*))[c instanceMethodForSelector: sel];
+  key = newKey(sel);
+  if ([c automaticallyNotifiesObserversForKey: key] == YES)
+    {
+      // pre setting code here
+      [obj willChangeValueForKey: key];
+      ffi_call(cif, (void*)imp, retp, args);
+      // post setting code here
+      [obj didChangeValueForKey: key];
+    }
+  else
+    {
+      ffi_call(cif, (void*)imp, retp, args);
+    }
+  RELEASE(key);
+}
+#endif
 
 @implementation	GSKVOReplacement
 - (void) dealloc
@@ -535,29 +580,37 @@ replacementForClass(Class c)
                   instanceMethodForSelector: @selector(setter:)];
                 break;
               case _C_STRUCT_B:
-                if (strcmp(@encode(NSRange), type) == 0)
+                if (GSSelectorTypesMatch(@encode(NSRange), type))
                   {
                     imp = [[GSKVOSetter class]
                       instanceMethodForSelector: @selector(setterRange:)];
                   }
-                else if (strcmp(@encode(NSPoint), type) == 0)
+                else if (GSSelectorTypesMatch(@encode(NSPoint), type))
                   {
                     imp = [[GSKVOSetter class]
                       instanceMethodForSelector: @selector(setterPoint:)];
                   }
-                else if (strcmp(@encode(NSSize), type) == 0)
+                else if (GSSelectorTypesMatch(@encode(NSSize), type))
                   {
                     imp = [[GSKVOSetter class]
                       instanceMethodForSelector: @selector(setterSize:)];
                   }
-                else if (strcmp(@encode(NSRect), type) == 0)
+                else if (GSSelectorTypesMatch(@encode(NSRect), type))
                   {
                     imp = [[GSKVOSetter class]
                       instanceMethodForSelector: @selector(setterRect:)];
                   }
                 else
                   {
+#if defined(USE_LIBFFI)
+                    GSCodeBuffer    *b;
+
+                    b = cifframe_closure(sig, cifframe_callback);
+                    [b retain];
+                    imp = [b executable];
+#else
                     imp = 0;
+#endif
                   }
                 break;
               default:
@@ -573,7 +626,7 @@ replacementForClass(Class c)
 		}
 	      else
 		{
-		  NSLog(@"Failed to add setter method for %s to %@",
+		  NSLog(@"Failed to add setter method for %s to %s",
 		    sel_getName(sel), class_getName(original));
 		}
             }
@@ -1043,15 +1096,17 @@ replacementForClass(Class c)
   return instance;
 }
 
-/* Locks receiver and returns path info on success, otherwise
- * leaves receiver munlocked and returns nil.
+/* Locks receiver and returns path info on success, otherwise leaves
+ * receiver unlocked and returns nil.
+ * The returned path info is retained and autoreleased in case something
+ * removes it from the receiver while it's being used by the caller.
  */
 - (GSKVOPathInfo*) lockReturningPathInfoForKey: (NSString*)key
 {
   GSKVOPathInfo *pathInfo;
 
   [iLock lock];
-  pathInfo = (GSKVOPathInfo*)NSMapGet(paths, (void*)key);
+  pathInfo = AUTORELEASE(RETAIN((GSKVOPathInfo*)NSMapGet(paths, (void*)key)));
   if (pathInfo == nil)
     {
       [iLock unlock];
@@ -1139,7 +1194,7 @@ replacementForClass(Class c)
         {
           id    value;
 
-          value = [instance valueForKey: aPath];
+          value = [instance valueForKeyPath: aPath];
           if (value == nil)
             {
               value = null;
@@ -1831,9 +1886,12 @@ replacementForClass(Class c)
     {
       if (pathInfo->recursion++ == 0)
         {
-          NSMutableSet      *set;
+          id    set = objects;
 
-          set = [self valueForKey: aKey];
+          if (nil == set)
+            {
+              set = [self valueForKey: aKey];
+            }
           [pathInfo->change setValue: [set mutableCopy] forKey: @"oldSet"];
           [pathInfo notifyForKey: aKey ofInstance: [info instance] prior: YES];
         }
@@ -1862,10 +1920,13 @@ replacementForClass(Class c)
       if (pathInfo->recursion == 1)
         {
           NSMutableSet  *oldSet;
-          NSMutableSet  *set;
+          id            set = objects;
 
           oldSet = [pathInfo->change valueForKey: @"oldSet"];
-          set = [self valueForKey: aKey];
+          if (nil == set)
+            {
+              set = [self valueForKey: aKey];
+            }
           [pathInfo->change removeObjectForKey: @"oldSet"];
 
           if (mutationKind == NSKeyValueUnionSetMutation)
@@ -1953,6 +2014,32 @@ triggerChangeNotificationsForDependentKey: (NSString*)dependentKey
         }
       NSHashInsert(dependentKeys, dependentKey);
     }
+}
+
++ (NSSet*) keyPathsForValuesAffectingValueForKey: (NSString*)dependentKey
+{
+  NSString *selString = [NSString stringWithFormat: @"keyPathsForValuesAffecting%@",
+                                  [dependentKey capitalizedString]];
+  SEL sel = NSSelectorFromString(selString);
+  NSMapTable *affectingKeys;
+  NSEnumerator *enumerator;
+  NSString *affectingKey;
+  NSMutableSet *keyPaths;
+
+  if ([self respondsToSelector: sel])
+    {
+      return [self performSelector: sel];
+    }
+
+  affectingKeys = NSMapGet(dependentKeyTable, self);
+  keyPaths = [[NSMutableSet alloc] initWithCapacity: [affectingKeys count]];
+  enumerator = [affectingKeys keyEnumerator];
+  while ((affectingKey = [enumerator nextObject]))
+    {
+      [keyPaths addObject: affectingKey];
+    }
+
+  return AUTORELEASE(keyPaths);
 }
 
 - (void*) observationInfo

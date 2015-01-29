@@ -24,19 +24,19 @@
 
 #define	EXPOSE_NSLocale_IVARS	1
 #import "common.h"
-#import "NSLocale.h"
-#import "NSArray.h"
-#import "NSCalendar.h"
-#import "NSCoder.h"
-#import "NSCharacterSet.h"
-#import "NSDictionary.h"
-#import "NSLock.h"
-#import "NSValue.h"
-#import "NSNotification.h"
-#import "NSNumberFormatter.h"
-#import "NSUserDefaults.h"
-#import "NSString.h"
-#import "GSLock.h"
+#import "Foundation/NSLocale.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSCalendar.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSCharacterSet.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSNumberFormatter.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/NSString.h"
+#import "GNUstepBase/GSLock.h"
 
 NSString * const NSCurrentLocaleDidChangeNotification =
   @"NSCurrentLocaleDidChangeNotification";
@@ -185,7 +185,9 @@ static NSRecursiveLock *classLock = nil;
   if (self == [NSLocale class])
     {
       classLock = [GSLazyRecursiveLock new];
+      [[NSObject leakAt: &classLock] release];
       allLocales = [[NSMutableDictionary alloc] initWithCapacity: 0];
+      [[NSObject leakAt: &allLocales] release];
     }
 }
 
@@ -734,13 +736,12 @@ static NSRecursiveLock *classLock = nil;
   NSLocale	*newLocale;
   NSString	*localeId;
 #if	GS_USE_ICU == 1
-  int32_t	length;
   char cLocaleId[ULOC_FULLNAME_CAPACITY];
   UErrorCode error = U_ZERO_ERROR;
   
   localeId = [NSLocale canonicalLocaleIdentifierFromString: string];
   // Normalize locale ID
-  length = uloc_canonicalize ([localeId UTF8String], cLocaleId,
+  uloc_canonicalize ([localeId UTF8String], cLocaleId,
     ULOC_FULLNAME_CAPACITY, &error);
   if (U_FAILURE(error))
     {
@@ -896,13 +897,12 @@ static NSRecursiveLock *classLock = nil;
 @implementation NSLocale (PrimateMethods)
 + (void) _updateCanonicalLocales
 {
-    DLog();
-    NSBundle *gbundle = [NSBundle bundleForLibrary: @"gnustep-base"];
-    NSString *file = [gbundle pathForResource: @"Locale"
-                                       ofType: @"canonical"
-                                  inDirectory: @"Languages"];
-    if (file != nil)
-        canonicalLocales = [[NSDictionary alloc] initWithContentsOfFile: file];
+  NSBundle *gbundle = [NSBundle bundleForLibrary: @"gnustep-base"];
+  NSString *file = [gbundle pathForResource: @"Locale"
+                                     ofType: @"canonical"
+                                inDirectory: @"Languages"];
+  if (file != nil)
+    canonicalLocales = [[NSDictionary alloc] initWithContentsOfFile: file];
 }
 
 - (NSString *) _getMeasurementSystem
@@ -978,7 +978,7 @@ static NSRecursiveLock *classLock = nil;
         }
       if (strLen == 0)
         {
-          [mSet addCharactersInRange: NSMakeRange(start, end)];
+          [mSet addCharactersInRange: NSMakeRange(start, (end - start) + 1)];
         }
       else if (strLen >= 2)
         {

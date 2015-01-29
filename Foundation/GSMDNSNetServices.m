@@ -24,26 +24,21 @@
 
 #import "common.h"
 #import "GSNetServices.h"
-#import "NSNetServices.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSData.h"
-#import "NSNull.h"
-#import "NSRunLoop.h"
-#import "NSTimer.h"
-#import "NSValue.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSNetServices.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSNull.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSTimer.h"
+#import "Foundation/NSValue.h"
 #if defined(_REENTRANT)
-#import "GSLock.h"
+#import "GNUstepBase/GSLock.h"
 #endif
 
-//#import <dns_sd.h>		// Apple's DNS Service Discovery
+#import <dns_sd.h>		// Apple's DNS Service Discovery
 
-#import <sys/types.h>
-#import <sys/socket.h>		// AF_INET / AF_INET6
-
-#import <netinet/in.h>		// struct sockaddr_in / sockaddr_in6
-#import <arpa/inet.h>		// inet_pton(3)
+#import "GSNetwork.h"
 
 //
 // Define
@@ -793,7 +788,7 @@ static void DNSSD_API
       Browser	*browser;
       
       browser = malloc(sizeof (struct _Browser));
-      memset(browser, 0, sizeof browser);
+      memset(browser, 0, sizeof &browser);
       
       CREATELOCK(browser);
       
@@ -1735,7 +1730,7 @@ static void DNSSD_API
       Service	*service;
       
       service = malloc(sizeof (struct _Service));
-      memset(service, 0, sizeof service);
+      memset(service, 0, sizeof &service);
       
       CREATELOCK(service);
       
@@ -1744,7 +1739,7 @@ static void DNSSD_API
       service->timer = nil;
       service->timeout = nil;
       
-      service->info = [[NSMutableDictionary alloc] initWithCapacity: 1];
+      service->info = [[NSMutableDictionary alloc] initWithCapacity: 3];
       [service->info setObject: [domain retain]
 			forKey: @"Domain"];
       [service->info setObject: [name retain]
@@ -1867,12 +1862,6 @@ static void DNSSD_API
 	if (NO == service->isPublishing)
 	  {
 	    err = NSNetServicesBadArgumentError;
-	    break;
-	  }
-	
-	if (! [self delegate])
-	  {
-	    err = NSNetServicesInvalidError;
 	    break;
 	  }
 	
@@ -2478,7 +2467,7 @@ static void DNSSD_API
       Monitor	*monitor;
       
       monitor = malloc(sizeof (struct _Monitor));
-      memset(monitor, 0, sizeof monitor);
+      memset(monitor, 0, sizeof &monitor);
       
       CREATELOCK(monitor);
       
@@ -2800,7 +2789,7 @@ ConvertError(int errorCode)
  *
  */
 
-static void
+static void DNSSD_API
 EnumerationCallback(DNSServiceRef sdRef,
                       DNSServiceFlags flags,
                       uint32_t interfaceIndex,
@@ -2822,7 +2811,7 @@ EnumerationCallback(DNSServiceRef sdRef,
  *
  */
 
-static void
+static void DNSSD_API
 BrowserCallback(DNSServiceRef sdRef,
                   DNSServiceFlags flags,
                   uint32_t interfaceIndex,
@@ -2848,7 +2837,7 @@ BrowserCallback(DNSServiceRef sdRef,
  *
  */
 
-static void
+static void DNSSD_API
 ResolverCallback(DNSServiceRef sdRef,
                    DNSServiceFlags flags,
                    uint32_t interfaceIndex,
@@ -2878,7 +2867,7 @@ ResolverCallback(DNSServiceRef sdRef,
  *
  */
 
-static void
+static void DNSSD_API
 RegistrationCallback(DNSServiceRef sdRef,
                        DNSServiceFlags flags,
                        DNSServiceErrorType errorCode,
@@ -2902,7 +2891,7 @@ RegistrationCallback(DNSServiceRef sdRef,
  *
  */
 
-static void
+static void DNSSD_API
 QueryCallback(DNSServiceRef sdRef,
                 DNSServiceFlags flags,
                 uint32_t interfaceIndex,

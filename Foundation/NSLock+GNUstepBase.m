@@ -23,9 +23,9 @@
 
 */
 #import "common.h"
-#import "NSException.h"
-#import "NSLock+GNUstepBase.h"
-#import "GSLock.h"
+#import "Foundation/NSException.h"
+#import "GNUstepBase/NSLock+GNUstepBase.h"
+#import "GNUstepBase/GSLock.h"
 
 /**
  * GNUstep specific (non-standard) additions to the NSLock class.

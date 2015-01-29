@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSUserDefaults class reference</title>
-   $Date: 2012-03-05 19:05:23 -0800 (Mon, 05 Mar 2012) $ $Revision: 34884 $
+   $Date: 2014-07-28 07:40:29 -0700 (Mon, 28 Jul 2014) $ $Revision: 38018 $
 */
 
 #import "common.h"
@@ -32,30 +32,29 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#import "NSUserDefaults.h"
-#import "NSArchiver.h"
-#import "NSArray.h"
-#import "NSData.h"
-#import "NSDate.h"
-#import "NSDictionary.h"
-#import "NSDistributedLock.h"
-#import "NSException.h"
-#import "NSFileManager.h"
-#import "NSLock.h"
-#import "NSNotification.h"
-#import "NSPathUtilities.h"
-#import "NSProcessInfo.h"
-#import "NSPropertyList.h"
-#import "NSRunLoop.h"
-#import "NSSet.h"
-#import "NSThread.h"
-#import "NSTimer.h"
-#import "NSValue.h"
-#import "GSLocale.h"
-#import "GSLock.h"
-#import "NSProcessInfo+GNUstepBase.h"
-#import "NSObject+GNUstepBase.h"
-#import "NSString+GNUstepBase.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/NSArchiver.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSDistributedLock.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSProcessInfo.h"
+#import "Foundation/NSPropertyList.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSThread.h"
+#import "Foundation/NSTimer.h"
+#import "Foundation/NSValue.h"
+#import "GNUstepBase/GSLocale.h"
+#import "GNUstepBase/GSLock.h"
+#import "GNUstepBase/NSProcessInfo+GNUstepBase.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
 
 #if	defined(__MINGW__)
 @class	NSUserDefaultsWin32;
@@ -101,6 +100,7 @@ static BOOL		hasSharedDefaults = NO;
 /*
  * Caching some defaults.
  */
+static BOOL     parsingArguments = NO;
 static BOOL	flags[GSUserDefaultMaxFlag] = { 0 };
 
 /* An instance of the GSPersistentDomain class is used to encapsulate
@@ -163,7 +163,10 @@ lockPath(NSString *defaultsDatabase, BOOL verbose)
 
   if ([mgr fileExistsAtPath: path isDirectory: &isDir] == NO)
     {
-      if ([mgr createDirectoryAtPath: path attributes: attr] == NO)
+      if ([mgr createDirectoryAtPath: path
+         withIntermediateDirectories: YES
+                          attributes: attr
+                               error: NULL] == NO)
 	{
 	  if (verbose)
 	    NSLog(@"Defaults path '%@' does not exist - failed to create it.",
@@ -186,7 +189,10 @@ lockPath(NSString *defaultsDatabase, BOOL verbose)
   path = [path stringByAppendingPathComponent: @".lck"];
   if ([mgr fileExistsAtPath: path isDirectory: &isDir] == NO)
     {
-      if ([mgr createDirectoryAtPath: path attributes: attr] == NO)
+      if ([mgr createDirectoryAtPath: path
+         withIntermediateDirectories: YES
+                          attributes: attr
+                               error: NULL] == NO)
 	{
 	  if (verbose)
 	    NSLog(@"Defaults path '%@' does not exist - failed to create it.",
@@ -246,6 +252,8 @@ updateCache(NSUserDefaults *self)
 	= [self boolForKey: @"GSLogSyslog"];
       flags[GSLogThread]
 	= [self boolForKey: @"GSLogThread"];
+      flags[GSLogOffset]
+	= [self boolForKey: @"GSLogOffset"];
       flags[NSWriteOldStylePropertyLists]
 	= [self boolForKey: @"NSWriteOldStylePropertyLists"];
     }
@@ -537,11 +545,9 @@ newLanguages(NSArray *oldNames)
 
 + (void) atExit
 {
-  id	tmp;
-
-  tmp = sharedDefaults;
-  sharedDefaults = nil;
-  [tmp release];
+  DESTROY(sharedDefaults);
+  DESTROY(processName);
+  DESTROY(classLock);
 }
 
 + (void) initialize
@@ -721,349 +727,376 @@ newLanguages(NSArray *oldNames)
   return registrationDefaults;
 }
 
-+ (NSUserDefaults *)standardUserDefaults
++ (NSUserDefaults*) standardUserDefaults
 {
-    NSUserDefaults	*defs;
-    BOOL added_lang;
-    BOOL added_locale;
-    BOOL setup;
-    BOOL flag;
-    id lang;
-    NSArray	*nL;
-    NSArray	*uL;
-    NSEnumerator *enumerator;
-    
-    //printf("standardUserDefaults 1");
-    /* If the shared instance is already available ... return it.
-     */
-    [classLock lock];
-    //printf("standardUserDefaults 2");
-    defs = [sharedDefaults retain];
-    setup = hasSharedDefaults;
-    [classLock unlock];
-    //printf("standardUserDefaults 3");
-    if (YES == setup) {
-        //printf("standardUserDefaults 3.1");
-        return [defs autorelease];
-    }
-    //printf("standardUserDefaults 3.2");
-    NS_DURING
+  NSUserDefaults	*defs;
+  BOOL		added_lang;
+  BOOL		added_locale;
+  BOOL		setup;
+  BOOL		flag;
+  id		lang;
+  NSArray	*nL;
+  NSArray	*uL;
+  NSEnumerator	*enumerator;
+
+  /* If the shared instance is already available ... return it.
+   */
+  [classLock lock];
+  defs = [sharedDefaults retain];
+  setup = hasSharedDefaults;
+  [classLock unlock];
+  if (YES == setup)
     {
-        /* Create new NSUserDefaults (NOTE: Not added to the autorelease pool!)
-         * NB. The following code avoids deadlocks by creating a minimally
-         * initialised instance, locking that instance, locking the class-wide
-         * lock, installing the instance as the new shared defaults, unlocking
-         * the class wide lock, completing the setup of the instance, and then
-         * unlocking the instance.  This means we already have the shared
-         * instance locked ourselves at the point when it first becomes
-         * visible to other threads.
-         */
+      return [defs autorelease];
+    }
+ 
+  NS_DURING
+    {
+      /* Create new NSUserDefaults (NOTE: Not added to the autorelease pool!)
+       * NB. The following code avoids deadlocks by creating a minimally
+       * initialised instance, locking that instance, locking the class-wide
+       * lock, installing the instance as the new shared defaults, unlocking
+       * the class wide lock, completing the setup of the instance, and then
+       * unlocking the instance.  This means we already have the shared
+       * instance locked ourselves at the point when it first becomes
+       * visible to other threads.
+       */
 #if	defined(__MINGW__)
-        {
-            printf("standardUserDefaults 3.3");
-            NSString *path = GSDefaultsRootForUser(NSUserName());
-            NSRange r = [path rangeOfString: @":REGISTRY:"];
-            
-            if (r.length > 0) {
-                defs = [[NSUserDefaultsWin32 alloc] init];
-            } else {
-                defs = [[self alloc] init];
-            }
-        }
+      {
+        NSString	*path = GSDefaultsRootForUser(NSUserName());
+        NSRange		r = [path rangeOfString: @":REGISTRY:"];
+
+        if (r.length > 0)
+          {
+	    defs = [[NSUserDefaultsWin32 alloc] init];
+          }
+        else
+          {
+	    defs = [[self alloc] init];
+          }
+      }
 #else
-        //printf("standardUserDefaults 3.4");
-        defs = [[self alloc] init];
+      defs = [[self alloc] init];
 #endif
-        //printf("standardUserDefaults 4");
-        
-        /* Install the new defaults as the shared copy, but lock it so that
-         * we can complete setup without other threads interfering.
-         */
-        if (nil != defs) {
-            [defs->_lock lock];
-            [classLock lock];
-            if (NO == hasSharedDefaults) {
-                hasSharedDefaults = YES;
-                sharedDefaults = [defs retain];
-            } else {
-                /* Already set up by another thread.
-                 */
-                [defs->_lock unlock];
-                [defs release];
-                defs = nil;
-            }
-            [classLock unlock];
-        }
-        //printf("standardUserDefaults 5");
-        if (nil == defs) {
-            NSLog(@"WARNING - unable to create shared user defaults!\n");
-            NS_VALRETURN(nil);
-        }
-        //printf("standardUserDefaults 6");
-        if (NO == [defs _readOnly] && YES == [defs _lockDefaultsFile: &flag]) {
-            NSFileManager	*mgr = [NSFileManager defaultManager];
-            NSString	*path;
-            
-            path = [defs _directory];
-            path = [path stringByAppendingPathComponent: defaultsFile];
-            if (YES == [mgr isReadableFileAtPath: path]) {
-                NSString	*bck = [path stringByAppendingPathExtension: @"bck"];
-                
-                if (NO == [mgr isReadableFileAtPath: bck]) {
-                    NSData	*data;
-                    NSDictionary	*d = nil;
-                    
-                    /* An old style defaults file was found,
-                     * and no backup had been made of it, so
-                     * we make a backup and convert it to a
-                     * new style collection of files.
-                     */
-                    data = [NSData dataWithContentsOfFile: path];
-                    if (nil != data) {
-                        d = [NSPropertyListSerialization
-                             propertyListWithData: data
-                             options: NSPropertyListImmutable
-                             format: 0
-                             error: 0];
-                    }
-                    if ([d isKindOfClass: [NSDictionary class]]) {
-                        NSEnumerator	*e;
-                        NSString	*name;
-                        
-                        [mgr movePath: path toPath: bck handler: nil];
-                        e = [d keyEnumerator];
-                        while (nil != (name = [e nextObject]))
-                        {
-                            NSDictionary	*domain = [d objectForKey: name];
-                            
-                            path = [[defs _directory]
-                                    stringByAppendingPathComponent: name];
-                            path = [path
-                                    stringByAppendingPathExtension: @"plist"];
-                            if ([domain isKindOfClass: [NSDictionary class]]
-                                && [domain count] > 0
-                                && NO == [mgr fileExistsAtPath: path])
-                            {
-                                writeDictionary(domain, path);
-                            }
-                        }
-                    } else {
-                        fprintf(stderr, "Found unparseable file at '%s'\n",
-                                [path UTF8String]);
-                    }
-                }
-            }
-            if (NO == flag) {
-                [defs _unlockDefaultsFile];
-            }
-        }
-        //printf("standardUserDefaults 7");
-        /*
-         * Set up search list (excluding language list, which we don't know yet)
-         */
-        [defs->_searchList addObject: GSPrimaryDomain];
-        [defs->_searchList addObject: NSArgumentDomain];
-        [defs->_searchList addObject: processName];
-        [defs persistentDomainForName: processName];
-        [defs->_searchList addObject: NSGlobalDomain];
-        [defs persistentDomainForName: NSGlobalDomain];
-        [defs->_searchList addObject: GSConfigDomain];
-        [defs->_searchList addObject: NSRegistrationDomain];
-        
-        /* Load persistent data into the new instance.
-         */
-        [defs synchronize];
-        //printf("standardUserDefaults 8");
-        /*
-         * Look up user languages list and insert language specific domains
-         * into search list before NSRegistrationDomain
-         */
-        uL = [defs stringArrayForKey: @"NSLanguages"];
-        nL = newLanguages(uL);
-        if (NO == [uL isEqual: nL]) {
-            [self setUserLanguages: nL];
-        }
-        enumerator = [nL objectEnumerator];
-        while ((lang = [enumerator nextObject])) {
-            unsigned	index = [defs->_searchList count] - 1;
-            
-            [defs->_searchList insertObject: lang atIndex: index];
-        }
-        //printf("standardUserDefaults 9");
-        /* Set up language constants */
-        
-        /* We lookup gnustep-base resources manually here to prevent
-         * bootstrap problems.  NSBundle's lookup routines depend on having
-         * NSUserDefaults already bootstrapped, but we're still
-         * bootstrapping here!  So we can't really use NSBundle without
-         * incurring massive bootstrap complications (btw, most of the times
-         * we're here as a consequence of [NSBundle +initialize] creating
-         * the gnustep-base bundle!  So trying to use the gnustep-base
-         * bundle here wouldn't really work.).
-         */
-        /*
-         * We are looking for:
-         *
-         * GNUSTEP_LIBRARY/Libraries/gnustep-base/Versions/<interfaceVersion>/Resources/Languages/<language>
-         *
-         * We iterate over <language>, and for each <language> we iterate over GNUSTEP_LIBRARY.
-         */
-        
+
+      /* Install the new defaults as the shared copy, but lock it so that
+       * we can complete setup without other threads interfering.
+       */
+      if (nil != defs)
+	{
+	  [defs->_lock lock];
+	  [classLock lock];
+	  if (NO == hasSharedDefaults)
+	    {
+	      hasSharedDefaults = YES;
+	      sharedDefaults = [defs retain];
+	    }
+          else
+	    {
+	      /* Already set up by another thread.
+	       */
+	      [defs->_lock unlock];
+	      [defs release];
+	      defs = nil;
+	    }
+	  [classLock unlock];
+	}
+
+      if (nil == defs)
+	{
+	  NSLog(@"WARNING - unable to create shared user defaults!\n");
+	  NS_VALRETURN(nil);
+	}
+
+      if (NO == [defs _readOnly]
+	&& YES == [defs _lockDefaultsFile: &flag])
+	{
+	  NSFileManager	*mgr = [NSFileManager defaultManager];
+	  NSString	*path;
+
+	  path = [defs _directory];
+	  path = [path stringByAppendingPathComponent: defaultsFile];
+	  if (YES == [mgr isReadableFileAtPath: path])
+	    {
+	      NSString	*bck = [path stringByAppendingPathExtension: @"bck"];
+
+	      if (NO == [mgr isReadableFileAtPath: bck])
+		{
+		  NSData	*data;
+		  NSDictionary	*d = nil;
+
+		  /* An old style defaults file was found,
+		   * and no backup had been made of it, so
+		   * we make a backup and convert it to a
+		   * new style collection of files.
+		   */
+		  data = [NSData dataWithContentsOfFile: path];
+		  if (nil != data)
+		    {
+		      d = [NSPropertyListSerialization
+			propertyListWithData: data
+			options: NSPropertyListImmutable
+			format: 0
+			error: 0];
+		    }
+		  if ([d isKindOfClass: [NSDictionary class]])
+		    {
+		      NSEnumerator	*e;
+		      NSString	*name;
+
+		      [mgr movePath: path toPath: bck handler: nil];
+		      e = [d keyEnumerator];
+		      while (nil != (name = [e nextObject]))
+			{
+			  NSDictionary	*domain = [d objectForKey: name];
+
+			  path = [[defs _directory]
+			    stringByAppendingPathComponent: name];
+			  path = [path
+			    stringByAppendingPathExtension: @"plist"];
+			  if ([domain isKindOfClass: [NSDictionary class]]
+			    && [domain count] > 0
+			    && NO == [mgr fileExistsAtPath: path])
+			    {
+			      writeDictionary(domain, path);
+			    }
+			}
+		    }
+		  else
+		    {
+		      fprintf(stderr, "Found unparseable file at '%s'\n",
+			[path UTF8String]);
+		    }
+		}
+	    }
+	  if (NO == flag)
+	    {
+	      [defs _unlockDefaultsFile];
+	    }
+	}
+
+      /*
+       * Set up search list (excluding language list, which we don't know yet)
+       */
+      [defs->_searchList addObject: GSPrimaryDomain];
+      [defs->_searchList addObject: NSArgumentDomain];
+      [defs->_searchList addObject: processName];
+      [defs persistentDomainForName: processName];
+      [defs->_searchList addObject: NSGlobalDomain];
+      [defs persistentDomainForName: NSGlobalDomain];
+      [defs->_searchList addObject: GSConfigDomain];
+      [defs->_searchList addObject: NSRegistrationDomain];
+
+      /* Load persistent data into the new instance.
+       */
+      [defs synchronize];
+
+      /*
+       * Look up user languages list and insert language specific domains
+       * into search list before NSRegistrationDomain
+       */
+      uL = [defs stringArrayForKey: @"NSLanguages"];
+      nL = newLanguages(uL);
+      if (NO == [uL isEqual: nL])
+	{
+	  [self setUserLanguages: nL];
+	}
+      enumerator = [nL objectEnumerator];
+      while ((lang = [enumerator nextObject]))
         {
-            /* These variables are reused for all languages so we set them up
-             * once here and then reuse them.
-             */
-            NSFileManager *fm = [NSFileManager defaultManager];
-            NSString *tail = [[[[[@"Libraries"
-                                  stringByAppendingPathComponent: @"gnustep-base"]
-                                 stringByAppendingPathComponent: @"Versions"]
-                                stringByAppendingPathComponent:
-                                OBJC_STRINGIFY(GNUSTEP_BASE_MAJOR_VERSION.GNUSTEP_BASE_MINOR_VERSION)]
-                               stringByAppendingPathComponent: @"Resources"]
-                              stringByAppendingPathComponent: @"Languages"];
-            NSArray *paths = NSSearchPathForDirectoriesInDomains
-            (NSLibraryDirectory, NSAllDomainsMask, YES);
-            
-            added_lang = NO;
-            added_locale = NO;
-            enumerator = [nL objectEnumerator];
-            while ((lang = [enumerator nextObject])) {
-                NSDictionary	*dict = nil;
-                NSString		*path = nil;
-                NSString		*alt;
-                NSEnumerator	*pathEnumerator;
-                
-                /* The language name could be an ISO language identifier rather
-                 * than an OpenStep name (OSX has moved to using them), so we
-                 * try converting as an alternative key for lookup.
-                 */
-                alt = GSLanguageFromLocale(lang);
-                pathEnumerator = [paths objectEnumerator];
-                //printf("standardUserDefaults 10");
-                while ((path = [pathEnumerator nextObject]) != nil) {
-                    path = [[path stringByAppendingPathComponent: tail]
-                            stringByAppendingPathComponent: lang];
-                    if ([fm fileExistsAtPath: path]) {
-                        break;	/* Path found!  */
-                    }
-                    if (nil != alt) {
-                        path = [[path stringByAppendingPathComponent: tail]
-                                stringByAppendingPathComponent: alt];
-                        if ([fm fileExistsAtPath: path]) {
-                            break;	/* Path found!  */
-                        }
-                    }
-                }
-                //printf("standardUserDefaults 11");
-                if (path != nil) {
-                    dict = [NSDictionary dictionaryWithContentsOfFile: path];
-                }
-                if (dict != nil) {
-                    [defs setVolatileDomain: dict forName: lang];
-                    added_lang = YES;
-                } else if (added_locale == NO) {
-                    /* The resources for the language that we were looking for
-                     * were not found.  If this was the currently set locale
-                     * in the C library, try to get the same information from
-                     * the C library.  This would usually happen for the
-                     * language that was added to the list of languages
-                     * precisely because it is the currently set locale in the
-                     * C library.
-                     */
-                    NSString *locale = GSDefaultLanguageLocale();
-                    
-                    if (locale != nil) {
-                        NSString	*i18n = GSLanguageFromLocale(locale);
-                        
-                        /* See if we can get the dictionary from i18n
-                         * functions.  I don't think that the i18n routines
-                         * can handle more than one locale, so we don't try to
-                         * look 'lang' up but just get what we get and use it
-                         * if it matches 'lang' ... but tell me if I'm wrong
-                         * ...
-                         */
-                        if ([lang isEqual: i18n] || [alt isEqualToString: i18n]) {
-                            /* We set added_locale to YES to avoid so that we
-                             * won't do this C library locale lookup again
-                             * later on.
-                             */
-                            added_locale = YES;
-                            
-                            dict = GSDomainFromDefaultLocale ();
-                            if (dict != nil) {
-                                [defs setVolatileDomain: dict forName: lang];
-                                
-                                /* We do not set added_lang to YES here
-                                 * because we want the basic hardcoded defaults
-                                 * to be used in that case.
-                                 */
-                            }
-                        }
-                    }
-                }
-            }
+          unsigned	index = [defs->_searchList count] - 1;
+
+          [defs->_searchList insertObject: lang atIndex: index];
         }
-        //printf("standardUserDefaults 12");
-        
-        if (added_lang == NO) {
-            /* No language information found ... probably because the base
-             * library is being used 'standalone' without resources.
-             * We need to use hard-coded defaults.
-             */
-            /* FIXME - should we set this as volatile domain for English ? */
-            [defs registerDefaults: [self _unlocalizedDefaults]];
+
+      /* Set up language constants */
+
+      /* We lookup gnustep-base resources manually here to prevent
+       * bootstrap problems.  NSBundle's lookup routines depend on having
+       * NSUserDefaults already bootstrapped, but we're still
+       * bootstrapping here!  So we can't really use NSBundle without
+       * incurring massive bootstrap complications (btw, most of the times
+       * we're here as a consequence of [NSBundle +initialize] creating
+       * the gnustep-base bundle!  So trying to use the gnustep-base
+       * bundle here wouldn't really work.).
+       */
+      /*
+       * We are looking for:
+       *
+       * GNUSTEP_LIBRARY/Libraries/gnustep-base/Versions/<interfaceVersion>/Resources/Languages/<language>
+       *
+       * We iterate over <language>, and for each <language> we iterate over GNUSTEP_LIBRARY.
+       */
+
+      {
+        /* These variables are reused for all languages so we set them up
+         * once here and then reuse them.
+         */
+        NSFileManager *fm = [NSFileManager defaultManager];
+        NSString *tail = [[[[[@"Libraries"
+	  stringByAppendingPathComponent: @"gnustep-base"]
+	  stringByAppendingPathComponent: @"Versions"]
+	  stringByAppendingPathComponent:
+	  OBJC_STRINGIFY(GNUSTEP_BASE_MAJOR_VERSION.GNUSTEP_BASE_MINOR_VERSION)]
+	  stringByAppendingPathComponent: @"Resources"]
+	  stringByAppendingPathComponent: @"Languages"];
+        NSArray *paths = NSSearchPathForDirectoriesInDomains
+	  (NSLibraryDirectory, NSAllDomainsMask, YES);
+
+        added_lang = NO;
+        added_locale = NO;
+        enumerator = [nL objectEnumerator];
+        while ((lang = [enumerator nextObject]))
+          {
+	    NSDictionary	*dict = nil;
+	    NSString		*path = nil;
+	    NSString		*alt;
+	    NSEnumerator	*pathEnumerator;
+
+	    /* The language name could be an ISO language identifier rather
+	     * than an OpenStep name (OSX has moved to using them), so we
+	     * try converting as an alternative key for lookup.
+	     */
+	    alt = GSLanguageFromLocale(lang);
+	    pathEnumerator = [paths objectEnumerator];
+	    while ((path = [pathEnumerator nextObject]) != nil)
+	      {
+	        path = [[path stringByAppendingPathComponent: tail]
+		              stringByAppendingPathComponent: lang];
+	        if ([fm fileExistsAtPath: path])
+	          {
+		    break;	/* Path found!  */
+	          }
+	        if (nil != alt)
+		  {
+		    path = [[path stringByAppendingPathComponent: tail]
+				  stringByAppendingPathComponent: alt];
+		    if ([fm fileExistsAtPath: path])
+		      {
+			break;	/* Path found!  */
+		      }
+		  }
+	      }
+
+	    if (path != nil)
+	      {
+	        dict = [NSDictionary dictionaryWithContentsOfFile: path];
+	      }
+	    if (dict != nil)
+	      {
+	        [defs setVolatileDomain: dict forName: lang];
+	        added_lang = YES;
+	      }
+	    else if (added_locale == NO)
+	      {
+	        /* The resources for the language that we were looking for
+	         * were not found.  If this was the currently set locale
+	         * in the C library, try to get the same information from
+	         * the C library.  This would usually happen for the
+	         * language that was added to the list of languages
+	         * precisely because it is the currently set locale in the
+	         * C library.
+	         */
+	        NSString	*locale = GSDefaultLanguageLocale();
+
+	        if (locale != nil)
+	          {
+		    NSString	*i18n = GSLanguageFromLocale(locale);
+
+		    /* See if we can get the dictionary from i18n
+		     * functions.  I don't think that the i18n routines
+		     * can handle more than one locale, so we don't try to
+		     * look 'lang' up but just get what we get and use it
+		     * if it matches 'lang' ... but tell me if I'm wrong
+		     * ...
+		     */
+		    if ([lang isEqual: i18n] || [alt isEqualToString: i18n])
+		      {
+		        /* We set added_locale to YES to avoid so that we
+		         * won't do this C library locale lookup again
+		         * later on.
+		         */
+		        added_locale = YES;
+
+		        dict = GSDomainFromDefaultLocale ();
+		        if (dict != nil)
+		          {
+			    [defs setVolatileDomain: dict forName: lang];
+
+			    /* We do not set added_lang to YES here
+			     * because we want the basic hardcoded defaults
+			     * to be used in that case.
+			     */
+		          }
+		      }
+	          }
+	      }
+          }
+      }
+
+      if (added_lang == NO)
+        {
+          /* No language information found ... probably because the base
+	   * library is being used 'standalone' without resources.
+	   * We need to use hard-coded defaults.
+	   */
+          /* FIXME - should we set this as volatile domain for English ? */
+          [defs registerDefaults: [self _unlocalizedDefaults]];
         }
-        updateCache(sharedDefaults);
-        [defs->_lock unlock];
+      updateCache(sharedDefaults);
+      [defs->_lock unlock];
     }
-    NS_HANDLER
+  NS_HANDLER
     {
-        if (nil != defs) {
-            [defs->_lock unlock];
-            [defs release];
-        }
-        [localException raise];
+      if (nil != defs)
+	{
+	  [defs->_lock unlock];
+	  [defs release];
+	}
+      [localException raise];
     }
-    NS_ENDHANDLER
-    //printf("standardUserDefaults 13");
-    return [defs autorelease];
+  NS_ENDHANDLER
+  return [defs autorelease];
 }
 
-+ (NSArray *)userLanguages
++ (NSArray*) userLanguages
 {
   return [[self standardUserDefaults] stringArrayForKey: @"NSLanguages"];
 }
 
-+ (void)setUserLanguages:(NSArray *)languages
++ (void) setUserLanguages: (NSArray*)languages
 {
-    NSUserDefaults	*defs;
-    NSMutableDictionary	*dict;
-    
-    defs = [self standardUserDefaults];
-    dict = [[defs volatileDomainForName: GSPrimaryDomain] mutableCopy];
-    if (languages == nil) { // Remove the entry
-        [dict removeObjectForKey: @"NSLanguages"];
-    } else {
-        if (nil == dict) {
-            dict = [NSMutableDictionary new];
-        }
-        languages = newLanguages(languages);
-        [dict setObject: languages forKey: @"NSLanguages"];
+  NSUserDefaults	*defs;
+  NSMutableDictionary	*dict;
+
+  defs = [self standardUserDefaults];
+  dict = [[defs volatileDomainForName: GSPrimaryDomain] mutableCopy];
+  if (languages == nil)          // Remove the entry
+    {
+      [dict removeObjectForKey: @"NSLanguages"];
     }
-    [defs removeVolatileDomainForName: GSPrimaryDomain];
-    [defs setVolatileDomain: dict forName: GSPrimaryDomain];
-    [dict release];
+  else
+    {
+      if (nil == dict)
+        {
+	  dict = [NSMutableDictionary new];
+        }
+      languages = newLanguages(languages);
+      [dict setObject: languages forKey: @"NSLanguages"];
+    }
+  [defs removeVolatileDomainForName: GSPrimaryDomain];
+  [defs setVolatileDomain: dict forName: GSPrimaryDomain];
+  [dict release];
 }
 
-- (id)init
+- (id) init
 {
-    //printf("NSUserDefaults init");
-    return [self initWithUser:NSUserName()];
+  return [self initWithUser: NSUserName()];
 }
 
 /* Deprecated method ... which shoudl be merged into - initWithUser:
  */
-- (id)initWithContentsOfFile: (NSString*)path
+- (id) initWithContentsOfFile: (NSString*)path
 {
   NSFileManager	*mgr = [NSFileManager defaultManager];
   NSRange	r;
@@ -1140,13 +1173,13 @@ newLanguages(NSArray *oldNames)
   return self;
 }
 
-- (id)initWithUser:(NSString *)userName
+- (id) initWithUser: (NSString*)userName
 {
-    NSString *path;
-    //printf("initWithUser 1");
-    path = [GSDefaultsRootForUser(userName) stringByAppendingPathComponent:defaultsFile];
-    //printf("initWithUser 2");
-    return [self initWithContentsOfFile: path];
+  NSString	*path;
+
+  path = [GSDefaultsRootForUser(userName)
+    stringByAppendingPathComponent: defaultsFile];
+  return [self initWithContentsOfFile: path];
 }
 
 - (void) dealloc
@@ -1740,7 +1773,7 @@ static BOOL isPlistObject(id o)
   NSDate		*saved;
   BOOL			wasLocked;
   BOOL			result = YES;
-  BOOL			haveNewDomain = NO;
+  BOOL			haveChange = NO;
 
   [_lock lock];
   saved = _lastSync;
@@ -1773,42 +1806,46 @@ static BOOL isPlistObject(id o)
 	    {
 	      NSEnumerator		*enumerator;
 	      NSString			*domainName;
-	      NSFileManager		*mgr;
 
-	      haveNewDomain = [self _readDefaults];
-	      if (YES == haveNewDomain)
+	      haveChange = [self _readDefaults];
+	      if (YES == haveChange)
 		{
 		  DESTROY(_dictionaryRep);
 		}
 
-	      mgr = [NSFileManager defaultManager];
+	      if (_changedDomains != nil)
+                {
+                  haveChange = YES;
 
-	      if (_changedDomains != nil && NO == [self _readOnly])
-		{
-		  GSPersistentDomain	*domain;
+                  if (NO == [self _readOnly])
+                    {
+                      GSPersistentDomain	*domain;
+                      NSFileManager		*mgr;
 
-		  enumerator = [_changedDomains objectEnumerator];
-		  DESTROY(_changedDomains);	// Retained by enumerator.
-		  while ((domainName = [enumerator nextObject]) != nil)
-		    {
-		      domain = [_persDomains objectForKey: domainName];
-		      if (domain != nil)	// Domain was added or changed
-			{
-			  [domain synchronize];
-			}
-		      else			// Domain was removed
-			{
-			  NSString	*path;
+                      mgr = [NSFileManager defaultManager];
+                      enumerator = [_changedDomains objectEnumerator];
+                      DESTROY(_changedDomains);	// Retained by enumerator.
+                      while ((domainName = [enumerator nextObject]) != nil)
+                        {
+                          domain = [_persDomains objectForKey: domainName];
+                          if (domain != nil)	// Domain was added or changed
+                            {
+                              [domain synchronize];
+                            }
+                          else			// Domain was removed
+                            {
+                              NSString	*path;
 
-			  path = [[_defaultsDatabase
-			    stringByAppendingPathComponent: domainName]
-			    stringByAppendingPathExtension: @"plist"];
-			  [mgr removeFileAtPath: path handler: nil];
-			}
-		    }
-		}
+                              path = [[_defaultsDatabase
+                                stringByAppendingPathComponent: domainName]
+                                stringByAppendingPathExtension: @"plist"];
+                              [mgr removeFileAtPath: path handler: nil];
+                            }
+                        }
+                    }
+                }
 
-	      if (YES == haveNewDomain)
+	      if (YES == haveChange)
 		{
 		  updateCache(self);
 		}
@@ -1859,7 +1896,7 @@ static BOOL isPlistObject(id o)
       [self _changePersistentDomain: NSGlobalDomain];
     }
   [_lock unlock];
-  if (YES == haveNewDomain)
+  if (YES == haveChange)
     {
       [[NSNotificationCenter defaultCenter]
 	postNotificationName: NSUserDefaultsDidChangeNotification
@@ -2071,15 +2108,14 @@ static BOOL isPlistObject(id o)
 
 @end
 
-BOOL GSPrivateDefaultsFlag(GSUserDefaultFlagType type)
+BOOL
+GSPrivateDefaultsFlag(GSUserDefaultFlagType type)
 {
-    if (sharedDefaults == nil) {
-        //printf("GSPrivateDefaultsFlag 1");
-        [NSUserDefaults standardUserDefaults];
-        //printf("GSPrivateDefaultsFlag 2");
+  if (nil == sharedDefaults && NO == parsingArguments)
+    {
+      [NSUserDefaults standardUserDefaults];
     }
-    //printf("GSPrivateDefaultsFlag 3");
-    return flags[type];
+  return flags[type];
 }
 
 /* Slightly faster than
@@ -2129,6 +2165,12 @@ NSDictionary *GSPrivateDefaultLocale()
   id		key, val;
 
   [_lock lock];
+  if (YES == parsingArguments)
+    {
+      [_lock unlock];
+      return nil;       // Prevent recursion
+    }
+  parsingArguments = YES;
   NS_DURING
     {
       args = [[NSProcessInfo processInfo] arguments];
@@ -2143,10 +2185,13 @@ NSDictionary *GSPrivateDefaultLocale()
 	    {
 	      NSString	*old = nil;
 
-	      /* anything beginning with a '-' is a defaults key and we must strip
-	          the '-' from it.  As a special case, we leave the '- in place
-	          for '-GS...' and '--GS...' for backward compatibility. */
-	      if ([key hasPrefix: @"-GS"] == YES || [key hasPrefix: @"--GS"] == YES)
+	      /* anything beginning with a '-' is a defaults key and we
+               * must strip the '-' from it.
+               * As a special case, we leave the '- in place for '-GS...'
+               * and '--GS...' for backward compatibility.
+               */
+	      if ([key hasPrefix: @"-GS"] == YES
+                || [key hasPrefix: @"--GS"] == YES)
 	        {
 	          old = key;
 	        }
@@ -2162,7 +2207,8 @@ NSDictionary *GSPrivateDefaultLocale()
 	          done = YES;
 	          continue;
 	        }
-	      else if ([val hasPrefix: @"-"] == YES && [val isEqual: @"-"] == NO)
+	      else if ([val hasPrefix: @"-"] == YES
+                && [val isEqual: @"-"] == NO)
 	        {  // Yet another argument
 	          [argDict setObject: @"" forKey: key];		// arg is empty.
 	          if (old != nil)
@@ -2207,10 +2253,12 @@ NSDictionary *GSPrivateDefaultLocale()
 	    }
           done = ((key = [enumerator nextObject]) == nil);
         }
+      parsingArguments = NO;
       [_lock unlock];
     }
   NS_HANDLER
     {
+      parsingArguments = NO;
       [_lock unlock];
       [localException raise];
     }
@@ -2308,7 +2356,7 @@ static BOOL isLocked = NO;
   NSEnumerator		*enumerator;
   NSString		*domainName;
   NSFileManager		*mgr;
-  BOOL			haveNewDomain = NO;
+  BOOL			haveChange = NO;
 
   mgr = [NSFileManager defaultManager];
 
@@ -2345,7 +2393,7 @@ static BOOL isLocked = NO;
 			      owner: self];
 	      [_persDomains setObject: pd forKey: domainName];
 	      [pd release];
-	      haveNewDomain = YES;
+	      haveChange = YES;
 	    }
 	  if (YES == [_searchList containsObject: domainName])
 	    {
@@ -2353,11 +2401,14 @@ static BOOL isLocked = NO;
 	       * synchronize to load the domain contents into memory
 	       * so a lookup will work.
 	       */
-	      [pd synchronize];
+              if (YES == [pd synchronize])
+                {
+                  haveChange = YES;
+                }
 	    }
 	}
     }
-  return haveNewDomain;
+  return haveChange;
 }
 
 - (BOOL) _readOnly
@@ -2438,12 +2489,12 @@ static BOOL isLocked = NO;
 
 - (BOOL) synchronize
 {
-  BOOL		wasLocked;
-  BOOL		result;
+  BOOL  wasLocked;
+  BOOL	hadChange = NO; // Have we read a change from disk?
 
   if (NO == [owner _lockDefaultsFile: &wasLocked])
     {
-      result = NO;
+      hadChange = NO;
       wasLocked = NO;
     }
   else
@@ -2456,6 +2507,7 @@ static BOOL isLocked = NO;
       if (YES == modified && NO == [owner _readOnly])
 	{
 	  NSDate	*mod;
+          BOOL          result;
 
           mod = [NSDate date];
 	  if (0 == [contents count])
@@ -2511,15 +2563,15 @@ static BOOL isLocked = NO;
 			}
 		    }
 		}
+              hadChange = YES;
 	    }
-	  result = YES;
 	}
       if (NO == wasLocked)
 	{
 	  [owner _unlockDefaultsFile];
 	}
     }
-  return result;
+  return hadChange;
 }
 
 - (NSDate*) updated

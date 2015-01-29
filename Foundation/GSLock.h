@@ -34,7 +34,7 @@
 #import <Foundation/Foundation.h>
 #endif
 
-#import "GSObjCRuntime.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 #if	defined(__cplusplus)
 extern "C" {
@@ -51,7 +51,6 @@ extern "C" {
 
 @interface	GSLazyRecursiveLock : NSRecursiveLock
 {
-@public
   int	counter;
 }
 - (void) _becomeThreaded: (NSNotification*)n;

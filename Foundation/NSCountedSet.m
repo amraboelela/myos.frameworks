@@ -22,19 +22,18 @@
    Boston, MA 02111 USA.
 
    <title>NSCountedSet class reference</title>
-   $Date: 2011-07-24 06:09:22 -0700 (Sun, 24 Jul 2011) $ $Revision: 33621 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
-#import "GSLock.h"
-#import "NSEnumerator.h"
-#import "NSSet.h"
-#import "NSCoder.h"
-#import "NSArray.h"
-#import "NSLock.h"
-#import "NSNotification.h"
-#import "NSThread.h"
-#import "NSObject+GNUstepBase.h"
+#import "GNUstepBase/GSLock.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSThread.h"
 
 @class	GSCountedSet;
 @interface GSCountedSet : NSObject	// Help the compiler
@@ -74,6 +73,7 @@ static Class NSCountedSet_concrete_class;
       NSCountedSet_abstract_class = self;
       NSCountedSet_concrete_class = [GSCountedSet class];
       uniqueLock = [GSLazyRecursiveLock new];
+      [[NSObject leakAt: &uniqueLock] release];
       lockImp = [uniqueLock methodForSelector: @selector(lock)];
       unlockImp = [uniqueLock methodForSelector: @selector(unlock)];
     }

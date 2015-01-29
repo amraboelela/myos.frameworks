@@ -25,7 +25,7 @@
    Boston, MA 02111 USA.
 
    <title>NSTimeZone class reference</title>
-   $Date: 2011-07-31 08:31:39 -0700 (Sun, 31 Jul 2011) $ $Revision: 33660 $
+   $Date: 2014-12-23 06:36:02 -0800 (Tue, 23 Dec 2014) $ $Revision: 38258 $
  */
 
 /* Use the system time zones if available. In other cases, use an
@@ -86,36 +86,32 @@
 
 #import "common.h"
 #define	EXPOSE_NSTimeZone_IVARS	1
-#import "GSLock.h"
+#import "GNUstepBase/GSLock.h"
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
-#import "NSArray.h"
-#import "NSCoder.h"
-#import "NSData.h"
-#import "NSDate.h"
-#import "NSDictionary.h"
-#import "NSException.h"
-#import "NSFileManager.h"
-#import "NSLock.h"
-#import "NSProcessInfo.h"
-#import "NSUserDefaults.h"
-#import "NSMapTable.h"
-#import "NSThread.h"
-#import "NSNotification.h"
-#import "NSPortCoder.h"
-#import "NSTimeZone.h"
-#import "NSByteOrder.h"
-#import "NSLocale.h"
-#import "GSConfig.h"
-#import "NSObject+GNUstepBase.h"
-#import "NSString+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSProcessInfo.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSThread.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSPortCoder.h"
+#import "Foundation/NSTimeZone.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSLocale.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
 #import "GSPrivate.h"
 
 #ifdef HAVE_TZHEAD
 #include <tzfile.h>
 #else
-#define NOID
 #include "nstzfile.h"
 #endif
 
@@ -154,7 +150,7 @@ NSString * const NSSystemTimeZoneDidChangeNotification
 #define LOCAL_TIME_FILE @"localtime"
 
 /* Directory that contains the actual time zones. */
-#define ZONES_DIR @"zones/"
+#define ZONES_DIR @"zones"
 
 /* Many systems have this file */
 #define SYSTEM_TIME_FILE @"/etc/localtime"
@@ -167,6 +163,7 @@ NSString * const NSSystemTimeZoneDidChangeNotification
 #endif
 
 #define BUFFER_SIZE 512
+#define WEEK_MILLISECONDS (7.0*24.0*60.0*60.0*1000.0)
 
 #if GS_USE_ICU == 1
 static inline int
@@ -298,30 +295,6 @@ static NSRecursiveLock *zone_mutex = nil;
 static Class	NSTimeZoneClass;
 static Class	GSPlaceholderTimeZoneClass;
 
-/* Decode the four bytes at PTR as a signed integer in network byte order.
-   Based on code included in the GNU C Library 2.0.3. */
-static inline int
-decode (const void *ptr)
-{
-#if defined(WORDS_BIGENDIAN) && SIZEOF_INT == 4
-#if NEED_WORD_ALIGNMENT
-  int value;
-  memcpy(&value, ptr, sizeof(NSInteger));
-  return value;
-#else
-  return *(const NSInteger*) ptr;
-#endif
-#else /* defined(WORDS_BIGENDIAN) && SIZEOF_INT == 4 */
-  const unsigned char *p = ptr;
-  int result = *p & (1 << (CHAR_BIT - 1)) ? ~0 : 0;
-
-  result = (result << 8) | *p++;
-  result = (result << 8) | *p++;
-  result = (result << 8) | *p++;
-  result = (result << 8) | *p;
-  return result;
-#endif /* defined(WORDS_BIGENDIAN) && SIZEOF_INT == 4 */
-}
 
 /* Return path to a TimeZone directory file */
 static NSString *_time_zone_path(NSString *subpath, NSString *type)
@@ -761,8 +734,8 @@ static NSMapTable	*absolutes = 0;
 	       * Should never happen now we round to the minute
 	       * for MacOS-X compatibnility.
 	       */
-	      name = [[NSString alloc] initWithFormat: @"NSAbsoluteTimeZone:%d",
-		anOffset];
+	      name = [[NSString alloc]
+		initWithFormat: @"NSAbsoluteTimeZone:%"PRIdPTR, anOffset];
 	    }
 	}
       else
@@ -1359,6 +1332,12 @@ static NSMapTable	*absolutes = 0;
       zone_mutex = [GSLazyRecursiveLock new];
       [[NSObject leakAt: (id*)&zone_mutex] release];
 
+      [[NSObject leakAt: (id*)&defaultTimeZone] release];
+      [[NSObject leakAt: (id*)&systemTimeZone] release];
+      [[NSObject leakAt: (id*)&abbreviationDictionary] release];
+      [[NSObject leakAt: (id*)&abbreviationMap] release];
+      [[NSObject leakAt: (id*)&absolutes] release];
+
       [[NSNotificationCenter defaultCenter] addObserver: self
         selector: @selector(_notified:)
         name: NSUserDefaultsDidChangeNotification
@@ -1426,319 +1405,362 @@ static NSMapTable	*absolutes = 0;
  */
 + (NSTimeZone*) systemTimeZone
 {
-    NSTimeZone	*zone = nil;
-    
-    if (zone_mutex != nil) {
-        [zone_mutex lock];
+  NSTimeZone	*zone = nil;
+
+  if (zone_mutex != nil)
+    {
+      [zone_mutex lock];
     }
-    if (systemTimeZone == nil) {
-        NSFileManager *dflt = [NSFileManager defaultManager];
-        NSString	*localZoneString = nil;
-        NSString	*localZoneSource = nil;
-        
-        /*
-         * setup default value in case something goes wrong.
-         */
-        systemTimeZone = RETAIN([NSTimeZoneClass timeZoneForSecondsFromGMT: 0]);
-        
-        /*
-         * Try to get timezone from user defaults database
-         */
-        localZoneSource = [NSString stringWithFormat:
-                           @"NSUserDefaults: '%@'", LOCALDBKEY];
-        localZoneString = [[NSUserDefaults standardUserDefaults]
-                           stringForKey: LOCALDBKEY];
-        
-        /*
-         * Try to get timezone from GNUSTEP_TZ environment variable.
-         */
-        if (localZoneString == nil) {
-            localZoneSource = _(@"environment variable: 'GNUSTEP_TZ'");
-            localZoneString = [[[NSProcessInfo processInfo]
-                                environment] objectForKey: @"GNUSTEP_TZ"];
-        }
-        
-        /*
-         * Try to get timezone from LOCAL_TIME_FILE.
-         */
-        if (localZoneString == nil) {
-            NSString	*f = _time_zone_path(LOCAL_TIME_FILE, nil);
-            
-            localZoneSource = [NSString stringWithFormat: @"file: '%@'", f];
-            if (f != nil) {
-                localZoneString = [NSString stringWithContentsOfFile: f];
-                localZoneString = [localZoneString stringByTrimmingSpaces];
-            }
-        }
-        
+  if (systemTimeZone == nil)
+    {
+      NSFileManager *dflt = [NSFileManager defaultManager];
+      NSString	*localZoneString = nil;
+      NSString	*localZoneSource = nil;
+
+      /*
+       * setup default value in case something goes wrong.
+       */
+      systemTimeZone = RETAIN([NSTimeZoneClass timeZoneForSecondsFromGMT: 0]);
+
+      /*
+       * Try to get timezone from user defaults database
+       */
+      localZoneSource = [NSString stringWithFormat:
+	@"NSUserDefaults: '%@'", LOCALDBKEY];
+      localZoneString = [[NSUserDefaults standardUserDefaults]
+	stringForKey: LOCALDBKEY];
+
+      /*
+       * Try to get timezone from GNUSTEP_TZ environment variable.
+       */
+      if (localZoneString == nil)
+	{
+          localZoneSource = _(@"environment variable: 'GNUSTEP_TZ'");
+	  localZoneString = [[[NSProcessInfo processInfo]
+	    environment] objectForKey: @"GNUSTEP_TZ"];
+	}
+
+      /*
+       * Try to get timezone from LOCAL_TIME_FILE.
+       */
+      if (localZoneString == nil)
+	{
+	  NSString	*f = _time_zone_path(LOCAL_TIME_FILE, nil);
+
+          localZoneSource = [NSString stringWithFormat: @"file: '%@'", f];
+	  if (f != nil)
+	    {
+	      localZoneString = [NSString stringWithContentsOfFile: f];
+	      localZoneString = [localZoneString stringByTrimmingSpaces];
+	    }
+	}
+
 #if	defined(__MINGW__)
-        /*
-         * Try to get timezone from windows system call.
-         */
+      /*
+       * Try to get timezone from windows system call.
+       */
+      {
+      	TIME_ZONE_INFORMATION tz;
+      	DWORD DST = GetTimeZoneInformation(&tz);
+
+        localZoneSource = @"function: 'GetTimeZoneInformation()'";
+      	if (DST == TIME_ZONE_ID_DAYLIGHT)
+	  {
+	    localZoneString = [NSString stringWithCharacters: tz.DaylightName
+	      length: wcslen(tz.DaylightName)];
+	  }
+      	else
+	  {
+	    localZoneString = [NSString stringWithCharacters: tz.StandardName
+	      length: wcslen(tz.StandardName)];
+	  }
+      }
+#endif
+
+      if (localZoneString == nil)
+	{
+	  if (YES == [dflt isReadableFileAtPath: @"/etc/timezone"])
+	    {
+	      NSString	*s;
+
+	      s = [NSString stringWithContentsOfFile: @"/etc/timezone"];
+	      s = [s stringByTrimmingSpaces];
+	      if (0 != [s length])
+		{
+		  localZoneSource = _(@"/etc/timezone file");
+		  localZoneString = s;
+		}
+	    }
+	}
+
+      if (localZoneString == nil)
+	{
+	  if (YES == [dflt isReadableFileAtPath: @"/etc/sysconfig/clock"])
+	    {
+	      NSString		*s;
+	      NSEnumerator	*e;
+
+	      s = [NSString stringWithContentsOfFile:
+		@"/etc/sysconfig/clock"];
+	      e = [[s componentsSeparatedByString: @"\n"] objectEnumerator];
+	      while (nil != (s = [e nextObject]))
+		{
+		  s = [s stringByTrimmingSpaces];
+                  // OpenSuse uses the non-standard key TIMEZONE
+		  if ([s hasPrefix: @"ZONE"] || [s hasPrefix: @"TIMEZONE"])
+		    {
+                      if ([s hasPrefix: @"ZONE"])
+                        s = [s substringFromIndex: 4];
+                      else
+                        s = [s substringFromIndex: 8];
+
+		      s = [s stringByTrimmingSpaces];
+		      if ([s hasPrefix: @"="])
+			{
+			  s = [s substringFromIndex: 1];
+			  s = [s stringByTrimmingSpaces];
+			  if ([s hasPrefix: @"\""])
+			    {
+			      s = [s substringFromIndex: 1];
+			    }
+			  if ([s hasSuffix: @"\""])
+			    {
+			      s = [s substringToIndex: [s length] - 1];
+			    }
+			  s = [s stringByTrimmingSpaces];
+			  if ([s length] > 0)
+			    {
+			      localZoneSource = _(@"/etc/sysconfig/clock file");
+			      localZoneString = s;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+      if (localZoneString == nil)
         {
-            TIME_ZONE_INFORMATION tz;
-            DWORD DST = GetTimeZoneInformation(&tz);
-            
-            localZoneSource = @"function: 'GetTimeZoneInformation()'";
-            if (DST == TIME_ZONE_ID_DAYLIGHT) {
-                localZoneString = [NSString stringWithCharacters: tz.DaylightName
-                                                          length: wcslen(tz.DaylightName)];
-            } else {
-                localZoneString = [NSString stringWithCharacters: tz.StandardName
-                                                          length: wcslen(tz.StandardName)];
-            }
-        }
-#endif
-        
-        if (localZoneString == nil) {
-            if (YES == [dflt isReadableFileAtPath: @"/etc/timezone"]) {
-                NSString	*s;
-                
-                s = [NSString stringWithContentsOfFile: @"/etc/timezone"];
-                s = [s stringByTrimmingSpaces];
-                if (0 != [s length]) {
-                    localZoneSource = _(@"/etc/timezone file");
-                    localZoneString = s;
-                }
-            }
-        }
-        
-        if (localZoneString == nil) {
-            if (YES == [dflt isReadableFileAtPath: @"/etc/sysconfig/clock"]) {
-                NSString		*s;
-                NSEnumerator	*e;
-                
-                s = [NSString stringWithContentsOfFile:
-                     @"/etc/sysconfig/clock"];
-                e = [[s componentsSeparatedByString: @"\n"] objectEnumerator];
-                while (nil != (s = [e nextObject])) {
-                    s = [s stringByTrimmingSpaces];
-                    // OpenSuse uses the non-standard key TIMEZONE
-                    if ([s hasPrefix: @"ZONE"] || [s hasPrefix: @"TIMEZONE"]) {
-                        if ([s hasPrefix: @"ZONE"])
-                            s = [s substringFromIndex: 4];
-                        else
-                            s = [s substringFromIndex: 8];
-                        
-                        s = [s stringByTrimmingSpaces];
-                        if ([s hasPrefix: @"="]) {
-                            s = [s substringFromIndex: 1];
-                            s = [s stringByTrimmingSpaces];
-                            if ([s hasPrefix: @"\""]) {
-                                s = [s substringFromIndex: 1];
-                            }
-                            if ([s hasSuffix: @"\""]) {
-                                s = [s substringToIndex: [s length] - 1];
-                            }
-                            s = [s stringByTrimmingSpaces];
-                            if ([s length] > 0) {
-                                localZoneSource = _(@"/etc/sysconfig/clock file");
-                                localZoneString = s;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (localZoneString == nil) {
-            /* Get the zone name from the localtime file, assuming the file
-             is a symlink to the time zone. Getting the actual data (which
-             is easier) doesn't help, since we won't know the name itself.  */
+          /* Get the zone name from the localtime file, assuming the file
+	     is a symlink to the time zone. Getting the actual data (which
+	     is easier) doesn't help, since we won't know the name itself.  */
 #if defined(HAVE_TZHEAD) && defined(TZDEFAULT)
-            tzdir = RETAIN([NSString stringWithUTF8String: TZDIR]);
-            localZoneString = [NSString stringWithUTF8String: TZDEFAULT];
-            localZoneSource = [NSString stringWithFormat:
-                               @"file (TZDEFAULT): '%@'", localZoneString];
-            localZoneString = [localZoneString stringByResolvingSymlinksInPath];
+	  tzdir = RETAIN([NSString stringWithUTF8String: TZDIR]);
+	  localZoneString = [NSString stringWithUTF8String: TZDEFAULT];
+          localZoneSource = [NSString stringWithFormat:
+	    @"file (TZDEFAULT): '%@'", localZoneString];
+	  localZoneString = [localZoneString stringByResolvingSymlinksInPath];
 #else
-            if ([dflt fileExistsAtPath: SYSTEM_TIME_FILE]) {
-                localZoneString = SYSTEM_TIME_FILE;
-                localZoneSource = [NSString stringWithFormat:
-                                   @"file (SYSTEM_TIME_FILE): '%@'", localZoneString];
-                localZoneString
-                = [localZoneString stringByResolvingSymlinksInPath];
-                /* Guess what tzdir is */
-                tzdir = [localZoneString stringByDeletingLastPathComponent];
-                while ([tzdir length] > 2
-                       && [dflt fileExistsAtPath:
-                           [tzdir stringByAppendingPathComponent: @"GMT"]] == NO)
-                {
-                    tzdir = [tzdir stringByDeletingLastPathComponent];
-                }
-                if ([tzdir length] <= 2) {
-                    localZoneString = tzdir = nil;
-                }
+          if ([dflt fileExistsAtPath: SYSTEM_TIME_FILE])
+	    {
+	      localZoneString = SYSTEM_TIME_FILE;
+	      localZoneSource = [NSString stringWithFormat:
+		@"file (SYSTEM_TIME_FILE): '%@'", localZoneString];
+	      localZoneString
+		= [localZoneString stringByResolvingSymlinksInPath];
+	      /* Guess what tzdir is */
+	      tzdir = [localZoneString stringByDeletingLastPathComponent];
+	      while ([tzdir length] > 2
+		&& [dflt fileExistsAtPath:
+		[tzdir stringByAppendingPathComponent: @"GMT"]] == NO)
+		{
+		  tzdir = [tzdir stringByDeletingLastPathComponent];
+		}
+	      if ([tzdir length] <= 2)
+	        {
+		  localZoneString = tzdir = nil;
+		}
 #if	!GS_WITH_GC
-                else {
-                    [tzdir retain];
-                }
+	      else
+		{
+		  [tzdir retain];
+		}
 #endif
-            }
+	    }
 #endif
-            if (localZoneString != nil && [localZoneString hasPrefix: tzdir]) {
-                /* This must be the time zone name */
-                localZoneString = AUTORELEASE([localZoneString mutableCopy]);
-                [(NSMutableString*)localZoneString deleteCharactersInRange:
-                 NSMakeRange(0, [tzdir length])];
-                while ([localZoneString hasPrefix: @"/"]) {
-                    [(NSMutableString*)localZoneString deleteCharactersInRange:
-                     NSMakeRange(0, 1)];
-                }
-            } else {
-                localZoneString = nil;
-            }
+	  if (localZoneString != nil && [localZoneString hasPrefix: tzdir])
+	    {
+	      /* This must be the time zone name */
+	      localZoneString = AUTORELEASE([localZoneString mutableCopy]);
+	      [(NSMutableString*)localZoneString deleteCharactersInRange:
+		NSMakeRange(0, [tzdir length])];
+	      while ([localZoneString hasPrefix: @"/"])
+	        {
+		  [(NSMutableString*)localZoneString deleteCharactersInRange:
+		    NSMakeRange(0, 1)];
+	        }
+	    }
+	  else
+	    {
+	      localZoneString = nil;
+	    }
         }
-        
-        /* Try to get timezone from standard unix environment variable.
-         * This is often an ambiguous abbreviation :-(
-         */
-        if (localZoneString == nil) {
-            localZoneSource = _(@"environment variable: 'TZ'");
-            localZoneString = [[[NSProcessInfo processInfo]
-                                environment] objectForKey: @"TZ"];
-        }
-        
+
+      /* Try to get timezone from standard unix environment variable.
+       * This is often an ambiguous abbreviation :-(
+       */
+      if (localZoneString == nil)
+	{
+          localZoneSource = _(@"environment variable: 'TZ'");
+	  localZoneString = [[[NSProcessInfo processInfo]
+	    environment] objectForKey: @"TZ"];
+	}
+
+
 #if HAVE_TZSET && !defined(__FreeBSD__) && !defined(__OpenBSD__)
-        /*
-         * Try to get timezone from tzset and tzname/daylight.
-         * If daylight is non-zero, then tzname[0] is only the name
-         * the the zone for part of the year, so we can't use it as
-         * the definitive zone.
-         *
-         * FreeBSD doesn't implement TZSet fully, so we can't use it there.
-         * Apparently, OpenBSD neither.
-         */
-        if (localZoneString == nil) {
-            localZoneSource = @"function: 'tzset()/tzname'";
-            tzset();
-            if (NULL != tzname[0] && '\0' != *tzname[0] && 0 == daylight)
-                localZoneString = [NSString stringWithUTF8String: tzname[0]];
-        }
+      /*
+       * Try to get timezone from tzset and tzname/daylight.
+       * If daylight is non-zero, then tzname[0] is only the name
+       * the the zone for part of the year, so we can't use it as
+       * the definitive zone.
+       *
+       * FreeBSD doesn't implement TZSet fully, so we can't use it there.
+       * Apparently, OpenBSD neither.
+       */
+      if (localZoneString == nil)
+	{
+          localZoneSource = @"function: 'tzset()/tzname'";
+	  tzset();
+	  if (NULL != tzname[0] && '\0' != *tzname[0] && 0 == daylight)
+	    localZoneString = [NSString stringWithUTF8String: tzname[0]];
+	}
 #endif
-        
-        if (localZoneString != nil) {
-            NSDebugLLog (@"NSTimeZone", @"Using zone %@", localZoneString);
-            zone = [defaultPlaceholderTimeZone initWithName: localZoneString];
-            if (zone == nil) {
-                NSArray	*possibleZoneNames;
-                
-                /*
-                 It is not guaranteed on some systems (e.g., Ubuntu) that
-                 SYSTEM_TIME_FILE is a symlink. This file is more probably
-                 a copy of a zoneinfo file. The above time zone detecting
-                 approach can lead to the situation when we can only know
-                 about the time zone abbreviation (localZoneString) and
-                 (for some time zone abbreviations) the corresponding list
-                 of possible time zone names (e.g. SAMT is valid for
-                 Pacific/Samoa, Pacific/Pago_Pago, Pacific/Apia,
-                 Asia/Samarkand, Europe/Samara, US/Samoa).
-                 In such a case the time zone can be selected
-                 from the list by comparing the content of SYSTEM_TIME_FILE
-                 and the content of zoneinfo files corresponding to the items
-                 of that list.
-                 */
-                possibleZoneNames = [[self abbreviationMap]
-                                     objectForKey: localZoneString];
-                if (possibleZoneNames != nil) {
-                    NSEnumerator	*en = [possibleZoneNames objectEnumerator];
-                    NSString	*zoneName;
-                    NSFileManager *dflt = [NSFileManager defaultManager];
-                    
-                    while ((zoneName = [en nextObject]) != nil) {
-                        NSString	*fileName = [self _getTimeZoneFile: zoneName];
-                        
-                        if (fileName != nil
-                            && [dflt contentsEqualAtPath: fileName
-                                                 andPath: SYSTEM_TIME_FILE]) {
-                            zone = [[self timeZoneWithName: zoneName] retain];
-                            
-                            if (zone != nil) {
-                                GSPrintf(stderr,
-                                         @"\nIt seems that your operating system does not have a valid timezone name\n"
-                                         @"configured and is using an abbreviation instead.  By comparing timezone\n"
-                                         @"file data it is has been possible to find the actual timezone used, but\n"
-                                         @"doing that is a slow process.\n"
-                                         @"\nYou can avoid slowness of this time zone detecting approach\n"
-                                         @"by setting the environment variable TZ='%@'\n"
-                                         @"Or You can override the timezone name by setting the '%@'\n"
-                                         @"NSUserDefault via the 'defaults' command line utility, a Preferences\n"
-                                         @"application, or some other utility.\n"
-                                         @"eg \"defaults write NSGlobalDomain '%@' '%@'\"\n\n",
-                                         zoneName, LOCALDBKEY, LOCALDBKEY, zoneName);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (zone == nil) {
-                if (zone == nil) {
-                    GSPrintf(stderr,
-                             @"\nUnable to create time zone for name: '%@'\n"
-                             @"(source '%@').\n", localZoneString, localZoneSource);
-                }
-                if ([localZoneSource hasPrefix: @"file"]
-                    || [localZoneSource hasPrefix: @"function"]) {
-                    GSPrintf(stderr,
-                             @"\nIt seems that your operating system does not have a valid timezone name\n"
-                             @"configured (it could be that some other software has set a, possibly\n"
-                             @"ambiguous, timezone abbreviation rather than a name) ... please correct\n"
-                             @"that or override by setting a timezone name (such as 'Europe/London'\n"
-                             @"or 'America/Chicago').\n");
-                }
-                GSPrintf(stderr,
-                         @"\nYou can override the timezone name by setting the '%@'\n"
-                         @"NSUserDefault via the 'defaults' command line utility, a Preferences\n"
-                         @"application, or some other utility.\n"
-                         @"eg \"defaults write NSGlobalDomain '%@' 'Africa/Nairobi'\"\n"
-                         @"See '%@'\n"
-                         @"for the standard timezones such as 'GB-Eire' or 'America/Chicago'.\n",
-                         LOCALDBKEY, LOCALDBKEY, _time_zone_path (ZONES_DIR, nil));
-                zone = [[self timeZoneWithAbbreviation: localZoneString] retain];
-                if (zone != nil) {
-                    NSInteger	s;
-                    char		sign = '+';
-                    
-                    s = [zone secondsFromGMT];
-                    if (s < 0) {
-                        sign = '-';
-                        s = -s;
-                    }
-                    GSPrintf(stderr,
-                             @"\nSucceeded in treating '%@' as a timezone abbreviation,\n"
-                             @"but abbreviations do not uniquely represent timezones, so this may\n"
-                             @"not have found the timezone you were expecting.  The timezone found\n"
-                             @"was '%@' (currently UTC%c%02d%02d)\n\n",
-                             localZoneString, [zone name], sign, s/3600, (s/60)%60);
-                }
-            }
-        } else {
-#ifndef RD
-            NSLog(@"No local time zone specified.");
-#endif
+
+      if (localZoneString != nil)
+	{
+	  NSDebugLLog (@"NSTimeZone", @"Using zone %@", localZoneString);
+	  zone = [defaultPlaceholderTimeZone initWithName: localZoneString];
+	  if (zone == nil)
+	    {
+	      NSArray	*possibleZoneNames;
+
+	      /*
+		It is not guaranteed on some systems (e.g., Ubuntu) that 
+		SYSTEM_TIME_FILE is a symlink. This file is more probably 
+		a copy of a zoneinfo file. The above time zone detecting 
+		approach can lead to the situation when we can only know 
+		about the time zone abbreviation (localZoneString) and 
+		(for some time zone abbreviations) the corresponding list 
+		of possible time zone names (e.g. SAMT is valid for
+		Pacific/Samoa, Pacific/Pago_Pago, Pacific/Apia,
+		Asia/Samarkand, Europe/Samara, US/Samoa).
+		In such a case the time zone can be selected 
+		from the list by comparing the content of SYSTEM_TIME_FILE 
+		and the content of zoneinfo files corresponding to the items 
+		of that list.
+	       */
+	      possibleZoneNames = [[self abbreviationMap]
+		objectForKey: localZoneString];
+	      if (possibleZoneNames != nil)
+		{
+		  NSEnumerator	*en = [possibleZoneNames objectEnumerator];
+		  NSString	*zoneName;
+		  NSFileManager *dflt = [NSFileManager defaultManager];
+		  
+		  while ((zoneName = [en nextObject]) != nil)
+		    {
+		      NSString	*fileName = [self _getTimeZoneFile: zoneName];
+
+		      if (fileName != nil
+			&& [dflt contentsEqualAtPath: fileName 
+					     andPath: SYSTEM_TIME_FILE])
+			{
+			  zone = [[self timeZoneWithName: zoneName] retain];
+
+			  if (zone != nil)
+			    {
+			      GSPrintf(stderr,
+@"\nIt seems that your operating system does not have a valid timezone name\n"
+@"configured and is using an abbreviation instead.  By comparing timezone\n"
+@"file data it is has been possible to find the actual timezone used, but\n"
+@"doing that is a slow process.\n"
+@"\nYou can avoid slowness of this time zone detecting approach\n"
+@"by setting the environment variable TZ='%@'\n"
+@"Or You can override the timezone name by setting the '%@'\n"
+@"NSUserDefault via the 'defaults' command line utility, a Preferences\n"
+@"application, or some other utility.\n"
+@"eg \"defaults write NSGlobalDomain '%@' '%@'\"\n\n",
+zoneName, LOCALDBKEY, LOCALDBKEY, zoneName);
+			      break;
+			    }
+			}
+		    }
+		}
+	    }
+	  if (zone == nil)
+	    {
+	      if (zone == nil)
+		{
+		  GSPrintf(stderr,
+@"\nUnable to create time zone for name: '%@'\n"
+@"(source '%@').\n", localZoneString, localZoneSource);
+		}
+	      if ([localZoneSource hasPrefix: @"file"]
+	        || [localZoneSource hasPrefix: @"function"])
+		{
+                  GSPrintf(stderr,
+@"\nIt seems that your operating system does not have a valid timezone name\n"
+@"configured (it could be that some other software has set a, possibly\n"
+@"ambiguous, timezone abbreviation rather than a name) ... please correct\n"
+@"that or override by setting a timezone name (such as 'Europe/London'\n"
+@"or 'America/Chicago').\n");
+		}
+	      GSPrintf(stderr,
+@"\nYou can override the timezone name by setting the '%@'\n"
+@"NSUserDefault via the 'defaults' command line utility, a Preferences\n"
+@"application, or some other utility.\n"
+@"eg \"defaults write NSGlobalDomain '%@' 'Africa/Nairobi'\"\n"
+@"See '%@'\n"
+@"for the standard timezones such as 'GB-Eire' or 'America/Chicago'.\n",
+LOCALDBKEY, LOCALDBKEY, _time_zone_path (ZONES_DIR, nil));
+	      zone = [[self timeZoneWithAbbreviation: localZoneString] retain];
+	      if (zone != nil)
+		{
+		  NSInteger	s;
+		  char		sign = '+';
+
+		  s = [zone secondsFromGMT];
+		  if (s < 0)
+		    {
+		      sign = '-';
+		      s = -s;
+		    }
+	          GSPrintf(stderr,
+@"\nSucceeded in treating '%@' as a timezone abbreviation,\n"
+@"but abbreviations do not uniquely represent timezones, so this may\n"
+@"not have found the timezone you were expecting.  The timezone found\n"
+@"was '%@' (currently UTC%c%02d%02d)\n\n",
+localZoneString, [zone name], sign, s/3600, (s/60)%60);
+		}
+	    }
+	}
+      else
+	{
+	  NSLog(@"No local time zone specified.");
+	}
+
+      /*
+       * If local time zone fails to allocate, then allocate something
+       * that is sure to succeed (unless we run out of memory, of
+       * course).
+       */
+      if (zone == nil)
+        {
+          NSLog(@"Using time zone with absolute offset 0.");
+          zone = systemTimeZone;
         }
-        
-        /*
-         * If local time zone fails to allocate, then allocate something
-         * that is sure to succeed (unless we run out of memory, of
-         * course).
-         */
-        if (zone == nil) {
-#ifndef RD
-            NSLog(@"Using time zone with absolute offset 0.");
-#endif
-            zone = systemTimeZone;
-        }
-        ASSIGN(systemTimeZone, zone);
+      ASSIGN(systemTimeZone, zone);
     }
-    if (zone_mutex != nil) {
-        zone = AUTORELEASE(RETAIN(systemTimeZone));
-        [zone_mutex unlock];
-    } else {
-        zone = systemTimeZone;
+  if (zone_mutex != nil)
+    {
+      zone = AUTORELEASE(RETAIN(systemTimeZone));
+      [zone_mutex unlock];
     }
-    return zone;
+  else
+    {
+      zone = systemTimeZone;
+    }
+  return zone;
 }
 
 /**
@@ -2013,6 +2035,11 @@ static NSMapTable	*absolutes = 0;
   [aCoder encodeObject: [self name]];
 }
 
+- (NSUInteger) hash
+{
+  return [[self name] hash];
+}
+
 - (id) init
 {
   return [self initWithName: @"NSLocalTimeZone" data: nil];
@@ -2082,7 +2109,7 @@ static NSMapTable	*absolutes = 0;
 }
 
 /**
- * Returns TRUE if the time zones have the same name.
+ * Returns YES if the time zones have the same name.
  */
 - (BOOL) isEqualToTimeZone: (NSTimeZone*)aTimeZone
 {
@@ -2189,7 +2216,73 @@ static NSMapTable	*absolutes = 0;
 
 - (NSDate *) nextDaylightSavingTimeTransitionAfterDate: (NSDate *)aDate
 {
+#if GS_USE_ICU == 1
+  /* ICU doesn't provide transition information per se.
+   * The canonical method of retrieving this piece of information is to
+   * use binary search.
+   */
+  
+  int32_t originalOffset, currentOffset;
+  UCalendar *cal;
+  UErrorCode err = U_ZERO_ERROR;
+  UDate currentTime;
+  int i;
+  NSDate* result = nil;
+  
+  cal = ICUCalendarSetup (self, nil);
+  if (cal == NULL)
+    return nil;
+  
+  currentTime = [aDate timeIntervalSince1970] * 1000.0;
+  ucal_setMillis (cal, currentTime, &err);
+  originalOffset = ucal_get (cal, UCAL_DST_OFFSET, &err);
+  if (U_FAILURE(err))
+    return nil;
+
+  /* First try to find the next transition by adding a week at a time */
+  /* Avoid ending in an infinite loop in case there is no transition at all */
+
+  for (i = 0; i < 53; i++)
+    {
+      /* Add a single week */
+      currentTime += WEEK_MILLISECONDS;
+
+	  ucal_setMillis (cal, currentTime, &err);
+	  if (U_FAILURE(err))
+        break;
+
+	  currentOffset = ucal_get (cal, UCAL_DST_OFFSET, &err);
+	  if (U_FAILURE(err))
+        break;
+
+	  if (currentOffset != originalOffset)
+        {
+          double interval = WEEK_MILLISECONDS / 2.0;
+          /* Now use bisection to determine the exact moment */
+
+		  while (interval >= 1.0)
+            {
+              ucal_setMillis (cal, currentTime - interval, &err);
+
+              currentOffset = ucal_get (cal, UCAL_DST_OFFSET, &err);
+
+              if (currentOffset != originalOffset)
+                currentTime -= interval; /* it is in the lower half */
+
+              interval /= 2.0;
+            }
+
+           result =
+             [NSDate dateWithTimeIntervalSince1970: floor(currentTime/1000.0)];
+        }
+    }
+
+  ucal_close (cal);
+  
+  return result;
+#else
   return nil;   // FIXME;
+#endif
 }
 
 - (NSTimeInterval) daylightSavingTimeOffset
@@ -2246,7 +2339,7 @@ static NSMapTable	*absolutes = 0;
 
 - (NSString*) description
 {
-  return [NSString stringWithFormat: @"%@(%@, %s%d)", [self name],
+  return [NSString stringWithFormat: @"%@(%@, %s%"PRIdPTR")", [self name],
     [self timeZoneAbbreviation],
     ([self isDaylightSavingTimeZone]? "IS_DST, ": ""),
     [self timeZoneSecondsFromGMT]];
@@ -2449,7 +2542,7 @@ GSBreakTime(NSTimeInterval when, NSInteger*year, NSInteger*month, NSInteger*day,
   else
     {
       if (ERROR_SUCCESS == RegOpenKeyExW(HKEY_LOCAL_MACHINE,
-          L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones",
+          L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Time Zones",
           0,
           KEY_READ,
           &regDirKey))
@@ -3000,10 +3093,12 @@ newDetailInZoneForType(GSTimeZone *zone, TypeInfo *type)
       for (i = 0; i < n_types; i++)
 	{
 	  struct ttinfo	*ptr = (struct ttinfo*)(bytes + pos);
+          uint32_t      off;
 
 	  types[i].isdst = (ptr->isdst != 0 ? YES : NO);
 	  types[i].abbr_idx = ptr->abbr_idx;
-	  types[i].offset = decode(ptr->offset);
+          memcpy(&off, ptr->offset, 4);
+	  types[i].offset = GSSwapBigI32ToHost(off);
 	  pos += sizeof(struct ttinfo);
 	}
       abbr = (unsigned char*)(bytes + pos);

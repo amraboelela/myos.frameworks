@@ -27,11 +27,11 @@
 
 #import "common.h"
 #define	EXPOSE_GSLock_IVARS	1
-#import "NSException.h"
-#import "NSLock.h"
-#import "NSNotification.h"
-#import "NSThread.h"
-#import "GSLock.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSThread.h"
+#import "GNUstepBase/GSLock.h"
 
 /**
  * This implements a class which, when used in single-threaded mode,
@@ -262,45 +262,58 @@
   return self;
 }
 
-- (void)lock
+- (void) lock
 {
-    if (counter >= 0) {
-        counter++;
-    } else {
-        [super lock];
+  if (counter >= 0)
+    {
+      counter++;
+    }
+  else
+    {
+      [super lock];
     }
 }
 
 - (BOOL) lockBeforeDate: (NSDate*)limit
 {
-    if (counter >= 0) {
-        counter++;
-        return YES;
-    } else {
-        return [super lockBeforeDate: limit];
+  if (counter >= 0)
+    {
+      counter++;
+      return YES;
+    }
+  else
+    {
+      return [super lockBeforeDate: limit];
     }
 }
 
-- (BOOL)tryLock
+- (BOOL) tryLock
 {
-    if (counter >= 0) {
-        counter++;
-        return YES;
-    } else {
-        return [super tryLock];
+  if (counter >= 0)
+    {
+      counter++;
+      return YES;
+    }
+  else
+    {
+      return [super tryLock];
     }
 }
 
-- (void)unlock
+- (void) unlock
 {
-    if (counter > 0) {
-        counter--;
-    } else if (counter == 0) {
-        //DLog(@"count: %d", counter);
-        [NSException raise: NSGenericException
-                    format: @"unlock: failed to unlock mutex"];
-    } else {
-        [super unlock];
+  if (counter > 0)
+    {
+      counter--;
+    }
+  else if (counter == 0)
+    {
+      [NSException raise: NSGenericException
+		  format: @"unlock: failed to unlock mutex"];
+    }
+  else
+    {
+      [super unlock];
     }
 }
 

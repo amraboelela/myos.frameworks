@@ -25,24 +25,24 @@
 #import "common.h"
 #define	EXPOSE_NSPort_IVARS	1
 #define	EXPOSE_NSMessagePort_IVARS	1
-#import "GSLock.h"
-#import "NSArray.h"
-#import "NSNotification.h"
-#import "NSException.h"
-#import "NSRunLoop.h"
-#import "NSByteOrder.h"
-#import "NSData.h"
-#import "NSDate.h"
-#import "NSMapTable.h"
-#import "NSPortMessage.h"
-#import "NSPortNameServer.h"
-#import "NSLock.h"
-#import "NSThread.h"
-#import "NSConnection.h"
-#import "NSPathUtilities.h"
-#import "NSValue.h"
-#import "NSFileManager.h"
-#import "NSProcessInfo.h"
+#import "GNUstepBase/GSLock.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSPortMessage.h"
+#import "Foundation/NSPortNameServer.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSConnection.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSProcessInfo.h"
 
 #import "GSPrivate.h"
 #import "GSNetwork.h"
@@ -54,7 +54,6 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <arpa/inet.h>		/* for inet_ntoa() */
-#include <string.h>		/* for strchr() */
 #include <ctype.h>		/* for strchr() */
 
 #if	defined(HAVE_SYS_FCNTL_H)
@@ -77,7 +76,9 @@
 /*
  *	Stuff for setting the sockets into non-blocking mode.
  */
-#ifdef	__POSIX_SOURCE
+#if defined(__POSIX_SOURCE)\
+        || defined(__EXT_POSIX1_198808)\
+        || defined(O_NONBLOCK)
 #define NBLK_OPT     O_NONBLOCK
 #else
 #define NBLK_OPT     FNDELAY
@@ -93,7 +94,9 @@
 #endif
 
 #if	defined(__svr4__)
-#include <sys/stropts.h>
+#  if defined(HAVE_SYS_STROPTS)
+#    include <sys/stropts.h>
+#  endif
 #endif
 
 @interface NSProcessInfo (private)
@@ -348,7 +351,8 @@ static Class	runLoopClass;
   const unsigned char *name;
 
   M_LOCK(myLock);
-  NSDebugMLLog(@"NSMessagePort", @"Connecting on 0x%x before %@", self, when);
+  NSDebugMLLog(@"NSMessagePort",
+    @"Connecting on 0x%"PRIxPTR" before %@", (NSUInteger)self, when);
   if (state != GS_H_UNCON)
     {
       BOOL	result;
@@ -497,7 +501,8 @@ static Class	runLoopClass;
 		    type: ET_WDESC
 		 forMode: nil
 		     all: YES];
-	  NSDebugMLLog(@"NSMessagePort", @"invalidated 0x%x", self);
+	  NSDebugMLLog(@"NSMessagePort",
+	    @"invalidated 0x%"PRIxPTR, (NSUInteger)self);
 	  [[self recvPort] removeHandle: self];
 	  [[self sendPort] removeHandle: self];
 	}
@@ -524,8 +529,8 @@ static Class	runLoopClass;
 	       forMode: (NSString*)mode
 {
   NSDebugMLLog(@"NSMessagePort_details",
-    @"received %s event on 0x%x",
-    type != ET_WDESC ? "read" : "write", self);
+    @"received %s event on 0x%"PRIxPTR,
+    type != ET_WDESC ? "read" : "write", (NSUInteger)self);
   /*
    * If we have been invalidated (desc < 0) then we should ignore this
    * event and remove ourself from the runloop.
@@ -584,7 +589,8 @@ static Class	runLoopClass;
 	{
 	  if (res == 0)
 	    {
-	      NSDebugMLLog(@"NSMessagePort", @"read eof on 0x%x", self);
+	      NSDebugMLLog(@"NSMessagePort",
+	        @"read eof on 0x%"PRIxPTR, (NSUInteger)self);
 	      M_UNLOCK(myLock);
 	      [self invalidate];
 	      return;
@@ -600,7 +606,7 @@ static Class	runLoopClass;
 	  res = 0;	/* Interrupted - continue	*/
 	}
       NSDebugMLLog(@"NSMessagePort_details",
-	@"read %d bytes on 0x%x", res, self);
+	@"read %d bytes on 0x%"PRIxPTR, res, (NSUInteger)self);
       rLength += res;
 
       while (valid == YES && rLength >= rWant)
@@ -858,7 +864,7 @@ static Class	runLoopClass;
 	      rId = 0;
 	      DESTROY(rItems);
 	      NSDebugMLLog(@"NSMessagePort_details",
-		@"got message %@ on 0x%x", pm, self);
+		@"got message %@ on 0x%"PRIxPTR, pm, (NSUInteger)self);
 	      IF_NO_GC([rp retain];)
 	      M_UNLOCK(myLock);
 	      NS_DURING
@@ -906,7 +912,7 @@ static Class	runLoopClass;
 	      if (len == (int)[d length])
 		{
 		  NSDebugMLLog(@"NSMessagePort_details",
-		    @"wrote %d bytes on 0x%x", len, self);
+		    @"wrote %d bytes on 0x%"PRIxPTR, len, (NSUInteger)self);
 		  state = GS_H_CONNECTED;
 		}
 	      else
@@ -935,7 +941,7 @@ static Class	runLoopClass;
 		}
 	      else
 		{
-		  // NSLog(@"No messages to write on 0x%x.", self);
+// NSLog(@"No messages to write on 0x%"PRIxPTR".", (NSUInteger)self);
 		  M_UNLOCK(myLock);
 		  return;
 		}
@@ -956,7 +962,7 @@ static Class	runLoopClass;
 	  else
 	    {
 	      NSDebugMLLog(@"NSMessagePort_details",
-		@"wrote %d bytes on 0x%x", res, self);
+		@"wrote %d bytes on 0x%"PRIxPTR, res, (NSUInteger)self);
 	      wLength += res;
 	      if (wLength == l)
 		{
@@ -981,7 +987,8 @@ static Class	runLoopClass;
 		       * message completed - remove from list.
 		       */
 		      NSDebugMLLog(@"NSMessagePort_details",
-			@"completed 0x%x on 0x%x", components, self);
+			@"completed 0x%"PRIxPTR" on 0x%"PRIxPTR,
+			(NSUInteger)components, (NSUInteger)self);
 		      wData = nil;
 		      wItem = 0;
 		      [wMsgs removeObjectAtIndex: 0];
@@ -1001,8 +1008,8 @@ static Class	runLoopClass;
 
   NSAssert([components count] > 0, NSInternalInconsistencyException);
   NSDebugMLLog(@"NSMessagePort_details",
-    @"Sending message 0x%x %@ on 0x%x(%d) before %@",
-    components, components, self, desc, when);
+    @"Sending message 0x%"PRIxPTR" %@ on 0x%"PRIxPTR"(%d) before %@",
+    (NSUInteger)components, components, (NSUInteger)self, desc, when);
   M_LOCK(myLock);
   [wMsgs addObject: components];
 
@@ -1043,7 +1050,8 @@ static Class	runLoopClass;
     }
   M_UNLOCK(myLock);
   NSDebugMLLog(@"NSMessagePort_details",
-    @"Message send 0x%x on 0x%x status %d", components, self, sent);
+    @"Message send 0x%"PRIxPTR" on 0x%"PRIxPTR" status %d",
+    (NSUInteger)components, (NSUInteger)self, sent);
   RELEASE(self);
   return sent;
 }
@@ -1091,12 +1099,11 @@ static NSMapTable	*messagePortMap = 0;
 static Class		messagePortClass;
 
 
-static void clean_up_sockets(void)
++ (void) atExit
 {
   NSMessagePort		*port;
   NSData		*name;
   NSMapEnumerator	mEnum;
-  BOOL			unknownThread = GSRegisterCurrentThread();
   NSAutoreleasePool	*arp = [NSAutoreleasePool new];
 
   mEnum = NSEnumerateMapTable(messagePortMap);
@@ -1106,11 +1113,9 @@ static void clean_up_sockets(void)
 	unlink([name bytes]);
     }
   NSEndMapTableEnumeration(&mEnum);
+  DESTROY(messagePortMap);
+  DESTROY(messagePortLock);
   [arp drain];
-  if (unknownThread == YES)
-    {
-      GSUnregisterCurrentThread();
-    }
 }
 
 typedef	struct {
@@ -1129,6 +1134,7 @@ typedef	struct {
 {
   if (self == [NSMessagePort class])
     {
+      NSAutoreleasePool *pool = [NSAutoreleasePool new];
       NSFileManager	*mgr;
       NSString		*path;
       NSString		*pref;
@@ -1140,7 +1146,6 @@ typedef	struct {
 	NSNonOwnedPointerMapValueCallBacks, 0);
 
       messagePortLock = [GSLazyRecursiveLock new];
-      atexit(clean_up_sockets);
 
       /* It's possible that an old process, with the same process ID as
        * this one, got forcibly killed or crashed so that clean_up_sockets
@@ -1179,6 +1184,8 @@ typedef	struct {
 		}
 	    }
 	}
+      [pool release];
+      [self registerAtExit];
     }
 }
 
@@ -1186,21 +1193,27 @@ typedef	struct {
 {
   static int unique_index = 0;
   NSString	*path;
-  NSNumber	*p = [NSNumber numberWithInt: 0700];
   NSDictionary	*attr;
 
-  attr = [NSDictionary dictionaryWithObject: p
-				     forKey: NSFilePosixPermissions];
+  if (nil == (path = NSTemporaryDirectory()))
+    {
+      return nil;
+    }
 
-  path = NSTemporaryDirectory();
+  attr = [NSDictionary dictionaryWithObject: [NSNumber numberWithInt: 0700]
+				     forKey: NSFilePosixPermissions];
 
   path = [path stringByAppendingPathComponent: @"NSMessagePort"];
   [[NSFileManager defaultManager] createDirectoryAtPath: path
-				  attributes: attr];
+                            withIntermediateDirectories: YES
+                                             attributes: attr
+                                                  error: NULL];
 
   path = [path stringByAppendingPathComponent: @"ports"];
   [[NSFileManager defaultManager] createDirectoryAtPath: path
-				  attributes: attr];
+                            withIntermediateDirectories: YES
+                                             attributes: attr
+                                                  error: NULL];
 
   M_LOCK(messagePortLock);
   path = [path stringByAppendingPathComponent:
@@ -1397,7 +1410,8 @@ typedef	struct {
 
 - (void) finalize
 {
-  NSDebugMLLog(@"NSMessagePort", @"NSMessagePort 0x%x finalized", self);
+  NSDebugMLLog(@"NSMessagePort",
+    @"NSMessagePort 0x%"PRIxPTR" finalized", (NSUInteger)self);
   [self invalidate];
   if (_internal != 0)
     {
@@ -1414,6 +1428,8 @@ typedef	struct {
  */
 - (void) getFds: (NSInteger*)fds count: (NSInteger*)count
 {
+  NSInteger             limit = *count;
+  NSInteger             pos = 0;
   NSMapEnumerator	me;
   void			*sock;
   GSMessageHandle	*handle;
@@ -1422,18 +1438,15 @@ typedef	struct {
   M_LOCK(myLock);
 
   /*
-   * Make sure there is enough room in the provided array.
-   */
-  NSAssert(*count > (int)NSCountMapTable(handles),
-    NSInternalInconsistencyException);
-
-  /*
    * Put in our listening socket.
    */
-  *count = 0;
   if (lDesc >= 0)
     {
-      fds[(*count)++] = lDesc;
+      if (pos < limit)
+        {
+          fds[pos] = lDesc;
+        }
+      pos++;
     }
 
   /*
@@ -1445,12 +1458,17 @@ typedef	struct {
   while (NSNextMapEnumeratorPair(&me, &sock, (void**)&handle))
     {
       if (handle->recvPort == recvSelf)
-	{
-	  fds[(*count)++] = (int)(intptr_t)sock;
-	}
+        {
+          if (pos < limit)
+            {
+              fds[pos] = (int)(intptr_t)sock;
+            }
+          pos++;
+        }
     }
   NSEndMapTableEnumeration(&me);
   M_UNLOCK(myLock);
+  *count = pos;
 }
 
 - (id) conversation: (NSPort*)recvPort
@@ -1560,12 +1578,13 @@ typedef	struct {
   if (d == nil)
     {
       NSDebugMLLog(@"NSMessagePort",
-	@"No delegate to handle incoming message", 0);
+	@"%@", @"No delegate to handle incoming message");
       return;
     }
   if ([d respondsToSelector: @selector(handlePortMessage:)] == NO)
     {
-      NSDebugMLLog(@"NSMessagePort", @"delegate doesn't handle messages", 0);
+      NSDebugMLLog(@"NSMessagePort",
+	@"%@", @"delegate doesn't handle messages");
       return;
     }
   [d handlePortMessage: m];

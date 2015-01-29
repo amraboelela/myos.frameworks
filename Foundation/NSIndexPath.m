@@ -25,14 +25,14 @@
 
 #import "common.h"
 #define	EXPOSE_NSIndexPath_IVARS	1
-#import	"NSByteOrder.h"
-#import	"NSData.h"
-#import	"NSException.h"
-#import	"NSHashTable.h"
-#import	"NSIndexPath.h"
-#import	"NSKeyedArchiver.h"
-#import	"NSLock.h"
-#import	"GSLock.h"
+#import	"Foundation/NSByteOrder.h"
+#import	"Foundation/NSData.h"
+#import	"Foundation/NSException.h"
+#import	"Foundation/NSHashTable.h"
+#import	"Foundation/NSIndexPath.h"
+#import	"Foundation/NSKeyedArchiver.h"
+#import	"Foundation/NSLock.h"
+#import	"GNUstepBase/GSLock.h"
 
 static	GSLazyRecursiveLock	*lock = nil;
 static	NSHashTable	*shared = 0;
@@ -70,10 +70,14 @@ static	NSIndexPath	*dummy = nil;
     {
       myClass = self;
       empty = (NSIndexPath*)NSAllocateObject(self, 0, NSDefaultMallocZone());
+      [[NSObject leakAt: &empty] release];
       dummy = (NSIndexPath*)NSAllocateObject(self, 0, NSDefaultMallocZone());
+      [[NSObject leakAt: &dummy] release];
       shared = NSCreateHashTable(NSNonRetainedObjectHashCallBacks, 1024);
+      [[NSObject leakAt: &shared] release];
       NSHashInsert(shared, empty);
       lock = [GSLazyRecursiveLock new];
+      [[NSObject leakAt: &lock] release];
     }
 }
 
@@ -123,9 +127,15 @@ static	NSIndexPath	*dummy = nil;
   if (self != empty)
     {
       [lock lock];
-      NSHashRemove(shared, self);
+      if (shared != nil)
+        {
+          NSHashRemove(shared, self);
+        }
       [lock unlock];
-      NSZoneFree(NSDefaultMallocZone(), _indexes);
+      if (_indexes != 0)
+        {
+          NSZoneFree(NSDefaultMallocZone(), _indexes);
+        }
       [super dealloc];
     }
   GSNOSUPERDEALLOC;
@@ -136,14 +146,14 @@ static	NSIndexPath	*dummy = nil;
   NSMutableString	*m = [[super description] mutableCopy];
   NSUInteger		i;
 
-  [m appendFormat: @"%u indexes [", _length];
+  [m appendFormat: @"%"PRIuPTR" indexes [", _length];
   for (i = 0; i < _length; i++)
     {
       if (i > 0)
 	{
 	  [m appendString: @", "];
 	}
-      [m appendFormat: @"%u", _indexes[i]];
+      [m appendFormat: @"%"PRIuPTR, _indexes[i]];
     }
   [m appendString: @"]"];
   return AUTORELEASE(m);
@@ -156,7 +166,8 @@ static	NSIndexPath	*dummy = nil;
       [aCoder encodeInt: (NSInteger)_length forKey: @"NSIndexPathLength"];
       if (_length == 1)
 	{
-	  [aCoder encodeInt: (NSInteger)_indexes[0] forKey: @"NSIndexPathValue"];
+	  [aCoder encodeInt: (NSInteger)_indexes[0]
+                     forKey: @"NSIndexPathValue"];
 	}
       else if (_length > 1)
 	{
@@ -297,7 +308,7 @@ static	NSIndexPath	*dummy = nil;
                   NSZoneFree(NSDefaultMallocZone(), dst);
                 }
               [NSException raise: NSGenericException format:
-                @"Unable to decode unsigned integers of size %u", s];
+                @"Unable to decode unsigned integers of size %"PRIuPTR, s];
             }
           self = [self initWithIndexes: dst length: length];
           if ((void*)dst != src)
@@ -313,8 +324,7 @@ static	NSIndexPath	*dummy = nil;
       [aCoder decodeValueOfObjCType: @encode(NSUInteger) at: &length];
       if (length == 0)
 	{
-	  DESTROY(self);
-	  self = empty;
+	  ASSIGN(self, empty);
 	}
       else
 	{
@@ -374,6 +384,7 @@ static	NSIndexPath	*dummy = nil;
     {
       if (self == empty)
 	{
+          RELEASE(self);
 	  self = (NSIndexPath*)NSAllocateObject([self class],
 	    0, NSDefaultMallocZone());
 	}
@@ -386,9 +397,9 @@ static	NSIndexPath	*dummy = nil;
     }
   else
     {
-      DESTROY(self);
-      self = RETAIN(found);
+      ASSIGN(self, found);
     }
+  dummy->_indexes = 0;  // Don't want static indexes deallocated atExit
   [lock unlock];
   return self;
 }
@@ -443,7 +454,6 @@ static	NSIndexPath	*dummy = nil;
       if (NSDecrementExtraRefCountWasZero(self))
 	{
 	  [self dealloc];
-	  self = nil;
 	}
       [lock unlock];
     }
