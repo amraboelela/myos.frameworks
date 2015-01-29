@@ -22,8 +22,12 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
    */
 
-
+#ifdef ANDROID
 #import <lcms/lcms.h>
+#else
+#import <lcms.h>
+#endif
+
 #import <Foundation/NSString.h>
 
 #import "CGColorSpace.h"

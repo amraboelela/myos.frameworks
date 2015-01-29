@@ -197,5 +197,7 @@ OBJECTS = \
     GSSocksParserPrivate.o \
     GSXML.o \
     GSStream.o \
+    GSTLS.o \
+    GSShellSort.o \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

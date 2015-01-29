@@ -22,7 +22,11 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #import <stdlib.h>
+#ifdef ANDROID
 #import <png/png.h>
+#else
+#import <png.h>
+#endif
 #import "CGBitmapContext-private.h"
 #import "CGContext-private.h"
 

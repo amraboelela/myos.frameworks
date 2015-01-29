@@ -22,14 +22,16 @@
      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
      */
 #import <stdlib.h>
+#ifdef ANDROID
 #import <png/png.h>
+#else
+#import <png.h>
+#endif
 #import "CGImage-private.h"
 #import "CGImageSource.h"
 #import "CGDataProvider-private.h"
 #import <Foundation/NSString.h>
 #import <Foundation/NSDictionary.h>
-//#import <stdlib.h>
-//#import <cairo/cairo.h>
 #import "OPImageConversion.h"
 #if defined(ANDROID) && defined(NATIVE_APP)
 #import <android/asset_manager.h>
