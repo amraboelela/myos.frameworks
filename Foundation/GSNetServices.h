@@ -25,23 +25,10 @@
 #import "common.h"
 #define	EXPOSE_NSNetService_IVARS	1
 #define	EXPOSE_NSNetServiceBrowser_IVARS	1
-#import	"NSNetServices.h"
-#import "NSNetServices+GNUstepBase.h"
+#import	"Foundation/NSNetServices.h"
+#import "GNUstepBase/NSNetServices+GNUstepBase.h"
 
-// Subclasses using mDNSResponder:
-
-/**
- * NSNetService using the mDNSResponder API.
- */
-@interface GSMDNSNetService : NSNetService
-@end
-
-
-/**
- * NSNetServiceBrowser using the mDNSResponder API.
- */
-@interface GSMDNSNetServiceBrowser : NSNetServiceBrowser
-@end
+#if GS_USE_AVAHI==1
 
 // Subclasses using Avahi:
 
@@ -78,12 +65,16 @@ typedef enum
  */
 NSString* GSNetServiceDotTerminatedNSStringFromString(const char* string);
 
-@class GSAvahiRunLoopContext, NSTimer, NSLock, NSRecursiveLock, NSMutableDictionary, NSMapTable;
+@class GSAvahiRunLoopContext;
+@class NSTimer;
+@class NSRecursiveLock;
+@class NSMutableDictionary;
+@class NSMapTable;
 
 /**
  * NSNetService using the avahi-client API.
  */
-@interface GSAvahiNetService : NSNetService
+@interface GSAvahiNetService : NSNetService <NSNetServiceDelegate>
 {
   // GSAvahiClient behaviour ivars:
   // From superclass: id _delegate;
@@ -92,7 +83,7 @@ NSString* GSNetServiceDotTerminatedNSStringFromString(const char* string);
   NSRecursiveLock *_lock;
   // Ivars for this class:
   NSMutableDictionary *_info;
-  NSLock *_infoLock;
+  NSRecursiveLock *_infoLock;
   NSUInteger _infoSeq;
   GSNetServiceState _serviceState;
   int _ifIndex;
@@ -125,7 +116,8 @@ NSString* GSNetServiceDotTerminatedNSStringFromString(const char* string);
 /**
  * NSNetServiceBrowser using the avahi-client API.
  */
-@interface GSAvahiNetServiceBrowser: NSNetServiceBrowser
+@interface GSAvahiNetServiceBrowser
+  : NSNetServiceBrowser <NSNetServiceBrowserDelegate>
 {
   // GSAvahiClient behaviour ivars:
   // from superclass: id _delegate;
@@ -139,3 +131,21 @@ NSString* GSNetServiceDotTerminatedNSStringFromString(const char* string);
   NSMutableDictionary *_services;
 }
 @end
+
+#else // GS_USE_MDNS
+
+// Subclasses using mDNSResponder:
+
+/**
+ * NSNetService using the mDNSResponder API.
+ */
+@interface GSMDNSNetService : NSNetService <NSNetServiceDelegate>
+@end
+
+/**
+ * NSNetServiceBrowser using the mDNSResponder API.
+ */
+@interface GSMDNSNetServiceBrowser : NSNetServiceBrowser <NSNetServiceBrowserDelegate>
+@end
+
+#endif // GS_USE_AVAHI

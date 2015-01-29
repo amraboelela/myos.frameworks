@@ -23,19 +23,18 @@
    Boston, MA 02111 USA.
 
    <title>NSInvocation class reference</title>
-   $Date: 2012-01-29 08:57:06 -0800 (Sun, 29 Jan 2012) $ $Revision: 34660 $
+   $Date: 2014-05-22 09:55:18 -0700 (Thu, 22 May 2014) $ $Revision: 37904 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSInvocation_IVARS	1
-#import "NSException.h"
-#import "NSCoder.h"
-#import "NSData.h"
-#import "NSInvocation.h"
-#import "NSZone.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSInvocation.h"
+#import "Foundation/NSZone.h"
 #import "GSInvocation.h"
 #import "GSPrivate.h"
-#import "NSObject+GNUstepBase.h"
 
 #if defined(USE_LIBFFI)
 #include "cifframe.h"
@@ -71,6 +70,7 @@
 
 - (void) dealloc
 {
+  DESTROY(frame);
   if (size > 0)
     {
 #if	defined(HAVE_FFI_PREP_CLOSURE_LOC)
@@ -173,6 +173,11 @@
 #endif
 #endif
 }
+
+- (void) setFrame: (id)aFrame
+{
+  ASSIGN(frame, aFrame);
+}
 @end
 
 static Class   NSInvocation_abstract_class;
@@ -180,6 +185,22 @@ static Class   NSInvocation_concrete_class;
 
 
 
+
+GS_ROOT_CLASS
+@interface GSInvocationProxy
+{
+@public
+  Class		isa;
+  id		target;
+  NSInvocation	*invocation;
+}
++ (id) _newWithTarget: (id)t;
+- (NSInvocation*) _invocation;
+- (void) forwardInvocation: (NSInvocation*)anInvocation;
+- (NSMethodSignature*) methodSignatureForSelector: (SEL)aSelector;
+@end
+@interface GSMessageProxy : GSInvocationProxy
+@end
 
 #define	_inf	((NSArgumentInfo*)_info)
 
@@ -799,6 +820,23 @@ _arg_addr(NSInvocation *inv, int index)
   return nil;
 }
 
+/**
+ * Internal use.
+ */
++ (id) _newProxyForInvocation: (id)target
+{
+  return (id)[GSInvocationProxy _newWithTarget: target];
+}
++ (id) _newProxyForMessage: (id)target
+{
+  return (id)[GSMessageProxy _newWithTarget: target];
+}
++ (NSInvocation*) _returnInvocationAndDestroyProxy: (id)proxy
+{
+  NSInvocation  *inv = [proxy _invocation];
+  NSDeallocateObject(proxy);
+  return inv;
+}
 @end
 
 @implementation NSInvocation (BackwardCompatibility)
@@ -813,7 +851,6 @@ _arg_addr(NSInvocation *inv, int index)
 #if !defined(USE_FFCALL) && !defined(USE_LIBFFI)
 #warning Using dummy NSInvocation implementation.  It is strongly recommended that you use libffi.
 @implementation GSDummyInvocation
-
 
 /*
  *	This is the de_signated initialiser.
@@ -839,4 +876,34 @@ _arg_addr(NSInvocation *inv, int index)
 
 @end
 #endif
+
+@implementation	GSInvocationProxy
++ (id) _newWithTarget: (id)t
+{
+  GSInvocationProxy	*o;
+  o = (GSInvocationProxy*) NSAllocateObject(self, 0, NSDefaultMallocZone());
+  o->target = RETAIN(t);
+  return o;
+}
+- (NSInvocation*) _invocation
+{
+  return invocation;
+}
+- (void) forwardInvocation: (NSInvocation*)anInvocation
+{
+  invocation = anInvocation;
+}
+- (NSMethodSignature*) methodSignatureForSelector: (SEL)aSelector
+{
+  return [target methodSignatureForSelector: aSelector];
+}
+@end
+
+@implementation	GSMessageProxy
+- (NSInvocation*) _invocation
+{
+  [invocation setTarget: target];
+  return invocation;
+}
+@end
 

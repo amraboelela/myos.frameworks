@@ -29,10 +29,10 @@
 #endif
 
 #define	EXPOSE_NSInvocation_IVARS	1
-#import "NSException.h"
-#import "NSCoder.h"
-#import "NSDistantObject.h"
-#import "NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSDistantObject.h"
+#import "Foundation/NSData.h"
 #import "GSInvocation.h"
 #import "GSObjCRuntime.h"
 #import <pthread.h>
@@ -47,8 +47,8 @@
 #include <objc/message.h>
 #endif
 
-#ifndef INLINE
-#define INLINE inline
+#ifndef GS_STATIC_INLINE
+#define GS_STATIC_INLINE static inline
 #endif
 
 /* Function that implements the actual forwarding */
@@ -65,7 +65,7 @@ static void GSFFIInvocationCallback(ffi_cif*, void*, void **, void*);
  * work around it.
  */
 
-static INLINE GSMethod
+GS_STATIC_INLINE GSMethod
 gs_method_for_receiver_and_selector (id receiver, SEL sel)
 {
   if (receiver)
@@ -90,7 +90,7 @@ gs_method_for_receiver_and_selector (id receiver, SEL sel)
    Older runtimes do not have facilities in the API to check for
    conflicting types, hence would return a random selector in that
    case.  */
-static INLINE SEL
+GS_STATIC_INLINE SEL
 gs_find_best_typed_sel (SEL sel)
 #ifdef __GNUSTEP_RUNTIME__
 {
@@ -145,10 +145,6 @@ gs_find_best_typed_sel (SEL sel)
 
 static IMP gs_objc_msg_forward2 (id receiver, SEL sel)
 {
-  NSMutableData		*frame;
-  cifframe_t            *cframe;
-  ffi_closure           *cclosure;
-  void			*executable;
   NSMethodSignature     *sig = nil;
   GSCodeBuffer          *memory;
   const char            *types;
@@ -191,6 +187,14 @@ static IMP gs_objc_msg_forward2 (id receiver, SEL sel)
 	}
       if (nil == sig)
 	{
+          if (nil == receiver)
+            {
+              /* If we have a nil receiver, so the runtime is probably trying
+               * to check for forwarding ... return NULL to let it fall back
+               * on the standard forwarding mechanism.
+               */
+              return NULL;
+            }
 	  [NSException raise: NSInvalidArgumentException
 	    format: @"%c[%s %s]: unrecognized selector sent to instance %p",
 	    (class_isMetaClass(c) ? '+' : '-'),
@@ -198,38 +202,9 @@ static IMP gs_objc_msg_forward2 (id receiver, SEL sel)
 	}
     }
       
-  /* Construct the frame and closure. */
-  /* Note: We obtain cframe here, but it's passed to GSFFIInvocationCallback
-     where it becomes owned by the callback invocation, so we don't have to
-     worry about ownership */
-  frame = cifframe_from_signature(sig);
-  cframe = [frame mutableBytes];
-  /* Autorelease the closure through GSAutoreleasedBuffer */
+  memory = cifframe_closure(sig, GSFFIInvocationCallback);
 
-  memory = [GSCodeBuffer memoryWithSize: sizeof(ffi_closure)];
-  cclosure = [memory buffer];
-  executable = [memory executable];
-  if (cframe == NULL || cclosure == NULL)
-    {
-      [NSException raise: NSMallocException format: @"Allocating closure"];
-    }
-#if	HAVE_FFI_PREP_CLOSURE_LOC
-  if (ffi_prep_closure_loc(cclosure, &(cframe->cif),
-    GSFFIInvocationCallback, frame, executable) != FFI_OK)
-    {
-      [NSException raise: NSGenericException format: @"Preping closure"];
-    }
-#else
-  executable = (void*)cclosure;
-  if (ffi_prep_closure(cclosure, &(cframe->cif),
-    GSFFIInvocationCallback, frame) != FFI_OK)
-    {
-      [NSException raise: NSGenericException format: @"Preping closure"];
-    }
-#endif
-  [memory protect];
-
-  return (IMP)executable;
+  return (IMP)[memory executable];
 }
 
 static __attribute__ ((__unused__))
@@ -309,7 +284,7 @@ static id gs_objc_proxy_lookup(id receiver, SEL op)
 #ifdef __GNUSTEP_RUNTIME__
   pthread_key_create(&thread_slot_key, free);
   __objc_msg_forward3 = gs_objc_msg_forward3;
-  //__objc_msg_forward2 = gs_objc_msg_forward2;
+  __objc_msg_forward2 = gs_objc_msg_forward2;
   objc_proxy_lookup = gs_objc_proxy_lookup;
 #else
 #if	HAVE_FORWARD2
@@ -619,12 +594,18 @@ GSFFIInvocationCallback(ffi_cif *cif, void *retp, void **args, void *user)
 
   if (sig == nil)
     {
-      selector = gs_find_best_typed_sel (selector);
+      /* NB Don't overwrite selector prematurely, so we can show the untyped
+       * selector in the error message below if there is no best selector. */
+      SEL typed_sel = gs_find_best_typed_sel (selector);
 
-      if (GSTypesFromSelector(selector) != 0)
+      if (typed_sel != 0)
 	{
-	  sig = [NSMethodSignature signatureWithObjCTypes:
-	    GSTypesFromSelector(selector)];
+	  selector = typed_sel;
+	  if (GSTypesFromSelector(selector) != 0)
+	    {
+	      sig = [NSMethodSignature signatureWithObjCTypes:
+	        GSTypesFromSelector(selector)];
+	    }
 	}
     }
 

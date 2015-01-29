@@ -1,4 +1,4 @@
-/* Interface for <Foundation/NSUserDefaults> for GNUStep
+/* Interface for <NSUserDefaults> for GNUStep
    Copyright (C) 1995, 1996 Free Software Foundation, Inc.
 
    Written by:   Georg Tuparev, EMBL & Academia Naturalis, 
@@ -25,7 +25,7 @@
 
 #ifndef __NSUserDefaults_h_OBJECTS_INCLUDE
 #define __NSUserDefaults_h_OBJECTS_INCLUDE
-#import "GSVersionMacros.h"
+#import <GNUstepBase/GSVersionMacros.h>
 
 #import <Foundation/NSObject.h>
 #import <Foundation/NSString.h>

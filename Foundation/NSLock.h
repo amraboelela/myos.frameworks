@@ -31,8 +31,8 @@
 
 #ifndef __NSLock_h_GNUSTEP_BASE_INCLUDE
 #define __NSLock_h_GNUSTEP_BASE_INCLUDE
-#import  "GSVersionMacros.h"
-#import  "GSConfig.h"
+#import  <GNUstepBase/GSVersionMacros.h>
+#import  <GNUstepBase/GSConfig.h>
 
 #import  <Foundation/NSObject.h>
 
@@ -98,7 +98,7 @@ extern "C" {
  */
 - (void) unlock;
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 /** Return the name of the receiver or nil of none has been set.
  */
 - (NSString*) name;
@@ -117,9 +117,9 @@ extern "C" {
 {
 #if	GS_EXPOSE(NSCondition)
 @private
-    gs_cond_t	_condition;
-    gs_mutex_t	_mutex;
-    NSString	*_name;
+  gs_cond_t	_condition;
+  gs_mutex_t	_mutex;
+  NSString	*_name;
 #endif
 }
 /**
@@ -129,33 +129,33 @@ extern "C" {
  * or -broadcast message from another thread.  At which
  * point, the calling thread will reacquire the lock.
  */
-- (void)wait;
+- (void) wait;
 
 /**
  * Blocks the calling thread and acquires the lock, in the same way as -wait.
  * Returns YES if the condition is signaled, or NO if the timeout is reached.
  */
-- (BOOL)waitUntilDate: (NSDate*)limit;
+- (BOOL) waitUntilDate: (NSDate*)limit;
 
 /**
  * Wakes wany one of the threads that are waiting on this condition.
  */
-- (void)signal;
+- (void) signal;
 
 /**
  * Wakes all threads that are waiting on this condition.
  */
-- (void)broadcast;
+- (void) broadcast;
 
 /**
  * Sets the name used for debugging messages.
  */
-- (void)setName:(NSString *)newName;
+- (void) setName: (NSString*)newName;
 
 /**
  * Returns the name used for debugging messages.
  */
-- (NSString *)name;
+- (NSString*) name;
 @end
 
 /**
@@ -166,10 +166,10 @@ extern "C" {
 @interface NSConditionLock : NSObject <NSLocking>
 {
 #if	GS_EXPOSE(NSConditionLock)
-@public
-    NSCondition *_condition;
-    int   _condition_value;
-    NSString      *_name;
+@private
+  NSCondition *_condition;
+  int   _condition_value;
+  NSString      *_name;
 #endif
 }
 
@@ -236,7 +236,7 @@ extern "C" {
  */
 - (void) unlock;
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 /** Return the name of the receiver or nil of none has been set.
  */
 - (NSString*) name;
@@ -286,7 +286,7 @@ extern "C" {
  */
 - (void) unlock;
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 /** Return the name of the receiver or nil of none has been set.
  */
 - (NSString*) name;
@@ -303,7 +303,7 @@ extern "C" {
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSLock+GNUstepBase.h>
+#import <GNUstepBase/NSLock+GNUstepBase.h>
 #endif
 
 #endif /* __NSLock_h_GNUSTEP_BASE_INCLUDE */

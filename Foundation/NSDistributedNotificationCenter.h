@@ -24,7 +24,7 @@
 
 #ifndef __NSDistributedNotificationCenter_h_GNUSTEP_BASE_INCLUDE
 #define __NSDistributedNotificationCenter_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 
@@ -96,8 +96,8 @@ GS_EXPORT NSString* const GSNetworkNotificationCenterType;
   @private id _internal GS_UNUSED_IVAR;
 #endif
 }
-+ (NSNotificationCenter*) defaultCenter;
-+ (NSNotificationCenter*) notificationCenterForType: (NSString*)type;
++ (id) defaultCenter;
++ (NSDistributedNotificationCenter*) notificationCenterForType: (NSString*)type;
 
 - (void) addObserver: (id)anObserver
 	    selector: (SEL)aSelector
