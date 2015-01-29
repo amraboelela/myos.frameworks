@@ -26,7 +26,8 @@
 
 #include <errno.h>
 
-#import "NSError.h"
+#import "Foundation/NSBundle.h"
+#import "Foundation/NSError.h"
 
 @class	_GSInsensitiveDictionary;
 @class	_GSMutableInsensitiveDictionary;
@@ -53,13 +54,13 @@
 
 NSTimeInterval   GSPrivateTimeNow() GS_ATTRIB_PRIVATE;
 
-#include "GSObjCRuntime.h"
+#include "GNUstepBase/GSObjCRuntime.h"
 
-#include "NSArray.h"
+#include "Foundation/NSArray.h"
 
 #ifdef __GNUSTEP_RUNTIME__
 struct objc_category;
-typedef struct objc_category Category;
+typedef struct objc_category* Category;
 #endif
 
 @interface GSArray : NSArray
@@ -86,7 +87,7 @@ typedef struct objc_category Category;
 }
 @end
 
-#include "NSString.h"
+#include "Foundation/NSString.h"
 
 /**
  * Macro to manage memory for chunks of code that need to work with
@@ -95,7 +96,7 @@ typedef struct objc_category Category;
  * arrays are allocated on the stack (for speed), but large arrays are
  * allocated from the heap (to avoid stack overflow).
  */
-#if __GNUC__ > 3
+#if __GNUC__ > 3 && !defined(__clang__)
 __attribute__((unused)) static void GSFreeTempBuffer(void **b)
 {
   if (NULL != *b) free(*b);
@@ -110,8 +111,10 @@ __attribute__((unused)) static void GSFreeTempBuffer(void **b)
       P = _base;\
     }
 #else
+/* Make minimum size of _ibuf 1 to avoid compiler warnings.
+ */
 #  define	GS_BEGINITEMBUF(P, S, T) { \
-  T _ibuf[(S) <= GS_MAX_OBJECTS_FROM_STACK ? (S) : 0]; \
+  T _ibuf[(S) > 0 && (S) <= GS_MAX_OBJECTS_FROM_STACK ? (S) : 1]; \
   T *_base = ((S) <= GS_MAX_OBJECTS_FROM_STACK) ? _ibuf \
     : (T*)NSZoneMalloc(NSDefaultMallocZone(), (S) * sizeof(T)); \
   T *(P) = _base;
@@ -122,7 +125,7 @@ __attribute__((unused)) static void GSFreeTempBuffer(void **b)
  * arrays of items.  Use GS_BEGINITEMBUF() to start the block of code using
  * the array and this macro to end it.
  */
-#if __GNUC__ > 3
+#if __GNUC__ > 3 && !defined(__clang__)
 # define	GS_ENDITEMBUF() }
 #else
 #  define	GS_ENDITEMBUF() \
@@ -233,9 +236,22 @@ typedef enum {
   GSOldStyleGeometry,			// Control geometry string output.
   GSLogSyslog,				// Force logging to go to syslog.
   GSLogThread,				// Include thread ID in log message.
+  GSLogOffset,			        // Include time zone offset in message.
   NSWriteOldStylePropertyLists,		// Control PList output.
   GSUserDefaultMaxFlag			// End marker.
 } GSUserDefaultFlagType;
+
+
+
+@interface NSBundle (Private)
++ (NSString *) _absolutePathOfExecutable: (NSString *)path;
++ (NSBundle*) _addFrameworkFromClass: (Class)frameworkClass;
++ (NSMutableArray*) _addFrameworks;
++ (NSString*) _gnustep_target_cpu;
++ (NSString*) _gnustep_target_dir;
++ (NSString*) _gnustep_target_os;
++ (NSString*) _library_combo;
+@end
 
 /**
  * This class exists simply as a mechanism for encapsulating arrays
@@ -243,58 +259,58 @@ typedef enum {
  */
 @interface	_NSKeyedCoderOldStyleArray : NSObject <NSCoding>
 {
-    char _t[2];
-    unsigned _c;
-    unsigned _s;
-    const void *_a;
-    NSData *_d;	// Only valid after initWithCoder:
+  char		_t[2];
+  unsigned	_c;
+  unsigned	_s;
+  const void	*_a;
+  NSData	*_d;	// Only valid after initWithCoder:
 }
-- (const void*)bytes;
-- (NSUInteger)count;
-- (void)encodeWithCoder:(NSCoder *)aCoder;
-- (id)initWithCoder:(NSCoder *)aCoder;
-- (id)initWithObjCType:(const char*)t count:(NSInteger)c at:(const void*)a;
-- (NSUInteger)size;
+- (const void*) bytes;
+- (NSUInteger) count;
+- (void) encodeWithCoder: (NSCoder*)aCoder;
+- (id) initWithCoder: (NSCoder*)aCoder;
+- (id) initWithObjCType: (const char*)t count: (NSInteger)c at: (const void*)a;
+- (NSUInteger) size;
 - (const char*) type;
 @end
 
 /* Get error information.
  */
-@interface NSError (GNUstepBase)
-+ (NSError *)_last;
-+ (NSError *)_systemError: (long)number;
+@interface	NSError (GNUstepBase)
++ (NSError*) _last;
++ (NSError*) _systemError: (long)number;
 @end
 
-@class NSRunLoop;
-@class NSLock;
-@class NSThread;
+@class  NSRunLoop;
+@class  NSLock;
+@class  NSThread;
 
 /* Used to handle events performed in one thread from another.
  */
-@interface GSRunLoopThreadInfo : NSObject
+@interface      GSRunLoopThreadInfo : NSObject
 {
-@public
-    NSRunLoop *loop;
-    NSLock *lock;
-    NSMutableArray *performers;
+  @public
+  NSRunLoop             *loop;
+  NSLock                *lock;
+  NSMutableArray        *performers;
 #ifdef __MINGW__
-    HANDLE event;
+  HANDLE	        event;
 #else
-    int inputFd;
-    int outputFd;
+  int                   inputFd;
+  int                   outputFd;
 #endif	
 }
 /* Add a performer to be run in the loop's thread.  May be called from
  * any thread.
  */
-- (void)addPerformer:(id)performer;
+- (void) addPerformer: (id)performer;
 /* Fire all pending performers in the current thread.  May only be called
  * from the runloop when the event/descriptor is triggered.
  */
-- (void)fire;
+- (void) fire;
 /* Cancel all pending performers.
  */
-- (void)invalidate;
+- (void) invalidate;
 @end
 
 /* Return (and optionally create) GSRunLoopThreadInfo for the specified
@@ -302,49 +318,60 @@ typedef enum {
  * If aThread is nil and no value is set for the current thread, create
  * a GSRunLoopThreadInfo and set it for the current thread.
  */
-GSRunLoopThreadInfo *GSRunLoopInfoForThread(NSThread *aThread) GS_ATTRIB_PRIVATE;
+GSRunLoopThreadInfo *
+GSRunLoopInfoForThread(NSThread *aThread) GS_ATTRIB_PRIVATE;
 
 /* Used by NSException uncaught exception handler - must not call any
  * methods/functions which might cause a recursive exception.
  */
-const char *GSPrivateArgZero() GS_ATTRIB_PRIVATE;
+const char*
+GSPrivateArgZero() GS_ATTRIB_PRIVATE;
 
 /* get the available string encodings (nul terminated array)
  */
-NSStringEncoding *GSPrivateAvailableEncodings() GS_ATTRIB_PRIVATE;
+NSStringEncoding *
+GSPrivateAvailableEncodings() GS_ATTRIB_PRIVATE;
 
 /* Initialise constant strings
  */
-void GSPrivateBuildStrings(void) GS_ATTRIB_PRIVATE;
+void
+GSPrivateBuildStrings(void) GS_ATTRIB_PRIVATE;
 
 /* Used to check for termination of background tasks.
  */
-BOOL GSPrivateCheckTasks(void) GS_ATTRIB_PRIVATE;
+BOOL
+GSPrivateCheckTasks(void) GS_ATTRIB_PRIVATE;
 
 /* get the default C-string encoding.
  */
-NSStringEncoding GSPrivateDefaultCStringEncoding() GS_ATTRIB_PRIVATE;
+NSStringEncoding
+GSPrivateDefaultCStringEncoding() GS_ATTRIB_PRIVATE;
 
 /* Get default locale quickly (usually from cache).
  * External apps would cache the locale themselves.
  */
-NSDictionary *GSPrivateDefaultLocale() GS_ATTRIB_PRIVATE;
+NSDictionary *
+GSPrivateDefaultLocale() GS_ATTRIB_PRIVATE;
 
 /* Get one of several standard values.
  */
-BOOL GSPrivateDefaultsFlag(GSUserDefaultFlagType type) GS_ATTRIB_PRIVATE;
+BOOL
+GSPrivateDefaultsFlag(GSUserDefaultFlagType type) GS_ATTRIB_PRIVATE;
 
 /* get the name of a string encoding as an NSString.
  */
-NSString *GSPrivateEncodingName(NSStringEncoding encoding) GS_ATTRIB_PRIVATE;
+NSString *
+GSPrivateEncodingName(NSStringEncoding encoding) GS_ATTRIB_PRIVATE;
 
 /* get a flag from an environment variable - return def if not defined.
  */
-BOOL GSPrivateEnvironmentFlag(const char *name, BOOL def) GS_ATTRIB_PRIVATE;
+BOOL
+GSPrivateEnvironmentFlag(const char *name, BOOL def) GS_ATTRIB_PRIVATE;
 
 /* Get the path to the xcurrent executable.
  */
-NSString *GSPrivateExecutablePath(void) GS_ATTRIB_PRIVATE;
+NSString *
+GSPrivateExecutablePath(void) GS_ATTRIB_PRIVATE;
 
 /* Format arguments into an internal string.
  */
@@ -355,38 +382,18 @@ GSPrivateFormat(GSStr fb, const unichar *fmt, va_list ap, NSDictionary *loc)
 /* determine whether data in a particular encoding can
  * generally be represented as 8-bit characters including ascii.
  */
-BOOL GSPrivateIsByteEncoding(NSStringEncoding encoding) GS_ATTRIB_PRIVATE;
+BOOL
+GSPrivateIsByteEncoding(NSStringEncoding encoding) GS_ATTRIB_PRIVATE;
 
 /* determine whether encoding is currently supported.
  */
-BOOL GSPrivateIsEncodingSupported(NSStringEncoding encoding) GS_ATTRIB_PRIVATE;
-
-/* Hash function to hash up to limit bytes from data of specified length.
- * If the flag is NO then a result of 0 is mapped to 0xffffffff.
- * This is a pretty useful general purpose hash function.
- */
-static inline unsigned GSPrivateHash(const void *data, unsigned length, unsigned limit, BOOL zero)
-  __attribute__((unused));
-static inline unsigned GSPrivateHash(const void *data, unsigned length, unsigned limit, BOOL zero)
-{
-    unsigned	ret = length;
-    unsigned	l = length;
-    
-    if (limit < length) {
-        l = limit;
-    }
-    while (l-- > 0) {
-        ret = (ret << 5) + ret + ((const unsigned char*)data)[l];
-    }
-    if (ret == 0 && zero == NO) {
-        ret = 0xffffffff;
-    }
-    return ret;
-}
+BOOL
+GSPrivateIsEncodingSupported(NSStringEncoding encoding) GS_ATTRIB_PRIVATE;
 
 /* load a module into the runtime
  */
-long GSPrivateLoadModule(NSString *filename, FILE *errorStream,
+long
+GSPrivateLoadModule(NSString *filename, FILE *errorStream,
   void (*loadCallback)(Class, struct objc_category *),
   void **header, NSString *debugFilename) GS_ATTRIB_PRIVATE;
 
@@ -394,7 +401,8 @@ long GSPrivateLoadModule(NSString *filename, FILE *errorStream,
  * operating system.  This may differ from the default C-string encoding
  * if the latter has bewen set via an environment variable.
  */
-NSStringEncoding GSPrivateNativeCStringEncoding() GS_ATTRIB_PRIVATE;
+NSStringEncoding
+GSPrivateNativeCStringEncoding() GS_ATTRIB_PRIVATE;
 
 /* Function used by the NSRunLoop and friends for processing
  * queued notifications which should be processed at the first safe moment.
@@ -414,25 +422,30 @@ BOOL GSPrivateNotifyMore(NSString *mode) GS_ATTRIB_PRIVATE;
 /* Function to return the function for searching in a string for a range.
  */
 typedef NSRange (*GSRSFunc)(id, id, unsigned, NSRange);
-GSRSFunc GSPrivateRangeOfString(NSString *receiver, NSString *target) GS_ATTRIB_PRIVATE;
+GSRSFunc
+GSPrivateRangeOfString(NSString *receiver, NSString *target) GS_ATTRIB_PRIVATE;
 
 /* Function to return the current stack return addresses.
  */
-NSMutableArray *GSPrivateStackAddresses(void) GS_ATTRIB_PRIVATE;
+NSMutableArray *
+GSPrivateStackAddresses(void) GS_ATTRIB_PRIVATE;
 
 /* Function to return the hash value for a small integer (used by NSNumber).
  */
-unsigned GSPrivateSmallHash(int n) GS_ATTRIB_PRIVATE;
+unsigned
+GSPrivateSmallHash(int n) GS_ATTRIB_PRIVATE;
 
 /* Function to append data to an GSStr
  */
-void GSPrivateStrAppendUnichars(GSStr s, const unichar *u, unsigned l)
+void
+GSPrivateStrAppendUnichars(GSStr s, const unichar *u, unsigned l)
   GS_ATTRIB_PRIVATE;
 
 /* Make the content of this string into unicode if it is not in
  * the external defaults C string encoding.
  */
-void GSPrivateStrExternalize(GSStr s) GS_ATTRIB_PRIVATE;
+void
+GSPrivateStrExternalize(GSStr s) GS_ATTRIB_PRIVATE;
 
 /*
  * GSPrivateSymbolPath() returns the path to the object file from
@@ -478,36 +491,66 @@ void GSPrivateStrExternalize(GSStr s) GS_ATTRIB_PRIVATE;
  * It seems that this function has no corresponding function in the NeXT
  * runtime ... as far as I know.
  */
-NSString *GSPrivateSymbolPath (Class theClass, Category *theCategory) GS_ATTRIB_PRIVATE;
+NSString *
+GSPrivateSymbolPath (Class theClass, Category *theCategory) GS_ATTRIB_PRIVATE;
 
 /* Combining class for composite unichars
  */
-unsigned char GSPrivateUniCop(unichar u) GS_ATTRIB_PRIVATE;
+unsigned char
+GSPrivateUniCop(unichar u) GS_ATTRIB_PRIVATE;
 
 /* unload a module from the runtime (not implemented)
  */
-long GSPrivateUnloadModule(FILE *errorStream,
+long
+GSPrivateUnloadModule(FILE *errorStream,
   void (*unloadCallback)(Class, struct objc_category *)) GS_ATTRIB_PRIVATE;
 
 
 /* Memory to use to put executable code in.
  */
-@interface GSCodeBuffer : NSObject
+@interface      GSCodeBuffer : NSObject
 {
-  unsigned size;
-  void *buffer;
-  void *executable;
+  unsigned      size;
+  void          *buffer;
+  void		*executable;
+  id            frame;
 }
-+ (GSCodeBuffer *)memoryWithSize:(NSUInteger)_size;
-- (void *)buffer;
-- (void *)executable;
-- (id)initWithSize:(NSUInteger)_size;
-- (void)protect;
++ (GSCodeBuffer*) memoryWithSize: (NSUInteger)_size;
+- (void*) buffer;
+- (void*) executable;
+- (id) initWithSize: (NSUInteger)_size;
+- (void) protect;
+- (void) setFrame: (id)aFrame;
 @end
 
-BOOL GSPrivateIsCollectable(const void *ptr)GS_ATTRIB_PRIVATE;
+BOOL
+GSPrivateIsCollectable(const void *ptr) GS_ATTRIB_PRIVATE;
 
-NSZone *GSAtomicMallocZone (void);
+NSZone*
+GSAtomicMallocZone (void);
+
+/* Generate a 32bit hash from supplied byte data.
+ */
+uint32_t
+GSPrivateHash(uint32_t seed, const void *bytes, int length)
+  GS_ATTRIB_PRIVATE;
+
+/* Incorporate 'l' bytes of data from the buffer pointed to by 'b' into
+ * the hash state information pointed to by p0 and p1.
+ * The hash state variables should have been initialised to zero before
+ * the first call to this function, and the result should be produced
+ * by calling the GSPrivateFinishHash() function.
+ */
+void
+GSPrivateIncrementalHash(uint32_t *p0, uint32_t *p1, const void *b, int l)
+  GS_ATTRIB_PRIVATE;
+
+/* Generate a 32bit hash from supplied state variables resulting from
+ * calls to the GSPrivateIncrementalHash() function.
+ */
+uint32_t
+GSPrivateFinishHash(uint32_t s0, uint32_t s1, uint32_t totalLength)
+  GS_ATTRIB_PRIVATE;
 
 #endif /* _GSPrivate_h_ */
 

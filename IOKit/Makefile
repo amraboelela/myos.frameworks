@@ -42,9 +42,6 @@ else
         IOFont.o \
         opal-x11.o \
 
-    ifeq ($(TARGET),NativeApp)
-    else
-    endif
 endif
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

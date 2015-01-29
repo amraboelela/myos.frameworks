@@ -16,9 +16,11 @@
 #
 
 LDLIBS=-lCoreFoundation -lFoundation -lcairo
-
+CFLAGS=-I${MYOS_PATH}/libraries
 ifeq ($(BASE_OS),android)
     LDLIBS+=-lpng -llcms -lpixman -lz -lfontconfig -lexpat -lfreetype
+else
+    CFLAGS=-I${MYOS_PATH}/libraries
 endif
 
 ifeq ($(TARGET),NativeApp)

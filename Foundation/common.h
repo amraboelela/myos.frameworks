@@ -4,13 +4,24 @@
  * might be from an earlier build.
  */
 
-// disable extensions ... we want to use standard code
-#ifdef	_GNU_SOURCE
-#undef	_GNU_SOURCE
-#endif
-#define	_GNU_SOURCE	0
+#ifndef COMMON_H
+#define COMMON_H
 
-#import	"config.h"
+#include "config.h"
+
+#if	defined(HAVE_STRING_H)
+/* For POSIX strerror_r() and others
+ */
+#include <string.h>
+#endif
+
+#if	defined(HAVE_STRINGS_H)
+/* For strcasecmp() and others
+ */
+#include <strings.h>
+#endif
+
+#include <errno.h>
 
 /* If this is included in a file in the Additions subdirectory, and we are
  * building for use with the NeXT/Apple Foundation, then we need to import
@@ -20,7 +31,8 @@
 #import	<Foundation/Foundation.h>
 #endif
 
-#import	"GSConfig.h"
+#import	"GNUstepBase/GSConfig.h"
+#import	"GNUstepBase/GSVersionMacros.h"
 
 /* Set localisation macro for use within the base library itsself.
  */
@@ -28,30 +40,31 @@
   [NSBundle bundleForLibrary: @"gnustep-base" version: \
   OBJC_STRINGIFY(GNUSTEP_BASE_MAJOR_VERSION.GNUSTEP_BASE_MINOR_VERSION)]
 
-#import	"GNUstep.h"
+#import	"GNUstepBase/GNUstep.h"
 
 /* Foundation/NSObject.h imports <Foundation/NSZone.h> and
  * <Foundation/NSObjCRuntime.h> so we import local versions first.
  */
-#import	"NSZone.h"
-#import	"NSObjCRuntime.h"
+#import	"Foundation/NSZone.h"
+#import	"Foundation/NSObjCRuntime.h"
 
 /* Almost all headers import <Foundation/NSObject.h> so we import
- * "NSObject.h" first, to ensure we have a local copy.
+ * "Foundation/NSObject.h" first, to ensure we have a local copy.
  */
-#import	"NSObject.h"
+#import	"Foundation/NSObject.h"
+#import	"GNUstepBase/NSObject+GNUstepBase.h"
 
 /* These headers are used in almost every file.
  */
-#import	"NSString.h"
-#import	"NSDebug.h"
+#import	"Foundation/NSString.h"
+#import	"Foundation/NSDebug.h"
 
 /* These headers needed for string localisation ... hopefully we will
  * localise all the exceptions and debug/error messages in all the source
  * some day, so localisation needs ot be in the common header for all code.
  */
-#import	"NSBundle.h"
-#import	"NSBundle+GNUstepBase.h"
+#import	"Foundation/NSBundle.h"
+#import	"GNUstepBase/NSBundle+GNUstepBase.h"
 
 /* We need to wrap unistd.h because it is used throughout the code and some
  * versions include __block as a variable name, and clang also defines that
@@ -72,5 +85,4 @@
 #  endif
 #endif
 
-// FIXME should be set by the OS
-#define FNDELAY 0
+#endif /* COMMON_H */

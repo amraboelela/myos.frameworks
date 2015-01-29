@@ -26,9 +26,9 @@ echo "****************************** Cleaning frameworks ***********************
 #make clean
 #cd ..
 
-cd Foundation
-make clean
-cd ..
+#cd Foundation
+#make clean
+#cd ..
 
 cd CoreGraphics
 make clean

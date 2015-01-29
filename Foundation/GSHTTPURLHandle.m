@@ -24,32 +24,31 @@
 */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSByteOrder.h"
-#import "NSData.h"
-#import "NSException.h"
-#import "NSFileHandle.h"
-#import "NSHost.h"
-#import "NSLock.h"
-#import "NSMapTable.h"
-#import "NSNotification.h"
-#import "NSPathUtilities.h"
-#import "NSProcessInfo.h"
-#import "NSRunLoop.h"
-#import "NSURL.h"
-#import "NSURLHandle.h"
-#import "NSValue.h"
-#import "GSMime.h"
-#import "GSLock.h"
-#import "NSString+GNUstepBase.h"
-#import "NSURL+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileHandle.h"
+#import "Foundation/NSHost.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSProcessInfo.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSURL.h"
+#import "Foundation/NSURLHandle.h"
+#import "Foundation/NSValue.h"
+#import "GNUstepBase/GSMime.h"
+#import "GNUstepBase/GSLock.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
+#import "GNUstepBase/NSURL+GNUstepBase.h"
 #import "NSCallBacks.h"
 #import "GSURLPrivate.h"
 #import "GSPrivate.h"
-
-#include <string.h>
+#import "GSTLS.h"
 
 #ifdef	HAVE_SYS_FILE_H
 #  include <sys/file.h>
@@ -233,15 +232,33 @@ debugRead(GSHTTPURLHandle *handle, NSData *data)
 {
   int		len = (int)[data length];
   const char	*ptr = (const char*)[data bytes];
+  int           pos;
 
-  NSLog(@"Read for %p of %d bytes -'%*.*s'", handle, len, len, len, ptr); 
+  for (pos = 0; pos < len; pos++)
+    {
+      if (0 == ptr[pos])
+        {
+          NSLog(@"Read for %p of %d bytes - %@", handle, len, data); 
+          return;
+        }
+    }
+  NSLog(@"Read for %p of %d bytes - '%*.*s'", handle, len, len, len, ptr); 
 }
 static void
 debugWrite(GSHTTPURLHandle *handle, NSData *data)
 {
   int		len = (int)[data length];
   const char	*ptr = (const char*)[data bytes];
+  int           pos = len;
 
+  for (pos = 0; pos < len; pos++)
+    {
+      if (0 == ptr[pos])
+        {
+          NSLog(@"Write for %p of %d bytes - %@", handle, len, data); 
+          return;
+        }
+    }
   NSLog(@"Write for %p of %d bytes -'%*.*s'", handle, len, len, len, ptr); 
 }
 
@@ -273,8 +290,11 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
   if (self == [GSHTTPURLHandle class])
     {
       urlCache = [NSMutableDictionary new];
+      [[NSObject leakAt: &urlCache] release];
       urlOrder = [NSMutableArray new];
+      [[NSObject leakAt: &urlOrder] release];
       urlLock = [GSLazyLock new];
+      [[NSObject leakAt: &urlLock] release];
 #if	!defined(__MINGW__)
       sslClass = [NSFileHandle sslClass];
 #endif
@@ -387,6 +407,7 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
 
   if ((id)NSMapGet(wProperties, (void*)@"Host") == nil)
     {
+      NSString  *s = [u scheme];
       id	p = [u port];
       id	h = [u host];
 
@@ -394,7 +415,16 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
 	{
 	  h = @"";	// Must use an empty host header
 	}
-      if (p == nil)
+      if (([s isEqualToString: @"http"] && [p intValue] == 80)
+        || ([s isEqualToString: @"https"] && [p intValue] == 443))
+        {
+          /* Some buggy systems object to the port being in the Host
+           * header when it's the default (optional) value.  To keep
+           * them happy let's omit it in those cases.
+           */
+          p = nil;
+        }
+      if (nil == p)
 	{
           NSMapInsert(wProperties, (void*)@"Host", (void*)h);
 	}
@@ -405,11 +435,16 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
 	}
     }
 
-  if ([wData length] > 0)
+  /* Ensure we set the correct content length (may be zero)
+   */
+  if ((id)NSMapGet(wProperties, (void*)@"Content-Length") == nil)
     {
       NSMapInsert(wProperties, (void*)@"Content-Length",
-	(void*)[NSString stringWithFormat: @"%d", [wData length]]);
+        (void*)[NSString stringWithFormat: @"%"PRIuPTR, [wData length]]);
+    }
 
+  if ([wData length] > 0)
+    {
       /*
        * Assume content type if not specified.
        */
@@ -419,6 +454,7 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
 	    (void*)@"application/x-www-form-urlencoded");
 	}
     }
+
   if ((id)NSMapGet(wProperties, (void*)@"Authorization") == nil)
     {
       NSURLProtectionSpace	*space;
@@ -725,6 +761,7 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
 		    {
 		      [self writeProperty: auth forKey: @"Authorization"];
 		      [self _tryLoadInBackground: u];
+                      RELEASE(self);
 		      return;	// Retrying.
 		    }
 		}
@@ -1001,16 +1038,52 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
     }
   if ([[u scheme] isEqualToString: @"https"])
     {
+      static NSArray            *keys = nil;
+      NSMutableDictionary       *opts;
+      NSUInteger                count;
+
       /* If we are an https connection, negotiate secure connection.
        * Make sure we are not an observer of the file handle while
        * it is connecting...
        */
       [nc removeObserver: self name: nil object: sock];
+
+      if (nil == keys)
+        {
+          keys = [[NSArray alloc] initWithObjects:
+            GSTLSCAFile,
+            GSTLSCertificateFile,
+            GSTLSCertificateKeyFile,
+            GSTLSCertificateKeyPassword,
+            GSTLSDebug,
+            GSTLSPriority,
+            GSTLSRemoteHosts,
+            GSTLSRevokeFile,
+            GSTLSVerify,
+            nil];
+        }
+      count = [keys count];
+      opts = [[NSMutableDictionary alloc] initWithCapacity: count];
+      while (count-- > 0)
+        {
+          NSString      *key = [keys objectAtIndex: count];
+          NSString      *str = [request objectForKey: key];
+
+          if (nil != str)
+            {
+              [opts setObject: str forKey: key];
+            }
+        }
+      if (debug) [opts setObject: @"YES" forKey: GSTLSDebug];
+      [sock sslSetOptions: opts];
+      [opts release];
       if ([sock sslConnect] == NO)
 	{
 	  if (debug)
 	    NSLog(@"%@ %p %s Failed to make ssl connect",
 	      NSStringFromSelector(_cmd), self, keepalive?"K":"");
+          [sock closeFile];
+          DESTROY(sock);
 	  [self endLoadInBackground];
 	  [self backgroundLoadDidFailWithReason:
 	    @"Failed to make ssl connect"];
@@ -1088,6 +1161,7 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
 	    NSLog(@"%@ %p restart on new connection",
 	      NSStringFromSelector(_cmd), self);
 	  [self _tryLoadInBackground: u];
+          RELEASE(self);
 	  return;
 	}
       NSLog(@"Failed to write command to socket - %@ %p %s",
@@ -1367,6 +1441,8 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
 	  if ([[u scheme] isEqualToString: @"https"])
 	    {
 	      NSString	*cert;
+              NSString	*key;
+              NSString	*pwd;
 
 	      if (sslClass == 0)
 		{
@@ -1377,16 +1453,27 @@ debugWrite(GSHTTPURLHandle *handle, NSData *data)
 	      sock = [sslClass fileHandleAsClientInBackgroundAtAddress: host
 							       service: port
 							      protocol: s];
-	      cert = [request objectForKey: GSHTTPPropertyCertificateFileKey];
-	      if ([cert length] > 0)
-		{
-		  NSString	*key;
-		  NSString	*pwd;
 
-		  key = [request objectForKey: GSHTTPPropertyKeyFileKey];
-		  pwd = [request objectForKey: GSHTTPPropertyPasswordKey];
-		  [sock sslSetCertificate: cert privateKey: key PEMpasswd: pwd];
-		}
+              /* Map old SSL keys onto new.
+               */
+	      cert = [request objectForKey: GSHTTPPropertyCertificateFileKey];
+	      if (nil != cert)
+		{
+                  [request setObject: cert
+                              forKey: GSTLSCertificateFile];
+                }
+              key = [request objectForKey: GSHTTPPropertyKeyFileKey];
+              if (nil != key)
+                {
+                  [request setObject: key
+                              forKey: GSTLSCertificateKeyFile];
+                }
+              pwd = [request objectForKey: GSHTTPPropertyPasswordKey];
+              if (nil != pwd)
+                {
+                  [request setObject: pwd
+                              forKey: GSTLSCertificateKeyPassword];
+                }
 	    }
 	  else
 	    {

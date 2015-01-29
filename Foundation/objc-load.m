@@ -35,11 +35,14 @@
 # include <objc/hooks.h>
 #endif
 
+#if defined(__CYGWIN__)
+# include <windows.h>
+#endif
+
 #include "objc-load.h"
-#import "NSException.h"
+#import "Foundation/NSException.h"
 
 #import "GSPrivate.h"
-//#import <objc/category.h>
 
 /* include the interface to the dynamic linker */
 #include "dynamic-load.h"
@@ -84,7 +87,7 @@ static int
 objc_initialize_loading(FILE *errorStream)
 {
   NSString	*path;
-#ifdef    __MINGW__
+#if     defined(__MINGW__) || defined(__CYGWIN__)
   const unichar *fsPath;
 #else  
   const char *fsPath;
@@ -127,7 +130,7 @@ objc_load_callback(Class class, struct objc_category * category)
     }
 }
 
-#if	defined(__MINGW__)
+#if	defined(__MINGW__) || defined(__CYGWIN__)
 #define	FSCHAR	unichar
 #else
 #define	FSCHAR	char
@@ -161,7 +164,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
     }
 
   _objc_load_load_callback = loadCallback;
-  //_objc_load_callback = objc_load_callback;
+  _objc_load_callback = objc_load_callback;
 
   /* Link in the object file */
   NSDebugFLLog(@"NSBundle", @"Debug (objc-load): Linking file %@\n", filename);
@@ -174,7 +177,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
 	  __objc_dynamic_error(errorStream, "Error (objc-load)");
 	}
       _objc_load_load_callback = 0;
-      //_objc_load_callback = 0;
+      _objc_load_callback = 0;
       return 1;
     }
 
@@ -183,7 +186,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
     {
       __objc_dynamic_unlink(handle);
       _objc_load_load_callback = 0;
-      //_objc_load_callback = 0;
+      _objc_load_callback = 0;
       return 1;
     }
 
@@ -198,7 +201,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
 	    "Error (objc-load): Cannot load objects (no CTOR list)\n");
 	}
       _objc_load_load_callback = 0;
-      //_objc_load_callback = 0;
+      _objc_load_callback = 0;
       return 1;
     }
 
@@ -215,7 +218,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
 #if !defined(__GNUSTEP_RUNTIME__) && !defined(__GNU_LIBOBJC__)
   __objc_resolve_class_links(); /* fill in subclass_list and sibling_class */
 #endif
-  //_objc_load_callback = 0;
+  _objc_load_callback = 0;
   _objc_load_load_callback = 0;
   return 0;
 #endif /* not NeXT_RUNTIME */
@@ -238,7 +241,7 @@ GSPrivateUnloadModule(FILE *errorStream,
 }
 
 
-#ifdef __MINGW__
+#if defined(__MINGW__) || defined(__CYGWIN__)
 // FIXME: We can probably get rid of this now - MinGW should include a working
 // dladdr() wrapping this function, so we no longer need a Windows-only code
 // path
@@ -253,6 +256,9 @@ GSPrivateSymbolPath(Class theClass, Category *theCategory)
   VirtualQueryEx(GetCurrentProcess(), theClass, &memInfo, sizeof(memInfo));
   if (GetModuleFileNameW(memInfo.AllocationBase, buf, sizeof(buf)))
     {
+#ifdef __CYGWIN__
+#warning Under Cygwin, we may want to use cygwin_conv_path() to get the unix path back?
+#endif
       s = [NSString stringWithCharacters: buf length: wcslen(buf)];
     }
   return s;
@@ -297,7 +303,7 @@ GSPrivateSymbolPath(Class theClass, Category *theCategory)
     }
   else
     {
-      len += strlen(theCategory->name);
+      len += strlen(theCategory->category_name);
 
       if (len + sizeof(char)*23 > sizeof(buf))
 	{
@@ -314,8 +320,8 @@ GSPrivateSymbolPath(Class theClass, Category *theCategory)
       memcpy(&p[21*sizeof(char)], theCategory->class_name,
 	     strlen(theCategory->class_name) + 1);
       memcpy(&p[strlen(p)], "_", 2*sizeof(char));
-      memcpy(&p[strlen(p)], theCategory->name,
-	     strlen(theCategory->name) + 1);
+      memcpy(&p[strlen(p)], theCategory->category_name,
+	     strlen(theCategory->category_name) + 1);
     }
 
   ret = __objc_dynamic_get_symbol_path(0, p);

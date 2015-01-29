@@ -2,7 +2,7 @@
 LIB_NAME=Foundation
 #CFLAGS=-DNO_GNUSTEP=1 -DGNUSTEP_BASE_INTERNAL=1 -DGNUSTEP -DGSWARN -DGSDIAGNOSE -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1  -fconstant-string-class=NSConstantString -DGNUSTEP_TARGET_DIR=\".\" -DGNUSTEP_IS_FLATTENED=\"yes\"
 
-CFLAGS=-MMD -MP -DGNUSTEP_TARGET_DIR=\".\" -DGNUSTEP_IS_FLATTENED=\"yes\" -DLIBRARY_COMBO=\"gnu-gnu-gnu\" -DGNUSTEP_BASE_INTERNAL=1 -Wall -Wdeclaration-after-statement -Wcast-align -DGNUSTEP -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1 -fno-strict-aliasing -fexceptions -fobjc-exceptions -D_NATIVE_OBJC_EXCEPTIONS -pthread -fPIC -Wall -DGSWARN -DGSDIAGNOSE -Wno-import -g -O2 -fgnu-runtime -fgnu-runtime -fconstant-string-class=NSConstantString
+CFLAGS=-MMD -MP -DGNUSTEP_TARGET_DIR=\".\" -DGNUSTEP_IS_FLATTENED=\"yes\" -DLIBRARY_COMBO=\"gnu-gnu-gnu\" -DGNUSTEP_BASE_INTERNAL=1 -Wall -Wdeclaration-after-statement -Wcast-align -DGNUSTEP -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1 -fno-strict-aliasing -fexceptions -fobjc-exceptions -D_NATIVE_OBJC_EXCEPTIONS -pthread -fPIC -Wall -DGSWARN -DGSDIAGNOSE -Wno-import -g -O2 -fgnu-runtime -fconstant-string-class=NSConstantString -I/usr/include/libxml2
 
 LDLIBS=-lffi -lz -lCoreFoundation
 
@@ -43,6 +43,7 @@ OBJECTS = \
     NSString.o \
     GSFormat.o \
     GSString.o \
+    GSPrivateHash.o \
     NSDecimal.o \
     NSScanner.o \
     NSPropertyList.o \

@@ -22,17 +22,23 @@
    Boston, MA 02111 USA.
 
    <title>NSFileHandle class reference</title>
-   $Date: 2011-10-19 08:25:38 -0700 (Wed, 19 Oct 2011) $ $Revision: 34029 $
+   $Date: 2013-11-30 00:57:20 -0800 (Sat, 30 Nov 2013) $ $Revision: 37420 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSFileHandle_IVARS	1
-#import "NSData.h"
-#import "NSFileHandle.h"
-#import "NSPathUtilities.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSHost.h"
+#import "Foundation/NSFileHandle.h"
+#import "Foundation/NSPathUtilities.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
 #import "GSPrivate.h"
 #import "GSNetwork.h"
+#import "GSTLS.h"
+
+
+#define	EXPOSE_GSFileHandle_IVARS	1
 #import "GSFileHandle.h"
 
 // GNUstep Notification names
@@ -703,76 +709,373 @@ NSString * const NSFileHandleOperationException
 
 @end
 
-@implementation NSFileHandle (GNUstepOpenSSL)
+@implementation NSFileHandle (GNUstepTLS)
+
++ (void) setData: (NSData*)data forTLSFile: (NSString*)fileName
+{
+#if     defined(HAVE_GNUTLS)
+  [GSTLSObject setData: data forTLSFile: fileName];
+#else
+  [NSException raise: NSInternalInconsistencyException
+              format: @"[NSFileHandle+setData:forTLSFile:] called for a copy of gnustep-base which had GNUTLS support explicitly disabled at configure time"];
+#endif
+}
+
 /**
- * returns the concrete class used to implement SSL connections.
+ * returns the concrete class used to implement SSL/TLS connections.
  */
 + (Class) sslClass
 {
-    DLog();
-    if (NSFileHandle_ssl_class == 0)
+  if (0 == NSFileHandle_ssl_class)
     {
-        NSString  *path;
-        NSBundle	*bundle;
-        
-        path = [[NSBundle bundleForClass: [NSObject class]] bundlePath];
-        path = [path stringByAppendingPathComponent: @"SSL.bundle"];
-        
-        bundle = [NSBundle bundleWithPath: path];
-        NSFileHandle_ssl_class = [bundle principalClass];
-        if (NSFileHandle_ssl_class == 0 && bundle != nil)
+      NSFileHandle_ssl_class = NSClassFromString(@"GSTLSHandle");
+
+      if (0 == NSFileHandle_ssl_class)
         {
-            NSLog(@"Failed to load principal class from bundle (%@)", path);
+          NSString      *path;
+          NSBundle      *bundle;
+
+          path = [[NSBundle bundleForClass: [NSObject class]] bundlePath];
+          path = [path stringByAppendingPathComponent: @"SSL.bundle"];
+
+          bundle = [NSBundle bundleWithPath: path];
+          NSFileHandle_ssl_class = [bundle principalClass];
+          if (NSFileHandle_ssl_class == 0 && bundle != nil)
+            {
+              NSLog(@"Failed to load principal class from bundle (%@)", path);
+            }
         }
     }
-    return NSFileHandle_ssl_class;
+  return NSFileHandle_ssl_class;
 }
 
-/** <override-dummy />
- * Establishes an SSL connection from the system that the handle
- * is talking to.<br />
- * This is implemented by an SSL handling subclass.<br />
- * The default implementation just returns NO.
- */
 - (BOOL) sslAccept
 {
-  return NO;
+  BOOL		result = NO;
+
+  if (NO == [self sslHandshakeEstablished: &result outgoing: NO])
+    {
+      NSRunLoop	*loop;
+
+      IF_NO_GC([self retain];)		// Don't get destroyed during runloop
+      loop = [NSRunLoop currentRunLoop];
+      [loop runUntilDate: [NSDate dateWithTimeIntervalSinceNow: 0.01]];
+      if (NO == [self sslHandshakeEstablished: &result outgoing: NO])
+	{
+	  NSDate		*final;
+	  NSDate		*when;
+	  NSTimeInterval	last = 0.0;
+	  NSTimeInterval	limit = 0.1;
+
+	  final = [[NSDate alloc] initWithTimeIntervalSinceNow: 30.0];
+	  when = [NSDate alloc];
+
+	  while (NO == [self sslHandshakeEstablished: &result outgoing: NO]
+	    && [final timeIntervalSinceNow] > 0.0)
+	    {
+	      NSTimeInterval	tmp = limit;
+
+	      limit += last;
+	      last = tmp;
+	      if (limit > 0.5)
+		{
+		  limit = 0.1;
+		  last = 0.1;
+		}
+	      when = [when initWithTimeIntervalSinceNow: limit];
+	      [loop runUntilDate: when];
+	    }
+	  RELEASE(when);
+	  RELEASE(final);
+	}
+      DESTROY(self);
+    }
+  return result;
 }
 
-/** <override-dummy />
- * Establishes an SSL connection to the system that the handle
- * is talking to.<br />
- * This is implemented by an SSL handling subclass.<br />
- * The default implementation just returns NO.
- */
 - (BOOL) sslConnect
 {
-  return NO;
+  BOOL		result = NO;
+
+  if (NO == [self sslHandshakeEstablished: &result outgoing: YES])
+    {
+      NSRunLoop	*loop;
+
+      IF_NO_GC([self retain];)		// Don't get destroyed during runloop
+      loop = [NSRunLoop currentRunLoop];
+      [loop runUntilDate: [NSDate dateWithTimeIntervalSinceNow: 0.01]];
+      if (NO == [self sslHandshakeEstablished: &result outgoing: YES])
+	{
+	  NSDate		*final;
+	  NSDate		*when;
+	  NSTimeInterval	last = 0.0;
+	  NSTimeInterval	limit = 0.1;
+
+	  final = [[NSDate alloc] initWithTimeIntervalSinceNow: 30.0];
+	  when = [NSDate alloc];
+
+	  while (NO == [self sslHandshakeEstablished: &result outgoing: YES]
+	    && [final timeIntervalSinceNow] > 0.0)
+	    {
+	      NSTimeInterval	tmp = limit;
+
+	      limit += last;
+	      last = tmp;
+	      if (limit > 0.5)
+		{
+		  limit = 0.1;
+		  last = 0.1;
+		}
+	      when = [when initWithTimeIntervalSinceNow: limit];
+	      [loop runUntilDate: when];
+	    }
+	  RELEASE(when);
+	  RELEASE(final);
+	}
+      DESTROY(self);
+    }
+  return result;
 }
 
-/** <override-dummy />
- * Shuts down the SSL connection to the system that the handle is talking to.
- */
 - (void) sslDisconnect
 {
+  return;
 }
 
-/** <override-dummy />
- */
 - (BOOL) sslHandshakeEstablished: (BOOL*)result outgoing: (BOOL)isOutgoing
 {
-  return NO;
+  if (0 != result)
+    {
+      *result = NO;
+    }
+  return YES;
 }
 
-/** <override-dummy />
- * Sets the certificate chain to be used to identify this process to the server
- * at the opposite end of the network connection.
- */
 - (void) sslSetCertificate: (NSString*)certFile
                 privateKey: (NSString*)privateKey
                  PEMpasswd: (NSString*)PEMpasswd
 {
+  NSMutableDictionary   *opts;
+  NSString              *err;
+
+  opts = [NSMutableDictionary dictionaryWithCapacity: 3];
+  if (nil != certFile)
+    {
+      [opts setObject: certFile forKey: GSTLSCertificateFile];
+    }
+  if (nil != privateKey)
+    {
+      [opts setObject: privateKey forKey: GSTLSCertificateKeyFile];
+    }
+  if (nil != PEMpasswd)
+    {
+      [opts setObject: PEMpasswd forKey: GSTLSCertificateKeyPassword];
+    }
+  err = [self sslSetOptions: opts];
+  if (nil != err)
+    {
+      NSLog(@"%@", err);
+    }
+}
+
+- (NSString*) sslSetOptions: (NSDictionary*)options
+{
+  return nil;
 }
 
 @end
+
+#if     defined(HAVE_GNUTLS)
+
+#if	!defined(__MINGW__)
+
+@interface      GSTLSHandle : GSFileHandle
+{
+@public
+  NSDictionary  *opts;
+  GSTLSSession  *session;
+}
+- (void) sslDisconnect;
+- (BOOL) sslHandshakeEstablished: (BOOL*)result outgoing: (BOOL)isOutgoing;
+- (NSString*) sslSetOptions: (NSDictionary*)options;
+@end
+
+
+/* Callback to allow the TLS code to pull data from the remote system.
+ * If the operation fails, this sets the error number.
+ */
+static ssize_t
+GSTLSHandlePull(gnutls_transport_ptr_t handle, void *buffer, size_t len)
+{
+  ssize_t       result = 0;
+  GSTLSHandle   *tls = (GSTLSHandle*)handle;
+  int           descriptor = [tls fileDescriptor];
+
+  result = read(descriptor, buffer, len);
+  if (result < 0)
+    {
+#if	HAVE_GNUTLS_TRANSPORT_SET_ERRNO
+      if (tls->session && tls->session->session)
+        {
+          gnutls_transport_set_errno (tls->session->session, errno);
+        }
+#endif
+    }
+  return result;
+}
+
+/* Callback to allow the TLS code to push data to the remote system.
+ * If the operation fails, this sets the error number.
+ */
+static ssize_t
+GSTLSHandlePush(gnutls_transport_ptr_t handle, const void *buffer, size_t len)
+{
+  ssize_t       result = 0;
+  GSTLSHandle   *tls = (GSTLSHandle*)handle;
+  int           descriptor = [tls fileDescriptor];
+
+  result = write(descriptor, buffer, len);
+  if (result < 0)
+    {
+#if	HAVE_GNUTLS_TRANSPORT_SET_ERRNO
+      if (tls->session && tls->session->session)
+        {
+          gnutls_transport_set_errno (tls->session->session, errno);
+        }
+#endif
+    }
+  return result;
+}
+
+@implementation GSTLSHandle
+
++ (void) initialize
+{
+  if (self == [GSTLSHandle class])
+    {
+      [GSTLSObject class];      // Force initialisation of gnu tls stuff
+    }
+}
+
+- (void) closeFile
+{
+  [self sslDisconnect];
+  [super closeFile];
+}
+
+- (void) dealloc
+{
+  // Don't DESTROY ivars below. First release them, then set nil, because
+  // `session' may need this back-reference during TLS teardown.
+  TEST_RELEASE(opts);
+  TEST_RELEASE(session);
+  opts = nil;
+  session = nil;
+  [super dealloc];
+}
+
+- (void) finalize
+{
+  [self sslDisconnect];
+  [super finalize];
+}
+
+- (NSInteger) read: (void*)buf length: (NSUInteger)len
+{
+  if (YES == [session active])
+    {
+      return [session read: buf length: len];
+    }
+  return [super read: buf length: len];
+}
+
+- (void) sslDisconnect
+{
+  [self setNonBlocking: NO];
+  [session disconnect: NO];
+}
+
+- (BOOL) sslHandshakeEstablished: (BOOL*)result outgoing: (BOOL)isOutgoing
+{
+  NSAssert(0 != result, NSInvalidArgumentException);
+
+  if (YES == [session active])
+    {
+      return YES;	/* Already connected.	*/
+    }
+
+  if (YES == isStandardFile)
+    {
+      NSLog(@"Attempt to perform ssl handshake with a standard file");
+      return YES;
+    }
+
+  /* Set the handshake direction so we know how to set up the connection.
+   */
+  if (nil == session)
+    {
+      /* If No value is specified for GSTLSRemoteHosts, make a comma separated
+       * list of all known names for the remote host and use that.
+       */
+      if (nil == [opts objectForKey: GSTLSRemoteHosts])
+        {
+          NSHost        *host = [NSHost hostWithAddress: [self socketAddress]];
+          NSString      *s = [[host names] description];
+
+          s = [s stringByReplacingString: @"\"" withString: @""];
+          if ([s length] > 1)
+            {
+              s = [s substringWithRange: NSMakeRange(1, [s length] - 2)];
+            }
+          if ([s length] > 0)
+            {
+              NSMutableDictionary   *d = [opts mutableCopy];
+
+              [d setObject:s forKey: GSTLSRemoteHosts];
+              ASSIGNCOPY(opts, d);
+              [d release];
+            }
+        }
+      [self setNonBlocking: YES];
+      session = [[GSTLSSession alloc] initWithOptions: opts
+                                            direction: isOutgoing
+                                            transport: (void*)self
+                                                 push: GSTLSHandlePush
+                                                 pull: GSTLSHandlePull];
+    }
+
+  if (NO == [session handshake])
+    {
+      return NO;        // Need more.
+    }
+  else
+    {
+      *result = [session active];
+      return YES;
+    }
+}
+
+- (NSString*) sslSetOptions: (NSDictionary*)options
+{
+  if (isStandardFile == YES)
+    {
+      return @"Attempt to set ssl options for a standard file";
+    }
+  ASSIGNCOPY(opts, options);
+  return nil;
+}
+
+- (NSInteger) write: (const void*)buf length: (NSUInteger)len
+{
+  if (YES == [session active])
+    {
+      return [session write: buf length: len];
+    }
+  return [super write: buf length: len];
+}
+
+@end
+#endif  /* MINGW */
+
+#endif  /* HAVE_GNUTLS */
 

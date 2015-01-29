@@ -24,12 +24,13 @@
 
 #ifndef __NSSortDescriptor_h_GNUSTEP_BASE_INCLUDE
 #define __NSSortDescriptor_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
-#if OS_API_VERSION(100300,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_3,GS_API_LATEST)
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSArray.h>
+#import	<Foundation/NSSet.h>
 
 #if	defined(__cplusplus)
 extern "C" {
@@ -42,7 +43,8 @@ extern "C" {
  * arrays containging collections or other objects whose properties
  * can be obtained using key names.
  */
-@interface NSSortDescriptor : NSObject <NSCopying, NSCoding> {
+@interface NSSortDescriptor : NSObject <NSCopying, NSCoding>
+{
 #if	GS_EXPOSE(NSSortDescriptor)
 @private
   NSString *_key;
@@ -60,12 +62,10 @@ extern "C" {
 #endif
 }
 
-+ (id)sortDescriptorWithKey:(NSString *)key ascending:(BOOL)ascending;
-
 /** Returns a flag indicating whether the sort descriptor sorts objects
  * in ascending order (YES) or descending order (NO).
  */
-- (BOOL)ascending;
+- (BOOL) ascending;
 
 /** Returns the result of comparing object1 to object2 using the property
  * whose key is defined in the receiver and using the selector of the
@@ -73,31 +73,53 @@ extern "C" {
  * result of this comparison is the opposite of that prroduced by
  * applying the selector.
  */
-- (NSComparisonResult)compareObject:(id)object1 toObject:(id)object2;
+- (NSComparisonResult) compareObject: (id)object1 toObject: (id)object2;
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6, GS_API_LATEST) 
+/** <p>Returns an autoreleased sort descriptor for comparisons using the 
+ * 'compare:' selector and the specified key and ordering.</p>
+ *
+ * <p>See also -initWithKey:ascending:.</p>
+ */
++ (id) sortDescriptorWithKey: (NSString *)aKey ascending: (BOOL)ascending;
+
+/** <p>Returns an autoreleased sort descriptor initialized to perform 
+ * comparisons in the specified order using aSelector to compare the property 
+ * aKey of each object.</p>
+ *
+ * <p>See also -initWithKey:ascending:selector:.</p>
+ */
++ (id) sortDescriptorWithKey: (NSString *)aKey 
+                   ascending: (BOOL)ascending 
+                    selector: (SEL)aSelector;
+#endif
 
 /** Initialises the receiver for comparisons using the 'compare:' selector
  * and the specified key and ordering.
  */
-- (id)initWithKey:(NSString *)key ascending:(BOOL)ascending;
+- (id) initWithKey: (NSString *)key
+	 ascending: (BOOL)ascending;
 
 /** <init />
  * Initialises the receiver to perform comparisons in the specified order
  * using selector to compar the property key of each object.
  */
-- (id)initWithKey:(NSString *)key ascending:(BOOL)ascending selector:(SEL)selector;
+- (id) initWithKey: (NSString *)key
+         ascending: (BOOL)ascending
+          selector: (SEL)selector;
 
 /** Returns the key used to obtain the property on which comparisons are based.
  */
-- (NSString *)key;
+- (NSString *) key;
 
 /** Returns the selector used to compare the properties of objects.
  */
-- (SEL)selector;
+- (SEL) selector;
 
 /** Returns a copy of the receiver which compares and sorts in reversed
  * order.
  */
-- (id)reversedSortDescriptor;
+- (id) reversedSortDescriptor;
 @end
 
 @interface NSArray (NSSortDescriptorSorting)
@@ -126,6 +148,16 @@ extern "C" {
 - (void) sortUsingDescriptors: (NSArray *)sortDescriptors;
 
 @end
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) 
+@interface NSSet (NSSortDescriptorSorting)
+ /**
+ * Produces a sorted array from using the mechanism described for
+ * [NSMutableArray-sortUsingDescriptors:]
+ */
+- (NSArray *) sortedArrayUsingDescriptors: (NSArray *)sortDescriptors;
+@end
+#endif
 
 #if	defined(__cplusplus)
 }

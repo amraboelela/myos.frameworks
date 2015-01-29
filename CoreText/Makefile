@@ -16,7 +16,6 @@
 #
 
 LIB_NAME=CoreText
-#CFLAGS=-DDEBUG
 LDLIBS= -lCoreFoundation -lFoundation
 
 ifeq ($(TARGET),NativeApp)

@@ -41,7 +41,7 @@
 */
 
 #import "common.h"
-#import "Unicode.h"
+#import "GNUstepBase/Unicode.h"
 
 #ifndef	_XOPEN_SOURCE
 #define	_XOPEN_SOURCE 600
@@ -52,26 +52,26 @@
 #ifdef	HAVE_LIBXML
 
 // #undef	HAVE_LIBXML_SAX2_H
-#import "GSObjCRuntime.h"
-#import "NSObject+GNUstepBase.h"
-#import "GSMime.h"
-#import "GSXML.h"
-#import "NSArray.h"
-#import "NSCalendarDate.h"
-#import "NSCharacterSet.h"
-#import "NSData.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSFileHandle.h"
-#import "NSFileManager.h"
-#import "NSRunLoop.h"
-#import "NSString.h"
-#import "NSTimer.h"
-#import "NSTimeZone.h"
-#import "NSURL.h"
-#import "NSURLHandle.h"
-#import "NSValue.h"
+#import "GNUstepBase/GSObjCRuntime.h"
+#import "GNUstepBase/NSObject+GNUstepBase.h"
+#import "GNUstepBase/GSMime.h"
+#import "GNUstepBase/GSXML.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSCalendarDate.h"
+#import "Foundation/NSCharacterSet.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileHandle.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSString.h"
+#import "Foundation/NSTimer.h"
+#import "Foundation/NSTimeZone.h"
+#import "Foundation/NSURL.h"
+#import "Foundation/NSURLHandle.h"
+#import "Foundation/NSValue.h"
 
 /* Avoid problems on systems where the xml headers use 'id'
  */
@@ -4164,8 +4164,8 @@ static BOOL warned = NO; if (warned == NO) { warned = YES; NSLog(@"WARNING, use 
 #else
 
 #ifndef NeXT_Foundation_LIBRARY
-#import	"NSCoder.h"
-#import	"NSInvocation.h"
+#import	"Foundation/NSCoder.h"
+#import	"Foundation/NSInvocation.h"
 #endif
 
 /*

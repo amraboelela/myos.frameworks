@@ -24,7 +24,12 @@
 
 #import "CoreGraphics/CoreGraphics.h"
 
+#ifdef ANDROID
 #include <freetype/ft2build.h>
+#else
+#include <ft2build.h>
+#endif
+
 #include FT_FREETYPE_H
 
 
