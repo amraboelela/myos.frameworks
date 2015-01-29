@@ -24,7 +24,7 @@
 
 #ifndef __NSRange_h_GNUSTEP_BASE_INCLUDE
 #define __NSRange_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 /**** Included Headers *******************************************************/
 

@@ -26,7 +26,7 @@
 
 #define	EXPOSE_NSURLAuthenticationChallenge_IVARS	1
 #import "GSURLPrivate.h"
-#import "NSError.h"
+#import "Foundation/NSError.h"
 
 
 // Internal data storage

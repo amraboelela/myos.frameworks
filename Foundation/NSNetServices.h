@@ -24,7 +24,7 @@
 
 #ifndef __NSNetServices_h_GNUSTEP_BASE_INCLUDE
 #define __NSNetServices_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSRange.h>
@@ -93,7 +93,10 @@ enum
 typedef NSUInteger NSNetServicesError;
 
 enum {
-  NSNetServiceNoAutoRename = 1 << 0
+  NSNetServiceNoAutoRename          = 1 << 0
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_9,GS_API_LATEST)
+  ,NSNetServiceListenForConnections = 1 << 1
+#endif
 };
 typedef NSUInteger NSNetServiceOptions;
 
@@ -111,7 +114,7 @@ GS_EXPORT NSString * const NSNetServicesErrorDomain;
 
 
 @protocol  NSNetServiceDelegate
-#ifdef __clang__
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) && GS_PROTOCOLS_HAVE_OPTIONAL
 @optional
 #else
 @end
@@ -202,6 +205,22 @@ GS_EXPORT NSString * const NSNetServicesErrorDomain;
 - (void)      netService: (NSNetService *) sender
   didUpdateTXTRecordData: (NSData *) data;
 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_9,GS_API_LATEST)
+
+/**
+ * Notifies the delegate that the service, which must have been published with
+ * option NSNetServiceListenForConnections, received a new connection.
+ * In order to communicate with the connecting client, you must -open
+ * the streams and schedule them with a runloop.
+ * To reject a connection, just -open and immediately -close both streams.
+ */
+
+- (void)                  netService: (NSNetService *) sender
+  didAcceptConnectionWithInputStream: (NSInputStream *) inputStream
+						outputStream: (NSOutputStream *)outputStream;
+
+#endif
+
 @end
 
 /**
@@ -224,7 +243,7 @@ GS_EXPORT NSString * const NSNetServicesErrorDomain;
  */
 
 @protocol NSNetServiceBrowserDelegate
-#ifdef __clang__
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) && GS_PROTOCOLS_HAVE_OPTIONAL
 @optional
 #else
 @end
@@ -362,7 +381,7 @@ GS_EXPORT NSString * const NSNetServicesErrorDomain;
 - (void) scheduleInRunLoop: (NSRunLoop *) aRunLoop
                    forMode: (NSString *) mode;
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 - (NSInteger) port;
 
 - (void) publishWithOptions: (NSNetServiceOptions)options;
@@ -474,7 +493,7 @@ GS_EXPORT NSString * const NSNetServicesErrorDomain;
 
 
 #if	!NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import	<Foundation/NSNetServices+GNUstepBase.h>
+#import	<GNUstepBase/NSNetServices+GNUstepBase.h>
 #endif
 #if	defined(__cplusplus)
 }

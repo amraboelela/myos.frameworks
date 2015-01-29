@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSDecimalNumber class reference</title>
-   $Date: 2011-02-25 22:29:57 -0800 (Fri, 25 Feb 2011) $ $Revision: 32375 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
@@ -32,11 +32,11 @@
 
 #define	EXPOSE_NSDecimalNumber_IVARS	1
 #define	EXPOSE_NSDecimalNumberHandler_IVARS	1
-#import "NSCoder.h"
-#import "NSDecimal.h"
-#import "NSDecimalNumber.h"
-#import "NSException.h"
-#import "NSPortCoder.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSDecimal.h"
+#import "Foundation/NSDecimalNumber.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPortCoder.h"
 
 #import "GSPrivate.h"
 
@@ -171,16 +171,21 @@ static NSDecimalNumber *one;
   NSDecimal d = { 0 };
 
   notANumber = [[self alloc] initWithDecimal: d];
+  [[NSObject leakAt: &notANumber] release];
   NSDecimalMax(&d);
   maxNumber = [[self alloc] initWithDecimal: d];
+  [[NSObject leakAt: &maxNumber] release];
   NSDecimalMin(&d);
   minNumber = [[self alloc] initWithDecimal: d];
+  [[NSObject leakAt: &minNumber] release];
   zero = [[self alloc] initWithMantissa: 0
 			       exponent: 0
 			     isNegative: NO];
+  [[NSObject leakAt: &zero] release];
   one = [[self alloc] initWithMantissa: 1
 			      exponent: 0
 			    isNegative: NO];
+  [[NSObject leakAt: &one] release];
   NSDecimalNumberClass = [NSDecimalNumber class];
 }
 

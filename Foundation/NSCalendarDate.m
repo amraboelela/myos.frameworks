@@ -25,23 +25,23 @@
    Boston, MA 02111 USA.
 
    <title>NSCalendarDate class reference</title>
-   $Date: 2011-12-29 10:28:27 -0800 (Thu, 29 Dec 2011) $ $Revision: 34363 $
+   $Date: 2014-02-13 02:41:55 -0800 (Thu, 13 Feb 2014) $ $Revision: 37683 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSCalendarDate_IVARS	1
 #include <math.h>
-#import "NSArray.h"
-#import "NSAutoreleasePool.h"
-#import "NSCalendarDate.h"
-#import "NSCoder.h"
-#import "NSData.h"
-#import "NSDate.h"
-#import "NSDictionary.h"
-#import "NSException.h"
-#import "NSTimeZone.h"
-#import "NSUserDefaults.h"
-#import "GSObjCRuntime.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSCalendarDate.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSTimeZone.h"
+#import "Foundation/NSUserDefaults.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 #import "GSPrivate.h"
 
@@ -62,7 +62,8 @@
 @interface	NSGDate : NSObject	// Help the compiler
 @end
 
-static NSString	*cformat = @"%Y-%m-%d %H:%M:%S.%F %z";
+
+static NSString	*cformat = @"%Y-%m-%d %H:%M:%S %z";
 
 static NSTimeZone	*localTZ = nil;
 
@@ -167,18 +168,18 @@ lastDayOfGregorianMonth(NSUInteger month, NSUInteger year)
 static inline NSUInteger
 absoluteGregorianDay(NSUInteger day, NSUInteger month, NSUInteger year)
 {
-    if (month > 1)
+  if (month > 1)
     {
-        while (--month > 0)
-        {
-            day = day + lastDayOfGregorianMonth(month, year);
-        }
+      while (--month > 0)
+	{
+	  day = day + lastDayOfGregorianMonth(month, year);
+	}
     }
-    if (year > 0)
+  if (year > 0)
     {
-        year--;
+      year--;
     }
-    return
+  return
     (day            // days this year
      + 365 * year   // days in previous years ignoring leap days
      + year/4       // Julian leap days before this year...
@@ -189,31 +190,33 @@ absoluteGregorianDay(NSUInteger day, NSUInteger month, NSUInteger year)
 static inline int
 dayOfCommonEra(NSTimeInterval when)
 {
-    int r;
-    
-    // Get reference date in terms of days
-    when /= 86400.0;
-    // Offset by Gregorian reference
-    when += GREGORIAN_REFERENCE;
-    r = (NSInteger)when;
-    return r;
+  int r;
+
+  // Get reference date in terms of days
+  when /= 86400.0;
+  // Offset by Gregorian reference
+  when += GREGORIAN_REFERENCE;
+  r = (NSInteger)when;
+  return r;
 }
 
 static void
 gregorianDateFromAbsolute(NSInteger abs, int *day, int *month, int *year)
 {
-    // Search forward year by year from approximate year
-    *year = abs/366;
-    while (abs >= absoluteGregorianDay(1, 1, (*year)+1)) {
-        (*year)++;
+  // Search forward year by year from approximate year
+  *year = abs/366;
+  while (abs >= absoluteGregorianDay(1, 1, (*year)+1))
+    {
+      (*year)++;
     }
-    // Search forward month by month from January
-    (*month) = 1;
-    while (abs > absoluteGregorianDay(lastDayOfGregorianMonth(*month, *year),
-                                      *month, *year)) {
-        (*month)++;
+  // Search forward month by month from January
+  (*month) = 1;
+  while (abs > absoluteGregorianDay(lastDayOfGregorianMonth(*month, *year),
+    *month, *year))
+    {
+      (*month)++;
     }
-    *day = abs - absoluteGregorianDay(1, *month, *year) + 1;
+  *day = abs - absoluteGregorianDay(1, *month, *year) + 1;
 }
 
 /**
@@ -223,18 +226,18 @@ gregorianDateFromAbsolute(NSInteger abs, int *day, int *month, int *year)
 static NSTimeInterval
 GSTime(unsigned day, unsigned month, unsigned year, unsigned hour, unsigned minute, unsigned second, unsigned mil)
 {
-    NSTimeInterval	a;
-    
-    a = (NSTimeInterval)absoluteGregorianDay(day, month, year);
-    
-    // Calculate date as GMT
-    a -= GREGORIAN_REFERENCE;
-    a = (NSTimeInterval)a * 86400;
-    a += hour * 3600;
-    a += minute * 60;
-    a += second;
-    a += ((NSTimeInterval)mil)/1000.0;
-    return a;
+  NSTimeInterval	a;
+
+  a = (NSTimeInterval)absoluteGregorianDay(day, month, year);
+
+  // Calculate date as GMT
+  a -= GREGORIAN_REFERENCE;
+  a = (NSTimeInterval)a * 86400;
+  a += hour * 3600;
+  a += minute * 60;
+  a += second;
+  a += ((NSTimeInterval)mil)/1000.0;
+  return a;
 }
 
 /**
@@ -246,35 +249,40 @@ void
 GSBreakTime(NSTimeInterval when, int *year, int *month, int *day,
   int *hour, int *minute, int *second, int *mil)
 {
-    int h, m, dayOfEra;
-    double a, b, c, d;
-    
-    // Get reference date in terms of days
-    a = when / 86400.0;
-    // Offset by Gregorian reference
-    a += GREGORIAN_REFERENCE;
-    // result is the day of common era.
-    dayOfEra = (NSInteger)a;
-    
-    // Calculate year, month, and day
-    gregorianDateFromAbsolute(dayOfEra, day, month, year);
-    
-    // Calculate hour, minute, and seconds
-    d = dayOfEra - GREGORIAN_REFERENCE;
-    d *= 86400;
-    a = abs(d - when);
-    b = a / 3600;
-    *hour = (NSInteger)b;
-    h = *hour;
-    h = h * 3600;
-    b = a - h;
-    b = b / 60;
-    *minute = (NSInteger)b;
-    m = *minute;
-    m = m * 60;
-    c = a - h - m;
-    *second = (NSInteger)c;
-    *mil = (NSInteger)((a - h - m - c) * 1000.0 + 0.5);
+  int h, m, dayOfEra;
+  double a, b, c, d;
+
+  /* The 0.1 constant was experimentally derived to cause our behavior
+   * to match Mac OS X 10.9.1.
+   */
+  when = floor(when * 1000.0 + 0.1) / 1000.0;
+
+  // Get reference date in terms of days
+  a = when / 86400.0;
+  // Offset by Gregorian reference
+  a += GREGORIAN_REFERENCE;
+  // result is the day of common era.
+  dayOfEra = (NSInteger)a;
+
+  // Calculate year, month, and day
+  gregorianDateFromAbsolute(dayOfEra, day, month, year);
+
+  // Calculate hour, minute, and seconds
+  d = dayOfEra - GREGORIAN_REFERENCE;
+  d *= 86400;
+  a = fabs(d - when);
+  b = a / 3600;
+  *hour = (NSInteger)b;
+  h = *hour;
+  h = h * 3600;
+  b = a - h;
+  b = b / 60;
+  *minute = (NSInteger)b;
+  m = *minute;
+  m = m * 60;
+  c = a - h - m;
+  *second = (NSInteger)c;
+  *mil = (NSInteger)rint((a - h - m - *second) * 1000.0);
 }
 
 /**
@@ -283,51 +291,58 @@ GSBreakTime(NSTimeInterval when, int *year, int *month, int *day,
 NSTimeInterval
 GSPrivateTimeNow(void)
 {
-    NSTimeInterval t;
+  NSTimeInterval t;
 #if !defined(__MINGW__)
-    struct timeval tp;
-    
-    gettimeofday(&tp, NULL);
-    t = (NSTimeInterval)tp.tv_sec - NSTimeIntervalSince1970;
-    t += (NSTimeInterval)tp.tv_usec / (NSTimeInterval)1000000.0;
+  struct timeval tp;
+
+  gettimeofday (&tp, NULL);
+  t = (NSTimeInterval)tp.tv_sec - NSTimeIntervalSince1970;
+  t += (NSTimeInterval)tp.tv_usec / (NSTimeInterval)1000000.0;
 #if	1
-    /* This is a workaround for a bug on some SMP intel systems where the TSC
-     * clock information from the processors gets out of sync and causes a
-     * leap of 4398 seconds into the future for an instant, and then back.
-     * If we detect a time jump back by more than the sort of small interval
-     * that ntpd might do (or forwards by a very large amount) we refetch the
-     * system time to make sure we don't have a temporary glitch.
-     */
+/* This is a workaround for a bug on some SMP intel systems where the TSC
+ * clock information from the processors gets out of sync and causes a
+ * leap of 4398 seconds into the future for an instant, and then back.
+ * If we detect a time jump back by more than the sort of small interval
+ * that ntpd might do (or forwards by a very large amount) we refetch the
+ * system time to make sure we don't have a temporary glitch.
+ */
+{
+  static int	old = 0;
+
+  if (old == 0)
     {
-        static int old = 0;
-        if (old == 0) {
-            old = tp.tv_sec;
-        } else {
-            int	diff = tp.tv_sec - old;
-            old = tp.tv_sec;
-            if (diff < -1 || diff > 3000) {
-                time_t	now = (time_t)tp.tv_sec;
-                fprintf(stderr, "WARNING: system time changed by %d seconds: %s\n",
-                        diff, ctime(&now));
-                /* Get time again ... should be OK now.
-                 */
-                t = GSPrivateTimeNow();
-            }
-        }
+      old = tp.tv_sec;
     }
+  else
+    {
+      int	diff = tp.tv_sec - old;
+
+      old = tp.tv_sec;
+      if (diff < -1 || diff > 3000)
+	{
+	  time_t	now = (time_t)tp.tv_sec;
+
+	  fprintf(stderr, "WARNING: system time changed by %d seconds: %s\n",
+	    diff, ctime(&now));
+	  /* Get time again ... should be OK now.
+	   */
+	  t = GSPrivateTimeNow();
+	}
+    }
+}
 #endif
-    
+
 #else
-    SYSTEMTIME sys_time;
-    /*
-     * Get current GMT time, convert to NSTimeInterval since reference date,
-     */
-    GetSystemTime(&sys_time);
-    t = GSTime(sys_time.wDay, sys_time.wMonth, sys_time.wYear, sys_time.wHour,
-               sys_time.wMinute, sys_time.wSecond, sys_time.wMilliseconds);
+  SYSTEMTIME sys_time;
+  /*
+   * Get current GMT time, convert to NSTimeInterval since reference date,
+   */
+  GetSystemTime(&sys_time);
+  t = GSTime(sys_time.wDay, sys_time.wMonth, sys_time.wYear, sys_time.wHour,
+    sys_time.wMinute, sys_time.wSecond, sys_time.wMilliseconds);
 #endif /* __MINGW__ */
-    
-    return t;
+
+  return t;
 }
 
 /**
@@ -337,10 +352,12 @@ GSPrivateTimeNow(void)
  */
 @implementation NSCalendarDate
 
-+ (void)initialize
++ (void) initialize
 {
-  if (self == [NSCalendarDate class])
+  if (self == [NSCalendarDate class] && nil == NSCalendarDateClass)
     {
+      NSAutoreleasePool *pool = [NSAutoreleasePool new];
+
       NSCalendarDateClass = self;
       [self setVersion: 1];
       localTZ = RETAIN([NSTimeZone localTimeZone]);
@@ -365,6 +382,7 @@ GSPrivateTimeNow(void)
 	[absClass instanceMethodForSelector: abrSEL];
 
       GSObjCAddClassBehavior(self, [NSGDate class]);
+      [pool release];
     }
 }
 
@@ -436,6 +454,20 @@ GSPrivateTimeNow(void)
  */
 - (id) addTimeInterval: (NSTimeInterval)seconds
 {
+  return [self dateByAddingTimeInterval: seconds];
+}
+
+- (Class) classForCoder
+{
+  return [self class];
+}
+
+/**
+ * Creates and returns a new NSCalendarDate object by taking the
+ * value of the receiver and adding the interval specified.
+ */
+- (id) dateByAddingTimeInterval: (NSTimeInterval)seconds
+{
   id newObj = [[self class] dateWithTimeIntervalSinceReferenceDate:
      [self timeIntervalSinceReferenceDate] + seconds];
 	
@@ -443,11 +475,6 @@ GSPrivateTimeNow(void)
   [newObj setCalendarFormat: [self calendarFormat]];
 
   return newObj;
-}
-
-- (Class) classForCoder
-{
-  return [self class];
 }
 
 - (id) replacementObjectForPortCoder: (NSPortCoder*)aRmc
@@ -895,8 +922,7 @@ static inline int getDigits(const char *from, char *to, int limit, BOOL *error)
 			error = YES;
 			NSDebugMLog(
 			  @"Expected literal '%%' but got end of string parsing"
-			  @"'%@' using '%@'", source[sourceIdx],
-			  description, fmt);
+			  @"'%@' using '%@'", description, fmt);
 		      }
 		    break;
 
@@ -1508,24 +1534,24 @@ static inline int getDigits(const char *from, char *to, int limit, BOOL *error)
 
   if (month < 1 || month > 12)
     {
-      NSWarnMLog(@"invalid month given - %u", month);
+      NSWarnMLog(@"invalid month given - %"PRIuPTR, month);
     }
   c = lastDayOfGregorianMonth(month, year);
   if (day < 1 || day > c)
     {
-      NSWarnMLog(@"invalid day given - %u", day);
+      NSWarnMLog(@"invalid day given - %"PRIuPTR, day);
     }
   if (hour > 23)
     {
-      NSWarnMLog(@"invalid hour given - %u", hour);
+      NSWarnMLog(@"invalid hour given - %"PRIuPTR, hour);
     }
   if (minute > 59)
     {
-      NSWarnMLog(@"invalid minute given - %u", minute);
+      NSWarnMLog(@"invalid minute given - %"PRIuPTR, minute);
     }
   if (second > 59)
     {
-      NSWarnMLog(@"invalid second given - %u", second);
+      NSWarnMLog(@"invalid second given - %"PRIuPTR, second);
     }
 
   // Calculate date as GMT
@@ -1580,21 +1606,24 @@ static inline int getDigits(const char *from, char *to, int limit, BOOL *error)
  * reference date.  Uses th standard format string "%Y-%m-%d %H:%M:%S %z"
  * and the default time zone.
  */
-- (id)initWithTimeIntervalSinceReferenceDate:(NSTimeInterval)seconds
+- (id) initWithTimeIntervalSinceReferenceDate: (NSTimeInterval)seconds
 {
-    if (isnan(seconds)) {
-        [NSException raise: NSInvalidArgumentException
-                    format: @"[%@-%@] interval is not a number",
-         NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
+  if (isnan(seconds))
+    {
+      [NSException raise: NSInvalidArgumentException
+	          format: @"[%@-%@] interval is not a number",
+	NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
     }
-    _seconds_since_ref = seconds;
-    if (_calendar_format == nil) {
-        _calendar_format = cformat;
+  _seconds_since_ref = seconds;
+  if (_calendar_format == nil)
+    {
+      _calendar_format = cformat;
     }
-    if (_time_zone == nil) {
-        _time_zone = localTZ;	// retain is a no-op for the local timezone.
+  if (_time_zone == nil)
+    {
+      _time_zone = localTZ;	// retain is a no-op for the local timezone.
     }
-    return self;
+  return self;
 }
 
 /**
@@ -1799,9 +1828,9 @@ static inline int getDigits(const char *from, char *to, int limit, BOOL *error)
  * Calls -descriptionWithCalendarFormat:locale: passing the receiver's
  * calendar format and a nil locale.
  */
-- (NSString *)description
+- (NSString*) description
 {
-    return [self descriptionWithCalendarFormat:_calendar_format locale:nil];
+  return [self descriptionWithCalendarFormat: _calendar_format locale: nil];
 }
 
 /**
@@ -2069,16 +2098,7 @@ static void outputValueWithFormat(int v, char *fldfmt, DescriptionInfo *info)
 		break;
 
 	      case 'F': 	// milliseconds
-		{
-		  double	s;
-
-		  s = ([self dayOfCommonEra] - GREGORIAN_REFERENCE) * 86400.0;
-		  s -= (_seconds_since_ref + offset(_time_zone, self));
-		  s = fabs(s);
-		  s -= floor(s);
-		  s *= 1000.0;
-		  v = (NSInteger)(s + 0.5);
-		}
+                v = info->mil;
 		if (fmtlen == 1) // no format width specified; supply default
 		  {
 		    fldfmt[fmtlen++] = '0';
@@ -2467,9 +2487,9 @@ static void outputValueWithFormat(int v, char *fldfmt, DescriptionInfo *info)
  * Returns the format string associated with the receiver.<br />
  * See -descriptionWithCalendarFormat:locale: for details.
  */
-- (NSString *)calendarFormat
+- (NSString*) calendarFormat
 {
-    return _calendar_format;
+  return _calendar_format;
 }
 
 /**
@@ -2477,12 +2497,13 @@ static void outputValueWithFormat(int v, char *fldfmt, DescriptionInfo *info)
  * Providing a nil argument sets the default calendar format.<br />
  * See -descriptionWithCalendarFormat:locale: for details.
  */
-- (void)setCalendarFormat:(NSString *)format
+- (void) setCalendarFormat: (NSString *)format
 {
-    if (format == nil) {
-        format = cformat;
+  if (format == nil)
+    {
+      format = cformat;
     }
-    ASSIGNCOPY(_calendar_format, format);
+  ASSIGNCOPY(_calendar_format, format);
 }
 
 /**

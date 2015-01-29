@@ -26,8 +26,8 @@
 #import "common.h"
 
 #import "GSRunLoopWatcher.h"
-#import "NSException.h"
-#import "NSPort.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPort.h"
 
 @implementation	GSRunLoopWatcher
 

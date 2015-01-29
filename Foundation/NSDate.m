@@ -24,23 +24,22 @@
    Boston, MA 02111 USA.
 
    <title>NSDate class reference</title>
-   $Date: 2011-11-04 03:38:16 -0700 (Fri, 04 Nov 2011) $ $Revision: 34117 $
+   $Date: 2014-12-22 16:31:46 -0800 (Mon, 22 Dec 2014) $ $Revision: 38257 $
    */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSCalendarDate.h"
-#import "NSCharacterSet.h"
-#import "NSCoder.h"
-#import "NSDate.h"
-#import "NSDictionary.h"
-#import "NSException.h"
-#import "NSPortCoder.h"
-#import "NSScanner.h"
-#import "NSTimeZone.h"
-#import "NSUserDefaults.h"
-#import "GSObjCRuntime.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSCalendarDate.h"
+#import "Foundation/NSCharacterSet.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPortCoder.h"
+#import "Foundation/NSScanner.h"
+#import "Foundation/NSTimeZone.h"
+#import "Foundation/NSUserDefaults.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 #import "GSPrivate.h"
 
@@ -49,6 +48,11 @@
 /* These constants seem to be what MacOS-X uses */
 #define DISTANT_FUTURE	63113990400.0
 #define DISTANT_PAST	-63113817600.0
+
+/* On older Solaris we don't have NAN nor nan() */
+#if defined(__sun) && defined(__SVR4) && !defined(NAN)
+#define NAN 0x7fffffffffffffff
+#endif
 
 const NSTimeInterval NSTimeIntervalSince1970 = 978307200.0;
 
@@ -65,7 +69,7 @@ static Class	calendarClass = nil;
 @interface NSGDate : NSDate
 {
 @public
-    NSTimeInterval _seconds_since_ref;
+  NSTimeInterval _seconds_since_ref;
 }
 @end
 
@@ -85,32 +89,34 @@ static id _distantFuture = nil;
 static NSString*
 findInArray(NSArray *array, unsigned pos, NSString *str)
 {
-    unsigned	index;
-    unsigned	limit = [array count];
-    
-    for (index = pos; index < limit; index++) {
-        NSString *item;
-        item = [array objectAtIndex: index];
-        if ([str caseInsensitiveCompare: item] == NSOrderedSame)
-            return item;
+  unsigned	index;
+  unsigned	limit = [array count];
+
+  for (index = pos; index < limit; index++)
+    {
+      NSString	*item;
+
+      item = [array objectAtIndex: index];
+      if ([str caseInsensitiveCompare: item] == NSOrderedSame)
+	return item;
     }
-    return nil;
+  return nil;
 }
 
-static inline NSTimeInterval otherTime(NSDate* other)
+static inline NSTimeInterval
+otherTime(NSDate* other)
 {
-    Class	c;
-    
-    if (other == nil)
-        [NSException raise: NSInvalidArgumentException format: @"other time nil"];
-    if (GSObjCIsInstance(other) == NO)
-        [NSException raise: NSInvalidArgumentException format: @"other time bad"];
-    c = object_getClass(other);
-    if (c == concreteClass || c == calendarClass) {
-        return ((NSGDate*)other)->_seconds_since_ref;
-    } else {
-        return [other timeIntervalSinceReferenceDate];
-    }
+  Class	c;
+
+  if (other == nil)
+    [NSException raise: NSInvalidArgumentException format: @"other time nil"];
+  if (GSObjCIsInstance(other) == NO)
+    [NSException raise: NSInvalidArgumentException format: @"other time bad"];
+  c = object_getClass(other);
+  if (c == concreteClass || c == calendarClass)
+    return ((NSGDate*)other)->_seconds_since_ref;
+  else
+    return [other timeIntervalSinceReferenceDate];
 }
 
 /**
@@ -156,7 +162,7 @@ static inline NSTimeInterval otherTime(NSDate* other)
  */
 + (NSTimeInterval) timeIntervalSinceReferenceDate
 {
-    return GSPrivateTimeNow();
+  return GSPrivateTimeNow();
 }
 
 /**
@@ -974,6 +980,15 @@ static inline NSTimeInterval otherTime(NSDate* other)
 }
 
 /**
+ * Returns an autoreleased instance with the offset from the given date.
+ */
++ (id) dateWithTimeInterval: (NSTimeInterval)seconds sinceDate: (NSDate*)date
+{
+  return AUTORELEASE([[self alloc] initWithTimeInterval: seconds
+                                              sinceDate: date]);
+}
+
+/**
  * Returns an autoreleased instance with th date/time set in the far
  * future.
  */
@@ -1130,6 +1145,12 @@ static inline NSTimeInterval otherTime(NSDate* other)
   return self;
 }
 
+- (id) dateByAddingTimeInterval: (NSTimeInterval)ti
+{
+  return [[self class] dateWithTimeIntervalSinceReferenceDate:
+    otherTime(self) + ti];
+}
+
 /**
  * Returns an autoreleased instance of the [NSCalendarDate] class whose
  * date/time value is the same as that of the receiver, and which uses
@@ -1149,15 +1170,15 @@ static inline NSTimeInterval otherTime(NSDate* other)
  * Returns a string representation of the receiver formatted according
  * to the default format string, time zone, and locale.
  */
-- (NSString *)description
+- (NSString*) description
 {
-    // Easiest to just have NSCalendarDate do the work for us
-    NSString *s;
-    NSCalendarDate *d = [calendarClass alloc];
-    d = [d initWithTimeIntervalSinceReferenceDate:otherTime(self)];
-    s = [[d description] retain];
-    RELEASE(d);
-    return [s autorelease];
+  // Easiest to just have NSCalendarDate do the work for us
+  NSString *s;
+  NSCalendarDate *d = [calendarClass alloc];
+  d = [d initWithTimeIntervalSinceReferenceDate: otherTime(self)];
+  s = [[d description] retain];
+  RELEASE(d);
+  return [s autorelease];
 }
 
 /**
@@ -1201,15 +1222,9 @@ static inline NSTimeInterval otherTime(NSDate* other)
   return [s autorelease];
 }
 
-/**
- * Returns an autoreleased NSDate instance whose value if offset from
- * that of the receiver by seconds.
- */
 - (id) addTimeInterval: (NSTimeInterval)seconds
 {
-  /* xxx We need to check for overflow? */
-  return [[self class] dateWithTimeIntervalSinceReferenceDate:
-    otherTime(self) + seconds];
+  return [self dateByAddingTimeInterval: seconds];
 }
 
 /**
@@ -1231,7 +1246,11 @@ static inline NSTimeInterval otherTime(NSDate* other)
 - (NSTimeInterval) timeIntervalSinceDate: (NSDate*)otherDate
 {
   if (otherDate == nil)
-      return NAN;//nan("");
+#ifndef NAN
+    return nan("");
+#else
+    return NAN;
+#endif
 /*
     {
       [NSException raise: NSInvalidArgumentException

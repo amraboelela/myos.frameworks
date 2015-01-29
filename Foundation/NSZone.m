@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSZone class reference</title>
-   $Date: 2012-01-09 00:28:27 -0800 (Mon, 09 Jan 2012) $ $Revision: 34468 $
+   $Date: 2012-09-03 06:36:45 -0700 (Mon, 03 Sep 2012) $ $Revision: 35503 $
 */
 
 /*  Design goals:
@@ -88,9 +88,8 @@
 
 #import "common.h"
 #include <stddef.h>
-#include <string.h>
-#import "NSException.h"
-#import "NSLock.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSLock.h"
 #import "GSPrivate.h"
 #import "GSPThread.h"
 

@@ -24,15 +24,15 @@
    */
 
 #import "common.h"
-#import "NSSet.h"
-#import "GSObjCRuntime.h"
-#import "NSAutoreleasePool.h"
-#import "NSArray.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSPortCoder.h"
+#import "Foundation/NSSet.h"
+#import "GNUstepBase/GSObjCRuntime.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPortCoder.h"
 // For private method _decodeArrayOfObjectsForKey:
-#import "NSKeyedArchiver.h"
+#import "Foundation/NSKeyedArchiver.h"
 #import "GSPrivate.h"
 
 #define	GSI_MAP_HAS_VALUE	0
@@ -45,36 +45,36 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
 #endif
 
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 static SEL	memberSel;
 
-@interface GSSet : NSSet {
+@interface GSSet : NSSet
+{
 @public
   GSIMapTable_t	map;
 }
-
 @end
 
-@interface GSMutableSet : NSMutableSet {
+@interface GSMutableSet : NSMutableSet
+{
 @public
-    GSIMapTable_t map;
+  GSIMapTable_t	map;
 @private
-    NSUInteger _version;
+  NSUInteger _version;
 }
-
 @end
 
-@interface GSSetEnumerator : NSEnumerator {
-    GSSet *set;
-    GSIMapEnumerator_t enumerator;
+@interface GSSetEnumerator : NSEnumerator
+{
+  GSSet			*set;
+  GSIMapEnumerator_t	enumerator;
 }
-
 @end
 
 @implementation GSSetEnumerator
 
-- (id)initWithSet: (NSSet*)d
+- (id) initWithSet: (NSSet*)d
 {
   self = [super init];
   if (self != nil)
@@ -85,7 +85,7 @@ static SEL	memberSel;
   return self;
 }
 
-- (id)nextObject
+- (id) nextObject
 {
   GSIMapNode node = GSIMapEnumeratorNextNode(&enumerator);
 
@@ -133,22 +133,22 @@ static Class	mutableSetClass;
 
 - (NSArray*) allObjects
 {
-    GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-    GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
-    NSUInteger		i = 0;
-    NSArray		*result;
-    GS_BEGINIDBUF(objects, map.nodeCount);
-    
-    while (node != 0)
+  GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
+  GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+  NSUInteger		i = 0;
+  NSArray		*result;
+  GS_BEGINIDBUF(objects, map.nodeCount);
+
+  while (node != 0)
     {
-        objects[i++] = node->key.obj;
-        node = GSIMapEnumeratorNextNode(&enumerator);
+      objects[i++] = node->key.obj;
+      node = GSIMapEnumeratorNextNode(&enumerator);
     }
-    GSIMapEndEnumerator(&enumerator);
-    result = AUTORELEASE([[arrayClass allocWithZone: NSDefaultMallocZone()]
-                          initWithObjects: objects count: i]);
-    GS_ENDIDBUF();
-    return result;
+  GSIMapEndEnumerator(&enumerator);
+  result = AUTORELEASE([[arrayClass allocWithZone: NSDefaultMallocZone()]
+    initWithObjects: objects count: i]);
+  GS_ENDIDBUF();
+  return result;
 }
 
 - (id) anyObject
@@ -280,14 +280,10 @@ static Class	mutableSetClass;
 {
   Class	c;
 
-  /*
-   *  If this set is empty, or the other is nil, this method should return NO.
+  /* If this set is empty, or the other is nil/empty,
+   * this method should return NO.
    */
-  if (map.nodeCount == 0)
-    {
-      return NO;
-    }
-  if (otherSet == nil)
+  if (0 == map.nodeCount || nil == otherSet || [otherSet count] == 0)
     {
       return NO;
     }
@@ -532,7 +528,7 @@ static Class	mutableSetClass;
 
 @implementation GSMutableSet
 
-+ (void)initialize
++ (void) initialize
 {
   if (self == [GSMutableSet class])
     {
@@ -540,47 +536,47 @@ static Class	mutableSetClass;
     }
 }
 
-- (void)addObject: (id)anObject
+- (void) addObject: (id)anObject
 {
-    GSIMapNode node;
-    
-    if (anObject == nil)
+  GSIMapNode node;
+
+  if (anObject == nil)
     {
-        [NSException raise: NSInvalidArgumentException
-                    format: @"Tried to add nil to set"];
+      [NSException raise: NSInvalidArgumentException
+		  format: @"Tried to add nil to set"];
     }
-    node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
-    if (node == 0)
+  node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
+  if (node == 0)
     {
-        GSIMapAddKey(&map, (GSIMapKey)anObject);
-        _version++;
+      GSIMapAddKey(&map, (GSIMapKey)anObject);
+      _version++;
     }
 }
 
-- (void)addObjectsFromArray: (NSArray*)array
+- (void) addObjectsFromArray: (NSArray*)array
 {
-    NSUInteger	count = [array count];
-    
-    while (count-- > 0)
+  NSUInteger	count = [array count];
+
+  while (count-- > 0)
     {
-        id	anObject = [array objectAtIndex: count];
-        
-        if (anObject == nil)
-        {
-            [NSException raise: NSInvalidArgumentException
-                        format: @"Tried to add nil to set"];
-        }
-        else
-        {
-            GSIMapNode node;
-            
-            node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
-            if (node == 0)
-            {
-                GSIMapAddKey(&map, (GSIMapKey)anObject);
-                _version++;
-            }
-        }
+      id	anObject = [array objectAtIndex: count];
+
+      if (anObject == nil)
+	{
+	  [NSException raise: NSInvalidArgumentException
+		      format: @"Tried to add nil to set"];
+	}
+      else
+	{
+	  GSIMapNode node;
+
+	  node = GSIMapNodeForKey(&map, (GSIMapKey)anObject);
+	  if (node == 0)
+	    {
+	      GSIMapAddKey(&map, (GSIMapKey)anObject);
+	      _version++;
+	    }
+	}
     }
 }
 
@@ -632,26 +628,76 @@ static Class	mutableSetClass;
   return self;
 }
 
-- (void) intersectSet: (NSSet*) other
+- (void) intersectSet: (NSSet*)other
 {
-  if (other != self)
+  if (nil == other)
     {
-      GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
-      GSIMapBucket		bucket = GSIMapEnumeratorBucket(&enumerator);
-      GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+      GSIMapCleanMap(&map);
+    }
+  else if (other != self && map.nodeCount > 0)
+    {
+      GSIMapEnumerator_t	enumerator;
+      GSIMapBucket		bucket;
+      GSIMapNode 		node;
+      Class                     c;
 
-      while (node != 0)
-	{
+      if (NO == [other isKindOfClass: [NSSet class]])
+        {
+	  [NSException raise: NSInvalidArgumentException
+		      format: @"-intersectSet: other object is not a set"];
+        }
+      if (0 == map.nodeCount)
+        {
+          return;                       // Already empty ... nothing to do
+        }
+      if (0 == [other count])
+        {
+          GSIMapCleanMap(&map);         // Other empty ... no intersection
+          return;
+        }
 
-	  if ([other containsObject: node->key.obj] == NO)
-	    {
-	      GSIMapRemoveNodeFromMap(&map, bucket, node);
-	      GSIMapFreeNode(&map, node);
-	    }
-	  bucket = GSIMapEnumeratorBucket(&enumerator);
-	  node = GSIMapEnumeratorNextNode(&enumerator);
-	}
-      GSIMapEndEnumerator(&enumerator);
+      c = object_getClass(other);
+      if (c == setClass || c == mutableSetClass)
+        {
+          GSSet *o = (GSSet*)other;
+
+          enumerator = GSIMapEnumeratorForMap(&map);
+          bucket = GSIMapEnumeratorBucket(&enumerator);
+          node = GSIMapEnumeratorNextNode(&enumerator);
+
+          while (node != 0)
+            {
+              if (0 == GSIMapNodeForKey(&o->map, node->key))
+                {
+                  GSIMapRemoveNodeFromMap(&map, bucket, node);
+                  GSIMapFreeNode(&map, node);
+                }
+              bucket = GSIMapEnumeratorBucket(&enumerator);
+              node = GSIMapEnumeratorNextNode(&enumerator);
+            }
+          GSIMapEndEnumerator(&enumerator);
+        }
+      else
+        {
+	  SEL	sel = @selector(member:);
+	  IMP	imp = [other methodForSelector: sel];
+
+          enumerator = GSIMapEnumeratorForMap(&map);
+          bucket = GSIMapEnumeratorBucket(&enumerator);
+          node = GSIMapEnumeratorNextNode(&enumerator);
+
+          while (node != 0)
+            {
+              if (nil == (*imp)(other, sel, node->key.obj))
+                {
+                  GSIMapRemoveNodeFromMap(&map, bucket, node);
+                  GSIMapFreeNode(&map, node);
+                }
+              bucket = GSIMapEnumeratorBucket(&enumerator);
+              node = GSIMapEnumeratorNextNode(&enumerator);
+            }
+          GSIMapEndEnumerator(&enumerator);
+        }
     }
 }
 

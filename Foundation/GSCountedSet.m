@@ -23,11 +23,11 @@
    */
 
 #import "common.h"
-#import "NSSet.h"
-#import "NSAutoreleasePool.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSPortCoder.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPortCoder.h"
 
 
 #define	GSI_MAP_RETAIN_VAL(M, X)	
@@ -42,7 +42,7 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
 (GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), nodeDesc)
 #endif
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 @interface GSCountedSet : NSCountedSet
 {

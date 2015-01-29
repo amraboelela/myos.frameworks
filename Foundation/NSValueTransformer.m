@@ -26,14 +26,13 @@
 #import "common.h"
 
 #define	EXPOSE_NSValueTransformer_IVARS	1
-#import "NSData.h"
-#import "NSDictionary.h"
-#import "NSException.h"
-#import "NSArchiver.h"
-#import "NSValue.h"
-#import "NSValueTransformer.h"
-#import "NSObject+GNUstepBase.h"
-#import "GSLock.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSArchiver.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSValueTransformer.h"
+#import "GNUstepBase/GSLock.h"
 
 @interface NSNegateBooleanTransformer : NSValueTransformer
 @end
@@ -62,7 +61,9 @@ static GSLazyLock *lock = nil;
       NSValueTransformer	*t;
 
       lock = [GSLazyLock new];
+      [[NSObject leakAt: &lock] release];
       registry = [[NSMutableDictionary alloc] init];
+      [[NSObject leakAt: &registry] release];
 
       t = [NSNegateBooleanTransformer new];
       [self setValueTransformer: t
@@ -101,6 +102,20 @@ static GSLazyLock *lock = nil;
   [lock lock];
   transformer = [registry objectForKey: name];
   IF_NO_GC([transformer retain];)
+
+  if (transformer == nil)
+    {
+      Class transformerClass = NSClassFromString(name);
+
+      if (transformerClass != Nil 
+        && [transformerClass isSubclassOfClass: [NSValueTransformer class]])
+        {
+          transformer = [[transformerClass alloc] init];
+
+          [registry setObject: transformer forKey: name];
+        }
+    }
+
   [lock unlock];
   return AUTORELEASE(transformer);
 }

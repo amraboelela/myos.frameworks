@@ -25,7 +25,7 @@
 
 #ifndef __NSConnection_h_GNUSTEP_BASE_INCLUDE
 #define __NSConnection_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSDictionary.h>
@@ -119,7 +119,7 @@ GS_NSConnection_IVARS;
 + (NSDistantObject*) rootProxyForConnectionWithRegisteredName: (NSString*)n
   host: (NSString*)h usingNameServer: (NSPortNameServer*)s;
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 + (id) serviceConnectionWithName: (NSString *)name
                       rootObject: (id)root;
 + (id) serviceConnectionWithName: (NSString *)name

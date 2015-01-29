@@ -29,11 +29,11 @@
 
 #import "common.h"
 #define	EXPOSE_NSTimer_IVARS	1
-#import "NSTimer.h"
-#import "NSDate.h"
-#import "NSException.h"
-#import "NSRunLoop.h"
-#import "NSInvocation.h"
+#import "Foundation/NSTimer.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSInvocation.h"
 
 @class	NSGDate;
 @interface NSGDate : NSObject	// Help the compiler
@@ -201,12 +201,9 @@ static Class	NSDate_class;
 			       selector: selector
 			       userInfo: info
 				repeats: f];
-
-    //NSRunLoop* runLoop = [NSRunLoop currentRunLoop];
-    //DLog(@"runLoop: %@", runLoop);
-    [[NSRunLoop currentRunLoop] addTimer: t forMode: NSDefaultRunLoopMode];
-    RELEASE(t);
-    return t;
+  [[NSRunLoop currentRunLoop] addTimer: t forMode: NSDefaultRunLoopMode];
+  RELEASE(t);
+  return t;
 }
 
 - (void) dealloc
@@ -225,50 +222,57 @@ static Class	NSDate_class;
  * If the timer is not set to repeat, it is automatically invalidated.<br />
  * Exceptions raised during firing of the timer are caught and logged.
  */
-- (void)fire
+- (void) fire
 {
-    id target;
-    
-    /* We retain the target so it won't be deallocated while we are using it
-     * (if this timer gets invalidated while we are firing).
-     */
-    target = [_target retain];
-    //DLog(@"target: %@", target);
-    /* We check that we have not been invalidated before we fire.
-     */
-    if (NO == _invalidated) {
-        if (_selector == 0) {
-            NS_DURING {
-                [(NSInvocation *)target invoke];
-            }
-            NS_HANDLER {
-                //DLog(@"target: %@", target);
-                NSLog(@"_selector == 0 *** NSTimer ignoring exception '%@' (reason '%@') "
-                      @"raised during posting of timer with target %@ "
-                      @"and selector '%@'",
-                      [localException name], [localException reason], target,
-                      NSStringFromSelector([target selector]));
-            }
-            NS_ENDHANDLER
-        } else {
-            //NS_DURING {
-            [target performSelector:_selector withObject:self];
-            /*}
-             NS_HANDLER {
-             DLog(@"localException: %@", localException);
-             NSLog(@"*** NSTimer ignoring exception '%@' (reason '%@') "
-             @"raised during posting of timer with target %@ and "
-             @"selector '%@'",
-             [localException name], [localException reason], target,
-             NSStringFromSelector(_selector));
-             }
-             NS_ENDHANDLER*/
-        }
+  id	target;
+
+  /* We retain the target so it won't be deallocated while we are using it
+   * (if this timer gets invalidated while we are firing).
+   */
+  target = [_target retain];
+
+  /* We check that we have not been invalidated before we fire.
+   */
+  if (NO == _invalidated)
+    {
+      if (_selector == 0)
+	{
+	  NS_DURING
+	    {
+	      [(NSInvocation*)target invoke];
+	    }
+	  NS_HANDLER
+	    {
+	      NSLog(@"*** NSTimer ignoring exception '%@' (reason '%@') "
+	        @"raised during posting of timer with target %p "
+		@"and selector '%@'",
+		[localException name], [localException reason], target,
+		NSStringFromSelector([target selector]));
+	    }
+	  NS_ENDHANDLER
+	}
+      else
+	{
+	  NS_DURING
+	    {
+	      [target performSelector: _selector withObject: self];
+	    }
+	  NS_HANDLER
+	    {
+	      NSLog(@"*** NSTimer ignoring exception '%@' (reason '%@') "
+		@"raised during posting of timer with target %p and "
+		@"selector '%@'",
+		[localException name], [localException reason], target,
+		NSStringFromSelector(_selector));
+	    }
+	  NS_ENDHANDLER
+	}
     }
-    [target release];
-    if (_repeats == NO) {
-        //DLog(@"_repeats == NO");
-        [self invalidate];
+  [target release];
+
+  if (_repeats == NO)
+    {
+      [self invalidate];
     }
 }
 
@@ -278,36 +282,41 @@ static Class	NSDate_class;
  * Invalidated timers are automatically removed from the run loop when it
  * detects them.
  */
-- (void)invalidate
+- (void) invalidate
 {
-    /* OPENSTEP allows this method to be called multiple times. */
-    _invalidated = YES;
-    if (_target != nil) {
-        DESTROY(_target);
+  /* OPENSTEP allows this method to be called multiple times. */
+  _invalidated = YES;
+  if (_target != nil)
+    {
+      DESTROY(_target);
     }
-    if (_info != nil) {
-        DESTROY(_info);
+  if (_info != nil)
+    {
+      DESTROY(_info);
     }
 }
 
 /**
  * Checks to see if the timer has been invalidated.
  */
-- (BOOL)isValid
+- (BOOL) isValid
 {
-    if (_invalidated == NO) {
-        return YES;
-    } else {
-        return NO;
+  if (_invalidated == NO)
+    {
+      return YES;
+    }
+  else
+    {
+      return NO;
     }
 }
 
 /**
  * Returns the date/time at which the timer is next due to fire.
  */
-- (NSDate *)fireDate
+- (NSDate*) fireDate
 {
-    return _date;
+  return _date;
 }
 
 /**
@@ -319,7 +328,7 @@ static Class	NSDate_class;
  */
 - (void) setFireDate: (NSDate*)fireDate
 {
-    ASSIGN(_date, fireDate);
+  ASSIGN(_date, fireDate);
 }
 
 /**

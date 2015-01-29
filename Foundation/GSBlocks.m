@@ -20,7 +20,7 @@
 
    */ 
 
-#import "NSObject.h"
+#import "Foundation/NSObject.h"
 
 /* Declare the block copy functions ourself so that we don't depend on a
  * specific header location.

@@ -26,17 +26,18 @@
    Boston, MA 02111 USA.
 
    <title>NSNotificationCenter class reference</title>
-   $Date: 2012-01-30 03:31:40 -0800 (Mon, 30 Jan 2012) $ $Revision: 34665 $
+   $Date: 2014-02-14 06:23:09 -0800 (Fri, 14 Feb 2014) $ $Revision: 37691 $
 */
 
 #import "common.h"
 #define	EXPOSE_NSNotificationCenter_IVARS	1
-#import "NSNotification.h"
-#import "NSException.h"
-#import "NSLock.h"
-#import "NSThread.h"
-#import "GSLock.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSOperation.h"
+#import "Foundation/NSThread.h"
+#import "GNUstepBase/GSLock.h"
 
 static NSZone	*_zone = 0;
 
@@ -85,7 +86,7 @@ static Class concrete = 0;
     {
       return [self retain];
     }
-  n = (GSNotification*)NSAllocateObject(concrete, 0, NSDefaultMallocZone());
+  n = (GSNotification*)NSAllocateObject(concrete, 0, zone);
   n->_name = [_name copyWithZone: [self zone]];
   n->_object = TEST_RETAIN(_object);
   n->_info = TEST_RETAIN(_info);
@@ -154,7 +155,6 @@ struct	NCTbl;		/* Notification Center Table structure	*/
   @public
   __weak id	observer;	/* Object to receive message.	*/
   SEL		selector;	/* Method selector.		*/
-  IMP		method;		/* Method implementation.	*/
   struct Obs	*next;		/* Next item in linked list.	*/
   struct NCTbl	*link;		/* Pointer back to chunk table	*/
 }
@@ -168,7 +168,6 @@ struct	NCTbl;		/* Notification Center Table structure	*/
 typedef	struct	Obs {
   id		observer;	/* Object to receive message.	*/
   SEL		selector;	/* Method selector.		*/
-  IMP		method;		/* Method implementation.	*/
   struct Obs	*next;		/* Next item in linked list.	*/
   int		retained;	/* Retain count for structure.	*/
   struct NCTbl	*link;		/* Pointer back to chunk table	*/
@@ -178,15 +177,15 @@ typedef	struct	Obs {
 
 #define	ENDOBS	((Observation*)-1)
 
-static inline unsigned doHash(NSString* key)
+static inline NSUInteger doHash(BOOL shouldHash, NSString* key)
 {
   if (key == nil)
     {
       return 0;
     }
-  else if (((uintptr_t)key) & 1)
+  else if (NO == shouldHash)
     {
-      return (unsigned)(uintptr_t)key;
+      return (NSUInteger)(uintptr_t)key;
     }
   else
     {
@@ -194,13 +193,13 @@ static inline unsigned doHash(NSString* key)
     }
 }
 
-static inline BOOL doEqual(NSString* key1, NSString* key2)
+static inline BOOL doEqual(BOOL shouldHash, NSString* key1, NSString* key2)
 {
   if (key1 == key2)
     {
       return YES;
     }
-  else if ((((uintptr_t)key1) & 1) || key1 == nil)
+  else if (NO == shouldHash)
     {
       return NO;
     }
@@ -244,20 +243,19 @@ static void obsFree(Observation *o);
 #define GSI_ARRAY_RETAIN(A, X)    obsRetain(X.ext)
 #endif
 
-#include "GSIArray.h"
+#include "GNUstepBase/GSIArray.h"
 
 #define GSI_MAP_RETAIN_KEY(M, X)
-#define GSI_MAP_RELEASE_KEY(M, X) ({if ((((uintptr_t)X.obj) & 1) == 0) \
-  RELEASE(X.obj);})
-#define GSI_MAP_HASH(M, X)        doHash(X.obj)
-#define GSI_MAP_EQUAL(M, X,Y)     doEqual(X.obj, Y.obj)
+#define GSI_MAP_RELEASE_KEY(M, X) ({if (YES == M->extra) RELEASE(X.obj);})
+#define GSI_MAP_HASH(M, X)        doHash(M->extra, X.obj)
+#define GSI_MAP_EQUAL(M, X,Y)     doEqual(M->extra, X.obj, Y.obj)
 #define GSI_MAP_RETAIN_VAL(M, X)
 #define GSI_MAP_RELEASE_VAL(M, X)
 
 #define GSI_MAP_KTYPES GSUNION_OBJ|GSUNION_NSINT
 #define GSI_MAP_VTYPES GSUNION_PTR
 #define GSI_MAP_VEXTRA Observation*
-#define	GSI_MAP_EXTRA	void*
+#define	GSI_MAP_EXTRA	BOOL
 
 #if	GS_WITH_GC
 #include	<gc/gc_typed.h>
@@ -266,7 +264,7 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
 (GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), nodeDesc)
 #endif
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 /*
  * An NC table is used to keep track of memory allocated to store
@@ -312,7 +310,7 @@ typedef struct NCTbl {
 #define	LOCKCOUNT	(TABLE->lockCount)
 
 static Observation *
-obsNew(NCTable *t, SEL s, IMP m, id o)
+obsNew(NCTable *t, SEL s, id o)
 {
   Observation	*obs;
 
@@ -372,7 +370,6 @@ obsNew(NCTable *t, SEL s, IMP m, id o)
 #endif
 
   obs->selector = s;
-  obs->method = m;
 #if	GS_WITH_GC
   GSAssignZeroingWeakPointer((void**)&obs->observer, (void*)o);
 #else
@@ -489,6 +486,7 @@ static NCTable *newNCTable(void)
   t->named = NSAllocateCollectable(sizeof(GSIMapTable_t), NSScannedOption);
   GSIMapInitWithZoneAndCapacity(t->nameless, _zone, 16);
   GSIMapInitWithZoneAndCapacity(t->named, _zone, 128);
+  t->named->extra = YES;        // This table retains keys
 
   t->_lock = [NSRecursiveLock new];
   return t;
@@ -645,19 +643,93 @@ purgeCollectedFromMapNode(GSIMapTable map, GSIMapNode node)
 #define purgeCollectedFromMapNode(X, Y) ((Observation*)Y->value.ext)
 #endif
 
-/*
- * In order to hide pointers from garbage collection, we OR in an
- * extra bit.  This should be ok for the objects we deal with
- * which are all aligned on 4 or 8 byte boundaries on all the machines
- * I know of.
- *
- * We also use this trick to differentiate between map table keys that
- * should be treated as objects (notification names) and those that
- * should be treated as pointers (notification objects)
- */
-#define	CHEATGC(X)	(id)(((uintptr_t)X) | 1)
 
-
+@interface GSNotificationBlockOperation : NSOperation
+{
+	NSNotification *_notification;
+	GSNotificationBlock _block;
+}
+
+- (id) initWithNotification: (NSNotification *)notif 
+                      block: (GSNotificationBlock)block;
+
+@end
+
+@implementation GSNotificationBlockOperation
+
+- (id) initWithNotification: (NSNotification *)notif 
+                      block: (GSNotificationBlock)block
+{
+	self = [super init];
+	if (self == nil)
+		return nil;
+
+	ASSIGN(_notification, notif);
+	_block = Block_copy(block);
+	return self;
+
+}
+
+- (void) dealloc
+{
+	DESTROY(_notification);
+	Block_release(_block);
+	[super dealloc];
+}
+
+- (void) main
+{
+	CALL_BLOCK(_block, _notification);
+}
+
+@end
+
+@interface GSNotificationObserver : NSObject
+{
+	NSOperationQueue *_queue;
+	GSNotificationBlock _block;
+}
+
+@end
+
+@implementation GSNotificationObserver
+
+- (id) initWithQueue: (NSOperationQueue *)queue 
+               block: (GSNotificationBlock)block
+{
+	self = [super init];
+	if (self == nil)
+		return nil;
+
+	ASSIGN(_queue, queue);
+	_block = Block_copy(block);
+	return self;
+}
+
+- (void) dealloc
+{
+	DESTROY(_queue);
+	Block_release(_block);
+	[super dealloc];
+}
+
+- (void) didReceiveNotification: (NSNotification *)notif
+{
+	if (_queue != nil)
+	{
+		GSNotificationBlockOperation *op = [[GSNotificationBlockOperation alloc] 
+			initWithNotification: notif block: _block];
+
+		[_queue addOperation: op];
+	}
+	else
+	{
+		CALL_BLOCK(_block, notif);
+	}
+}
+
+@end
+
 
 /**
  * <p>GNUstep provides a framework for sending messages between objects within
@@ -794,7 +866,6 @@ static NSNotificationCenter *default_center = nil;
                 name: (NSString*)name
 	      object: (id)object
 {
-  IMP		method;
   Observation	*list;
   Observation	*o;
   GSIMapTable	m;
@@ -808,25 +879,17 @@ static NSNotificationCenter *default_center = nil;
     [NSException raise: NSInvalidArgumentException
 		format: @"Null selector passed to addObserver ..."];
 
-#if	defined(DEBUG)
   if ([observer respondsToSelector: selector] == NO)
-    NSLog(@"Observer '%@' does not respond to selector '%@'", observer,
-      NSStringFromSelector(selector));
-#endif
-
-  method = [observer methodForSelector: selector];
-  if (method == 0)
-    [NSException raise: NSInvalidArgumentException
-		format: @"Observer can not handle specified selector"];
+    {
+      [NSException raise: NSInvalidArgumentException
+        format: @"[%@-%@] Observer '%@' does not respond to selector '%@'",
+        NSStringFromClass([self class]), NSStringFromSelector(_cmd),
+        observer, NSStringFromSelector(selector)];
+    }
 
   lockNCTable(TABLE);
 
-  o = obsNew(TABLE, selector, method, observer);
-
-  if (object != nil)
-    {
-      object = CHEATGC(object);
-    }
+  o = obsNew(TABLE, selector, observer);
 
   /*
    * Record the Observation in one of the linked lists.
@@ -899,6 +962,35 @@ static NSNotificationCenter *default_center = nil;
 }
 
 /**
+ * <p>Returns a new observer added to the notification center, in order to 
+ * observe the given notification name posted by an object or any object (if 
+ * the object argument is nil).</p>
+ *
+ * <p>For the name and object arguments, the constraints and behavior described 
+ * in -addObserver:name:selector:object: remain valid.</p>
+ *
+ * <p>For each notification received by the center, the observer will execute 
+ * the notification block. If the queue is not nil, the notification block is 
+ * wrapped in a NSOperation and scheduled in the queue, otherwise the block is 
+ * executed immediately in the posting thread.</p>
+ */
+- (id) addObserverForName: (NSString *)name 
+                   object: (id)object 
+                    queue: (NSOperationQueue *)queue 
+               usingBlock: (GSNotificationBlock)block
+{
+	GSNotificationObserver *observer = 
+		[[GSNotificationObserver alloc] initWithQueue: queue block: block];
+
+	[self addObserver: observer 
+	         selector: @selector(didReceiveNotification:) 
+	             name: name 
+	           object: object];
+
+	return observer;
+}
+
+/**
  * Deregisters observer for notifications matching name and/or object.  If
  * either or both is nil, they act like wildcards.  The observer may still
  * remain registered for other notifications; use -removeObserver: to remove
@@ -920,11 +1012,6 @@ static NSNotificationCenter *default_center = nil;
    */
 
   lockNCTable(TABLE);
-
-  if (object != nil)
-    {
-      object = CHEATGC(object);
-    }
 
   if (name == nil && object == nil)
     {
@@ -1102,10 +1189,6 @@ static NSNotificationCenter *default_center = nil;
 		  format: @"Tried to post a notification with no name."];
     }
   object = [notification object];
-  if (object != nil)
-    {
-      object = CHEATGC(object);
-    }
 
   /*
    * Lock the table of observations while we traverse it.
@@ -1220,7 +1303,8 @@ static NSNotificationCenter *default_center = nil;
 	{
           NS_DURING
             {
-              (*o->method)(o->observer, o->selector, notification);
+              [o->observer performSelector: o->selector
+                                withObject: notification];
             }
           NS_HANDLER
             {

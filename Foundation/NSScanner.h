@@ -24,7 +24,7 @@
 
 #ifndef __NSScanner_h_GNUSTEP_BASE_INCLUDE
 #define __NSScanner_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSDecimal.h>
 #import	<Foundation/NSDictionary.h>
@@ -110,7 +110,7 @@ extern "C" {
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 - (BOOL) scanDecimal: (NSDecimal*)value;
 #endif
-#if OS_API_VERSION(100500, GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5, GS_API_LATEST)
 /** Not implemented */
 - (BOOL) scanHexDouble: (double *)result;
 /** Not implemented */

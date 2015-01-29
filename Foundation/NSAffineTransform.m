@@ -34,12 +34,11 @@
 
 #define	EXPOSE_NSAffineTransform_IVARS	1
 
-#import "NSArray.h"
-#import "NSData.h"
-#import "NSException.h"
-#import "NSAffineTransform.h"
-#import "NSCoder.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSAffineTransform.h"
+#import "Foundation/NSCoder.h"
 
 /* Private definitions */
 #define A _matrix.m11
@@ -578,20 +577,25 @@ static NSAffineTransformStruct identityTransform = {
 
 - (BOOL) isEqual: (id)anObject
 {
-  if ([anObject class] == isa)
+  if (anObject == self)
     {
-      NSAffineTransform	*o = anObject;
+      return YES;
+    }
+  if (YES == [anObject isKindOfClass: [NSAffineTransform class]])
+    {
+      NSAffineTransformStruct	o = [anObject transformStruct];
 
-      if (A == o->A && B == o->B && C == o->C
-	&& D == o->D && TX == o->TX && TY == o->TY)
-	return YES;
+      if (0 == memcmp((void*)&o, (void*)&_matrix, sizeof(o)))
+	{
+	  return YES;
+	}
     }
   return NO;
 }
 
 - (id) initWithCoder: (NSCoder*)aCoder
 {
-  NSAffineTransformStruct replace;
+  NSAffineTransformStruct replace = identityTransform;
     
   if ([aCoder allowsKeyedCoding])
     {
@@ -668,9 +672,13 @@ static NSAffineTransformStruct identityTransform = {
           else
             {
               // FIXME
-              NSLog(@"Got data %@ len %d for affine transform", d, length);
+              NSLog(@"Got data %@ len %d for affine transform", d, (int)length);
               return [self notImplemented: _cmd];
             }
+        }
+      else
+        {
+          replace = identityTransform;
         }
     }
   else

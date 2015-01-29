@@ -25,13 +25,13 @@
 
 #import "common.h"
 #define	EXPOSE_NSKeyedUnarchiver_IVARS	1
-#import "NSAutoreleasePool.h"
-#import "NSData.h"
-#import "NSDictionary.h"
-#import "NSException.h"
-#import "NSMapTable.h"
-#import "NSNull.h"
-#import "NSValue.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSNull.h"
+#import "Foundation/NSValue.h"
 
 #import "GSPrivate.h"
 
@@ -48,10 +48,10 @@
 #define GSI_ARRAY_TYPES GSUNION_OBJ
 
 
-#include "GSIArray.h"
+#include "GNUstepBase/GSIArray.h"
 
 #define	_IN_NSKEYEDUNARCHIVER_M	1
-#import "NSKeyedArchiver.h"
+#import "Foundation/NSKeyedArchiver.h"
 #undef	_IN_NSKEYEDUNARCHIVER_M
 
 @interface NilMarker: NSObject
@@ -138,6 +138,31 @@ static NSMapTable	*globalClassMap = 0;
   id	o = [_keyMap objectForKey: aKey];
 
   return o;
+}
+
+
+/**
+ * This method is used to replace oldObj with newObj
+ * in the map that is maintained in NSKeyedUnarchiver.
+ */
+- (BOOL) replaceObject: (id)oldObj withObject: (id)newObj
+{
+  unsigned int i = 0;
+  unsigned int count = GSIArrayCount(_objMap);
+  for (i = 0; i < count; i++)
+    {
+      id obj = GSIArrayItemAtIndex(_objMap, i).obj;
+      if (obj == oldObj)
+        break;
+    }
+
+  if (i < count)
+    {
+      GSIArraySetItemAtIndex(_objMap, (GSIArrayItem)newObj, i);
+      return YES;
+    }
+
+  return NO;
 }
 @end
 
@@ -288,6 +313,7 @@ static NSMapTable	*globalClassMap = 0;
       globalClassMap =
 	NSCreateMapTable(NSObjectMapKeyCallBacks,
 			  NSNonOwnedPointerMapValueCallBacks, 0);
+      [[NSObject leakAt: &globalClassMap] release];
     }
 }
 
@@ -393,13 +419,13 @@ static NSMapTable	*globalClassMap = 0;
   if (strcmp([o type], type) != 0)
     {
       [NSException raise: NSInvalidUnarchiveOperationException
-		  format: @"[%@ +%@]: type missmatch",
+		  format: @"[%@ +%@]: type missmatch for %@",
 	NSStringFromClass([self class]), NSStringFromSelector(_cmd), o];
     }
   if ([o count] != expected)
     {
       [NSException raise: NSInvalidUnarchiveOperationException
-		  format: @"[%@ +%@]: count missmatch",
+		  format: @"[%@ +%@]: count missmatch for %@",
 	NSStringFromClass([self class]), NSStringFromSelector(_cmd), o];
     }
   NSGetSizeAndAlignment(type, 0, &size);

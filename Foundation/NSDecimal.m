@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSDecimal class reference</title>
-   $Date: 2011-02-25 22:29:57 -0800 (Fri, 25 Feb 2011) $ $Revision: 32375 $
+   $Date: 2014-01-21 07:06:17 -0800 (Tue, 21 Jan 2014) $ $Revision: 37628 $
    */
 
 #import "common.h"
@@ -31,9 +31,9 @@
 #if !defined(__APPLE__) || !defined(GNU_RUNTIME)
 #include <ctype.h>
 #endif
-#import "NSDecimal.h"
-#import "NSDictionary.h"
-#import "NSUserDefaults.h"
+#import "Foundation/NSDecimal.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSUserDefaults.h"
 
 #ifndef NAN
 #define NAN 0.0
@@ -264,7 +264,7 @@ GSDecimalRound(GSDecimal *result, int scale, NSRoundingMode mode)
 
   if (result->length <= l)
     return;
-  else if (l <= 0)
+  else if (l < 0)
     {
       result->length = 0;
       result->exponent = 0;
@@ -275,6 +275,21 @@ GSDecimalRound(GSDecimal *result, int scale, NSRoundingMode mode)
     {
       int c, n;
       BOOL up;
+
+      if (l == 0)
+        {
+          int x;
+             
+          x = result->length;
+          result->length += 1;
+          l += 1;
+          while (x > 0)
+            {
+               result->cMantissa[x] = result->cMantissa[x-1];
+               x--;
+            }
+          result->cMantissa[0] = 0;
+        }
 
       // Adjust length and exponent
       result->exponent += result->length - l;
@@ -777,9 +792,17 @@ NSDecimalPower(NSDecimal *result, const NSDecimal *n, NSUInteger power, NSRoundi
       if (e & 1)
         {
 	  error = NSDecimalMultiply(result, result, &n1, mode);
+	  if (NSCalculationNoError != error)
+	    {
+	      break;
+	    }
 	}
       // keep on squaring the number
       error = NSDecimalMultiply(&n1, &n1, &n1, mode);
+      if (NSCalculationNoError != error)
+	{
+	  break;
+	}
       e >>= 1;
     }
 

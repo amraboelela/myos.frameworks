@@ -33,7 +33,7 @@
 #import "Foundation/NSTimer.h"
 #import "Foundation/NSValue.h"
 #if defined(_REENTRANT)
-#import "GSLock.h"
+#import "GNUstepBase/GSLock.h"
 #endif
 
 #import <dns_sd.h>		// Apple's DNS Service Discovery

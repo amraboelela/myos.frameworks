@@ -25,7 +25,7 @@
 
 #ifndef __NSInvocation_h_GNUSTEP_BASE_INCLUDE
 #define __NSInvocation_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSMethodSignature.h>
 
@@ -121,6 +121,14 @@ extern "C" {
 @end
 #endif
 
+/** For use by macros only.
+ */
+@interface NSInvocation (MacroSetup)
+- (id) initWithMethodSignature: (NSMethodSignature*)aSignature;
++ (id) _newProxyForInvocation: (id)target;
++ (id) _newProxyForMessage: (id)target;
++ (NSInvocation*) _returnInvocationAndDestroyProxy: (id)proxy;
+@end
 /**
  *  Creates and returns an autoreleased invocation containing a
  *  message to an instance of the class.  The 'message' consists

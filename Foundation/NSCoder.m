@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSCoder class reference</title>
-   $Date: 2011-05-19 01:19:24 -0700 (Thu, 19 May 2011) $ $Revision: 33069 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
@@ -33,17 +33,44 @@
 #endif
 
 #define	EXPOSE_NSCoder_IVARS	1
-#import "NSData.h"
-#import "NSCoder.h"
-#import "NSSerialization.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSSerialization.h"
+#import "Foundation/NSUserDefaults.h"
 
 @implementation NSCoder
+
+/* We used to use a system version which actually reflected the version
+ * of GNUstep-base ... but people screwed that up by releasing versions
+ * of base with unofficial version numbers conflicting with the scheme.
+ * So ... we are now starting from a basepoint of 1 million ... on the
+ * basis that the old numbering scheme derived from the gnustep-base
+ * major.minor.subminor versioning (in which each can range from 0 to 99)
+ * should not have allowed anyone to create an archive with a version
+ * greater than 999999.
+ * In future, the system version will change if (and only if) the format
+ * of the encoded data changes.
+ */
+#define	MAX_SUPPORTED_SYSTEM_VERSION	1000000
+
+static unsigned	systemVersion = MAX_SUPPORTED_SYSTEM_VERSION;
 
 + (void) initialize
 {
   if (self == [NSCoder class])
     {
+      unsigned	sv;
+
+      /* The GSCoderSystemVersion user default is provided for testing
+       * and to allow new code to communicate (via Distributed Objects)
+       * with systems running older versions.
+       */
+      sv = [[NSUserDefaults standardUserDefaults]
+	integerForKey: @"GSCoderSystemVersion"];
+      if (sv > 0 && sv <= MAX_SUPPORTED_SYSTEM_VERSION)
+	{
+	  systemVersion = sv;
+	} 
     }
 }
 
@@ -216,7 +243,7 @@
 
 - (id) decodeObject
 {
-  id	o;
+  id	o = nil;
 
   [self decodeValueOfObjCType: @encode(id) at: &o];
   return AUTORELEASE(o);
@@ -225,7 +252,7 @@
 - (id) decodePropertyList
 {
   id	o;
-  id	d;
+  id	d = nil;
 
   [self decodeValueOfObjCType: @encode(id) at: &d];
   if (d != nil)
@@ -298,8 +325,7 @@
 
 - (unsigned) systemVersion
 {
-  return (((GNUSTEP_BASE_MAJOR_VERSION * 100)
-    + GNUSTEP_BASE_MINOR_VERSION) * 100) + GNUSTEP_BASE_SUBMINOR_VERSION;
+  return systemVersion;
 }
 
 
@@ -472,6 +498,7 @@
 
 - (id) initWithObjCType: (const char*)t count: (NSInteger)c at: (const void*)a
 {
+  t = GSSkipTypeQualifierAndLayoutInfo(t);
   _t[0] = *t;
   _t[1] = '\0';
   _s = objc_sizeof_type(_t);

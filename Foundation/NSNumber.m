@@ -6,7 +6,7 @@
     (to compile on gnu/linux and mswindows,
     to meet coding/style standards,
     to restore lost functionality)
-   
+
    Date: February 2010
 
    This file is part of the GNUstep Base Library.
@@ -42,11 +42,11 @@
 #endif
 
 
-#import "NSCoder.h"
-#import "NSDecimalNumber.h"
-#import "NSException.h"
-#import "NSValue.h"
-#import "NSObject+GNUstepBase.h"
+#import "common.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSDecimalNumber.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSValue.h"
 #if __has_include(<objc/runtime.h>)
 #  include <objc/runtime.h>
 #endif
@@ -292,7 +292,7 @@ return NSOrderedSame;
  */
 @interface NSFloatingPointNumber : NSNumber
 @end
- 
+
 @implementation NSFloatingPointNumber
 /* For floats, the type promotion rules say that we always promote to a
  * floating point type, even if the other value is really an integer.
@@ -322,7 +322,6 @@ return NSOrderedSame;
 
   DCOMPARE(value, other)
 }
-
 @end
 
 @interface NSFloatNumber : NSFloatingPointNumber
@@ -333,16 +332,8 @@ return NSOrderedSame;
 @end
 
 @implementation NSFloatNumber
-
 #define FORMAT @"%0.7g"
 #include "NSNumberMethods.h"
-
-- (NSString *)description
-{
-    //return [NSString stringWithFormat:@"<%@: %p; value:%@>", [self class], self, [self stringValue]];
-    return [self stringValue];
-}
-
 @end
 
 @interface NSDoubleNumber : NSFloatingPointNumber
@@ -361,10 +352,12 @@ return NSOrderedSame;
 static BOOL useSmallInt;
 static BOOL useSmallExtendedDouble;
 static BOOL useSmallRepeatingDouble;
+static BOOL useSmallFloat;
 #define SMALL_INT_MASK 1
 #define SMALL_EXTENDED_DOUBLE_MASK 2
 #define SMALL_REPEATING_DOUBLE_MASK 3
-
+// 4 is GSTinyString
+#define SMALL_FLOAT_MASK 5
 
 @interface NSSmallInt : NSSignedIntegerNumber
 @end
@@ -372,11 +365,7 @@ static BOOL useSmallRepeatingDouble;
 @implementation NSSmallInt
 #undef VALUE
 #define VALUE (((intptr_t)self) >> OBJC_SMALL_OBJECT_SHIFT)
-#if OBJC_SMALL_OBJECT_SHIFT == 1
-#define FORMAT @"%d"
-#else
-#define FORMAT @"%lld"
-#endif
+#define FORMAT @"%"PRIdPTR
 #include "NSNumberMethods.h"
 
 + (void) load
@@ -407,6 +396,11 @@ static BOOL useSmallRepeatingDouble;
 - (id) retain
 {
   return self;
+}
+
+- (NSUInteger) retainCount
+{
+  return UINT_MAX;
 }
 
 - (id) autorelease
@@ -517,6 +511,11 @@ load
   return self;
 }
 
+- (NSUInteger) retainCount
+{
+  return UINT_MAX;
+}
+
 - (id) autorelease
 {
   return self;
@@ -568,6 +567,11 @@ load
   return self;
 }
 
+- (NSUInteger) retainCount
+{
+  return UINT_MAX;
+}
+
 - (id) autorelease
 {
   return self;
@@ -578,6 +582,39 @@ load
   return;
 }
 @end
+
+
+/*
+ * Technically, all floats are small on 64bit and fit into a NSRepeatingDouble,
+ * but we want to get the description FORMAT right for floats (i.e. "%0.7g" and
+ * not "%0.16g".
+ */
+@interface NSSmallFloat : NSSmallRepeatingDouble
+@end
+@implementation NSSmallFloat
+#undef VALUE
+#define VALUE (unboxSmallRepeatingDouble((uintptr_t)self))
+#define FORMAT @"%0.7g"
+#include "NSNumberMethods.h"
+
++ (void) load
+{
+  useSmallFloat = objc_registerSmallObjectClass_np
+    (self, SMALL_FLOAT_MASK);
+}
+
++ (id) alloc
+{
+  return (id)SMALL_FLOAT_MASK;
+}
+
++ (id) allocWithZone: (NSZone*)aZone
+{
+  return (id)SMALL_FLOAT_MASK;
+}
+@end
+
+
 #endif
 #endif
 
@@ -616,9 +653,11 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
   NSDoubleNumberClass = [NSDoubleNumber class];
 
   boolY = NSAllocateObject (NSBoolNumberClass, 0, 0);
+  [[NSObject leakAt: &boolY] release];
   boolY->value = 1;
   boolN = NSAllocateObject (NSBoolNumberClass, 0, 0);
   boolN->value = 0;
+  [[NSObject leakAt: &boolN] release];
 
   for (i = 0; i < 14; i++)
     {
@@ -626,6 +665,7 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
 
       n->value = i - 1;
       ReusedInstances[i] = n;
+      [[NSObject leakAt: &ReusedInstances[i]] release];
     }
 }
 
@@ -666,12 +706,12 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
   return (unsigned)[self doubleValue];
 }
 
-- (NSString *)stringValue
+- (NSString*) stringValue
 {
-    return [self descriptionWithLocale:nil];
+  return [self descriptionWithLocale: nil];
 }
 
-- (NSString *)descriptionWithLocale: (id)aLocale
+- (NSString*) descriptionWithLocale: (id)aLocale
 {
   [self subclassResponsibility: _cmd];
   return nil;			// Not reached
@@ -700,7 +740,7 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
 
 /*
  * Macro for checking whether this value is the same as one of the singleton
- * instances.  
+ * instances.
  */
 #define CHECK_SINGLETON(aValue) \
 if (aValue >= -1 && aValue <= 12)\
@@ -778,7 +818,7 @@ if (aValue >= -1 && aValue <= 12)\
       (aValue < (INT_MAX>>OBJC_SMALL_OBJECT_SHIFT)) &&
       (aValue > -(INT_MAX>>OBJC_SMALL_OBJECT_SHIFT)))
     {
-       return (id)((aValue << OBJC_SMALL_OBJECT_SHIFT) | SMALL_INT_MASK);
+       return (id)((((NSInteger)aValue) << OBJC_SMALL_OBJECT_SHIFT) | SMALL_INT_MASK);
     }
 #endif
   n = NSAllocateObject (NSIntNumberClass, 0, 0);
@@ -861,25 +901,22 @@ if (aValue >= -1 && aValue <= 12)\
 
 + (NSNumber *) numberWithFloat: (float)aValue
 {
-    NSFloatNumber *n;
-    //NSNumber *n;
+  NSFloatNumber *n;
 
-    //DLog(@"==aValue: %f", aValue);
-    if (self != NSNumberClass) {
-        //DLog(@"aValue: %f", aValue);
-        return [[[self alloc] initWithBytes: (const void *)&aValue objCType: @encode(float)] autorelease];
+  if (self != NSNumberClass)
+    {
+      return [[[self alloc] initWithBytes: (const void *)&aValue
+        objCType: @encode(float)] autorelease];
     }
 #if OBJC_SMALL_OBJECT_SHIFT == 3
-    if (useSmallRepeatingDouble) {
-        //DLog(@"useSmallRepeatingDouble");
-        return boxDouble(aValue, SMALL_REPEATING_DOUBLE_MASK);
+  if (useSmallFloat)
+    {
+      return boxDouble(aValue, SMALL_FLOAT_MASK);
     }
 #endif
-    n = NSAllocateObject(NSFloatNumberClass, 0, 0);
-    //n = [NSNumber alloc];
-    n->value = aValue;
-    //DLog(@"%@: %p; value: %@", [n class], n, [n stringValue]);
-    return AUTORELEASE(n);
+  n = NSAllocateObject (NSFloatNumberClass, 0, 0);
+  n->value = aValue;
+  return AUTORELEASE(n);
 }
 
 + (NSNumber *) numberWithDouble: (double)aValue
@@ -1015,10 +1052,9 @@ if (aValue >= -1 && aValue <= 12)\
   return [self initWithBytes: buffer objCType: type];
 }
 
-- (NSString *)description
+- (NSString *) description
 {
-    //return [NSString stringWithFormat:@"<%@: %p; value: %@>", [self class], self, [self stringValue]];
-    return [self stringValue];
+  return [self stringValue];
 }
 
 /* Return nil for an NSNumber that is allocated and initialized without

@@ -24,20 +24,19 @@
 
 #import "common.h"
 
-#import "NSArray.h"
-#import "NSByteOrder.h"
-#import "NSData.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSHost.h"
-#import "NSRunLoop.h"
-#import "NSValue.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSHost.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSValue.h"
 
 #import "GSStream.h"
 #import "GSPrivate.h"
 #import "GSSocketStream.h"
-#import "NSObject+GNUstepBase.h"
 
 NSString * const NSStreamDataWrittenToMemoryStreamKey
   = @"NSStreamDataWrittenToMemoryStreamKey";
@@ -525,7 +524,8 @@ static RunLoopEventType typeForStream(NSStream *aStream)
   else
     {
       [NSException raise: NSInvalidArgumentException
-		  format: @"Unknown event (%d) passed to _sendEvent:", event];
+		  format: @"Unknown event (%"PRIuPTR") passed to _sendEvent:",
+	event];
     }
 }
 

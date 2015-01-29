@@ -24,9 +24,8 @@
 
 #import "common.h"
 
-#import "NSArray.h"
-#import "NSException.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSException.h"
 
 #import "GSPrivate.h"
 

@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSURLHandle class reference</title>
-   $Date: 2012-03-11 04:00:08 -0700 (Sun, 11 Mar 2012) $ $Revision: 34920 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
 */
 
 #import "common.h"
@@ -32,10 +32,9 @@
 #define	EXPOSE_NSURLHandle_IVARS	1
 #import "GSURLPrivate.h"
 
-#import "NSURLHandle.h"
-#import "NSRunLoop.h"
-#import "NSFileManager.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSURLHandle.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSFileManager.h"
 
 
 @class	GSFTPURLHandle;
@@ -177,7 +176,9 @@ static Class		NSURLHandleClass = 0;
     {
       NSURLHandleClass = self;
       registry = [NSMutableArray new];
+      [[NSObject leakAt: &registry] release];
       registryLock = [NSLock new];
+      [[NSObject leakAt: &registryLock] release];
       [self registerURLHandleClass: [GSFileURLHandle class]];
       [self registerURLHandleClass: [GSFTPURLHandle class]];
       [self registerURLHandleClass: [GSHTTPURLHandle class]];
@@ -529,7 +530,15 @@ static Class		NSURLHandleClass = 0;
  */
 - (NSData*) resourceData
 {
-  if (_status != NSURLHandleLoadSucceeded)
+  NSData        *d = nil;
+
+  if (NSURLHandleLoadSucceeded == _status)
+    {
+      d = [self availableResourceData];
+    }
+  if (nil == d
+    && _status != NSURLHandleLoadSucceeded
+    && _status != NSURLHandleLoadFailed)
     {
       if (_status == NSURLHandleLoadInProgress)
 	{
@@ -537,15 +546,14 @@ static Class		NSURLHandleClass = 0;
 	}
       else
 	{
-	  NSData	*d = [self loadInForeground];
-
+	  d = [self loadInForeground];
 	  if (d != nil)
 	    {
 	      ASSIGNCOPY(_data, d);
 	    }
 	}
     }
-  return [self availableResourceData];
+  return d;
 }
 
 /* Private method ... subclasses override this to enable debug to be
@@ -668,7 +676,9 @@ static NSLock			*fileLock = nil;
 + (void) initialize
 {
   fileCache = [NSMutableDictionary new];
+  [[NSObject leakAt: &fileCache] release];
   fileLock = [NSLock new];
+  [[NSObject leakAt: &fileLock] release];
 }
 
 - (NSData*) availableResourceData
@@ -697,6 +707,7 @@ static NSLock			*fileLock = nil;
 	      // File has been modified
 	      DESTROY(_data);
 	      DESTROY(_attributes);
+              _status = NSURLHandleNotLoaded;
 	    }
 	}
     }

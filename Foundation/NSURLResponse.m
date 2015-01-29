@@ -28,11 +28,11 @@
 #import "GSURLPrivate.h"
 #import "GSPrivate.h"
 
-#import "NSCoder.h"
-#import "NSDictionary.h"
-#import "NSScanner.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSScanner.h"
 #import "NSCallBacks.h"
-#import "GSMime.h"
+#import "GNUstepBase/GSMime.h"
 
 
 // Internal data storage
@@ -250,7 +250,7 @@ typedef struct {
 - (id) initWithURL: (NSURL*)URL
 	statusCode: (NSInteger)statusCode
        HTTPVersion: (NSString*)HTTPVersion
-      headerFields: (NSDictionary*)headerFields;
+      headerFields: (NSDictionary*)headerFields
 {
   self = [self initWithURL: URL
 		  MIMEType: nil
@@ -342,7 +342,7 @@ typedef struct {
 + (NSString *) localizedStringForStatusCode: (NSInteger)statusCode
 {
 // FIXME ... put real responses in here
-  return [NSString stringWithFormat: @"%d", statusCode];
+  return [NSString stringWithFormat: @"%"PRIdPTR, statusCode];
 }
 
 - (NSDictionary *) allHeaderFields

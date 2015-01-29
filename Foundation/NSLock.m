@@ -24,7 +24,6 @@
 
 #import "common.h"
 #include <pthread.h>
-#import "GSConfig.h"
 #import "GSPrivate.h"
 #define	gs_cond_t	pthread_cond_t
 #define	gs_mutex_t	pthread_mutex_t
@@ -37,8 +36,8 @@
 
 #import "common.h"
 
-#import "NSLock.h"
-#import "NSException.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSException.h"
 
 /*
  * Methods shared between NSLock, NSRecursiveLock, and NSCondition
@@ -110,19 +109,17 @@
   return NO;\
 }
 #define	MTRYLOCK \
-- (BOOL)tryLock\
+- (BOOL) tryLock\
 {\
   int err = pthread_mutex_trylock(&_mutex);\
   return (0 == err) ? YES : NO;\
 }
 #define	MUNLOCK \
-- (void)unlock\
+- (void) unlock\
 {\
   if (0 != pthread_mutex_unlock(&_mutex))\
     {\
-        NSLog(@"_mutex: %d", _mutex);\
-        NSLog(@"pthread_mutex_unlock(&_mutex): %d", pthread_mutex_unlock(&_mutex));\
-        [NSException raise: NSLockException\
+      [NSException raise: NSLockException\
 	    format: @"failed to unlock mutex"];\
     }\
 }
@@ -152,37 +149,37 @@ NSString *NSLockException = @"NSLockException";
 
 + (void) initialize
 {
-    static BOOL	beenHere = NO;
-    
-    if (beenHere == NO)
+  static BOOL	beenHere = NO;
+
+  if (beenHere == NO)
     {
-        beenHere = YES;
-        
-        /* Initialise attributes for the different types of mutex.
-         * We do it once, since attributes can be shared between multiple
-         * mutexes.
-         * If we had a pthread_mutexattr_t instance for each mutex, we would
-         * either have to store it as an ivar of our NSLock (or similar), or
-         * we would potentially leak instances as we couldn't destroy them
-         * when destroying the NSLock.  I don't know if any implementation
-         * of pthreads actually allocates memory when you call the
-         * pthread_mutexattr_init function, but they are allowed to do so
-         * (and deallocate the memory in pthread_mutexattr_destroy).
-         */
-        pthread_mutexattr_init(&attr_normal);
-        pthread_mutexattr_settype(&attr_normal, PTHREAD_MUTEX_NORMAL);
-        pthread_mutexattr_init(&attr_reporting);
-        pthread_mutexattr_settype(&attr_reporting, PTHREAD_MUTEX_ERRORCHECK);
-        pthread_mutexattr_init(&attr_recursive);
-        pthread_mutexattr_settype(&attr_recursive, PTHREAD_MUTEX_RECURSIVE);
-        
-        /* To emulate OSX behavior, we need to be able both to detect deadlocks
-         * (so we can log them), and also hang the thread when one occurs.
-         * the simple way to do that is to set up a locked mutex we can
-         * force a deadlock on.
-         */
-        pthread_mutex_init(&deadlock, &attr_normal);
-        pthread_mutex_lock(&deadlock);
+      beenHere = YES;
+
+      /* Initialise attributes for the different types of mutex.
+       * We do it once, since attributes can be shared between multiple
+       * mutexes.
+       * If we had a pthread_mutexattr_t instance for each mutex, we would
+       * either have to store it as an ivar of our NSLock (or similar), or
+       * we would potentially leak instances as we couldn't destroy them
+       * when destroying the NSLock.  I don't know if any implementation
+       * of pthreads actually allocates memory when you call the
+       * pthread_mutexattr_init function, but they are allowed to do so
+       * (and deallocate the memory in pthread_mutexattr_destroy).
+       */
+      pthread_mutexattr_init(&attr_normal);
+      pthread_mutexattr_settype(&attr_normal, PTHREAD_MUTEX_NORMAL);
+      pthread_mutexattr_init(&attr_reporting);
+      pthread_mutexattr_settype(&attr_reporting, PTHREAD_MUTEX_ERRORCHECK);
+      pthread_mutexattr_init(&attr_recursive);
+      pthread_mutexattr_settype(&attr_recursive, PTHREAD_MUTEX_RECURSIVE);
+
+      /* To emulate OSX behavior, we need to be able both to detect deadlocks
+       * (so we can log them), and also hang the thread when one occurs.
+       * the simple way to do that is to set up a locked mutex we can
+       * force a deadlock on.
+       */
+      pthread_mutex_init(&deadlock, &attr_normal);
+      pthread_mutex_lock(&deadlock);
     }
 }
 
@@ -195,34 +192,34 @@ MFINALIZE
  */
 - (id) init
 {
-    if (nil != (self = [super init]))
+  if (nil != (self = [super init]))
     {
-        if (0 != pthread_mutex_init(&_mutex, &attr_reporting))
-        {
-            DESTROY(self);
-        }
+      if (0 != pthread_mutex_init(&_mutex, &attr_reporting))
+	{
+	  DESTROY(self);
+	}
     }
-    return self;
+  return self;
 }
 
 MLOCK
 
 - (BOOL) lockBeforeDate: (NSDate*)limit
 {
-    do
+  do
     {
-        int err = pthread_mutex_trylock(&_mutex);
-        if (0 == err)
-        {
-            return YES;
-        }
-        if (EDEADLK == err)
-        {
-            _NSLockError(self, _cmd, NO);
-        }
-        sched_yield();
+      int err = pthread_mutex_trylock(&_mutex);
+      if (0 == err)
+	{
+	  return YES;
+	}
+      if (EDEADLK == err)
+	{
+	  _NSLockError(self, _cmd, NO);
+	}
+      sched_yield();
     } while ([limit timeIntervalSinceNow] > 0);
-    return NO;
+  return NO;
 }
 
 MNAME
@@ -302,9 +299,9 @@ MLOCK
 MLOCKBEFOREDATE
 MNAME
 
-- (void)signal
+- (void) signal
 {
-    pthread_cond_signal(&_condition);
+  pthread_cond_signal(&_condition);
 }
 
 MTRYLOCK
@@ -368,86 +365,96 @@ MUNLOCK
   return [self initWithCondition: 0];
 }
 
-- (id)initWithCondition: (NSInteger)value
+- (id) initWithCondition: (NSInteger)value
 {
-    if (nil != (self = [super init])) {
-        if (nil == (_condition = [NSCondition new])) {
-            DESTROY(self);
-        } else {
-            _condition_value = value;
-        }
+  if (nil != (self = [super init]))
+    {
+      if (nil == (_condition = [NSCondition new]))
+	{
+	  DESTROY(self);
+	}
+      else
+	{
+          _condition_value = value;
+	}
     }
-    return self;
+  return self;
 }
 
-- (void)lock
+- (void) lock
 {
-    [_condition lock];
+  [_condition lock];
 }
 
-- (BOOL)lockBeforeDate: (NSDate*)limit
+- (BOOL) lockBeforeDate: (NSDate*)limit
 {
-    return [_condition lockBeforeDate: limit];
+  return [_condition lockBeforeDate: limit];
 }
 
-- (void)lockWhenCondition:(NSInteger)value
+- (void) lockWhenCondition: (NSInteger)value
 {
-    [_condition lock];
-    while (value != _condition_value) {
-        [_condition wait];
+  [_condition lock];
+  while (value != _condition_value)
+    {
+      [_condition wait];
     }
 }
 
-- (void)lockWithCondition:(NSInteger)value
+- (BOOL) lockWhenCondition: (NSInteger)condition_to_meet
+                beforeDate: (NSDate*)limitDate
 {
-    [_condition lock];
-    _condition_value=value;
-}
-
-- (BOOL)lockWhenCondition:(NSInteger)condition_to_meet beforeDate:(NSDate *)limitDate
-{
-    [_condition lock];
-    if (condition_to_meet == _condition_value) {
-        return YES;
+  if (NO == [_condition lockBeforeDate: limitDate])
+    {
+      return NO;
     }
-    while ([_condition waitUntilDate: limitDate]) {
-        if (condition_to_meet == _condition_value) {
-            return YES; // KEEP THE LOCK
-        }
+  if (condition_to_meet == _condition_value)
+    {
+      return YES;
     }
-    [_condition unlock];
-    return NO;
+  while ([_condition waitUntilDate: limitDate])
+    {
+      if (condition_to_meet == _condition_value)
+	{
+	  return YES; // KEEP THE LOCK
+	}
+    }
+  [_condition unlock];
+  return NO;
 }
 
 MNAME
 
-- (BOOL)tryLock
+- (BOOL) tryLock
 {
-    return [_condition tryLock];
+  return [_condition tryLock];
 }
 
-- (BOOL)tryLockWhenCondition:(NSInteger)condition_to_meet
+- (BOOL) tryLockWhenCondition: (NSInteger)condition_to_meet
 {
-    if ([_condition tryLock]) {
-        if (condition_to_meet == _condition_value) {
-            return YES; // KEEP THE LOCK
-        } else {
-            [_condition unlock];
-        }
+  if ([_condition tryLock])
+    {
+      if (condition_to_meet == _condition_value)
+	{
+	  return YES; // KEEP THE LOCK
+	}
+      else
+	{
+	  [_condition unlock];
+	}
     }
-    return NO;
+  return NO;
 }
 
-- (void)unlock
+- (void) unlock
 {
-    [_condition unlock];
+  [_condition unlock];
 }
 
-- (void)unlockWithCondition: (NSInteger)value
+- (void) unlockWithCondition: (NSInteger)value
 {
-    _condition_value = value;
-    [_condition broadcast];
-    [_condition unlock];
+  _condition_value = value;
+  [_condition broadcast];
+  [_condition unlock];
 }
 
 @end

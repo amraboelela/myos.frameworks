@@ -22,14 +22,14 @@
    Boston, MA 02111 USA.
 
    <title>NSClassDescription class reference</title>
-   $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
 */
 
 #import "common.h"
-#import "NSClassDescription.h"
-#import "NSLock.h"
-#import "NSMapTable.h"
-#import "NSNotification.h"
+#import "Foundation/NSClassDescription.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSNotification.h"
 
 
 /**
@@ -87,7 +87,9 @@ static NSMapTable	*classMap;
     {
       classMap = NSCreateMapTable(NSObjectMapKeyCallBacks,
         NSObjectMapValueCallBacks, 100);
+      [[NSObject leakAt: &classMap] release];
       mapLock = [NSRecursiveLock new];
+      [[NSObject leakAt: &mapLock] release];
     }
 }
 

@@ -28,7 +28,7 @@
 
 #define	EXPOSE_NSPipe_IVARS	1
 
-#import "NSFileHandle.h"
+#import "Foundation/NSFileHandle.h"
 #import "GSPrivate.h"
 
 /**

@@ -27,6 +27,34 @@
 
 #import "common.h"
 
+#ifdef	HAVE_LIBXML
+
+/* Avoid problems on systems where the xml headers use 'id'
+ */
+#define	id	GSXMLID
+
+/* libxml headers */
+#include <libxml/tree.h>
+#include <libxml/entities.h>
+#include <libxml/parser.h>
+#include <libxml/parserInternals.h>
+#include <libxml/HTMLparser.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/xmlsave.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
+
+#ifdef HAVE_LIBXSLT
+#include <libxslt/xslt.h>
+#include <libxslt/xsltInternals.h>
+#include <libxslt/transform.h>
+#include <libxslt/xsltutils.h>
+#endif /* HAVE_LIBXSLT */
+
+#undef	id
+
+#endif	/* HAVE_LIBXML */
+
 #define	EXPOSE_NSXMLDTD_IVARS	1
 #define	EXPOSE_NSXMLDTDNode_IVARS	1
 #define	EXPOSE_NSXMLDocument_IVARS	1
@@ -114,7 +142,6 @@ StringFromXMLString(const unsigned char *bytes, unsigned length)
   GS_XMLNODETYPE *node;  \
   NSUInteger      options; \
   id              objectValue; \
-  NSString       *URI; \
   NSMutableArray *subNodes;
 
 
@@ -136,25 +163,15 @@ StringFromXMLString(const unsigned char *bytes, unsigned length)
  * is imported and before GSInternal.h is imported.
  */
 #define GS_NSXMLDocument_IVARS SUPERIVARS(GS_NSXMLNode_IVARS) \
-  NSXMLDTD     		*docType; \
   NSString     		*MIMEType; \
   NSInteger		contentKind; \
-
 
 /* Instance variables for NSXMLDTD with/without the instance
  * variable 'inherited' from NSXMLNode.
  * This macro needs to be defined before the NSXMLDTD.h header
  * is imported and before GSInternal.h is imported.
  */
-#define GS_NSXMLDTD_IVARS SUPERIVARS(GS_NSXMLNode_IVARS) \
-  NSString      *publicID; \
-  NSString      *systemID; \
-  NSMutableDictionary   *entities; \
-  NSMutableDictionary   *elements; \
-  NSMutableDictionary   *notations; \
-  NSMutableDictionary   *attributes; \
-  NSString              *original; \
-
+#define GS_NSXMLDTD_IVARS SUPERIVARS(GS_NSXMLNode_IVARS)
 
 /* Instance variables for NSXMLDTDNode with/without the instance
  * variable 'inherited' from NSXMLNode.
@@ -172,46 +189,21 @@ StringFromXMLString(const unsigned char *bytes, unsigned length)
 #define GS_NSXMLElement_IVARS SUPERIVARS(GS_NSXMLNode_IVARS)
 
 
-#import "NSArray.h"
-#import "NSData.h"
-#import "NSDebug.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSString.h"
-#import "NSURL.h"
-#import "NSXMLNode.h"
-#import "NSXMLDocument.h"
-#import "NSXMLDTDNode.h"
-#import "NSXMLDTD.h"
-#import "NSXMLElement.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDebug.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSString.h"
+#import "Foundation/NSURL.h"
+#import "Foundation/NSXMLNode.h"
+#import "Foundation/NSXMLDocument.h"
+#import "Foundation/NSXMLDTDNode.h"
+#import "Foundation/NSXMLDTD.h"
+#import "Foundation/NSXMLElement.h"
 
 #ifdef	HAVE_LIBXML
-
-/* Avoid problems on systems where the xml headers use 'id'
- */
-#define	id	GSXMLID
-
-/* libxml headers */
-#include <libxml/tree.h>
-#include <libxml/entities.h>
-#include <libxml/parser.h>
-#include <libxml/parserInternals.h>
-#include <libxml/HTMLparser.h>
-#include <libxml/xmlmemory.h>
-#include <libxml/xmlsave.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-
-#ifdef HAVE_LIBXSLT
-#include <libxslt/xslt.h>
-#include <libxslt/xsltInternals.h>
-#include <libxslt/transform.h>
-#include <libxslt/xsltutils.h>
-#endif /* HAVE_LIBXSLT */
-
-#undef	id
 
 // Private methods to manage libxml pointers...
 @interface NSXMLNode (Private)
@@ -229,4 +221,3 @@ StringFromXMLString(const unsigned char *bytes, unsigned length)
 #endif /* HAVE_LIBXML */
 
 #endif
-

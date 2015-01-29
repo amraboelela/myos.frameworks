@@ -24,7 +24,7 @@
 
 #ifndef __NSCache_h_GNUSTEP_BASE_INCLUDE
 #define __NSCache_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if OS_API_VERSION(MAC_OS_X_VERSION_10_6, GS_API_LATEST)
 

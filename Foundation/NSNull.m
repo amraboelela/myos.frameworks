@@ -22,33 +22,35 @@
    Boston, MA 02111 USA.
 
    <title>NSNull class reference</title>
-   $Date: 2011-07-31 08:31:39 -0700 (Sun, 31 Jul 2011) $ $Revision: 33660 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
-#import "NSNull.h"
+#import "Foundation/NSNull.h"
 
 /**
  * An object to use as a placeholder - in collections for instance.
  */
 @implementation	NSNull
 
-static NSNull *null = 0;
+static NSNull	*null = 0;
 
-+ (id)allocWithZone:(NSZone *)z
++ (id) allocWithZone: (NSZone*)z
 {
-    return null;
+  return null;
 }
 
-+ (id)alloc
++ (id) alloc
 {
-    return null;
+  return null;
 }
 
-+ (void)initialize
++ (void) initialize
 {
-    if (null == 0) {
-        null = (NSNull *)NSAllocateObject(self, 0, NSDefaultMallocZone());
+  if (null == 0)
+    {
+      null = (NSNull*)NSAllocateObject(self, 0, NSDefaultMallocZone());
+      [[NSObject leakAt: &null] release];
     }
 }
 
@@ -56,61 +58,61 @@ static NSNull *null = 0;
  * Return an object that can be used as a placeholder in a collection.
  * This method always returns the same object.
  */
-+ (NSNull *)null
++ (NSNull*) null
 {
-    return null;
+  return null;
 }
 
-- (id)autorelease
+- (id) autorelease
 {
-    return self;
+  return self;
 }
 
-- (id)copyWithZone:(NSZone *)z
+- (id) copyWithZone: (NSZone*)z
 {
-    return self;
+  return self;
 }
 
-- (id)copy
+- (id) copy
 {
-    return self;
+  return self;
 }
 
-- (void)dealloc
+- (void) dealloc
 {
-    GSNOSUPERDEALLOC;
+  GSNOSUPERDEALLOC;
 }
 
-- (NSString *)description
+- (NSString*) description
 {
-    return @"<null>";
+  return @"<null>";
 }
 
-- (void)encodeWithCoder:(NSCoder *)aCoder
-{
-}
-
-- (id)initWithCoder:(NSCoder *)aCoder
-{
-    return self;
-}
-
-- (BOOL)isEqual:(id)other
-{
-    if (other == self) {
-        return YES;
-    } else {
-        return NO;
-    }
-}
-
-- (oneway void)release
+- (void) encodeWithCoder: (NSCoder*)aCoder
 {
 }
 
-- (id)retain
+- (id) initWithCoder: (NSCoder*)aCoder
 {
-    return self;
+  return self;
 }
 
+- (BOOL) isEqual: (id)other
+{
+  if (other == self)
+    return YES;
+  else
+    return NO;
+}
+
+- (oneway void) release
+{
+}
+
+- (id) retain
+{
+  return self;
+}
 @end
+
+

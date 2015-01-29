@@ -21,17 +21,17 @@
    Boston, MA 02111 USA.
 
    <title>NSUndoManager class reference</title>
-   $Date: 2011-02-14 22:25:54 -0800 (Mon, 14 Feb 2011) $ $Revision: 32173 $
+   $Date: 2014-05-28 11:31:59 -0700 (Wed, 28 May 2014) $ $Revision: 37917 $
 */
 
 #import "common.h"
 #define	EXPOSE_NSUndoManager_IVARS	1
-#import "NSArray.h"
-#import "NSNotification.h"
-#import "NSInvocation.h"
-#import "NSException.h"
-#import "NSRunLoop.h"
-#import "NSUndoManager.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSInvocation.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSUndoManager.h"
 
 /*
  *	Private class for grouping undo/redo actions.
@@ -435,7 +435,7 @@
       if (_nextTarget == nil)
 	{
 	  [NSException raise: NSInternalInconsistencyException
-		      format: @"forwardInvocation without perparation"];
+		      format: @"forwardInvocation without preparation"];
 	}
       if (_group == nil)
 	{
@@ -695,7 +695,7 @@
 	  return [NSString stringWithFormat: @"%@ %@", _(@"Redo"), actionName];
 	}
     }
-  return actionName;
+  return _(@"Redo");
 }
 
 /**
@@ -745,6 +745,9 @@
 	}
       g = _group;
       sig = [target methodSignatureForSelector: aSelector];
+      NSAssert2(sig,@"No methodSignatureForSelector:%@ for target of class %@",
+		NSStringFromSelector(aSelector),
+		[target class]);
       inv = [NSInvocation invocationWithMethodSignature: sig];
       [inv retainArgumentsIncludingTarget: NO];
       [inv setTarget: target];
@@ -944,7 +947,15 @@
     {
       return nil;
     }
-  return [[_undoStack lastObject] actionName];
+
+  if (_group != nil)
+    {
+      return [_group actionName];
+    }
+  else
+    {
+      return [[_undoStack lastObject] actionName];
+    }
 }
 
 /**
@@ -975,7 +986,7 @@
 	  return [NSString stringWithFormat: @"%@ %@", _(@"Undo"), actionName];
 	}
     }
-  return actionName;
+  return _(@"Undo");
 }
 
 /**

@@ -22,18 +22,17 @@
    Boston, MA 02111 USA.
 
    <title>NSPortNameServer class reference</title>
-   $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
-#import "NSException.h"
-#import "NSEnumerator.h"
-#import "NSPort.h"
-#import "NSPortNameServer.h"
-#import "NSLock.h"
-#import "NSUserDefaults.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSPort.h"
+#import "Foundation/NSPortNameServer.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSUserDefaults.h"
 #import "GSPortPrivate.h"
-#import "NSObject+GNUstepBase.h"
 
 
 /**

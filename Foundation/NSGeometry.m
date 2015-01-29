@@ -36,9 +36,9 @@
 
 #import "common.h"
 #include <math.h>
-#import "NSGeometry.h"
-#import "NSScanner.h"
-#import "NSNotification.h"
+#import "Foundation/NSGeometry.h"
+#import "Foundation/NSScanner.h"
+#import "Foundation/NSNotification.h"
 #import "GSPrivate.h"
 
 static Class	NSStringClass = 0;

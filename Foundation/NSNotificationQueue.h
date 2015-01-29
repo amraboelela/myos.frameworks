@@ -46,7 +46,7 @@
 
 #ifndef __NSNotificationQueue_h_GNUSTEP_BASE_INCLUDE
 #define __NSNotificationQueue_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 
@@ -94,7 +94,7 @@ typedef NSUInteger NSPostingStyle;
 enum {
   NSNotificationNoCoalescing = 0,
   NSNotificationCoalescingOnName = 1,
-  NSNotificationCoalescingOnSender = 2,
+  NSNotificationCoalescingOnSender = 2
 };
 typedef NSUInteger NSNotificationCoalescing;
 

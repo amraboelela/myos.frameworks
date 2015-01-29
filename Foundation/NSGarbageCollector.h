@@ -27,7 +27,7 @@
 
 #ifndef _NSGarbageCollector_h_GNUSTEP_BASE_INCLUDE
 #define _NSGarbageCollector_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if OS_API_VERSION(MAC_OS_X_VERSION_10_5, GS_API_LATEST)
 

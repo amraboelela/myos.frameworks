@@ -25,17 +25,17 @@
    Boston, MA 02111 USA.
 
    <title>NSNotificationQueue class reference</title>
-   $Date: 2010-08-17 00:35:20 -0700 (Tue, 17 Aug 2010) $ $Revision: 31173 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSNotificationQueue_IVARS	1
-#import "NSRunLoop.h"
-#import "NSNotificationQueue.h"
-#import "NSNotification.h"
-#import "NSDictionary.h"
-#import "NSArray.h"
-#import "NSThread.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSNotificationQueue.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSThread.h"
 
 #import "GSPrivate.h"
 /* NotificationQueueList by Richard Frith-Macdonald
@@ -285,6 +285,7 @@ static NSArray	*defaultMode = nil;
     {
       defaultMode = [[NSArray alloc] initWithObjects: (id*)&NSDefaultRunLoopMode
 					       count: 1];
+      [[NSObject leakAt: &defaultMode] release];
     }
 }
 

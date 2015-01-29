@@ -31,36 +31,15 @@
 #import <objc/objc.h>
 #import	<Foundation/NSZone.h>
 
-#ifdef ANDROID
-
-#import <android/log.h>
-
-#ifndef RD_LOG
-#define RD_LOG
-#define printf(...) __android_log_print(ANDROID_LOG_DEBUG, "", __VA_ARGS__);
-#define fprintf(X,...) __android_log_print(ANDROID_LOG_ERROR, "", __VA_ARGS__);
-#define printfWithProcess(process, ...) __android_log_print(ANDROID_LOG_DEBUG, process, __VA_ARGS__);
-#endif
-
-#endif /* ANDROID */
-
 #ifndef	GS_WITH_GC
 #define	GS_WITH_GC	0
 #endif
 
-#import	"GNUstep.h"
+#import	<GNUstepBase/GNUstep.h>
 
 #if	defined(__cplusplus)
 extern "C" {
 #endif
-
-#ifdef DEBUG
-#   define DLog(fmt, ...) NSLog((@"%s%d " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
-#else
-#   define DLog(...)
-#endif
-
-#define ALog(fmt, ...) NSLog((@"%s%d " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
 
 @class NSArchiver;
 @class NSArray;
@@ -606,7 +585,7 @@ GS_EXPORT NSRecursiveLock *gnustep_global_lock;
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import "NSObject+GNUstepBase.h"
+#import <GNUstepBase/NSObject+GNUstepBase.h>
 #endif
 
 #endif /* __NSObject_h_GNUSTEP_BASE_INCLUDE */

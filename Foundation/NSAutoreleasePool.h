@@ -24,7 +24,7 @@
 
 #ifndef __NSAutoreleasePool_h_GNUSTEP_BASE_INCLUDE
 #define __NSAutoreleasePool_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 
@@ -231,7 +231,7 @@ NS_AUTOMATED_REFCOUNT_UNAVAILABLE
  */
 - (id) autorelease;
 
-#if OS_API_VERSION(100400, GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4, GS_API_LATEST)
 /**
  * Intended to trigger a garbage collection run (if needed) when called in
  * a garbage collected environment.<br />

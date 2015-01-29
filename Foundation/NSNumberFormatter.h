@@ -25,7 +25,7 @@
 
 #ifndef _NSNumberFormatter_h_GNUSTEP_BASE_INCLUDE
 #define _NSNumberFormatter_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 

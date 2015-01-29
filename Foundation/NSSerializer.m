@@ -22,23 +22,22 @@
    Boston, MA 02111 USA.
 
    <title>NSSerializer class reference</title>
-   $Date: 2011-03-29 02:40:14 -0700 (Tue, 29 Mar 2011) $ $Revision: 32733 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
-#import "NSData.h"
-#import "NSDictionary.h"
-#import "NSArray.h"
-#import "NSException.h"
-#import "NSEnumerator.h"
-#import "NSProxy.h"
-#import "NSLock.h"
-#import "NSSet.h"
-#import "NSThread.h"
-#import "NSNotification.h"
-#import "NSNotificationQueue.h"
-#import "NSValue.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSProxy.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSThread.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSNotificationQueue.h"
+#import "Foundation/NSValue.h"
 
 #import "GSPrivate.h"
 
@@ -68,7 +67,7 @@
 (GSIMapNode)NSAllocateCollectable(X * sizeof(GSIMapNode_t), 0)
 #endif
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 /*
  *	Setup for inline operation of string arrays.
@@ -77,7 +76,7 @@
 #define	GSI_ARRAY_NO_RELEASE	1
 #define	GSI_ARRAY_TYPES	GSUNION_OBJ
 
-#include "GSIArray.h"
+#include "GNUstepBase/GSIArray.h"
 
 /*
  *	Define constants for data types and variables to hold them.

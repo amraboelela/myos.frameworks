@@ -25,12 +25,11 @@
 
 #import "common.h"
 #define	EXPOSE_NSKeyedArchiver_IVARS	1
-#import "NSAutoreleasePool.h"
-#import "NSData.h"
-#import "NSException.h"
-#import "NSScanner.h"
-#import "NSValue.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSScanner.h"
+#import "Foundation/NSValue.h"
 
 #import "GSPrivate.h"
 
@@ -59,11 +58,11 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
 #endif
 
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 
 #define	_IN_NSKEYEDARCHIVER_M	1
-#import "NSKeyedArchiver.h"
+#import "Foundation/NSKeyedArchiver.h"
 #undef	_IN_NSKEYEDARCHIVER_M
 
 /* Exceptions */
@@ -505,6 +504,7 @@ static NSDictionary *makeReference(unsigned ref)
       globalClassMap =
 	NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,
 			  NSObjectMapValueCallBacks, 0);
+      [[NSObject leakAt: &globalClassMap] release];
     }
 }
 
@@ -702,6 +702,7 @@ static NSDictionary *makeReference(unsigned ref)
   NSString	*aKey;
   id		o;
 
+  type = GSSkipTypeQualifierAndLayoutInfo(type);
   if (*type == _C_ID || *type == _C_CLASS)
     {
       [self encodeObject: *(id*)address];
@@ -751,12 +752,12 @@ static NSDictionary *makeReference(unsigned ref)
 	return;
 
       case _C_INT:
-	o = [NSNumber numberWithInt: *(NSInteger*)address];
+	o = [NSNumber numberWithInt: *(int*)address];
 	[_enc setObject: o forKey: aKey];
 	return;
 
       case _C_UINT:
-	o = [NSNumber numberWithUnsignedInt: *(NSUInteger*)address];
+	o = [NSNumber numberWithUnsignedInt: *(unsigned int*)address];
 	[_enc setObject: o forKey: aKey];
 	return;
 

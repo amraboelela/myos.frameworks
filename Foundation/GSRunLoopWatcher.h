@@ -55,7 +55,7 @@
  */
 
 #import "common.h"
-#import "NSRunLoop.h"
+#import "Foundation/NSRunLoop.h"
 
 @class NSDate;
 

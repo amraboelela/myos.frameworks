@@ -25,9 +25,9 @@
 
 #ifndef __NSValueTransformer_h_GNUSTEP_BASE_INCLUDE
 #define __NSValueTransformer_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
-#if OS_API_VERSION(100300,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_3,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
 
 #import	<Foundation/NSObject.h>
 
@@ -85,6 +85,10 @@ GS_EXPORT NSString* const NSUnarchiveFromDataTransformerName;
 /**
  * Returns the transformer registered for the specified name, or nil
  * if no transformer is registered for name.
+ *
+ * If no transformer is found, but the name corresponds to a valid 
+ * NSValueTransformer subclass name, the receiver instantiates this subclass 
+ * using -init and registers it automatically for name.
  */
 + (NSValueTransformer *) valueTransformerForName: (NSString *)name;
 

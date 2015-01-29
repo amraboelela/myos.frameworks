@@ -30,7 +30,7 @@
    Boston, MA 02111 USA.
 
    <title>NSPortCoder class reference</title>
-   $Date: 2012-02-27 22:53:00 -0800 (Mon, 27 Feb 2012) $ $Revision: 34843 $
+   $Date: 2013-07-02 08:46:26 -0700 (Tue, 02 Jul 2013) $ $Revision: 36799 $
    */
 
 #import "common.h"
@@ -40,12 +40,12 @@
 #endif
 
 #define	EXPOSE_NSPortCoder_IVARS	1
-#import "NSException.h"
-#import "NSByteOrder.h"
-#import "NSCoder.h"
-#import "NSAutoreleasePool.h"
-#import "NSData.h"
-#import "NSPort.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSPort.h"
 
 @class	NSMutableDataMalloc;
 @interface NSMutableDataMalloc : NSObject	// Help the compiler
@@ -71,7 +71,7 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
 (GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), nodeDesc)
 #endif
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 /*
  *	Setup for inline operation of arrays.
@@ -80,15 +80,15 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
 #define	GSI_ARRAY_NO_RELEASE	1
 #define	GSI_ARRAY_TYPES	GSUNION_OBJ|GSUNION_SEL|GSUNION_PTR
 
-#include "GSIArray.h"
+#include "GNUstepBase/GSIArray.h"
 
 
 
 #define	_IN_PORT_CODER_M
-#import "NSPortCoder.h"
+#import "Foundation/NSPortCoder.h"
 #undef	_IN_PORT_CODER_M
 
-#import "DistributedObjects.h"
+#import "GNUstepBase/DistributedObjects.h"
 
 typedef	unsigned char	uchar;
 
@@ -351,10 +351,16 @@ static IMP	_eSerImp;	/* Method to serialize with.	*/
 static IMP	_eTagImp;	/* Serialize a type tag.	*/
 static IMP	_xRefImp;	/* Serialize a crossref.	*/
 
+static unsigned	encodingVersion;
+
 + (void) initialize
 {
   if (self == [NSPortCoder class])
     {
+      NSCoder	*coder = [NSCoder new];
+
+      encodingVersion = [coder systemVersion];
+      [coder release];
 #if	GS_WITH_GC
       /* We create a typed memory descriptor for map nodes.
        */
@@ -416,7 +422,8 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
     {
       unsigned	count = GSIArrayCount(_clsAry);
 
-      while (count-- > 0)
+      // Zero'th item is nul
+      while (count-- > 1)
 	{
 	  RELEASE(GSIArrayItemAtIndex(_clsAry, count).obj);
 	}
@@ -435,12 +442,12 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
 {
   NSUInteger	i;
   NSUInteger	offset = 0;
-  unsigned	size = objc_sizeof_type(type);
+  uint32_t	size = objc_sizeof_type(type);
   unsigned char	info;
   NSUInteger	count;
 
   (*_dTagImp)(_src, dTagSel, &info, 0, &_cursor);
-  if (_version > 12401)
+  if (12402 == _version)
     {
       uint8_t	c;
 
@@ -469,10 +476,15 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
     }
   else
     {
-      unsigned	c;
+      uint32_t	c;
 
-      (*_dDesImp)(_src, dDesSel, &c, @encode(unsigned), &_cursor, nil);
+      (*_dDesImp)(_src, dDesSel, &c, @encode(uint32_t), &_cursor, nil);
       count = c;
+      if (0xffffffff == c)
+	{
+	  (*_dDesImp)(_src, dDesSel,
+	    &count, @encode(NSUInteger), &_cursor, nil);
+	}
     }
   if (info != _GSC_ARY_B)
     {
@@ -482,7 +494,7 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
   if (count != expected)
     {
       [NSException raise: NSInternalInconsistencyException
-		  format: @"expected array count %u and got %u",
+		  format: @"expected array count %"PRIuPTR" and got %"PRIuPTR,
 			expected, count];
     }
 
@@ -1135,19 +1147,16 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
 			    at: (const void*)buf
 {
   NSUInteger	i;
-  unsigned      c = count;
+  uint32_t      c = count;
   uint8_t	bytes[20];
   uint8_t	*bytePtr = 0;
   uint8_t	byteCount = 0;
   NSUInteger	offset = 0;
-  unsigned	size = objc_sizeof_type(type);
+  uint32_t	size = objc_sizeof_type(type);
+  uint32_t	version = [self systemVersion];
   uchar		info;
 
-  /* The array count is encoded as a sequence of bytes containing 7bits of
-   * data and using the eighth (top) bit to indicate that there are more
-   * bytes in the sequence.
-   */
-  if ([self systemVersion] > 12401)
+  if (12402 == version)
     {
       NSUInteger	tmp = count;
 
@@ -1159,6 +1168,21 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
 	  tmp /= 128;
 	}
       bytePtr = &bytes[sizeof(bytes) - byteCount];
+    }
+  else
+    {
+      /* We normally store the count as a 32bit integer ... but if it's
+       * very big, we store 0xffffffff and then an additional 64bit value
+       * containing the actual count.
+       */
+      if (count >= 0xffffffff)
+	{
+	  c = 0xffffffff;
+	}
+      else
+	{
+	  c = count;
+	}
     }
 
   switch (*type)
@@ -1188,16 +1212,20 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
       if (_initialPass == NO)
 	{
 	  (*_eTagImp)(_dst, eTagSel, _GSC_ARY_B);
-	  if (0 == byteCount)
-	    {
-	      (*_eSerImp)(_dst, eSerSel, &c, @encode(unsigned), nil);
-	    }
-	  else
+          if (12402 == version)
 	    {
 	      for (i = 0; i < byteCount; i++)
 		{
 		  (*_eSerImp)
 		    (_dst, eSerSel, bytePtr + i, @encode(uint8_t), nil);
+		}
+	    }
+	  else
+	    {
+	      (*_eSerImp)(_dst, eSerSel, &c, @encode(uint32_t), nil);
+	      if (0xffffffff == c)
+		{
+		  (*_eSerImp)(_dst, eSerSel, &count, @encode(NSUInteger), nil);
 		}
 	    }
 	}
@@ -1210,15 +1238,19 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
   else if (_initialPass == NO)
     {
       (*_eTagImp)(_dst, eTagSel, _GSC_ARY_B);
-      if (0 == byteCount)
-	{
-	  (*_eSerImp)(_dst, eSerSel, &c, @encode(unsigned), nil);
-	}
-      else
+      if (12402 == version)
 	{
 	  for (i = 0; i < byteCount; i++)
 	    {
 	      (*_eSerImp)(_dst, eSerSel, bytePtr + i, @encode(uint8_t), nil);
+	    }
+	}
+      else
+	{
+	  (*_eSerImp)(_dst, eSerSel, &c, @encode(unsigned), nil);
+	  if (0xffffffff == c)
+	    {
+	      (*_eSerImp)(_dst, eSerSel, &count, @encode(NSUInteger), nil);
 	    }
 	}
 
@@ -1920,6 +1952,12 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
 			     objects: &sizeO
 			    pointers: &sizeP];
 
+	  if (_version > encodingVersion)
+	    {
+	      [NSException raise: NSInvalidArgumentException
+		format: @"Message systemVersion (%u) not recognised", _version];
+	    }
+
 	  /*
 	   *	Allocate and initialise arrays to build crossref maps in.
 	   */
@@ -2005,10 +2043,11 @@ static IMP	_xRefImp;	/* Serialize a crossref.	*/
     }
   if ([_cInfo count] == 0)
     {
-      while (count-- > 0)
+      // Zero'th item is nul
+      while (count-- > 1)
 	{
 	  info = GSIArrayItemAtIndex(_clsAry, count).obj;
-	  if (info->class != 0)
+	  if (0 != info->class)
 	    {
 	      [_cInfo setObject: info forKey: NSStringFromClass(info->class)];
 	    }

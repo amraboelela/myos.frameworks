@@ -31,7 +31,7 @@
 
 #ifndef __NSPortNameServer_h_GNUSTEP_BASE_INCLUDE
 #define __NSPortNameServer_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSMapTable.h>

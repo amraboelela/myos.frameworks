@@ -27,7 +27,7 @@
 
 #ifndef __NSHashTable_h_GNUSTEP_BASE_INCLUDE
 #define __NSHashTable_h_GNUSTEP_BASE_INCLUDE 1
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 /**** Included Headers *******************************************************/
 
@@ -53,6 +53,8 @@ enum {
     = NSPointerFunctionsCopyIn,
   NSHashTableObjectPointerPersonality
     = NSPointerFunctionsObjectPointerPersonality,
+  NSHashTableWeakMemory
+    = NSPointerFunctionsWeakMemory
 };
 
 typedef NSUInteger NSHashTableOptions;
@@ -62,6 +64,14 @@ typedef NSUInteger NSHashTableOptions;
 + (id) hashTableWithOptions: (NSPointerFunctionsOptions)options;
 
 + (id) hashTableWithWeakObjects;
+/**
+ * Creates a hash table that uses zeroing weak references (either using the
+ * automatic reference counting or garbage collection mechanism, depending on
+ * which mode this framework is compiled in) so that objects are removed when
+ * their last other reference disappears.
+ */
++ (id) weakObjectsHashTable;
+
 
 - (id) initWithOptions: (NSPointerFunctionsOptions)options
 	      capacity: (NSUInteger)initialCapacity;

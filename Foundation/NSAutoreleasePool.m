@@ -23,17 +23,24 @@
    Boston, MA 02111 USA.
 
    <title>NSAutoreleasePool class reference</title>
-   $Date: 2011-07-11 07:31:36 -0700 (Mon, 11 Jul 2011) $ $Revision: 33521 $
+   $Date: 2012-11-15 08:34:54 -0800 (Thu, 15 Nov 2012) $ $Revision: 35795 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSAutoreleasePool_IVARS	1
 #define	EXPOSE_NSThread_IVARS	1
-#import "NSAutoreleasePool.h"
-#import "NSGarbageCollector.h"
-#import "NSException.h"
-#import "NSThread.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSGarbageCollector.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSThread.h"
 
+#if __has_include(<objc/capabilities.h>)
+#  include <objc/capabilities.h>
+#  ifdef OBJC_ARC_AUTORELEASE_DEBUG
+#    include <objc/objc-arc.h>
+#    define ARC_RUNTIME 1
+#  endif
+#endif
 
 #if GS_WITH_GC || __OBJC_GC__
 
@@ -209,6 +216,8 @@ static Class PoolClass;
 
 #endif
 
+
+
 #if !GS_WITH_GC
 
 /* When this is `NO', autoreleased objects are never actually recorded
@@ -333,6 +342,81 @@ pop_pool_from_cache (struct autorelease_thread_vars *tv)
   return (*initImp)(arp, @selector(init));
 }
 
+#ifdef ARC_RUNTIME
+
+- (id) init
+{
+  _released = objc_autoreleasePoolPush();
+  {
+    struct autorelease_thread_vars *tv = ARP_THREAD_VARS;
+    unsigned	level = 0;
+    _parent = tv->current_pool;
+    if (_parent)
+      {
+	NSAutoreleasePool	*pool = _parent;
+
+	while (nil != pool)
+	  {
+	    level++;
+	    pool = pool->_parent;
+	  }
+        _parent->_child = self;
+      }
+    tv->current_pool = self;
+    if (level > pool_number_warning_threshhold)
+      {
+	[NSException raise: NSGenericException
+	  format: @"Too many (%u) autorelease pools ... leaking them?", level];
+      }
+  }
+
+  /* Catch the case where the receiver is a pool still in use (wrongly put in 
+     the pool cache previously). */
+  NSCAssert(_child != self, @"Invalid child pool");
+  NSCAssert(_parent != self, @"Invalid parent pool");
+
+  return self;
+}
+
+- (unsigned) autoreleaseCountForObject: (id)anObject
+{
+  return objc_arc_autorelease_count_for_object_np(anObject);
+}
+
++ (unsigned) autoreleaseCountForObject: (id)anObject
+{
+  return objc_arc_autorelease_count_for_object_np(anObject);
+}
+
+- (unsigned) autoreleaseCount
+{
+  return objc_arc_autorelease_count_np();
+}
+
++ (void) addObject: (id)anObj
+{
+  if (autorelease_enabled)
+    objc_autorelease(anObj);
+}
+
+- (void) addObject: (id)anObj
+{
+  if (autorelease_enabled)
+    objc_autorelease(anObj);
+}
+- (void) emptyPool
+{
+  struct autorelease_thread_vars *tv = ARP_THREAD_VARS;
+  tv->current_pool = self;
+  objc_autoreleasePoolPop(_released);
+}
+/**
+ * Indicate to the runtime that we have an ARC-compatible implementation of
+ * NSAutoreleasePool and that it doesn't need to bother creating objects for
+ * pools.
+ */
+- (void)_ARCCompatibleAutoreleasePool {}
+#else
 - (id) init
 {
   if (!_released_head)
@@ -429,11 +513,6 @@ pop_pool_from_cache (struct autorelease_thread_vars *tv)
   return count;
 }
 
-+ (id) currentPool
-{
-  return ARP_THREAD_VARS->current_pool;
-}
-
 + (void) addObject: (id)anObj
 {
   NSThread		*t = GSCurrentThread();
@@ -510,52 +589,6 @@ pop_pool_from_cache (struct autorelease_thread_vars *tv)
 
   /* Keep track of the total number of objects autoreleased in this pool */
   _released_count++;
-}
-
-- (void) drain
-{
-  // Don't call -release, make both -release and -drain have the same cost in
-  // non-GC mode.
-  [self dealloc];
-}
-
-- (id) retain
-{
-  [NSException raise: NSGenericException
-	       format: @"Don't call `-retain' on a NSAutoreleasePool"];
-  return self;
-}
-
-- (oneway void) release
-{
-  [self dealloc];
-}
-
-- (void) dealloc
-{
-  struct autorelease_thread_vars *tv = ARP_THREAD_VARS;
-
-  [self emptyPool];
-
-  /* Remove self from the linked list of pools in use.
-   * We already know that we have deallocated any child (in -emptyPool),
-   * but we may have a parent which needs to know we have gone.
-   * The only other place where the parent/child linked list is modified
-   * should be in -init
-   */
-  if (tv->current_pool == self)
-    {
-      tv->current_pool = _parent;
-    }
-  if (_parent != nil)
-    {
-      _parent->_child = nil;
-      _parent = nil;
-    }
-
-  /* Don't deallocate ourself, just save us for later use. */
-  push_pool_to_cache (tv, self);
-  GSNOSUPERDEALLOC;
 }
 
 - (void) emptyPool
@@ -662,6 +695,60 @@ pop_pool_from_cache (struct autorelease_thread_vars *tv)
     }
 }
 
+#endif // ARC_RUNTIME
+
++ (id) currentPool
+{
+  return ARP_THREAD_VARS->current_pool;
+}
+
+
+- (void) drain
+{
+  // Don't call -release, make both -release and -drain have the same cost in
+  // non-GC mode.
+  [self dealloc];
+}
+
+- (id) retain
+{
+  [NSException raise: NSGenericException
+	       format: @"Don't call `-retain' on a NSAutoreleasePool"];
+  return self;
+}
+
+- (oneway void) release
+{
+  [self dealloc];
+}
+
+- (void) dealloc
+{
+  struct autorelease_thread_vars *tv = ARP_THREAD_VARS;
+
+  [self emptyPool];
+
+  /* Remove self from the linked list of pools in use.
+   * We already know that we have deallocated any child (in -emptyPool),
+   * but we may have a parent which needs to know we have gone.
+   * The only other place where the parent/child linked list is modified
+   * should be in -init
+   */
+  if (tv->current_pool == self)
+    {
+      tv->current_pool = _parent;
+    }
+  if (_parent != nil)
+    {
+      _parent->_child = nil;
+      _parent = nil;
+    }
+
+  /* Don't deallocate ourself, just save us for later use. */
+  push_pool_to_cache (tv, self);
+  GSNOSUPERDEALLOC;
+}
+
 - (void) _reallyDealloc
 {
   struct autorelease_array_list *a;
@@ -735,4 +822,4 @@ pop_pool_from_cache (struct autorelease_thread_vars *tv)
 }
 
 @end
-#endif
+#endif // !GS_WITH_GC

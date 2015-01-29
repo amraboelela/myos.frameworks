@@ -22,23 +22,34 @@
    Boston, MA 02111 USA.
 
    <title>NSLog reference</title>
-   $Date: 2011-10-14 08:46:13 -0700 (Fri, 14 Oct 2011) $ $Revision: 33993 $
+   $Date: 2014-07-28 07:40:29 -0700 (Mon, 28 Jul 2014) $ $Revision: 38018 $
    */
 
 #import "common.h"
-#import "NSDate.h"
-#import "NSCalendarDate.h"
-#import "NSTimeZone.h"
-#import "NSException.h"
-#import "NSProcessInfo.h"
-#import "NSLock.h"
-#import "NSAutoreleasePool.h"
-#import "NSData.h"
-#import "NSThread.h"
-#import "NSString+GNUstepBase.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSCalendarDate.h"
+#import "Foundation/NSTimeZone.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSProcessInfo.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSThread.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
 
 #ifdef	HAVE_SYSLOG_H
 #include <syslog.h>
+#elif HAVE_SYS_SLOG_H
+  /* we are on a QNX-ish system, which has a syslog symbol somewhere,
+   * but it isn't our syslog function (we use slogf().)
+   */
+# ifdef HAVE_SYSLOG
+#   undef HAVE_SYSLOG
+# endif
+# include <sys/slog.h>
+# ifdef HAVE_SYS_SLOGCODES_H
+#   include <sys/slogcodes.h>
+# endif
 #endif
 
 #define	UNISTR(X) \
@@ -98,73 +109,120 @@ GSLogLock()
 }
 
 static void
-_NSLog_standard_printf_handler (NSString* message)
+_NSLog_standard_printf_handler(NSString* message)
 {
-    NSData	*d;
-    const char	*buf;
-    unsigned	len;
+  NSData	*d;
+  const char	*buf;
+  unsigned	len;
 #if	defined(__MINGW__)
-    LPCWSTR	null_terminated_buf;
+  LPCWSTR	null_terminated_buf;
 #else
-#if	defined(HAVE_SYSLOG)
-    char	*null_terminated_buf;
+#if	defined(HAVE_SYSLOG) || defined(HAVE_SLOGF)
+  char	*null_terminated_buf = NULL;
 #endif
 #endif
-    static NSStringEncoding enc = 0;
-    
-    if (enc == 0) {
-        enc = [NSString defaultCStringEncoding];
+  static NSStringEncoding enc = 0;
+
+  if (enc == 0)
+    {
+      enc = [NSString defaultCStringEncoding];
     }
-    d = [message dataUsingEncoding: enc allowLossyConversion: NO];
-    if (d == nil) {
-        d = [message dataUsingEncoding: NSUTF8StringEncoding
-                  allowLossyConversion: NO];
+  d = [message dataUsingEncoding: enc allowLossyConversion: NO];
+  if (d == nil)
+    {
+      d = [message dataUsingEncoding: NSUTF8StringEncoding
+		allowLossyConversion: NO];
     }
-    
-    if (d == nil) { // Should never happen.
-        buf = [message lossyCString];
-        len = strlen(buf);
-    } else {
-        buf = (const char*)[d bytes];
-        len = [d length];
+
+  if (d == nil)		// Should never happen.
+    {
+      buf = [message lossyCString];
+      len = strlen(buf);
     }
-    
+  else
+    {
+      buf = (const char*)[d bytes];
+      len = [d length];
+    }
+
 #if	defined(__MINGW__)
-    null_terminated_buf = UNISTR(message);
-    OutputDebugStringW(null_terminated_buf);
-    
-    if ((GSPrivateDefaultsFlag(GSLogSyslog) == YES
-         || write(_NSLogDescriptor, buf, len) != (int)len) && !IsDebuggerPresent()) {
-        static HANDLE eventloghandle = 0;
-        
-        if (!eventloghandle) {
-            eventloghandle = RegisterEventSourceW(NULL, UNISTR([[NSProcessInfo processInfo] processName]));
-        }
-        if (eventloghandle) {
-            ReportEventW(eventloghandle,	// event log handle
-                         EVENTLOG_WARNING_TYPE,	// event type
-                         0,				// category zero
-                         0,				// event identifier
-                         NULL,			// no user security identifier
-                         1,				// one substitution string
-                         0,				// no data
-                         &null_terminated_buf,	// pointer to string array
-                         NULL);			// pointer to data
-        }
+  null_terminated_buf = UNISTR(message);
+
+  OutputDebugStringW(null_terminated_buf);
+
+  if ((GSPrivateDefaultsFlag(GSLogSyslog) == YES
+    || write(_NSLogDescriptor, buf, len) != (int)len) && !IsDebuggerPresent())
+    {
+      static HANDLE eventloghandle = 0;
+
+      if (!eventloghandle)
+	{
+	  eventloghandle = RegisterEventSourceW(NULL,
+	    UNISTR([[NSProcessInfo processInfo] processName]));
+	}
+      if (eventloghandle)
+	{
+	  ReportEventW(eventloghandle,	// event log handle
+	    EVENTLOG_WARNING_TYPE,	// event type
+	    0,				// category zero
+	    0,				// event identifier
+	    NULL,			// no user security identifier
+	    1,				// one substitution string
+	    0,				// no data
+	    &null_terminated_buf,	// pointer to string array
+	    NULL);			// pointer to data
+	}
     }
 #else
-    
+
 #if	defined(HAVE_SYSLOG)
-    if (GSPrivateDefaultsFlag(GSLogSyslog) == YES
-        || write(_NSLogDescriptor, buf, len) != (int)len) {
-        null_terminated_buf = malloc(sizeof (char) * (len + 1));
-        strncpy (null_terminated_buf, buf, len);
-        null_terminated_buf[len] = '\0';
-        syslog(SYSLOGMASK, "%s",  null_terminated_buf);
-        free(null_terminated_buf);
+  if (GSPrivateDefaultsFlag(GSLogSyslog) == YES
+    || write(_NSLogDescriptor, buf, len) != (int)len)
+    {
+      null_terminated_buf = malloc(sizeof (char) * (len + 1));
+      strncpy (null_terminated_buf, buf, len);
+      null_terminated_buf[len] = '\0';
+
+      syslog(SYSLOGMASK, "%s",  null_terminated_buf);
+
+      free(null_terminated_buf);
+    }
+#elif defined(HAVE_SLOGF)
+  if (GSPrivateDefaultsFlag(GSLogSyslog) == YES
+    || write(_NSLogDescriptor, buf, len) != (int)len)
+    {
+      /* QNX's slog has a size limit per entry. We might need to iterate over
+       * _SLOG_MAXSIZEd chunks of the buffer
+       */
+      const char *newBuf = buf;
+      unsigned newLen = len;
+
+      // Allocate at most _SLOG_MAXSIZE bytes
+      null_terminated_buf = malloc(sizeof(char) * MIN(newLen, _SLOG_MAXSIZE));
+      // If it's shorter than that, we never even enter the loop
+      while (newLen >= _SLOG_MAXSIZE)
+        {
+          strncpy(null_terminated_buf, newBuf, (_SLOG_MAXSIZE - 1));
+          null_terminated_buf[_SLOG_MAXSIZE] = '\0';
+          slogf(_SLOG_SETCODE(_SLOG_SYSLOG, 0), _SLOG_ERROR, "%s",
+            null_terminated_buf);
+          newBuf += (_SLOG_MAXSIZE - 1);
+          newLen -= (_SLOG_MAXSIZE - 1);
+        }
+      /* Write out the rest (which will be at most (_SLOG_MAXSIZE - 1) chars,
+       * so the terminator still fits.
+       */
+      if (0 != newLen)
+        {
+          strncpy(null_terminated_buf, newBuf, newLen);
+          null_terminated_buf[newLen] = '\0';
+          slogf(_SLOG_SETCODE(_SLOG_SYSLOG, 0), _SLOG_ERROR, "%s",
+            null_terminated_buf);
+        }
+      free(null_terminated_buf);
     }
 #else
-    write(_NSLogDescriptor, buf, len);
+  write(_NSLogDescriptor, buf, len);
 #endif
 #endif // __MINGW__
 }
@@ -225,17 +283,14 @@ NSLog_printf_handler *_NSLog_printf_handler = _NSLog_standard_printf_handler;
  * GSObjCRuntime.h.
  * </p>
  */
-void NSLog(NSString* format, ...)
+void
+NSLog(NSString* format, ...)
 {
-    va_list ap;
-    //printf("NSLog 1");
-    
-    va_start (ap, format);
-    //printf("NSLog 2");
-    NSLogv (format, ap);
-    //printf("NSLog 3");
-    va_end(ap);
-    //printf("NSLog 4");
+  va_list ap;
+
+  va_start(ap, format);
+  NSLogv(format, ap);
+  va_end(ap);
 }
 
 /**
@@ -249,7 +304,11 @@ void NSLog(NSString* format, ...)
  *   In GNUstep, the GSLogThread user default may be set to YES in
  *   order to instruct this function to include the internal ID of
  *   the current thread after the process ID.  This can help you
- *   to track the behavior of a multi-threaded program.
+ *   to track the behavior of a multi-threaded program.<br />
+ *   Also the GSLogOffset user default may be set to YES in order
+ *   to instruct this function to include the time zone offset in
+ *   the timestamp it logs (good when examining debug logs from
+ *   systems running in different countries).
  * </p>
  * <p>
  *   The resulting message is then passed to a handler function to
@@ -264,75 +323,93 @@ void NSLog(NSString* format, ...)
  *   <ref type="variable" id="_NSLog_printf_handler">_NSLog_printf_handler</ref>
  * </p>
  */
-void NSLogv(NSString* format, va_list args)
+void
+NSLogv(NSString* format, va_list args)
 {
-    NSString		*prefix;
-    NSString		*message;
-    static int		pid = 0;
-    NSAutoreleasePool *arp = [NSAutoreleasePool new];
-    
-    if (_NSLog_printf_handler == NULL) {
-        _NSLog_printf_handler = *_NSLog_standard_printf_handler;
+  NSString		*prefix;
+  NSString		*message;
+  static int		pid = 0;
+  NSAutoreleasePool	*arp = [NSAutoreleasePool new];
+
+  if (_NSLog_printf_handler == NULL)
+    {
+      _NSLog_printf_handler = *_NSLog_standard_printf_handler;
     }
-    
-    if (pid == 0) {
+
+  if (pid == 0)
+    {
 #if defined(__MINGW__)
-        pid = (int)GetCurrentProcessId();
+      pid = (int)GetCurrentProcessId();
 #else
-        pid = (int)getpid();
+      pid = (int)getpid();
 #endif
     }
-#ifdef HAVE_SYSLOG
-    if (GSPrivateDefaultsFlag(GSLogSyslog) == YES) {
-        if (GSPrivateDefaultsFlag(GSLogThread) == YES) {
-            prefix = [NSString stringWithFormat: @"[thread:%x] ", GSCurrentThread()];
-        } else {
-            prefix = @"";
-        }
+
+#ifdef	HAVE_SYSLOG
+  if (GSPrivateDefaultsFlag(GSLogSyslog) == YES)
+    {
+      if (GSPrivateDefaultsFlag(GSLogThread) == YES)
+	{
+	  prefix = [NSString stringWithFormat: @"[thread:%"PRIxPTR"] ",
+	    (NSUInteger)GSCurrentThread()];
+	}
+      else
+	{
+	  prefix = @"";
+	}
     }
-    else
+  else
 #endif
     {
-        if (GSPrivateDefaultsFlag(GSLogThread) == YES) {
-            prefix = [NSString
-                      stringWithFormat: @"%@ %@[%d,%x] ",
-                      [[NSCalendarDate calendarDate]
-                       descriptionWithCalendarFormat: @"%Y-%m-%d %H:%M:%S.%F"],
-                      [[NSProcessInfo processInfo] processName],
-                      pid, GSCurrentThread()];
-        } else {
-#ifdef ANDROID
-            prefix = [NSString
-                      stringWithFormat: @"%d %@ ",
-                      gettid(),
-                      [[NSCalendarDate calendarDate] descriptionWithCalendarFormat: @"%M:%S.%F"]];
-#else
-            prefix = [NSString
-                      stringWithFormat: @"%@ %@[%d] ",
-                      [[NSCalendarDate calendarDate]
-                       descriptionWithCalendarFormat: @"%Y-%m-%d %H:%M:%S.%F"],
-                      [[NSProcessInfo processInfo] processName],
-                      pid];
-#endif
+      NSString  *fmt;
+
+      if (GSPrivateDefaultsFlag(GSLogOffset) == YES)
+        {
+          fmt = @"%Y-%m-%d %H:%M:%S.%F %z";
         }
+      else
+        {
+          fmt = @"%Y-%m-%d %H:%M:%S.%F";
+        }
+
+      if (GSPrivateDefaultsFlag(GSLogThread) == YES)
+	{
+	  prefix = [NSString
+	    stringWithFormat: @"%@ %@[%d,%"PRIxPTR"x] ",
+	    [[NSCalendarDate calendarDate] descriptionWithCalendarFormat: fmt],
+	    [[NSProcessInfo processInfo] processName],
+	    pid, (NSUInteger)GSCurrentThread()];
+	}
+      else
+	{
+	  prefix = [NSString
+	    stringWithFormat: @"%@ %@[%d] ",
+	    [[NSCalendarDate calendarDate] descriptionWithCalendarFormat: fmt],
+	    [[NSProcessInfo processInfo] processName],
+	    pid];
+	}
     }
-    //printf("NSLogv 4");
-    /* Check if there is already a newline at the end of the format */
-    if ([format hasSuffix: @"\n"] == NO) {
-        format = [format stringByAppendingString: @"\n"];
+
+  /* Check if there is already a newline at the end of the format */
+  if ([format hasSuffix: @"\n"] == NO)
+    {
+      format = [format stringByAppendingString: @"\n"];
     }
-    message = [NSString stringWithFormat:format arguments:args];
-    prefix = [prefix stringByAppendingString: message];
-#ifdef ANDROID
-    printfWithProcess([[[NSProcessInfo processInfo] processName] cString], [prefix cString]);
-#else
-    if (myLock == nil) {
-        GSLogLock();
+  message = [NSString stringWithFormat: format arguments: args];
+
+  prefix = [prefix stringByAppendingString: message];
+
+  if (myLock == nil)
+    {
+      GSLogLock();
     }
-    [myLock lock];
-    _NSLog_printf_handler(prefix);
-    [myLock unlock];
-#endif
-    [arp drain];
-    //printf("NSLogv 8");
+
+  [myLock lock];
+
+  _NSLog_printf_handler(prefix);
+
+  [myLock unlock];
+
+  [arp drain];
 }
+

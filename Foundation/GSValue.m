@@ -23,10 +23,10 @@
 */
 
 #import "common.h"
-#import "NSValue.h"
-#import "NSData.h"
-#import "NSException.h"
-#import "NSCoder.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSCoder.h"
 
 @interface GSValue : NSValue
 {
@@ -83,34 +83,35 @@ typeSize(const char* type)
 - (id) initWithBytes: (const void *)value
 	    objCType: (const char *)type
 {
-    if (!value || !type)
+  if (!value || !type)
     {
-        NSLog(@"Tried to create NSValue with NULL value or NULL type");
-        DESTROY(self);
-        return nil;
+      NSLog(@"Tried to create NSValue with NULL value or NULL type");
+      DESTROY(self);
+      return nil;
     }
-    self = [super init];
-    if (self != nil)
+
+  self = [super init];
+  if (self != nil)
     {
-        int	size = typeSize(type);
-        if (size < 0)
-        {
-            NSLog(@"Tried to create NSValue with invalid Objective-C type");
-            DESTROY(self);
-            return nil;
-        }
-        if (size > 0)
-        {
-            data = (void *)NSZoneMalloc([self zone], size);
-            memcpy(data, value, size);
-        }
-        size = strlen(type);
-        objctype = (char *)NSZoneMalloc([self zone], size + 1);
-        strncpy(objctype, type, size);
-        objctype[size] = '\0';
-        //DLog(@"objctype: %s", objctype);
+      int	size = typeSize(type);
+
+      if (size < 0)
+	{
+	  NSLog(@"Tried to create NSValue with invalid Objective-C type");
+	  DESTROY(self);
+	  return nil;
+	}
+      if (size > 0)
+	{
+	  data = (void *)NSZoneMalloc([self zone], size);
+	  memcpy(data, value, size);
+	}
+      size = strlen(type);
+      objctype = (char *)NSZoneMalloc([self zone], size + 1);
+      strncpy(objctype, type, size);
+      objctype[size] = '\0';
     }
-    return self;
+  return self;
 }
 
 - (void) dealloc
@@ -154,20 +155,27 @@ typeSize(const char* type)
 
 - (BOOL) isEqualToValue: (NSValue*)aValue
 {
-  if (aValue == nil)
-    return NO;
-  if (object_getClass(aValue) != object_getClass(self))
-    return NO;
-  if (strcmp(objctype, ((GSValue*)aValue)->objctype) != 0)
-    return NO;
-  else
+  if (aValue == self)
     {
-      unsigned	size = (unsigned)typeSize(objctype);
-
-      if (memcmp(((GSValue*)aValue)->data, data, size) != 0)
-	return NO;
       return YES;
     }
+  if (aValue == nil)
+    {
+      return NO;
+    }
+  if (object_getClass(aValue) != object_getClass(self))
+    {
+      return NO;
+    }
+  if (!GSSelectorTypesMatch(objctype, ((GSValue*)aValue)->objctype))
+    {
+      return NO;
+    }
+  if (memcmp(((GSValue*)aValue)->data, data, typeSize(objctype)) != 0)
+    {
+      return NO;
+    }
+  return YES;
 }
 
 - (const char *)objCType

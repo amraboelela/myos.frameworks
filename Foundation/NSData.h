@@ -24,7 +24,7 @@
 
 #ifndef __NSData_h_GNUSTEP_BASE_INCLUDE
 #define __NSData_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSRange.h>
@@ -39,21 +39,19 @@ extern "C" {
 @class	NSURL;
 #endif
 
-#if OS_API_VERSION(100400,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST) 
 enum {
   NSMappedRead = 1,
   NSUncachedRead = 2
 };
 
 enum {
-  NSAtomicWrite = 1
+  NSDataWritingAtomic = 1
 };
+/* The original name for this was NSAtomicWrite ... need for backward comapat
+ */
+#define NSAtomicWrite   NSDataWritingAtomic
 #endif
-
-enum {
-        NSDataWritingAtomic = 1UL
-};
-typedef NSUInteger NSDataWritingOptions;
 
 @interface NSData : NSObject <NSCoding, NSCopying, NSMutableCopying>
 
@@ -146,10 +144,10 @@ typedef NSUInteger NSDataWritingOptions;
 		   count: (unsigned int)numInts
 		 atIndex: (unsigned int)index;
 
-#if OS_API_VERSION(100400,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST) 
 /**
  * <p>Writes a copy of the data encapsulated by the receiver to a file
- * at path.  If the NSAtomicWrite option is set, this writes to a
+ * at path.  If the NSDataWritingAtomic option is set, this writes to a
  * temporary file and then renames that to the file at path, thus
  * ensuring that path exists and does not contain partially written
  * data at any point.
@@ -335,7 +333,7 @@ typedef NSUInteger NSDataWritingOptions;
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSData+GNUstepBase.h>
+#import <GNUstepBase/NSData+GNUstepBase.h>
 #endif
 
 #endif /* __NSData_h_GNUSTEP_BASE_INCLUDE */

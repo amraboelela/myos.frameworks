@@ -35,9 +35,9 @@
 #import "GSPrivate.h"
 #import "GSTLS.h"
 #import "GSURLPrivate.h"
-#import "GSMime.h"
-#import "NSString+GNUstepBase.h"
-#import "NSURL+GNUstepBase.h"
+#import "GNUstepBase/GSMime.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
+#import "GNUstepBase/NSURL+GNUstepBase.h"
 
 /* Define to 1 for experimental (net yet working) compression support
  */

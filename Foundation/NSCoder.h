@@ -24,7 +24,7 @@
 
 #ifndef __NSCoder_h_GNUSTEP_BASE_INCLUDE
 #define __NSCoder_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSGeometry.h>
@@ -228,7 +228,7 @@ extern "C" {
 /*
  * Include GSConfig.h for typedefs/defines of uint8_t, int32_t int64_t
  */
-#import "GSConfig.h"
+#import <GNUstepBase/GSConfig.h>
 
 
 /** <override-subclass />
@@ -353,7 +353,7 @@ extern "C" {
 - (void) encodeObject: (id)anObject forKey: (NSString*)aKey;
 #endif
 
-#if OS_API_VERSION(100500, GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5, GS_API_LATEST)
 /** <override-subclass />
  * Encodes an NSInteger and associates the encoded value with key.
  */

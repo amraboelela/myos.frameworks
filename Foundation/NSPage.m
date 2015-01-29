@@ -22,11 +22,10 @@
    Boston, MA 02111 USA.
 
    <title>NSPage class reference</title>
-   $Date: 2011-10-14 08:46:13 -0700 (Fri, 14 Oct 2011) $ $Revision: 33993 $
+   $Date: 2012-09-03 06:36:45 -0700 (Mon, 03 Sep 2012) $ $Revision: 35503 $
    */
 
 #import "common.h"
-#include <string.h>
 #include <stdio.h>
 #if __mach__
 #include <mach.h>

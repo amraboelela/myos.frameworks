@@ -26,7 +26,7 @@
 
 #ifndef __NSProcessInfo_h_GNUSTEP_BASE_INCLUDE
 #define __NSProcessInfo_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 
@@ -97,13 +97,13 @@ enum {
  * following argument.  The arguments used to set user defaults are
  * present in the array returned by this method.
  */
-- (NSArray *)arguments;
+- (NSArray*) arguments;
 
 /**
  * Returns a dictionary giving the environment variables which were
  * provided for the process to use.
  */
-- (NSDictionary *)environment;
+- (NSDictionary*) environment;
 
 /**
  * Returns a string which may be used as a globally unique identifier.<br />
@@ -113,12 +113,12 @@ enum {
  * generated, while the fourth ensures that multiple strings generated
  * within the same process are unique.
  */
-- (NSString *)globallyUniqueString;
+- (NSString*) globallyUniqueString;
 
 /**
  * Returns the name of the machine on which this process is running.
  */
-- (NSString *)hostName;
+- (NSString*) hostName;
 
 #if OS_API_VERSION(GS_API_MACOSX,GS_API_LATEST)
 
@@ -141,7 +141,7 @@ enum {
  * <item>GSCygwinOperatingSystem - cygwin unix-like environment</item>
  * </list>
  */
-- (NSUInteger)operatingSystem;
+- (NSUInteger) operatingSystem;
 
 /**
  * Return a human readable string representing the operating system type.<br />
@@ -160,21 +160,21 @@ enum {
  * <item>GSCygwinOperatingSystem - cygwin unix-like environment</item>
  * </list>
  */
-- (NSString *)operatingSystemName;
+- (NSString*) operatingSystemName;
 
 /**
  * Returns a human readable version string for the current operating system
  * version.
  */
-#if OS_API_VERSION(100200,GS_API_LATEST)
-- (NSString *)operatingSystemVersionString;
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2,GS_API_LATEST)
+- (NSString *) operatingSystemVersionString;
 #endif
 
 /**
  * Returns the process identifier number which uniquely identifies
  * this process on this machine.
  */
-- (int)processIdentifier;
+- (int) processIdentifier;
 #endif
 
 /**
@@ -182,14 +182,14 @@ enum {
  * the -setProcessName: method, or may be the default process name (the
  * file name of the binary being executed).
  */
-- (NSString *)processName;
+- (NSString*) processName;
 
 /**
  * Change the name of the current process to newName.
  */
-- (void)setProcessName:(NSString *)newName;
+- (void) setProcessName: (NSString*)newName;
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 /** Not implemented */
 - (NSUInteger) processorCount;
 /** Not implemented */
@@ -205,19 +205,19 @@ enum {
  * Provides GNUstep-specific methods for controlled debug logging (a GNUstep
  * facility) and an internal/developer-related method.
  */
-@interface	NSProcessInfo(GNUstep)
+@interface	NSProcessInfo (GNUstep)
 
 /**
  * Set the file to which NSLog output should be directed.<br />
  * Returns YES on success, NO on failure.<br />
  * By default logging goes to standard error.
  */
-- (BOOL)setLogFile:(NSString*)path;
+- (BOOL) setLogFile: (NSString*)path;
 
 /** Obsolete ... the GSInitializeProcess() function has the same effect and
  * can be called more easily from other languages (particularly C).
  */
-+ (void)initializeWithArguments: (char**)argv
++ (void) initializeWithArguments: (char**)argv
                            count: (int)argc
                      environment: (char**)env;
 @end
@@ -248,7 +248,7 @@ GS_EXPORT BOOL GSDebugSet(NSString *level);
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSProcessInfo+GNUstepBase.h>
+#import <GNUstepBase/NSProcessInfo+GNUstepBase.h>
 #endif
 
 #endif /* __NSProcessInfo_h_GNUSTEP_BASE_INCLUDE */

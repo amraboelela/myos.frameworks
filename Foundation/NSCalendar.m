@@ -33,7 +33,7 @@
 #import "Foundation/NSString.h"
 #import "Foundation/NSTimeZone.h"
 #import "Foundation/NSUserDefaults.h"
-#import "GSLock.h"
+#import "GNUstepBase/GSLock.h"
 
 #if defined(HAVE_UNICODE_UCAL_H)
 #define id ucal_id

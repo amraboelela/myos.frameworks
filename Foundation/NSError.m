@@ -24,11 +24,11 @@
 
 #import "common.h"
 #define	EXPOSE_NSError_IVARS	1
-#import	"NSDictionary.h"
-#import	"NSError.h"
-#import	"NSCoder.h"
+#import	"Foundation/NSDictionary.h"
+#import	"Foundation/NSError.h"
+#import	"Foundation/NSCoder.h"
 
-NSString* const NSFilePathErrorKey = @"NSFilePathErrorKey";
+NSString* const NSFilePathErrorKey = @"NSFilePath";
 NSString* const NSLocalizedDescriptionKey = @"NSLocalizedDescriptionKey";
 NSString* const NSStringEncodingErrorKey = @"NSStringEncodingErrorKey";
 NSString* const NSURLErrorKey = @"NSURLErrorKey";

@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSObjCRuntime class reference</title>
-   $Date: 2011-05-19 01:19:24 -0700 (Thu, 19 May 2011) $ $Revision: 33069 $
+   $Date: 2012-09-03 06:36:45 -0700 (Mon, 03 Sep 2012) $ $Revision: 35503 $
    */
 
 #import "common.h"
@@ -31,8 +31,7 @@
 #  include <objc/encoding.h>
 #endif
 
-#import "NSException.h"
-#include <string.h>
+#import "Foundation/NSException.h"
 
 /**
  * Returns a string object containing the name for

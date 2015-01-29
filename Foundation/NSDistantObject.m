@@ -23,19 +23,19 @@
    Boston, MA 02111 USA.
 
    <title>NSDistantObject class reference</title>
-   $Date: 2012-01-03 06:48:04 -0800 (Tue, 03 Jan 2012) $ $Revision: 34401 $
+   $Date: 2013-04-13 03:40:15 -0700 (Sat, 13 Apr 2013) $ $Revision: 36517 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSDistantObject_IVARS	1
-#import "DistributedObjects.h"
-#import "GSObjCRuntime.h"
-#import "NSDictionary.h"
-#import "NSLock.h"
-#import "NSPort.h"
-#import "NSMethodSignature.h"
-#import "NSException.h"
-#import "NSInvocation.h"
+#import "GNUstepBase/DistributedObjects.h"
+#import "GNUstepBase/GSObjCRuntime.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSPort.h"
+#import "Foundation/NSMethodSignature.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSInvocation.h"
 #include <objc/Protocol.h>
 #import "GSInvocation.h"
 
@@ -129,7 +129,7 @@ enum proxyLocation
  *	instance, we will get a pre-existing one, so we don't want to go
  *	allocating the memory for a new instance unless absolutely necessary.
  */
-@interface	GSDistantObjectPlaceHolder
+GS_ROOT_CLASS @interface	GSDistantObjectPlaceHolder
 + (id) initWithCoder: (NSCoder*)aCoder;
 + (id) initWithLocal: (id)anObject connection: (NSConnection*)aConnection;
 + (id) initWithTarget: (unsigned)target connection: (NSConnection*)aConnection;
@@ -908,7 +908,7 @@ enum proxyLocation
 
 - (Class) classForPortCoder
 {
-  return isa;
+  return object_getClass(self);
 }
 
 - (id) replacementObjectForPortCoder: (NSPortCoder*)aRmc;

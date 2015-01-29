@@ -4,19 +4,19 @@
    Written by:  Gregory Casamento <greg.casamento@gmail.com>
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: 2009,2010
-   
+
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
    version 2 of the License, or (at your option) any later version.
-   
+
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
@@ -24,11 +24,11 @@
 
    <title>NSOperation class reference</title>
    $Date: 2008-06-08 11:38:33 +0100 (Sun, 08 Jun 2008) $ $Revision: 26606 $
-   */ 
+   */
 
 #import "common.h"
 
-#import "NSLock.h"
+#import "Foundation/NSLock.h"
 
 #define	GS_NSOperation_IVARS \
   NSRecursiveLock *lock; \
@@ -41,7 +41,8 @@
   BOOL finished; \
   BOOL blocked; \
   BOOL ready; \
-  NSMutableArray *dependencies;
+  NSMutableArray *dependencies; \
+  GSOperationCompletionBlock completionBlock;
 
 #define	GS_NSOperationQueue_IVARS \
   NSRecursiveLock	*lock; \
@@ -55,14 +56,14 @@
   NSInteger		threadCount; \
   NSInteger		count;
 
-#import "NSOperation.h"
-#import "NSArray.h"
-#import "NSAutoreleasePool.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSKeyValueObserving.h"
-#import "NSThread.h"
+#import "Foundation/NSOperation.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSKeyValueObserving.h"
+#import "Foundation/NSThread.h"
 #import "GSPrivate.h"
 
 #define	GSInternal	NSOperationInternal
@@ -91,6 +92,7 @@ static NSArray	*empty = nil;
 + (void) initialize
 {
   empty = [NSArray new];
+  [[NSObject leakAt: &empty] release];
 }
 
 - (void) addDependency: (NSOperation *)op
@@ -186,6 +188,11 @@ static NSArray	*empty = nil;
 	}
       [internal->lock unlock];
     }
+}
+
+- (GSOperationCompletionBlock) completionBlock
+{
+  return internal->completionBlock;
 }
 
 - (void) dealloc
@@ -353,6 +360,11 @@ static NSArray	*empty = nil;
   [internal->lock unlock];
 }
 
+- (void) setCompletionBlock: (GSOperationCompletionBlock)aBlock
+{
+  internal->completionBlock = aBlock;
+}
+
 - (void) setQueuePriority: (NSOperationQueuePriority)pri
 {
   if (pri <= NSOperationQueuePriorityVeryLow)
@@ -509,7 +521,7 @@ static NSArray	*empty = nil;
   [internal->lock lock];
   if (NO == internal->finished)
     {
-      if (NO == internal->executing)
+      if (YES == internal->executing)
         {
 	  [self willChangeValueForKey: @"isExecuting"];
 	  [self willChangeValueForKey: @"isFinished"];
@@ -523,6 +535,10 @@ static NSArray	*empty = nil;
 	  [self willChangeValueForKey: @"isFinished"];
 	  internal->finished = YES;
 	  [self didChangeValueForKey: @"isFinished"];
+	}
+      if (NULL != internal->completionBlock)
+	{
+	  CALL_BLOCK_NO_ARGS(internal->completionBlock);
 	}
     }
   [internal->lock unlock];
@@ -538,7 +554,6 @@ GS_PRIVATE_INTERNAL(NSOperationQueue)
 
 
 @interface	NSOperationQueue (Private)
-+ (void) _mainQueue;
 - (void) _execute;
 - (void) _thread;
 - (void) observeValueForKeyPath: (NSString *)keyPath
@@ -554,7 +569,7 @@ sortFunc(id o1, id o2, void *ctxt)
 {
   NSOperationQueuePriority p1 = [o1 queuePriority];
   NSOperationQueuePriority p2 = [o2 queuePriority];
-  
+
   if (p1 < p2) return NSOrderedDescending;
   if (p1 > p2) return NSOrderedAscending;
   return NSOrderedSame;
@@ -567,16 +582,18 @@ static NSOperationQueue *mainQueue = nil;
 
 + (id) currentQueue
 {
+  if ([NSThread isMainThread])
+    {
+      return mainQueue;
+    }
   return [[[NSThread currentThread] threadDictionary] objectForKey: threadKey];
 }
 
 + (void) initialize
 {
-  if (mainQueue == nil)
+  if (nil == mainQueue)
     {
-      [self performSelectorOnMainThread: @selector(_mainQueue)
-			     withObject: nil
-			  waitUntilDone: YES];
+      mainQueue = [self new];
     }
 }
 
@@ -703,7 +720,7 @@ static NSOperationQueue *mainQueue = nil;
       if (YES == invalidArg)
 	{
 	  [NSException raise: NSInvalidArgumentException
-	    format: @"[%@-%@] object at index %u is not an NSOperation",
+	    format: @"[%@-%@] object at index %"PRIuPTR" is not an NSOperation",
 	    NSStringFromClass([self class]), NSStringFromSelector(_cmd),
 	    index];
 	}
@@ -798,7 +815,7 @@ static NSOperationQueue *mainQueue = nil;
     && cnt != NSOperationQueueDefaultMaxConcurrentOperationCount)
     {
       [NSException raise: NSInvalidArgumentException
-		  format: @"[%@-%@] cannot set negative (%d) count",
+		  format: @"[%@-%@] cannot set negative (%"PRIdPTR") count",
 	NSStringFromClass([self class]), NSStringFromSelector(_cmd), cnt];
     }
   [internal->lock lock];
@@ -858,16 +875,6 @@ static NSOperationQueue *mainQueue = nil;
 
 @implementation	NSOperationQueue (Private)
 
-+ (void) _mainQueue
-{
-  if (mainQueue == nil)
-    {
-      mainQueue = [self new];
-      [[[NSThread currentThread] threadDictionary] setObject: mainQueue
-						      forKey: threadKey];
-    }
-}
-
 - (void) observeValueForKeyPath: (NSString *)keyPath
 		       ofObject: (id)object
                          change: (NSDictionary *)change
@@ -899,6 +906,8 @@ static NSOperationQueue *mainQueue = nil;
 {
   NSAutoreleasePool	*pool = [NSAutoreleasePool new];
 
+  [[[NSThread currentThread] threadDictionary] setObject: self
+                                                  forKey: threadKey];
   for (;;)
     {
       NSOperation	*op;
@@ -957,6 +966,7 @@ static NSOperationQueue *mainQueue = nil;
 	}
     }
 
+  [[[NSThread currentThread] threadDictionary] removeObjectForKey: threadKey];
   [internal->lock lock];
   internal->threadCount--;
   [internal->lock unlock];

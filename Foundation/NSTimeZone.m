@@ -86,7 +86,7 @@
 
 #import "common.h"
 #define	EXPOSE_NSTimeZone_IVARS	1
-#import "GSLock.h"
+#import "GNUstepBase/GSLock.h"
 #include <stdio.h>
 #include <time.h>
 #import "Foundation/NSArray.h"
@@ -106,7 +106,7 @@
 #import "Foundation/NSTimeZone.h"
 #import "Foundation/NSByteOrder.h"
 #import "Foundation/NSLocale.h"
-#import "NSString+GNUstepBase.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
 #import "GSPrivate.h"
 
 #ifdef HAVE_TZHEAD

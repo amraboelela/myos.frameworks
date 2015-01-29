@@ -24,14 +24,13 @@
    */ 
 
 #import "common.h"
-#import	"NSPointerArray.h"
-#import "GSObjCRuntime.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSValue.h"
-#import "NSKeyedArchiver.h"
-#import "NSObject+GNUstepBase.h"
+#import	"Foundation/NSPointerArray.h"
+#import "GNUstepBase/GSObjCRuntime.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSKeyedArchiver.h"
 #import "GSPrivate.h"
 #import "NSConcretePointerFunctions.h"
 
@@ -79,6 +78,17 @@ static Class	concreteClass = Nil;
 {
   return AUTORELEASE([[self alloc] initWithPointerFunctions: functions]);
 }
++ (id) strongObjectsPointerArray
+{
+ return [self pointerArrayWithOptions: NSPointerFunctionsObjectPersonality |
+     NSPointerFunctionsStrongMemory];
+}
++ (id) weakObjectsPointerArray
+{
+ return [self pointerArrayWithOptions: NSPointerFunctionsObjectPersonality |
+     NSPointerFunctionsWeakMemory];
+}
+
 
 - (void) compact
 {
@@ -219,12 +229,12 @@ static Class	concreteClass = Nil;
   NSString     *reason;
 
   info = [NSDictionary dictionaryWithObjectsAndKeys:
-    [NSNumber numberWithUnsignedInt: index], @"Index",
-    [NSNumber numberWithUnsignedInt: _count], @"Count",
+    [NSNumber numberWithUnsignedInteger: index], @"Index",
+    [NSNumber numberWithUnsignedInteger: _count], @"Count",
     self, @"Array", nil, nil];
 
   reason = [NSString stringWithFormat:
-    @"Index %d is out of range %d (in '%@')",
+    @"Index %"PRIuPTR" is out of range %"PRIuPTR" (in '%@')",
     index, _count, NSStringFromSelector(sel)];
 
   exception = [NSException exceptionWithName: NSRangeException
@@ -323,7 +333,17 @@ static Class	concreteClass = Nil;
 
 - (void) dealloc
 {
+  int   i;
+
   [self finalize];
+  /* For weak memory, we must zero all of the elements, or the runtime will
+   * keep pointers to them lying around.  For strong memory, we must release
+   * things or they will leak.
+   */
+  for (i = 0; i < _count; i++)
+    {
+      pointerFunctionsAssign(&_pf, &_contents[i], 0);
+    }
   if (_contents != 0)
     {
       NSZoneFree([self zone], _contents);
@@ -573,6 +593,8 @@ static Class	concreteClass = Nil;
 	      [NSException raise: NSMallocException
 			  format: @"Unable to grow array"];
 	    }
+	  memset(ptr + _capacity, '\0',
+	    (new_cap - _capacity) * sizeof(void*));
 	  _contents = ptr;
 	  _capacity = new_cap;
 	  _grow_factor = new_gf;

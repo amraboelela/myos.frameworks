@@ -24,7 +24,7 @@
 
 #ifndef __NSTask_h_GNUSTEP_BASE_INCLUDE
 #define __NSTask_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSString.h>
@@ -129,7 +129,7 @@ GS_EXPORT NSString* const NSTaskDidTerminateNotification;
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSTask+GNUstepBase.h>
+#import <GNUstepBase/NSTask+GNUstepBase.h>
 #endif
 
 #endif /* __NSTask_h_GNUSTEP_BASE_INCLUDE */

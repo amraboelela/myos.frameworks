@@ -24,7 +24,7 @@
 
 #ifndef __NSProxy_h_GNUSTEP_BASE_INCLUDE
 #define __NSProxy_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 
@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-@interface NSProxy <NSObject>
+GS_ROOT_CLASS @interface NSProxy <NSObject>
 {
 @public
     Class	isa;

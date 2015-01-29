@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSData class reference</title>
-   $Date: 2012-02-27 02:31:05 -0800 (Mon, 27 Feb 2012) $ $Revision: 34824 $
+   $Date: 2014-07-25 05:06:34 -0700 (Fri, 25 Jul 2014) $ $Revision: 38015 $
    */
 
 /* NOTES	-	Richard Frith-Macdonald 1997
@@ -73,18 +73,17 @@
 #  include <objc/encoding.h>
 #endif
 
-#import "GSObjCRuntime.h"
-#import "NSByteOrder.h"
-#import "NSCoder.h"
-#import "NSData.h"
-#import "NSException.h"
-#import "NSFileManager.h"
-#import "NSPathUtilities.h"
-#import "NSRange.h"
-#import "NSURL.h"
-#import "NSValue.h"
+#import "GNUstepBase/GSObjCRuntime.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSRange.h"
+#import "Foundation/NSURL.h"
+#import "Foundation/NSValue.h"
 #import "GSPrivate.h"
-#import "NSObject+GNUstepBase.h"
 #include <stdio.h>
 
 #ifdef	HAVE_MMAP
@@ -141,7 +140,7 @@ static SEL	appendSel;
 static IMP	appendImp;
 
 static BOOL
-readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
+readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
 {
 #if defined(__MINGW__)
   const unichar	*thePath = 0;
@@ -151,7 +150,7 @@ readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
   FILE		*theFile = 0;
   void		*tmp = 0;
   int		c;
-  long		fileLength;
+  off_t        fileLength;
 	
 #if defined(__MINGW__)
   thePath = (const unichar*)[path fileSystemRepresentation];
@@ -160,7 +159,6 @@ readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
 #endif	
   if (thePath == 0)
     {
-      //DLog();
       NSWarnFLog(@"Open (%@) attempt failed - bad path", path);
       return NO;
     }
@@ -177,14 +175,10 @@ readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
       goto failure;
     }
 
-  // FIXME: since fseek returns a long, this code will fail on files
-  // larger than ~2GB on 32-bit systems. Probably this entire function should
-  // be removed and NSFileHandle used instead. -Eric
-
   /*
    *	Seek to the end of the file.
    */
-  c = fseek(theFile, 0L, SEEK_END);
+  c = fseeko(theFile, 0, SEEK_END);
   if (c != 0)
     {
       NSWarnFLog(@"Seek to end of file (%@) failed - %@", path,
@@ -194,10 +188,10 @@ readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
 	
   /*
    *	Determine the length of the file (having seeked to the end of the
-   *	file) by calling ftell().
+   *	file) by calling ftello().
    */
-  fileLength = ftell(theFile);
-  if (fileLength == -1)
+  fileLength = ftello(theFile);
+  if (fileLength == (off_t) -1)
     {
       NSWarnFLog(@"Ftell on %@ failed - %@", path, [NSError _last]);
       goto failure;
@@ -207,7 +201,7 @@ readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
    *	Rewind the file pointer to the beginning, preparing to read in
    *	the file.
    */
-  c = fseek(theFile, 0L, SEEK_SET);
+  c = fseeko(theFile, 0, SEEK_SET);
   if (c != 0)
     {
       NSWarnFLog(@"Fseek to start of file (%@) failed - %@", path,
@@ -248,8 +242,8 @@ readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
 #endif
 	  if (tmp == 0)
 	    {
-	      NSLog(@"Malloc failed for file (%@) of length %ld - %@", path,
-		fileLength + c, [NSError _last]);
+	      NSLog(@"Malloc failed for file (%@) of length %jd - %@", path,
+		(intmax_t)fileLength + c, [NSError _last]);
 	      goto failure;
 	    }
 	  memcpy(tmp + fileLength, buf, c);
@@ -258,7 +252,7 @@ readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
     }
   else
     {
-      long	offset = 0;
+      off_t	offset = 0;
 
 #if	GS_WITH_GC
       tmp = NSAllocateCollectable(fileLength, 0);
@@ -267,8 +261,8 @@ readContentsOfFile(NSString* path, void** buf, long* len, NSZone* zone)
 #endif
       if (tmp == 0)
 	{
-	  NSLog(@"Malloc failed for file (%@) of length %ld - %@", path,
-	    fileLength, [NSError _last]);
+	  NSLog(@"Malloc failed for file (%@) of length %jd - %@", path,
+	    (intmax_t)fileLength, [NSError _last]);
 	  goto failure;
 	}
 	    
@@ -634,7 +628,7 @@ failure:
 - (id) initWithContentsOfFile: (NSString*)path
 {
   void		*fileBytes;
-  long          fileLength;
+  off_t         fileLength;
 
 #if	GS_WITH_GC
   if (readContentsOfFile(path, &fileBytes, &fileLength, 0) == NO)
@@ -649,7 +643,7 @@ failure:
     }
 #endif
   self = [self initWithBytesNoCopy: fileBytes
-			    length: fileLength
+			    length: (NSUInteger)fileLength
 		      freeWhenDone: YES];
   return self;
 }
@@ -762,7 +756,17 @@ failure:
   NSUInteger	size = [self length];
 
   GS_RANGE_CHECK(aRange, size);
-  memcpy(buffer, [self bytes] + aRange.location, aRange.length);
+  if (aRange.length > 0)
+    {
+      const void	*bytes = [self bytes];
+
+      if (0 == bytes)
+	{
+	  [NSException raise: NSInternalInconsistencyException
+		      format: @"missing bytes in getBytes:range:"];
+	}
+      memcpy(buffer, bytes + aRange.location, aRange.length);
+    }
 }
 
 - (id) replacementObjectForPortCoder: (NSPortCoder*)aCoder
@@ -858,31 +862,38 @@ failure:
 /** <override-subclass>
  * Returns the number of bytes of data encapsulated by the receiver.
  */
-- (NSUInteger)length
+- (NSUInteger) length
 {
   /* This is left to concrete subclasses to implement. */
   [self subclassResponsibility: _cmd];
   return 0;
 }
 
-- (BOOL)writeToFile:(NSString *)path atomically:(BOOL)useAuxiliaryFile
+- (BOOL) writeToFile: (NSString*)path atomically: (BOOL)useAuxiliaryFile
 {
-    if (useAuxiliaryFile) {
-        return [self writeToFile: path options: NSAtomicWrite error: 0];
-    } else {
-        return [self writeToFile: path options: 0 error: 0];
+  if (useAuxiliaryFile)
+    {
+      return [self writeToFile: path options: NSDataWritingAtomic error: 0];
+    }
+  else
+    {
+      return [self writeToFile: path options: 0 error: 0];
     }
 }
 
-- (BOOL)writeToURL:(NSURL*)anURL atomically:(BOOL)flag
+- (BOOL) writeToURL: (NSURL*)anURL atomically: (BOOL)flag
 {
-    if (flag) {
-        return [self writeToURL: anURL options: NSAtomicWrite error: 0];
-    } else {
-        return [self writeToURL: anURL options: 0 error: 0];
+  if (flag)
+    {
+      return [self writeToURL: anURL options: NSDataWritingAtomic error: 0];
+    }
+  else
+    {
+      return [self writeToURL: anURL options: 0 error: 0];
     }
 }
 
+
 // Deserializing Data
 
 /**
@@ -1313,7 +1324,7 @@ failure:
   BOOL		useAuxiliaryFile = NO;
   BOOL		error_BadPath = YES;
 
-  if (writeOptionsMask & NSAtomicWrite)
+  if (writeOptionsMask & NSDataWritingAtomic)
     {
       useAuxiliaryFile = YES;
     }
@@ -1926,7 +1937,7 @@ failure:
           if (b == 0)
             {
               NSLog(@"[NSDataMalloc -initWithCoder:] unable to get %u bytes",
-                l);
+                (unsigned int)l);
               DESTROY(self);
               return nil;
             }
@@ -2011,10 +2022,15 @@ failure:
 	      length: (NSUInteger)bufferSize
 {
   NSUInteger	oldLength = [self length];
-  void*		buffer;
+  void		*buffer;
 
   [self setLength: oldLength + bufferSize];
   buffer = [self mutableBytes];
+  if (0 == buffer)
+    {
+      [NSException raise: NSInternalInconsistencyException
+		  format: @"missing bytes in appendBytes:length:"];
+    }
   memcpy(buffer + oldLength, aBuffer, bufferSize);
 }
 
@@ -2046,15 +2062,23 @@ failure:
   if (aRange.location > size)
     {
       [NSException raise: NSRangeException
-		  format: @"location bad in replaceByteInRange:withBytes:"];
+                  format: @"location bad in %@", NSStringFromSelector(_cmd)];
     }
   if (aRange.length > 0)
     {
+      void	*buf;
+
       if (need > size)
 	{
 	  [self setLength: need];
 	}
-      memmove([self mutableBytes] + aRange.location, bytes, aRange.length);
+      buf = [self mutableBytes];
+      if (0 == buf)
+	{
+	  [NSException raise: NSInternalInconsistencyException
+            format: @"missing bytes in %@", NSStringFromSelector(_cmd)];
+	}
+      memmove(buf + aRange.location, bytes, aRange.length);
     }
 }
 
@@ -2076,13 +2100,22 @@ failure:
   if (aRange.location > size)
     {
       [NSException raise: NSRangeException
-		  format: @"location bad in replaceByteInRange:withBytes:"];
+                  format: @"location bad in %@", NSStringFromSelector(_cmd)];
+    }
+  if (0 == length && 0 == shift)
+    {
+      return;   // Nothing to do
     }
   if (need > size)
     {
       [self setLength: need];
     }
   buf = [self mutableBytes];
+  if (0 == buf)
+    {
+      [NSException raise: NSInternalInconsistencyException
+                  format: @"missing bytes in %@", NSStringFromSelector(_cmd)];
+    }
   if (shift < 0)
     {
       if (length > 0)
@@ -2118,9 +2151,15 @@ failure:
 - (void) resetBytesInRange: (NSRange)aRange
 {
   NSUInteger	size = [self length];
+  void		*bytes = [self mutableBytes];
 
   GS_RANGE_CHECK(aRange, size);
-  memset((char*)[self bytes] + aRange.location, 0, aRange.length);
+  if (0 == bytes)
+    {
+      [NSException raise: NSInternalInconsistencyException
+		  format: @"missing bytes in resetBytesInRange:"];
+    }
+  memset((char*)bytes + aRange.location, 0, aRange.length);
 }
 
 /**
@@ -2838,7 +2877,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
   if (*cursor >= length)
     {
       [NSException raise: NSRangeException
-		  format: @"Range: (%u, 1) Size: %d", *cursor, length];
+		  format: @"Range: (%u, 1) Size: %"PRIuPTR, *cursor, length];
     }
   *tag = *((unsigned char*)bytes + (*cursor)++);
   if (*tag & _GSC_MAYX)
@@ -2854,7 +2893,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	      if (*cursor >= length)
 		{
 		  [NSException raise: NSRangeException
-			      format: @"Range: (%u, 1) Size: %d",
+			      format: @"Range: (%u, 1) Size: %"PRIuPTR,
 			  *cursor, length];
 		}
 	      *ref = (unsigned int)*((unsigned char*)bytes + (*cursor)++);
@@ -2867,7 +2906,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	      if (*cursor >= length-1)
 		{
 		  [NSException raise: NSRangeException
-			      format: @"Range: (%u, 1) Size: %d",
+			      format: @"Range: (%u, 1) Size: %"PRIuPTR,
 			  *cursor, length];
 		}
 #if NEED_WORD_ALIGNMENT
@@ -2887,7 +2926,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	      if (*cursor >= length-3)
 		{
 		  [NSException raise: NSRangeException
-			      format: @"Range: (%u, 1) Size: %d",
+			      format: @"Range: (%u, 1) Size: %"PRIuPTR,
 			  *cursor, length];
 		}
 #if NEED_WORD_ALIGNMENT
@@ -3052,7 +3091,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
   bytes = mmap(0, length, PROT_READ, MAP_SHARED, fd, 0);
   if (bytes == MAP_FAILED)
     {
-      NSWarnMLog(@"mapping failed for %s - %@", path, [NSError _last]);
+      NSWarnMLog(@"mapping failed for %@ - %@", path, [NSError _last]);
       close(fd);
       DESTROY(self);
       self = [dataMalloc allocWithZone: NSDefaultMallocZone()];
@@ -3722,7 +3761,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
       if (tmp == 0)
 	{
 	  [NSException raise: NSMallocException
-	    format: @"Unable to set data capacity to '%d'", size];
+	    format: @"Unable to set data capacity to '%"PRIuPTR"'", size];
 	}
       if (bytes)
 	{
@@ -3769,7 +3808,13 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 {
   if (size > capacity)
     {
-      [self setCapacity: size];
+      NSUInteger    growTo = capacity + capacity / 2;
+
+      if (size > growTo)
+        {
+          growTo = size;
+        }
+      [self setCapacity: growTo];
     }
   if (size > length)
     {
@@ -3910,8 +3955,8 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
       if (newid == -1)			/* Created memory? */
 	{
 	  [NSException raise: NSMallocException
-	    format: @"Unable to create shared memory segment (size:%u) - %@.",
-	    size, [NSError _last]];
+	    format: @"Unable to create shared memory segment"
+	    @" (size:%"PRIuPTR") - %@.", size, [NSError _last]];
 	}
       tmp = shmat(newid, 0, 0);
       if ((intptr_t)tmp == -1)			/* Attached memory? */

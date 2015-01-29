@@ -21,18 +21,17 @@
  * Boston, MA 02111 USA.
  *
  * <title>NSHashTable class reference</title>
- * $Date: 2011-02-11 06:51:47 -0800 (Fri, 11 Feb 2011) $ $Revision: 32077 $
+ * $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
  */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSException.h"
-#import "NSPointerFunctions.h"
-#import "NSSet.h"
-#import "NSHashTable.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPointerFunctions.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSHashTable.h"
 #import "NSCallBacks.h"
 #import "GSPrivate.h"
-#import "NSObject+GNUstepBase.h"
 
 @interface	NSConcreteHashTable : NSHashTable
 @end
@@ -77,6 +76,12 @@ static Class	concreteClass = 0;
     NSPointerFunctionsObjectPersonality | NSPointerFunctionsZeroingWeakMemory];
 }
 
++ (id) weakObjectsHashTable
+{
+  return [self hashTableWithOptions:
+    NSPointerFunctionsObjectPersonality | NSPointerFunctionsWeakMemory];
+}
+
 - (id) initWithOptions: (NSPointerFunctionsOptions)options
 	      capacity: (NSUInteger)initialCapacity
 {
@@ -92,7 +97,7 @@ static Class	concreteClass = 0;
 }
 
 - (id) initWithPointerFunctions: (NSPointerFunctions*)functions
-		capacity: (NSUInteger)initialCapacity
+		       capacity: (NSUInteger)initialCapacity
 {
   [self subclassResponsibility: _cmd];
   return nil;

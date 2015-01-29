@@ -24,6 +24,8 @@
 
 #import "common.h"
 
+#if defined(HAVE_LIBXML)
+
 #define	GS_XMLNODETYPE	xmlDtd
 #define GSInternal	NSXMLDTDInternal
 
@@ -35,43 +37,108 @@ GS_PRIVATE_INTERNAL(NSXMLDTD)
 
 + (NSXMLDTDNode*) predefinedEntityDeclarationForName: (NSString*)name
 {
-  [self notImplemented: _cmd];
-  return nil;
+  xmlEntityPtr node = xmlGetPredefinedEntity(XMLSTRING(name));
+  return (NSXMLDTDNode*)[self _objectForNode: (xmlNodePtr)node];
 }
 
 - (void) dealloc
 {
   if (GS_EXISTS_INTERNAL)
     {
-      [internal->entities release];
-      [internal->elements release];
-      [internal->notations release];
-      [internal->original release];
     }
   [super dealloc];
 }
 
 - (void) addChild: (NSXMLNode*)child
 {
-  [self notImplemented: _cmd];
+  [self insertChild: child atIndex: [self childCount]];
 }
 
 - (NSXMLDTDNode*) attributeDeclarationForName: (NSString*)name
-                                   elementName: (NSString*)elementName
+                                  elementName: (NSString*)elementName
 {
-  [self notImplemented: _cmd];
+  xmlDtdPtr theNode = internal->node;
+  xmlNodePtr children = NULL;
+  const xmlChar *xmlName = XMLSTRING(name);
+  const xmlChar *xmlElementName = XMLSTRING(elementName);
+
+  if ((theNode == NULL) ||
+      (theNode->children == NULL))
+    {
+      return nil;
+    }
+     
+ for (children = theNode->children; children; children = children->next)
+   {
+     if (children->type == XML_ATTRIBUTE_DECL)
+       {
+         xmlAttributePtr attr = (xmlAttributePtr)children;
+
+         if ((xmlStrcmp(attr->name, xmlName) == 0) &&
+             (xmlStrcmp(attr->elem, xmlElementName) == 0))
+           {
+             return (NSXMLDTDNode*)[NSXMLNode _objectForNode: children];
+           }
+       }
+   }
+
   return nil;
 }
 
 - (NSXMLDTDNode*) elementDeclarationForName: (NSString*)name
 {
-  [self notImplemented: _cmd];
+  xmlDtdPtr theNode = internal->node;
+  xmlNodePtr children = NULL;
+  const xmlChar *xmlName = XMLSTRING(name);
+
+  if ((theNode == NULL) ||
+      (theNode->children == NULL))
+    {
+      return nil;
+    }
+     
+ for (children = theNode->children; children; children = children->next)
+   {
+     if (children->type == XML_ELEMENT_DECL)
+       {
+         xmlElementPtr elem = (xmlElementPtr)children;
+
+         if (xmlStrcmp(elem->name, xmlName) == 0)
+           {
+             return (NSXMLDTDNode*)[NSXMLNode _objectForNode: children];
+           }
+       }
+   }
+
   return nil;
 }
 
 - (NSXMLDTDNode*) entityDeclarationForName: (NSString*)name
 {
-  [self notImplemented: _cmd];
+  //xmlGetEntityFromDtd 
+  xmlDtdPtr theNode = internal->node;
+  xmlNodePtr children = NULL;
+  const xmlChar *xmlName = XMLSTRING(name);
+
+  if ((theNode == NULL) ||
+      (theNode->children == NULL))
+    {
+      return nil;
+    }
+     
+ for (children = theNode->children; children; children = children->next)
+   {
+     if (children->type == XML_ENTITY_DECL)
+       {
+         xmlEntityPtr entity = (xmlEntityPtr)children;
+
+         if (xmlStrcmp(entity->name, xmlName) == 0)
+           {
+             return (NSXMLDTDNode*)[NSXMLNode _objectForNode: children];
+           }
+       }
+   }
+
   return nil;
 }
 
@@ -102,27 +169,63 @@ GS_PRIVATE_INTERNAL(NSXMLDTD)
             options: (NSUInteger)mask
               error: (NSError**)error
 {
-  [self notImplemented: _cmd];
-  return nil;
+  NSXMLDocument *tempDoc = 
+    [[NSXMLDocument alloc] initWithData: data
+                                options: mask
+                                  error: error];
+  if (tempDoc != nil)
+    {
+      NSArray *children = [tempDoc children];
+      NSEnumerator *enumerator = [children objectEnumerator];
+      NSXMLNode *child;
+
+      self = [self initWithKind: NSXMLDTDKind options: mask];
+      
+      while ((child = [enumerator nextObject]) != nil)
+        {
+          [child detach]; // detach from document.
+          [self addChild: child];
+        }
+      [tempDoc release];
+    }
+
+  return self;
 }
 
-- (id) initWithKind: (NSXMLNodeKind)kind options: (NSUInteger)theOptions
+- (id) initWithKind: (NSXMLNodeKind)theKind options: (NSUInteger)theOptions
 {
-  if (NSXMLDTDKind == kind)
+  if (NSXMLDTDKind == theKind)
     {
-      return [super initWithKind: kind options: theOptions];
+      return [super initWithKind: theKind options: theOptions];
     }
   else
     {
       [self release];
-      return [[NSXMLNode alloc] initWithKind: kind
-                                     options: theOptions];
+      // This cast is here to keep clang quite that expects an init* method to 
+      // return an object of the same class, which is not true here.
+      return (NSXMLDTD*)[[NSXMLNode alloc] initWithKind: theKind
+                                                options: theOptions];
     }
 }
 
 - (void) insertChild: (NSXMLNode*)child atIndex: (NSUInteger)index
 {
-  [self notImplemented: _cmd];
+  NSXMLNodeKind	theKind = [child kind];
+  NSUInteger childCount = [self childCount];
+
+  // Check to make sure this is a valid addition...
+  NSAssert(nil != child, NSInvalidArgumentException);
+  NSAssert(index <= childCount, NSInvalidArgumentException);
+  NSAssert(nil == [child parent], NSInvalidArgumentException);
+  NSAssert(NSXMLAttributeKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLDTDKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLDocumentKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLElementKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLInvalidKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLNamespaceKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLTextKind != theKind, NSInvalidArgumentException);
+
+  [self _insertChild: child atIndex: index];
 }
 
 - (void) insertChildren: (NSArray*)children atIndex: (NSUInteger)index
@@ -138,57 +241,90 @@ GS_PRIVATE_INTERNAL(NSXMLDTD)
 
 - (NSXMLDTDNode*) notationDeclarationForName: (NSString*)name
 {
-  NSXMLDTDNode	*notation = [internal->notations objectForKey: name];
+  xmlDtdPtr theNode = internal->node;
+  xmlNodePtr children = NULL;
+  const xmlChar *xmlName = XMLSTRING(name);
 
-  if (notation == nil)
+  if ((theNode == NULL) ||
+      (theNode->children == NULL))
     {
-      [self notImplemented: _cmd];
+      return nil;
     }
-  return notation;
+     
+ for (children = theNode->children; children; children = children->next)
+   {
+     if (children->type == XML_NOTATION_NODE)
+       {
+         if (xmlStrcmp(children->name, xmlName) == 0)
+           {
+             return (NSXMLDTDNode*)[NSXMLNode _objectForNode: children];
+           }
+       }
+   }
+
+  return nil;
 }
 
 - (NSString*) publicID
 {
-  xmlDtd *node = internal->node;
+  xmlDtd *theNode = internal->node;
 
-  return StringFromXMLStringPtr(node->ExternalID); 
+  return StringFromXMLStringPtr(theNode->ExternalID); 
 }
 
 - (void) removeChildAtIndex: (NSUInteger)index
 {
-  [self notImplemented: _cmd];
+  NSXMLNode *child;
+
+  if (index >= [self childCount])
+    {
+      [NSException raise: NSRangeException
+                  format: @"index too large"];
+    }
+
+  child = [self childAtIndex: index];
+  [child detach];
 }
 
-- (void) replaceChildAtIndex: (NSUInteger)index withNode: (NSXMLNode*)node
+- (void) replaceChildAtIndex: (NSUInteger)index withNode: (NSXMLNode*)theNode
 {
-  [self notImplemented: _cmd];
+  [self insertChild: theNode atIndex: index];
+  [self removeChildAtIndex: index + 1];
 }
 
 - (void) setChildren: (NSArray*)children
 {
-  [self notImplemented: _cmd];
+  NSUInteger count = [self childCount];
+
+  while (count-- > 0)
+    {
+      [self removeChildAtIndex: count];
+    }
+
+  [self insertChildren: children atIndex: 0];
 }
 
 - (void) setPublicID: (NSString*)publicID
 {
-  xmlDtd *node = internal->node;
+  xmlDtd *theNode = internal->node;
 
-  node->ExternalID = XMLStringCopy(publicID); 
+  theNode->ExternalID = XMLStringCopy(publicID); 
 }
 
 - (void) setSystemID: (NSString*)systemID
 {
-  xmlDtd *node = internal->node;
+  xmlDtd *theNode = internal->node;
 
-  node->SystemID = XMLStringCopy(systemID); 
+  theNode->SystemID = XMLStringCopy(systemID); 
 }
 
 - (NSString*) systemID
 {
-  xmlDtd *node = internal->node;
+  xmlDtd *theNode = internal->node;
 
-  return StringFromXMLStringPtr(node->SystemID); 
+  return StringFromXMLStringPtr(theNode->SystemID); 
 }
 
 @end
 
+#endif	/* HAVE_LIBXML */

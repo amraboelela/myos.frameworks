@@ -24,7 +24,7 @@
 
 #ifndef __NSTimer_h_GNUSTEP_BASE_INCLUDE
 #define __NSTimer_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSDate.h>
 
@@ -92,7 +92,7 @@ extern "C" {
 - (NSTimeInterval) timeInterval;
 #endif
 
-#if	OS_API_VERSION(100200, GS_API_LATEST)
+#if	OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
 - (id) initWithFireDate: (NSDate*)fd
 	       interval: (NSTimeInterval)ti
 		 target: (id)object

@@ -31,7 +31,7 @@
    Boston, MA 02111 USA.
 
    <title>NSAttributedString class reference</title>
-   $Date: 2011-07-20 18:23:08 -0700 (Wed, 20 Jul 2011) $ $Revision: 33595 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
 */
 
 /* Warning -	[-initWithString:attributes:] is the designated initialiser,
@@ -48,15 +48,14 @@
  */
 
 #import "common.h"
-#import "Unicode.h"
+#import "GNUstepBase/Unicode.h"
 
-#import "NSAttributedString.h"
-#import "NSData.h"
-#import "NSException.h"
-#import "NSAutoreleasePool.h"
-#import "NSPortCoder.h"
-#import "NSRange.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSAttributedString.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSPortCoder.h"
+#import "Foundation/NSRange.h"
 
 @class	GSAttributedString;
 @interface GSAttributedString : NSObject	// Help the compiler
@@ -338,31 +337,29 @@ appendUIntData(NSMutableData *d, NSUInteger i)
   return self;
 }
 
-- (id)replacementObjectForPortCoder:(NSPortCoder *)aCoder
+- (id) replacementObjectForPortCoder: (NSPortCoder*)aCoder
 {
-    if ([aCoder isByref] == NO) {
-        return self;
-    }
-    return [super replacementObjectForPortCoder: aCoder];
+  if ([aCoder isByref] == NO)
+    return self;
+  return [super replacementObjectForPortCoder: aCoder];
 }
 
 //NSCopying protocol
-- (id)copyWithZone: (NSZone*)zone
+- (id) copyWithZone: (NSZone*)zone
 {
-    if ([self isKindOfClass: [NSMutableAttributedString class]]
-        || NSShouldRetainWithZone(self, zone) == NO) {
-        return [[GSAttributedStringClass allocWithZone: zone]
-                initWithAttributedString: self];
-    } else {
-        return RETAIN(self);
-    }
+  if ([self isKindOfClass: [NSMutableAttributedString class]]
+    || NSShouldRetainWithZone(self, zone) == NO)
+    return [[GSAttributedStringClass allocWithZone: zone]
+      initWithAttributedString: self];
+  else
+    return RETAIN(self);
 }
 
 //NSMutableCopying protocol
-- (id)mutableCopyWithZone:(NSZone *)zone
+- (id) mutableCopyWithZone: (NSZone*)zone
 {
-    return [[GSMutableAttributedStringClass allocWithZone: zone]
-            initWithAttributedString: self];
+  return [[GSMutableAttributedStringClass allocWithZone: zone]
+    initWithAttributedString: self];
 }
 
 //Creating an NSAttributedString
@@ -382,9 +379,9 @@ appendUIntData(NSMutableData *d, NSUInteger i)
 /**
  *  Initialize to copy of attributedString.
  */
-- (id)initWithAttributedString:(NSAttributedString *)attributedString
+- (id) initWithAttributedString: (NSAttributedString*)attributedString
 {
-    return [self initWithString:(NSString*)attributedString attributes: nil];
+  return [self initWithString: (NSString*)attributedString attributes: nil];
 }
 
 /**

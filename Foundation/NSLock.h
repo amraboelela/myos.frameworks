@@ -31,8 +31,8 @@
 
 #ifndef __NSLock_h_GNUSTEP_BASE_INCLUDE
 #define __NSLock_h_GNUSTEP_BASE_INCLUDE
-#import  "GSVersionMacros.h"
-#import  "GSConfig.h"
+#import  <GNUstepBase/GSVersionMacros.h>
+#import  <GNUstepBase/GSConfig.h>
 
 #import  <Foundation/NSObject.h>
 
@@ -258,11 +258,11 @@ extern "C" {
  */
 @interface NSRecursiveLock : NSObject <NSLocking>
 {
-//#if	GS_EXPOSE(NSRecursiveLock)
-//@private
+#if	GS_EXPOSE(NSRecursiveLock)
+@private
   gs_mutex_t	_mutex;
   NSString      *_name;
-//#endif
+#endif
 }
 
 /**
@@ -303,7 +303,7 @@ extern "C" {
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import "NSLock+GNUstepBase.h"
+#import <GNUstepBase/NSLock+GNUstepBase.h>
 #endif
 
 #endif /* __NSLock_h_GNUSTEP_BASE_INCLUDE */

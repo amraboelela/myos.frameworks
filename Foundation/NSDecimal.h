@@ -25,9 +25,9 @@
 
 #ifndef __NSDecimal_h_GNUSTEP_BASE_INCLUDE
 #define __NSDecimal_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
-#import "GSConfig.h"
+#import <GNUstepBase/GSConfig.h>
 
 #import	<Foundation/NSObject.h>
 

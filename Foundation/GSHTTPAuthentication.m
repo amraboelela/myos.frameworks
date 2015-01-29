@@ -24,15 +24,14 @@
 
 #import "common.h"
 #import "GSURLPrivate.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSScanner.h"
-#import "NSSet.h"
-#import "NSValue.h"
-#import "GSLock.h"
-#import "GSMime.h"
-#import "NSObject+GNUstepBase.h"
-#import "NSData+GNUstepBase.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSScanner.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSValue.h"
+#import "GNUstepBase/GSLock.h"
+#import "GNUstepBase/GSMime.h"
+#import "GNUstepBase/NSData+GNUstepBase.h"
 
 
 static NSMutableDictionary	*domainMap = nil;
@@ -87,10 +86,15 @@ static GSMimeParser		*mimeParser = nil;
   if (store == nil)
     {
       mimeParser = [GSMimeParser new];
+      [[NSObject leakAt: &mimeParser] release];
       spaces = [NSMutableSet new];
+      [[NSObject leakAt: &spaces] release];
       domainMap = [NSMutableDictionary new];
+      [[NSObject leakAt: &domainMap] release];
       store = [NSMutableDictionary new];
+      [[NSObject leakAt: &store] release];
       storeLock = [GSLazyLock new];
+      [[NSObject leakAt: &storeLock] release];
     }
 }
 

@@ -21,17 +21,16 @@
  * Boston, MA 02111 USA.
  *
  * <title>NSMapTable class reference</title>
- * $Date: 2011-02-11 06:51:47 -0800 (Fri, 11 Feb 2011) $ $Revision: 32077 $
+ * $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
  */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSDictionary.h"
-#import "NSException.h"
-#import "NSPointerFunctions.h"
-#import "NSMapTable.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPointerFunctions.h"
+#import "Foundation/NSMapTable.h"
 #import "NSCallBacks.h"
-#import "NSObject+GNUstepBase.h"
 
 @interface	NSConcreteMapTable : NSMapTable
 @end
@@ -97,6 +96,34 @@ static Class	concreteClass = 0;
     | NSPointerFunctionsZeroingWeakMemory
 			 valueOptions: NSPointerFunctionsObjectPersonality
     | NSPointerFunctionsZeroingWeakMemory];
+}
+
++ (id) strongToStrongObjectsMapTable
+{
+  return [self mapTableWithKeyOptions: NSMapTableObjectPointerPersonality
+                         valueOptions: NSMapTableObjectPointerPersonality];
+}
+
++ (id) strongToWeakObjectsMapTable
+{
+  return [self mapTableWithKeyOptions: NSMapTableObjectPointerPersonality
+                         valueOptions: NSMapTableObjectPointerPersonality |
+                                         NSMapTableWeakMemory];
+}
+
++ (id) weakToStrongObjectsMapTable
+{
+  return [self mapTableWithKeyOptions: NSMapTableObjectPointerPersonality |
+                                         NSMapTableWeakMemory
+                         valueOptions: NSMapTableObjectPointerPersonality];
+}
+
++ (id) weakToWeakObjectsMapTable
+{
+  return [self mapTableWithKeyOptions: NSMapTableObjectPointerPersonality | 
+                                         NSMapTableWeakMemory
+                         valueOptions: NSMapTableObjectPointerPersonality |
+                                         NSMapTableWeakMemory];
 }
 
 - (id) initWithKeyOptions: (NSPointerFunctionsOptions)keyOptions

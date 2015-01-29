@@ -24,15 +24,15 @@
    Boston, MA 02111 USA.
 
    <title>NSProtocolChecker class reference</title>
-   $Date: 2010-09-09 15:42:47 -0700 (Thu, 09 Sep 2010) $ $Revision: 31282 $
+   $Date: 2012-07-19 21:43:58 -0700 (Thu, 19 Jul 2012) $ $Revision: 35304 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSProtocolChecker_IVARS	1
-#import "NSProtocolChecker.h"
-#import "NSException.h"
-#import "NSInvocation.h"
-#import "NSMethodSignature.h"
+#import "Foundation/NSProtocolChecker.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSInvocation.h"
+#import "Foundation/NSMethodSignature.h"
 #include <objc/Protocol.h>
 
 /**
@@ -98,13 +98,15 @@
 	{
 	  [NSException raise: NSInvalidArgumentException
 		      format: @"<%s -%@> not declared",
-	    protocol_getName(_myProtocol), NSStringFromSelector([anInvocation selector])];
+	    protocol_getName(_myProtocol),
+              NSStringFromSelector([anInvocation selector])];
 	}
       else
 	{
 	  [NSException raise: NSInvalidArgumentException
 		      format: @"<%s +%@> not declared",
-	    protocol_getName(_myProtocol), NSStringFromSelector([anInvocation selector])];
+	    protocol_getName(_myProtocol),
+              NSStringFromSelector([anInvocation selector])];
 	}
     }
   [anInvocation invokeWithTarget: _myTarget];
@@ -114,7 +116,7 @@
    * returned value with the protocol checker.
    */
   type = [[anInvocation methodSignature] methodReturnType];
-  if (strcmp(type, @encode(id)) == 0)
+  if (GSSelectorTypesMatch(type, @encode(id)))
     {
       id	buf;
 

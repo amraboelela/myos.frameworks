@@ -24,7 +24,7 @@
    */
 
 #import "common.h"
-#import	"NSGarbageCollector.h"
+#import	"Foundation/NSGarbageCollector.h"
 
 static NSGarbageCollector	*collector = nil;
 
@@ -131,8 +131,8 @@ static unsigned			disabled = 0;
 
 #include <gc/gc.h>
 
-#import	"NSLock.h"
-#import	"NSHashTable.h"
+#import	"Foundation/NSLock.h"
+#import	"Foundation/NSHashTable.h"
 static NSLock		*lock = nil;
 static NSHashTable	*uncollectable = 0;
 #endif

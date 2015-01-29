@@ -29,16 +29,16 @@
 
 #import "common.h"
 #define	EXPOSE_NSSpellServer_IVARS	1
-#import "NSSpellServer.h"
-#import "NSDictionary.h"
-#import "NSRunLoop.h"
-#import "NSFileManager.h"
-#import "NSUserDefaults.h"
-#import "NSPathUtilities.h"
-#import "NSConnection.h"
-#import "NSProcessInfo.h"
-#import "NSException.h"
-#import "NSSet.h"
+#import "Foundation/NSSpellServer.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSConnection.h"
+#import "Foundation/NSProcessInfo.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSSet.h"
 
 NSString *const NSGrammarRange = @"NSGrammarRange";
 NSString *const NSGrammarUserDescription = @"NSGrammarUserDescription";
@@ -209,7 +209,10 @@ GSSpellServerName(NSString *vendor, NSString *language)
 	  else
 	    {
 	      // The directory does not exist create it.
-	      if ([mgr createDirectoryAtPath: dirPath attributes: nil])
+	      if ([mgr createDirectoryAtPath: dirPath
+                 withIntermediateDirectories: YES
+                                  attributes: nil
+                                       error: NULL])
 		{
 		  // Directory created. Now create the empty file.
 		  NSArray *emptyDict = [NSArray array];

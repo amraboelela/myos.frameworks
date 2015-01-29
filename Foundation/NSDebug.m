@@ -30,7 +30,7 @@
 #import "common.h"
 #include <stdio.h>
 #import "GSPrivate.h"
-#import "GSLock.h"
+#import "GNUstepBase/GSLock.h"
 #import "Foundation/NSArray.h"
 #import "Foundation/NSData.h"
 #import "Foundation/NSDictionary.h"

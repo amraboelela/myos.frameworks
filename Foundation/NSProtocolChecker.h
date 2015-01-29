@@ -24,7 +24,7 @@
 
 #ifndef __NSProtocolChecker_h_GNUSTEP_BASE_INCLUDE
 #define __NSProtocolChecker_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSProxy.h>

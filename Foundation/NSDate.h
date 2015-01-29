@@ -21,7 +21,7 @@
 
 #ifndef __NSDate_h_GNUSTEP_BASE_INCLUDE
 #define __NSDate_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObjCRuntime.h>
 
@@ -105,6 +105,15 @@ GS_EXPORT const NSTimeInterval NSTimeIntervalSince1970;
 - (NSDate*) earlierDate: (NSDate*)otherDate;
 - (BOOL) isEqualToDate: (NSDate*)other;
 - (NSDate*) laterDate: (NSDate*)otherDate;
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST)
+/**
+ * Returns an autoreleased NSDate instance whose value is offset from
+ * that of the receiver by the specified interval.
+ */
+- (id) dateByAddingTimeInterval: (NSTimeInterval)ti;
++ (id) dateWithTimeInterval: (NSTimeInterval)seconds sinceDate: (NSDate*)date;
+#endif
 
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 + (id) dateWithNaturalLanguageString: (NSString*)string;

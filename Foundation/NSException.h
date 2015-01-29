@@ -30,16 +30,23 @@
 
 #ifndef __NSException_h_GNUSTEP_BASE_INCLUDE
 #define __NSException_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
-#import	"GSConfig.h"
+#import	<GNUstepBase/GSVersionMacros.h>
+#import	<GNUstepBase/GSConfig.h>
 
 #if     defined(_NATIVE_OBJC_EXCEPTIONS)
-#define USER_NATIVE_OBJC_EXCEPTIONS       1
-#else
-#define USER_NATIVE_OBJC_EXCEPTIONS       0
+#  define USER_NATIVE_OBJC_EXCEPTIONS       1
+#elif defined(BASE_NATIVE_OBJC_EXCEPTIONS) && defined(OBJC_ZEROCOST_EXCEPTIONS)
+#  define USER_NATIVE_OBJC_EXCEPTIONS       1
+#  define _NATIVE_OBJC_EXCEPTIONS           1
 #endif
+
 #if     !BASE_NATIVE_OBJC_EXCEPTIONS && USER_NATIVE_OBJC_EXCEPTIONS
-#error  The current setting for native-objc-exceptions does not match that of gnustep-base ... please correct this.
+#error "There are two separate exception handling mechanisms available ... one based on the standard setjmp() function (which does not require special compiler support), and one 'native' version where the compiler manages the exception handling.  If you try to use both in the same executable, exception handlers will not work... which can be pretty disastrous.  This error is telling you that the gnustep-base library was built using one form of exception handling, but that the gnustep-make package you are using is building code to use the other form of exception handling ... with the consequence that exception handling would be broken in the program you are building.  So, somehow your gnustep-base and gnustep-make package are incompatible, and you need to replace one of them with a version configured to match the other."
+#if     BASE_NATIVE_OBJC_EXCEPTIONS
+#error  "gnustep-base is configured to use 'native' exceptions, but you are building for 'traditional' exceptions."
+#else
+#error  "gnustep-base is configured to use 'traditional' exceptions, but you are building for 'native' exceptions."
+#endif
 #endif
 
 #import	<Foundation/NSString.h>
@@ -91,7 +98,8 @@ extern "C" {
    message before the program terminates.
    </p>
 */
-@interface NSException : NSObject <NSCoding, NSCopying> {
+@interface NSException : NSObject <NSCoding, NSCopying>
+{    
 #if	GS_EXPOSE(NSException)
 @private
   NSString *_e_name;
@@ -115,7 +123,8 @@ extern "C" {
  * format string and any additional arguments. The exception is then
  * <em>raised</em> using the -raise method.
  */
-+ (void)raise: (NSString *)name format: (NSString *)format,...;
++ (void) raise: (NSString*)name
+	format: (NSString*)format,... NS_FORMAT_FUNCTION(2,3);
 
 /**
  * Creates an exception with a name and a reason string using the
@@ -123,24 +132,26 @@ extern "C" {
  * argument list argList. The exception is then <em>raised</em>
  * using the -raise method.
  */
-+ (void)raise:(NSString *)name format:(NSString*)format arguments:(va_list)argList;
++ (void) raise: (NSString*)name
+	format: (NSString*)format
+     arguments: (va_list)argList NS_FORMAT_FUNCTION(2,0);
 
-#if OS_API_VERSION(100500,GS_API_LATEST) && GS_API_VERSION( 11501,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) && GS_API_VERSION( 11501,GS_API_LATEST)
 /** Returns an array of the call stack return addresses at the point when
  * the exception was raised.  Re-raising the exception does not change
  * this value.
  */
-- (NSArray *)callStackReturnAddresses;
+- (NSArray*) callStackReturnAddresses;
 #endif
 
-#if OS_API_VERSION(100600,GS_API_LATEST) && GS_API_VERSION( 11903,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) && GS_API_VERSION( 11903,GS_API_LATEST)
 /**
  * Returns an array of the symbolic names of the call stack return addresses.  
  * Note that, on some platforms, symbols are only exported in
  * position-independent code and so these may only return numeric addresses for
  * code in static libraries or the main application.  
  */
-- (NSArray *)callStackSymbols;
+- (NSArray*) callStackSymbols;
 #endif
 
 /**
@@ -346,8 +357,8 @@ GS_EXPORT void _NSRemoveHandler( NSHandler *handler );
 		    if( !setjmp(NSLocalHandler.jumpState) ) {
 
 #define NS_HANDLER _NSRemoveHandler(&NSLocalHandler); } else { \
-		    NSException *localException;               \
-		    localException = NSLocalHandler.exception; \
+		    NSException __attribute__((unused)) *localException \
+		      = NSLocalHandler.exception; \
 		    {
 
 #define NS_ENDHANDLER }}}

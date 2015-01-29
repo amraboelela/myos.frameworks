@@ -21,13 +21,13 @@
 
 #ifndef _NSRegularExpression_h_GNUSTEP_BASE_INCLUDE
 #define _NSRegularExpression_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 
 #import	<Foundation/NSObject.h>
-#import "GSBlocks.h"
-#import "GSConfig.h"
+#import "GNUstepBase/GSBlocks.h"
+#import "GNUstepBase/GSConfig.h"
 
 #if	defined(__cplusplus)
 extern "C" {

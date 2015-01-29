@@ -25,17 +25,15 @@
 
 #ifndef __NSThread_h_GNUSTEP_BASE_INCLUDE
 #define __NSThread_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if	defined(GNUSTEP_BASE_INTERNAL)
-#import	"NSAutoreleasePool.h" // for struct autorelease_thread_vars
-#import	"NSException.h"	// for NSHandler
+#import	"Foundation/NSAutoreleasePool.h" // for struct autorelease_thread_vars
+#import	"Foundation/NSException.h"	// for NSHandler
 #else
 #import	<Foundation/NSAutoreleasePool.h>
 #import	<Foundation/NSException.h>
 #endif
-
-//#import <pthread.h>
 
 @class  NSArray;
 @class	NSDate;
@@ -60,30 +58,28 @@ extern "C" {
 {
 #if	GS_EXPOSE(NSThread)
 @public
-    id _target;
-    id _arg;
-    SEL _selector;
-    //pthread_t		_threadID;
-    int _threadID;
-    NSString *_name;
-    NSUInteger _stackSize;
-    BOOL _cancelled;
-    BOOL _active;
-    BOOL _finished;
-    NSHandler *_exception_handler; // Not retained.
-    NSMutableDictionary	*_thread_dictionary;
-    struct autorelease_thread_vars _autorelease_vars;
-    id _gcontext;
-    void *_runLoopInfo;  // Per-thread runloop related info.
+  id			_target;
+  id			_arg;
+  SEL			_selector;
+  NSString              *_name;
+  NSUInteger            _stackSize;
+  BOOL			_cancelled;
+  BOOL			_active;
+  BOOL			_finished;
+  NSHandler		*_exception_handler;    // Not retained.
+  NSMutableDictionary	*_thread_dictionary;
+  struct autorelease_thread_vars _autorelease_vars;
+  id			_gcontext;
+  void                  *_runLoopInfo;  // Per-thread runloop related info.
 #endif
 #if     GS_NONFRAGILE
 #else
-    /* Pointer to private additional data used to avoid breaking ABI
-     * when we don't have the non-fragile ABI available.
-     * Use this mechanism rather than changing the instance variable
-     * layout (see Source/GSInternal.h for details).
-     */
-@private id _internal GS_UNUSED_IVAR;
+  /* Pointer to private additional data used to avoid breaking ABI
+   * when we don't have the non-fragile ABI available.
+   * Use this mechanism rather than changing the instance variable
+   * layout (see Source/GSInternal.h for details).
+   */
+  @private id _internal GS_UNUSED_IVAR;
 #endif
 }
 
@@ -127,15 +123,15 @@ extern "C" {
  * NB. This method returns YES if called within a handler processing
  * <code>NSWillBecomeMultiThreadedNotification</code>
  */
-+ (BOOL)isMultiThreaded;
-+ (void)sleepUntilDate:(NSDate *)date;
++ (BOOL) isMultiThreaded;
++ (void) sleepUntilDate: (NSDate*)date;
 
-- (NSMutableDictionary *)threadDictionary;
+- (NSMutableDictionary*) threadDictionary;
 
 #if OS_API_VERSION(MAC_OS_X_VERSION_10_2,GS_API_LATEST) \
   && GS_API_VERSION( 10200,GS_API_LATEST)
-+ (void)setThreadPriority: (double)pri;
-+ (double)threadPriority;
++ (void) setThreadPriority: (double)pri;
++ (double) threadPriority;
 #endif
 
 #if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) \
@@ -143,81 +139,81 @@ extern "C" {
 
 /** Returns an array of the call stack return addresses.
  */
-+ (NSArray *)callStackReturnAddresses;
++ (NSArray*) callStackReturnAddresses;
 
 /** Returns a boolean indicating whether this thread is the main thread of
  * the process.
  */
-+ (BOOL)isMainThread;
++ (BOOL) isMainThread;
 
 /** Returns the main thread of the process.
  */
-+ (NSThread *)mainThread;
++ (NSThread*) mainThread;
 
 /** Suspends execution of the process for the specified period.
  */
-+ (void)sleepForTimeInterval:(NSTimeInterval)ti;
++ (void) sleepForTimeInterval: (NSTimeInterval)ti;
 
 /** Cancels the receiving thread.
  */
-- (void)cancel;
+- (void) cancel;
 
 /** <init/>
  */
-- (id)init;
+- (id) init;
 
 /** Initialises the receiver to send the message aSelector to the object aTarget
  * with the argument anArgument (which may be nil).<br />
  * The arguments aTarget and aSelector are retained while the thread is
  * running.
  */
-- (id)initWithTarget:(id)aTarget
-             selector:(SEL)aSelector
-               object:(id)anArgument;
+- (id) initWithTarget: (id)aTarget
+             selector: (SEL)aSelector
+               object: (id)anArgument;
 
 /** Returns a boolean indicating whether the receiving
  * thread has been cancelled.
  */
-- (BOOL)isCancelled;
+- (BOOL) isCancelled;
 
 /** Returns a boolean indicating whether the receiving
  * thread has been started (and has not yet finished or been cancelled).
  */
-- (BOOL)sExecuting;
+- (BOOL) isExecuting;
 
 /** Returns a boolean indicating whether the receiving
  * thread has completed executing.
  */
-- (BOOL)isFinished;
+- (BOOL) isFinished;
 
 /** Returns a boolean indicating whether this thread is the main thread of
  * the process.
  */
-- (BOOL)isMainThread;
+- (BOOL) isMainThread;
 
 /** FIXME ... what does this do?
  */
-- (void)main;
+- (void) main;
 
 /** Returns the name of the receiver.
  */
-- (NSString *)name;
+- (NSString*) name;
 
 /** Sets the name of the receiver.
  */
-- (void)setName:(NSString *)aName;
+- (void) setName: (NSString*)aName;
 
 /** Sets the size of the receiver's stack.
  */
-- (void)setStackSize:(NSUInteger)stackSize;
+- (void) setStackSize: (NSUInteger)stackSize;
 
 /** Returns the size of the receiver's stack.
  */
-- (NSUInteger)stackSize;
+- (NSUInteger) stackSize;
 
 /** Starts the receiver executing.
  */
-- (void)start;
+- (void) start;
 #endif
 
 @end
@@ -319,6 +315,23 @@ extern "C" {
                 onThread: (NSThread*)aThread
               withObject: (id)anObject
            waitUntilDone: (BOOL)aFlag;
+
+/**
+ * Creates and runs a new background thread sending aSelector to the receiver
+ * and passing anObject (which may be nil) as the argument.
+ */
+- (void) performSelectorInBackground: (SEL)aSelector
+                          withObject: (id)anObject; 
+#endif
+@end
+
+@interface NSThread (CallStackSymbols)
+#if	GS_API_VERSION(MAC_OS_X_VERSION_10_6, GS_API_LATEST)
+/** Returns an array of NSString objects representing the current stack
+ * in an implementation-defined format. May return an empty array if
+ * this feature is not available.
+ */
++ (NSArray *) callStackSymbols;
 #endif
 @end
 
@@ -393,9 +406,9 @@ GS_EXPORT NSString* const NSThreadDidStartNotification;
 
 #if	!NO_GNUSTEP
 #  if	defined(GNUSTEP_BASE_INTERNAL)
-#    import	"NSThread+GNUstepBase.h"
+#    import	"GNUstepBase/NSThread+GNUstepBase.h"
 #  else
-#    import	<Foundation/NSThread+GNUstepBase.h>
+#    import	<GNUstepBase/NSThread+GNUstepBase.h>
 #  endif
 #endif
 

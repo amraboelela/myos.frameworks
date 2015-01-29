@@ -29,8 +29,8 @@
 
 /**** Included Headers *******************************************************/
 
-#include "NSObject.h"
-#include "NSString.h"
+#include "Foundation/NSObject.h"
+#include "Foundation/NSString.h"
 
 
 #if ( (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3) ) && HAVE_VISIBILITY_ATTRIBUTE )

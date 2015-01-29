@@ -28,7 +28,7 @@
 
 #ifndef __NSKeyedArchiver_h_GNUSTEP_BASE_INCLUDE
 #define __NSKeyedArchiver_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 
@@ -407,6 +407,7 @@ extern "C" {
 @interface	NSKeyedUnarchiver (Internal)
 - (id) _decodeArrayOfObjectsForKey: (NSString*)aKey;
 - (id) _decodePropertyListForKey: (NSString*)aKey;
+- (BOOL) replaceObject: (id)oldObj withObject: (id)newObj;
 @end
 
 

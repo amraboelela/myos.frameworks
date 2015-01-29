@@ -56,10 +56,10 @@
                `-- GSLocalServerStream (gnu/linux)
 */
 
-#import "NSStream.h"
-#import "NSRunLoop.h"
-#import "NSMapTable.h"
-#import "NSStream+GNUstepBase.h"
+#import "Foundation/NSStream.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSMapTable.h"
+#import "GNUstepBase/NSStream+GNUstepBase.h"
 
 /**
  * Convenience methods used to add streams to the run loop.

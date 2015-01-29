@@ -22,16 +22,15 @@
    Boston, MA 02111 USA.
 
    <title>NSDistributedLock class reference</title>
-   $Date: 2011-12-15 01:42:39 -0800 (Thu, 15 Dec 2011) $ $Revision: 34290 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
-#include <string.h>
 #define	EXPOSE_NSDistributedLock_IVARS	1
-#import "NSDistributedLock.h"
-#import "NSFileManager.h"
-#import "NSException.h"
-#import "NSValue.h"
+#import "Foundation/NSDistributedLock.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSValue.h"
 #import "GSPrivate.h"
 
 
@@ -56,6 +55,7 @@ static NSFileManager	*mgr = nil;
   if (mgr == nil)
     {
       mgr = RETAIN([NSFileManager defaultManager]);
+      [[NSObject leakAt: &mgr] release];
     }
 }
 
@@ -192,7 +192,9 @@ static NSFileManager	*mgr = nil;
 		      forKey: NSFilePosixPermissions];
 	
   locked = [mgr createDirectoryAtPath: _lockPath
-			   attributes: attributesToSet];
+          withIntermediateDirectories: YES
+			   attributes: attributesToSet
+                                error: NULL];
   if (locked == NO)
     {
       BOOL	dir;
@@ -206,7 +208,9 @@ static NSFileManager	*mgr = nil;
       if ([mgr fileExistsAtPath: _lockPath isDirectory: &dir] == NO)
 	{
 	  locked = [mgr createDirectoryAtPath: _lockPath
-				   attributes: attributesToSet];
+                  withIntermediateDirectories: YES
+				   attributes: attributesToSet
+                                        error: NULL];
 	  if (locked == NO)
 	    {
 	      NSLog(@"Failed to create lock directory '%@' - %@",

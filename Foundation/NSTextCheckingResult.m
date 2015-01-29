@@ -18,10 +18,10 @@
    Boston, MA 02111 USA.
 */
 
-#import "NSException.h"
-#import "NSTextCheckingResult.h"
-#import "NSRegularExpression.h"
-#import "NSObject+GNUstepBase.h"
+#import "common.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSTextCheckingResult.h"
+#import "Foundation/NSRegularExpression.h"
 
 /**
  * Private class encapsulating a regular expression match.

@@ -22,29 +22,28 @@
    Boston, MA 02111 USA.
 
    <title>NSDistributedNotificationCenter class reference</title>
-   $Date: 2011-06-19 02:26:03 -0700 (Sun, 19 Jun 2011) $ $Revision: 33344 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import	"common.h"
 #define	EXPOSE_NSDistributedNotificationCenter_IVARS	1
-#import	"NSConnection.h"
-#import	"NSDistantObject.h"
-#import	"NSException.h"
-#import	"NSFileManager.h"
-#import	"NSArchiver.h"
-#import	"NSNotification.h"
-#import	"NSDate.h"
-#import	"NSPathUtilities.h"
-#import	"NSRunLoop.h"
-#import	"NSTask.h"
-#import	"NSTask+GNUstepBase.h"
-#import	"NSObject+GNUstepBase.h"
-#import	"NSDistributedNotificationCenter.h"
-#import	"NSUserDefaults.h"
-#import	"NSHost.h"
-#import	"NSPortNameServer.h"
-#import "NSThread.h"
-#import	"Tools/gdnc.h"
+#import	"Foundation/NSConnection.h"
+#import	"Foundation/NSDistantObject.h"
+#import	"Foundation/NSException.h"
+#import	"Foundation/NSFileManager.h"
+#import	"Foundation/NSArchiver.h"
+#import	"Foundation/NSNotification.h"
+#import	"Foundation/NSDate.h"
+#import	"Foundation/NSPathUtilities.h"
+#import	"Foundation/NSRunLoop.h"
+#import	"Foundation/NSTask.h"
+#import	"GNUstepBase/NSTask+GNUstepBase.h"
+#import	"Foundation/NSDistributedNotificationCenter.h"
+#import	"Foundation/NSUserDefaults.h"
+#import	"Foundation/NSHost.h"
+#import	"Foundation/NSPortNameServer.h"
+#import "Foundation/NSThread.h"
+#import	"../Tools/gdnc.h"
 
 
 @interface	NSDistributedNotificationCenter (Private)
@@ -118,7 +117,7 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * equivalent to calling +notificationCenterForType: with
  * <code>NSLocalNotificationCenterType</code> as its argument.
  */
-+ (NSNotificationCenter*) defaultCenter
++ (id) defaultCenter
 {
   return [self notificationCenterForType: NSLocalNotificationCenterType];
 }
@@ -135,7 +134,7 @@ static NSDistributedNotificationCenter	*netCenter = nil;
  * a notification center used by processes on the local network.<br />
  * MacOS-X supports only <code>NSLocalNotificationCenterType</code>.
  */
-+ (NSNotificationCenter*) notificationCenterForType: (NSString*)type
++ (NSDistributedNotificationCenter*) notificationCenterForType: (NSString*)type
 {
   if ([type isEqual: NSLocalNotificationCenterType] == YES)
     {

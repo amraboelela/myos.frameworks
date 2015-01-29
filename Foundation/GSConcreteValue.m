@@ -23,9 +23,9 @@
 */
 
 #import "common.h"
-#import "NSValue.h"
-#import "NSException.h"
-#import "NSCoder.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSCoder.h"
 
 #define TYPE_ORDER 0
 #include "GSConcreteValueTemplate.m"

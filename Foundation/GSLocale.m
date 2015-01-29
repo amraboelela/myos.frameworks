@@ -23,11 +23,10 @@
    Boston, MA 02111 USA.
 */
 #import "common.h"
-#import "GSLocale.h"
-#import "NSObject+GNUstepBase.h"
-#import "NSDictionary.h"
-#import "NSArray.h"
-#import "NSLock.h"
+#import "GNUstepBase/GSLocale.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSLock.h"
 
 static NSString *
 privateSetLocale(int category, NSString *locale);
@@ -46,13 +45,15 @@ GSSetLocale(int category, NSString *locale)
   return nil;
 }
 
-#ifdef HAVE_LOCALE_H
+#if defined(HAVE_LOCALE_H) && defined(HAVE_CURRENCY_SYMBOL_IN_LCONV)
+/* There is little point in using locale.h if no useful information
+   is exposed through struct lconv. An example platform is Android. */
 
 #include <locale.h>
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
-#import "NSUserDefaults.h"
+#import "Foundation/NSUserDefaults.h"
 
 #import "GSPrivate.h"
 
@@ -159,7 +160,6 @@ GSDomainFromDefaultLocale(void)
 	   forKey: NSTimeFormatString];
 #endif /* HAVE_LANGINFO_H */
 
-#ifdef HAVE_CURRENCY_SYMBOL_IN_LCONV
   lconv = localeconv();
 
   /* Currency Information */
@@ -194,9 +194,9 @@ GSDomainFromDefaultLocale(void)
       [dict setObject: ToString(lconv->thousands_sep)
 	       forKey: NSThousandsSeparator];
     }
+
   /* FIXME: Get currency format from localeconv */
-#endif
-    
+
 #ifdef	LC_MESSAGES
   str1 = privateSetLocale(LC_MESSAGES, nil);
 #else
@@ -249,39 +249,39 @@ GSDomainFromDefaultLocale(void)
 NSString *
 GSLanguageFromLocale(NSString *locale)
 {
-    NSString	*language = nil;
-    NSString	*aliases = nil;
-    NSBundle      *gbundle;
-    //DLog();
-    if (locale == nil || [locale isEqual: @"C"] || [locale isEqual: @"POSIX"]
-        || [locale length] < 2)
-        return @"English";
-    
-    gbundle = [NSBundle bundleForLibrary: @"gnustep-base"];
-    aliases = [gbundle pathForResource: @"Locale"
-                                ofType: @"aliases"
-                           inDirectory: @"Languages"];
-    if (aliases != nil)
+  NSString	*language = nil;
+  NSString	*aliases = nil;
+  NSBundle      *gbundle;
+
+  if (locale == nil || [locale isEqual: @"C"] || [locale isEqual: @"POSIX"]
+      || [locale length] < 2)
+    return @"English";
+
+  gbundle = [NSBundle bundleForLibrary: @"gnustep-base"];
+  aliases = [gbundle pathForResource: @"Locale"
+		              ofType: @"aliases"
+		         inDirectory: @"Languages"];
+  if (aliases != nil)
     {
-        NSDictionary	*dict;
-        
-        dict = [NSDictionary dictionaryWithContentsOfFile: aliases];
-        language = [dict objectForKey: locale];
-        if (language == nil && [locale pathExtension] != nil)
-        {
-            locale = [locale stringByDeletingPathExtension];
-            if ([locale isEqual: @"C"] || [locale isEqual: @"POSIX"])
-                return @"English";
-            language = [dict objectForKey: locale];
-        }
-        if (language == nil)
-        {
-            locale = [locale substringWithRange: NSMakeRange(0, 2)];
-            language = [dict objectForKey: locale];
-        }
+      NSDictionary	*dict;
+
+      dict = [NSDictionary dictionaryWithContentsOfFile: aliases];
+      language = [dict objectForKey: locale];
+      if (language == nil && [locale pathExtension] != nil)
+	{
+	  locale = [locale stringByDeletingPathExtension];
+          if ([locale isEqual: @"C"] || [locale isEqual: @"POSIX"])
+            return @"English";
+	  language = [dict objectForKey: locale];
+	}
+      if (language == nil)
+	{
+	  locale = [locale substringWithRange: NSMakeRange(0, 2)];
+	  language = [dict objectForKey: locale];
+	}
     }
-    
-    return language;
+
+  return language;
 }
 
 NSArray *

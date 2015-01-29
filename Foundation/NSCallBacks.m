@@ -23,7 +23,7 @@
  * License along with this library; if not, write to the Free
 
    <title>NSCallBacks class reference</title>
-   $Date: 2011-05-30 23:46:17 -0700 (Mon, 30 May 2011) $ $Revision: 33210 $
+   $Date: 2013-07-02 23:46:41 -0700 (Tue, 02 Jul 2013) $ $Revision: 36810 $
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02111 USA. */
 
@@ -100,7 +100,7 @@ _NS_owned_void_p_release(void *table, void *p)
 NSString *
 _NS_owned_void_p_describe(void *table, void *p)
 {
-  return [NSString stringWithFormat: @"%#x", p];
+  return [NSString stringWithFormat: @"%#"PRIxPTR, (NSUInteger)p];
 }
 
 /** For non-retained Objective-C objects **/
@@ -199,7 +199,7 @@ _NS_non_owned_void_p_release(void *table, void *p)
 NSString *
 _NS_non_owned_void_p_describe(void *table, void *p)
 {
-  return [NSString stringWithFormat: @"%0x", p];
+  return [NSString stringWithFormat: @"%0"PRIxPTR, (NSUInteger)p];
 }
 
 /** For pointers to structures and `int *' **/
@@ -232,5 +232,5 @@ NSString *
 _NS_int_p_describe(void *table, int *p)
 {
   /* Is this useful? */
-  return [NSString stringWithFormat: @"%d(%#x)", *p, p];
+  return [NSString stringWithFormat: @"%d(%#"PRIxPTR")", *p, (NSUInteger)p];
 }

@@ -1,4 +1,4 @@
-#import "NSObject.h"
+#import "Foundation/NSObject.h"
 
 @class NSData;
 @class NSError;

@@ -23,9 +23,9 @@
 
 #ifndef __NSStream_h_GNUSTEP_BASE_INCLUDE
 #define __NSStream_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
-#if OS_API_VERSION(100400,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
 
 #import	<Foundation/NSObject.h>
 
@@ -270,19 +270,26 @@ GS_EXPORT NSString * const NSStreamSOCKSProxyVersion4;
 GS_EXPORT NSString * const NSStreamSOCKSProxyVersion5;
 GS_EXPORT NSString * const NSStreamSOCKSProxyVersionKey;
 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_7,GS_API_LATEST) && GS_PROTOCOLS_HAVE_OPTIONAL
+@protocol NSStreamDelegate <NSObject> 
+@optional 
+- (void) stream: (NSStream*)sStream handleEvent: (NSStreamEvent)anEvent;
+@end
+#else 
 /**
  * Informal protocol for delegates of instance of the [NSStream] class.
  */
 @interface	NSObject (NSStreamDelegate)
 - (void) stream: (NSStream*)sStream handleEvent: (NSStreamEvent)anEvent;
 @end
+#endif
 
 #if	defined(__cplusplus)
 }
 #endif
 
 #if	!NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import	<Foundation/NSStream+GNUstepBase.h>
+#import	<GNUstepBase/NSStream+GNUstepBase.h>
 #endif
 
 #endif	/* 100200 */

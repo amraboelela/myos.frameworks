@@ -28,17 +28,16 @@
 
 #import "common.h"
 
-#import "NSArray.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSGarbageCollector.h"
-#import "NSHashTable.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSGarbageCollector.h"
+#import "Foundation/NSHashTable.h"
 
 #import "NSConcretePointerFunctions.h"
 #import "NSCallBacks.h"
 #import "GSPrivate.h"
-#import "NSObject+GNUstepBase.h"
 
 static Class	concreteClass = Nil;
 
@@ -112,7 +111,7 @@ static GC_descr	nodeW = 0;
 (GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), (GC_descr)M->zone)
 #endif
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 /**** Function Implementations ****/
 

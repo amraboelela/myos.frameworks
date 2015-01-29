@@ -25,6 +25,8 @@
 
 #import "common.h"
 
+#if defined(HAVE_LIBXML)
+
 #define	GS_XMLNODETYPE	xmlDoc
 #define GSInternal	NSXMLDocumentInternal
 
@@ -35,8 +37,6 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
 
 //#import <Foundation/NSXMLParser.h>
 #import <Foundation/NSError.h>
-
-#if defined(HAVE_LIBXML)
 
 @implementation	NSXMLDocument
 
@@ -49,7 +49,6 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
 {
   if (GS_EXISTS_INTERNAL)
     {
-      [internal->docType release];
       [internal->MIMEType release];
     }
   [super dealloc];
@@ -70,7 +69,8 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
 
 - (NSXMLDTD*) DTD
 {
-  return internal->docType;
+  xmlDtdPtr dtd = xmlGetIntSubset(internal->node);
+  return (NSXMLDTD *)[NSXMLNode _objectForNode: (xmlNodePtr)dtd];
 }
 
 - (void) _createInternal
@@ -120,16 +120,25 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
     {
       char *url = NULL;
       char *encoding = NULL; // "UTF8";
-      int options = XML_PARSE_NOERROR;
+      int xmlOptions = XML_PARSE_NOERROR;
       xmlDocPtr doc = NULL;
 
       if (!(mask & NSXMLNodePreserveWhitespace))
         {
-          options |= XML_PARSE_NOBLANKS;
+          xmlOptions |= XML_PARSE_NOBLANKS;
           //xmlKeepBlanksDefault(0);
         }
+      if (mask & NSXMLNodeLoadExternalEntitiesNever)
+        {
+          xmlOptions |= XML_PARSE_NOENT;
+        }
+      if (!(mask & NSXMLNodeLoadExternalEntitiesAlways))
+        {
+          xmlOptions |= XML_PARSE_NONET;
+        }
+
       doc = xmlReadMemory([data bytes], [data length], 
-                          url, encoding, options);
+                          url, encoding, xmlOptions);
       if (doc == NULL)
 	{
           DESTROY(self);
@@ -139,24 +148,35 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
                                            code: 0
                                        userInfo: nil]; 
             }
+          return nil;
 	}
-      // FIXME: Free old node
+
+      // Free old node
+      xmlFreeDoc((xmlDocPtr)internal->node);
       [self _setNode: doc];
+
+      if (mask & NSXMLDocumentValidate)
+        {
+          [self validateAndReturnError: error];
+        }
     }
+
   return self;
 }
 
-- (id) initWithKind: (NSXMLNodeKind)kind options: (NSUInteger)theOptions
+- (id) initWithKind: (NSXMLNodeKind)theKind options: (NSUInteger)theOptions
 {
-  if (NSXMLDocumentKind == kind)
+  if (NSXMLDocumentKind == theKind)
     {
-      return [super initWithKind: kind options: theOptions];
+      return [super initWithKind: theKind options: theOptions];
     }
   else
     {
       [self release];
-      return [[NSXMLNode alloc] initWithKind: kind
-                                     options: theOptions];
+      // This cast is here to keep clang quite that expects an init* method to 
+      // return an object of the same class, which is not true here.
+      return (NSXMLDocument*)[[NSXMLNode alloc] initWithKind: theKind
+                                                     options: theOptions];
     }
 }
 
@@ -211,25 +231,35 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
 
 - (void) setCharacterEncoding: (NSString*)encoding
 {
+  if (internal->node->encoding != NULL)
+    {
+      xmlFree((xmlChar *)internal->node->encoding);
+    }
   internal->node->encoding = XMLStringCopy(encoding);
 }
 
-- (void) setDocumentContentKind: (NSXMLDocumentContentKind)kind
+- (void) setDocumentContentKind: (NSXMLDocumentContentKind)theContentKind
 {
-  internal->contentKind = kind;
+  internal->contentKind = theContentKind;
 }
 
 - (void) setDTD: (NSXMLDTD*)documentTypeDeclaration
 {
+  NSXMLDTD *old;
+
   NSAssert(documentTypeDeclaration != nil, NSInvalidArgumentException);
-  // FIXME: do node house keeping, remove ivar, use intSubset
-  ASSIGNCOPY(internal->docType, documentTypeDeclaration);
-  internal->node->extSubset = [documentTypeDeclaration _node];
+
+  // detach the old DTD, this also removes the corresponding child
+  old = [self DTD];
+  [old detach];
+
+  internal->node->intSubset = (xmlDtdPtr)[documentTypeDeclaration _node];
+  [self addChild: documentTypeDeclaration];
 }
 
-- (void) setMIMEType: (NSString*)MIMEType
+- (void) setMIMEType: (NSString*)theMIMEType
 {
-  ASSIGNCOPY(internal->MIMEType, MIMEType);
+  ASSIGNCOPY(internal->MIMEType, theMIMEType);
 }
 
 - (void) setRootElement: (NSXMLNode*)root
@@ -249,6 +279,7 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
   // remove all sub nodes
   [self setChildren: nil];
 
+  // FIXME: Should we use addChild: here? 
   xmlDocSetRootElement(internal->node, [root _node]);
 
   // Do our subNode housekeeping...
@@ -260,12 +291,43 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
   internal->node->standalone = standalone;
 }
 
+- (void) setURI: (NSString*)URI
+{
+  xmlDocPtr theNode = internal->node;
+
+  if (theNode->URL != NULL)
+    {
+      xmlFree((xmlChar *)theNode->URL);
+    }
+  theNode->URL = XMLStringCopy(URI);
+}
+
+- (NSString*) URI
+{
+  xmlDocPtr theNode = internal->node;
+
+  if (theNode->URL)
+    {
+      return StringFromXMLStringPtr(theNode->URL);
+    }
+  else
+    {
+      return nil;
+    }
+}
+
 - (void) setVersion: (NSString*)version
 {
   if ([version isEqualToString: @"1.0"] || [version isEqualToString: @"1.1"])
     {
-      internal->node->version = XMLStringCopy(version);
-   }
+      xmlDocPtr theNode = internal->node;
+  
+      if (theNode->version != NULL)
+        {
+          xmlFree((xmlChar *)theNode->version);
+        }
+      theNode->version = XMLStringCopy(version);
+    }
   else
     {
       [NSException raise: NSInvalidArgumentException
@@ -275,32 +337,33 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
 
 - (NSString*) version
 {
-  if (internal->node->version)
-    return StringFromXMLStringPtr(internal->node->version);
+  xmlDocPtr theNode = internal->node;
+
+  if (theNode->version)
+    return StringFromXMLStringPtr(theNode->version);
   else
     return @"1.0";
 }
 
 - (void) insertChild: (NSXMLNode*)child atIndex: (NSUInteger)index
 {
-  NSXMLNodeKind	kind = [child kind];
+  NSXMLNodeKind	theKind = [child kind];
   NSUInteger childCount = [self childCount];
 
   // Check to make sure this is a valid addition...
   NSAssert(nil != child, NSInvalidArgumentException);
   NSAssert(index <= childCount, NSInvalidArgumentException);
   NSAssert(nil == [child parent], NSInvalidArgumentException);
-  kind = [child kind];
-  NSAssert(NSXMLAttributeKind != kind, NSInvalidArgumentException);
-  NSAssert(NSXMLDTDKind != kind, NSInvalidArgumentException);
-  NSAssert(NSXMLDocumentKind != kind, NSInvalidArgumentException);
-  NSAssert(NSXMLElementDeclarationKind != kind, NSInvalidArgumentException);
-  NSAssert(NSXMLEntityDeclarationKind != kind, NSInvalidArgumentException);
-  NSAssert(NSXMLInvalidKind != kind, NSInvalidArgumentException);
-  NSAssert(NSXMLNamespaceKind != kind, NSInvalidArgumentException);
-  NSAssert(NSXMLNotationDeclarationKind != kind, NSInvalidArgumentException);
+  NSAssert(NSXMLAttributeKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLDTDKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLDocumentKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLElementDeclarationKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLEntityDeclarationKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLInvalidKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLNamespaceKind != theKind, NSInvalidArgumentException);
+  NSAssert(NSXMLNotationDeclarationKind != theKind, NSInvalidArgumentException);
 
-  [self _insertChild:child atIndex:index];
+  [self _insertChild: child atIndex: index];
 }
 
 - (void) insertChildren: (NSArray*)children atIndex: (NSUInteger)index
@@ -345,9 +408,9 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
   [self insertChild: child atIndex: [self childCount]];
 }
  
-- (void) replaceChildAtIndex: (NSUInteger)index withNode: (NSXMLNode*)node
+- (void) replaceChildAtIndex: (NSUInteger)index withNode: (NSXMLNode*)theNode
 {
-  [self insertChild: node atIndex: index];
+  [self insertChild: theNode atIndex: index];
   [self removeChildAtIndex: index + 1];
 }
 
@@ -356,9 +419,9 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
   return [self XMLDataWithOptions: NSXMLNodeOptionsNone]; 
 }
 
-- (NSData *) XMLDataWithOptions: (NSUInteger)options
+- (NSData *) XMLDataWithOptions: (NSUInteger)theOptions
 {
-  NSString *xmlString = [self XMLStringWithOptions: options];
+  NSString *xmlString = [self XMLStringWithOptions: theOptions];
 
   return [xmlString dataUsingEncoding: NSUTF8StringEncoding
                  allowLossyConversion: NO];
@@ -371,7 +434,7 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
 #ifdef HAVE_LIBXSLT
   xmlChar **params = NULL;
   xmlDocPtr stylesheetDoc = xmlReadMemory([xslt bytes], [xslt length],
-                                          NULL, NULL, XML_PARSE_NOERROR);
+                                          NULL, NULL, XML_PARSE_NOERROR | XML_PARSE_NONET);
   xsltStylesheetPtr stylesheet = xsltParseStylesheetDoc(stylesheetDoc);
   xmlDocPtr resultDoc = NULL;
  
@@ -383,18 +446,21 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
       NSUInteger index = 0;
       int count = [[arguments allKeys] count];
 
-      *params = NSZoneCalloc([self zone], ((count + 1) * 2), sizeof(xmlChar *));
+      params = NSZoneCalloc([self zone], ((count + 1) * 2), sizeof(xmlChar *));
       while ((key = [en nextObject]) != nil)
 	{
 	  params[index] = (xmlChar *)XMLSTRING(key);
-	  params[index+1] = (xmlChar *)XMLSTRING([arguments objectForKey: key]);
+	  params[index + 1]
+            = (xmlChar *)XMLSTRING([arguments objectForKey: key]);
 	  index += 2;
 	}
+      params[index] = NULL;
+      params[index + 1] = NULL;
     }
 
   // Apply the stylesheet and get the result...
-  resultDoc
-    = xsltApplyStylesheet(stylesheet, internal->node, (const char **)params);
+  resultDoc = xsltApplyStylesheet(stylesheet, internal->node,
+                                  (const char **)params);
   
   // Cleanup...
   xsltFreeStylesheet(stylesheet);
@@ -446,8 +512,8 @@ GS_PRIVATE_INTERNAL(NSXMLDocument)
   NSXMLDocument *c = (NSXMLDocument*)[super copyWithZone: zone];
 
   [c setMIMEType: [self MIMEType]];
-  // the extSubset isnt copied by libxml2
-  [c setDTD: [self DTD]];
+  // the intSubset is copied by libxml2
+  //[c setDTD: [self DTD]];
   [c setDocumentContentKind: [self documentContentKind]];
   return c;
 }

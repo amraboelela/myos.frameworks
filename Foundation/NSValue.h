@@ -24,7 +24,7 @@
 
 #ifndef __NSValue_h_GNUSTEP_BASE_INCLUDE
 #define __NSValue_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSGeometry.h>
@@ -364,7 +364,7 @@ extern "C" {
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSNumber+GNUstepBase.h>
+#import <GNUstepBase/NSNumber+GNUstepBase.h>
 #endif
 
 #endif /* __NSValue_h_GNUSTEP_BASE_INCLUDE */

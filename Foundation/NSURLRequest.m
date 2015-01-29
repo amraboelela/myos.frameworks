@@ -28,7 +28,7 @@
 #import "GSURLPrivate.h"
 #import "GSPrivate.h"
 
-#import "NSCoder.h"
+#import "Foundation/NSCoder.h"
 
 
 // Internal data storage

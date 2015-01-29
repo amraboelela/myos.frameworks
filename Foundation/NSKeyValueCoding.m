@@ -21,20 +21,20 @@
    Boston, MA 02111 USA.
 
    <title>NSKeyValueCoding informal protocol reference</title>
-   $Date: 2012-01-30 03:31:40 -0800 (Mon, 30 Jan 2012) $ $Revision: 34665 $
+   $Date: 2014-04-26 11:39:34 -0700 (Sat, 26 Apr 2014) $ $Revision: 37814 $
    */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSAutoreleasePool.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSKeyValueCoding.h"
-#import "NSMethodSignature.h"
-#import "NSNull.h"
-#import "NSSet.h"
-#import "NSValue.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSKeyValueCoding.h"
+#import "Foundation/NSMethodSignature.h"
+#import "Foundation/NSNull.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSValue.h"
 
 /* For the NSKeyValueMutableArray and NSKeyValueMutableSet classes
  */
@@ -152,80 +152,88 @@ SetValueForKey(NSObject *self, id anObject, const char *key, unsigned size)
 
 static id ValueForKey(NSObject *self, const char *key, unsigned size)
 {
-    SEL		sel = 0;
-    int		off = 0;
-    const char	*type = NULL;
-    
-    if (size > 0) {
-        const char	*name;
-        char		buf[size + 5];
-        char		lo;
-        char		hi;
-        
-        strncpy(buf, "_get", 4);
-        strncpy(&buf[4], key, size);
-        buf[size + 4] = '\0';
-        lo = buf[4];
-        hi = islower(lo) ? toupper(lo) : lo;
-        buf[4] = hi;
-        
-        name = &buf[1];	// getKey
-        sel = sel_getUid(name);
-        if (sel == 0 || [self respondsToSelector: sel] == NO) {
-            buf[4] = lo;
-            name = &buf[4];	// key
-            sel = sel_getUid(name);
-            if (sel == 0 || [self respondsToSelector: sel] == NO) {
-                buf[4] = hi;
-                buf[3] = 's';
-                buf[2] = 'i';
-                name = &buf[2];	// isKey
-                sel = sel_getUid(name);
-                if (sel == 0 || [self respondsToSelector: sel] == NO) {
-                    sel = 0;
-                }
-            }
-        }
-        if (sel == 0 && [[self class] accessInstanceVariablesDirectly] == YES) {
-            buf[4] = hi;
-            name = buf;	// _getKey
-            sel = sel_getUid(name);
-            if (sel == 0 || [self respondsToSelector: sel] == NO)
-            {
-                buf[4] = lo;
-                buf[3] = '_';
-                name = &buf[3];	// _key
-                sel = sel_getUid(name);
-                if (sel == 0 || [self respondsToSelector: sel] == NO)
+  SEL		sel = 0;
+  int		off = 0;
+  const char	*type = NULL;
+
+  if (size > 0)
+    {
+      const char	*name;
+      char		buf[size + 5];
+      char		lo;
+      char		hi;
+
+      strncpy(buf, "_get", 4);
+      strncpy(&buf[4], key, size);
+      buf[size + 4] = '\0';
+      lo = buf[4];
+      hi = islower(lo) ? toupper(lo) : lo;
+      buf[4] = hi;
+
+      name = &buf[1];	// getKey
+      sel = sel_getUid(name);
+      if (sel == 0 || [self respondsToSelector: sel] == NO)
+	{
+	  buf[4] = lo;
+	  name = &buf[4];	// key
+	  sel = sel_getUid(name);
+	  if (sel == 0 || [self respondsToSelector: sel] == NO)
+	    {
+              buf[4] = hi;
+              buf[3] = 's';
+              buf[2] = 'i';
+              name = &buf[2];	// isKey
+              sel = sel_getUid(name);
+              if (sel == 0 || [self respondsToSelector: sel] == NO)
                 {
-                    sel = 0;
+                  sel = 0;
                 }
-            }
-            if (sel == 0) {
-                if (GSObjCFindVariable(self, name, &type, &size, &off) == NO) {
-                    buf[4] = hi;
-                    buf[3] = 's';
-                    buf[2] = 'i';
-                    buf[1] = '_';
-                    name = &buf[1];	// _isKey
-                    if (!GSObjCFindVariable(self, name, &type, &size, &off))
+	    }
+	}
+
+      if (sel == 0 && [[self class] accessInstanceVariablesDirectly] == YES)
+	{
+	  buf[4] = hi;
+	  name = buf;	// _getKey
+	  sel = sel_getUid(name);
+	  if (sel == 0 || [self respondsToSelector: sel] == NO)
+	    {
+	      buf[4] = lo;
+	      buf[3] = '_';
+	      name = &buf[3];	// _key
+	      sel = sel_getUid(name);
+	      if (sel == 0 || [self respondsToSelector: sel] == NO)
+		{
+		  sel = 0;
+		}
+	    }
+	  if (sel == 0)
+	    {
+	      if (GSObjCFindVariable(self, name, &type, &size, &off) == NO)
+		{
+                  buf[4] = hi;
+                  buf[3] = 's';
+                  buf[2] = 'i';
+                  buf[1] = '_';
+                  name = &buf[1];	// _isKey
+		  if (!GSObjCFindVariable(self, name, &type, &size, &off))
                     {
-                        buf[4] = lo;
-                        name = &buf[4];		// key
-                        if (!GSObjCFindVariable(self, name, &type, &size, &off))
-                        {
+                       buf[4] = lo;
+                       name = &buf[4];		// key
+		       if (!GSObjCFindVariable(self, name, &type, &size, &off))
+                         {
                             buf[4] = hi;
                             buf[3] = 's';
                             buf[2] = 'i';
                             name = &buf[2];	// isKey
                             GSObjCFindVariable(self, name, &type, &size, &off);
-                        }
+                         }
                     }
-                }
-            }
-        }
+		}
+	    }
+	}
     }
-    return GSObjCGetVal(self, key, sel, type, size, off);
+  return GSObjCGetVal(self, key, sel, type, size, off);
 }
 
 
@@ -334,9 +342,9 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
     }
 #endif
   [NSException raise: NSInvalidArgumentException
-    format: @"%@ -- %@ 0x%x: Given nil value to set for key \"%@\"",
+    format: @"%@ -- %@ 0x%"PRIxPTR": Given nil value to set for key \"%@\"",
     NSStringFromSelector(_cmd), NSStringFromClass([self class]),
-    self, aKey];
+    (NSUInteger)self, aKey];
 }
 
 
@@ -416,7 +424,7 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
     (aKey ? (id)aKey : (id)@"(nil)"), @"NSUnknownUserInfoKey",
     nil];
   exp = [NSException exceptionWithName: NSUndefinedKeyException
-				reason: @"Unable to set nil value for key"
+				reason: @"Unable to set value for undefined key"
 			      userInfo: dict];
   [exp raise];
 }
@@ -509,31 +517,38 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
 }
 
 
-- (id)valueForKey: (NSString*)aKey
+- (id) valueForKey: (NSString*)aKey
 {
-    unsigned	size = [aKey length] * 8;
-    char		key[size + 1];
-    
-    [aKey getCString: key
-           maxLength: size + 1
-            encoding: NSUTF8StringEncoding];
-    size = strlen(key);
-    return ValueForKey(self, key, size);
+  unsigned	size = [aKey length] * 8;
+  char		key[size + 1];
+
+  [aKey getCString: key
+	 maxLength: size + 1
+	  encoding: NSUTF8StringEncoding];
+  size = strlen(key);
+  return ValueForKey(self, key, size);
 }
 
-- (id)valueForKeyPath: (NSString*)aKey
+
+- (id) valueForKeyPath: (NSString*)aKey
 {
-    NSRange r = [aKey rangeOfString: @"."];
-    if (r.length == 0) {
-        return [self valueForKey: aKey];
-    } else {
-        NSString *key = [aKey substringToIndex: r.location];
-        NSString *path = [aKey substringFromIndex: NSMaxRange(r)];
-        return [[self valueForKey: key] valueForKeyPath: path];
+  NSRange       r = [aKey rangeOfString: @"."];
+
+  if (r.length == 0)
+    {
+      return [self valueForKey: aKey];
+    }
+  else
+    {
+      NSString	*key = [aKey substringToIndex: r.location];
+      NSString	*path = [aKey substringFromIndex: NSMaxRange(r)];
+
+      return [[self valueForKey: key] valueForKeyPath: path];
     }
 }
 
-- (id)valueForUndefinedKey: (NSString*)aKey
+
+- (id) valueForUndefinedKey: (NSString*)aKey
 {
   NSDictionary	*dict;
   NSException	*exp;
@@ -883,9 +898,10 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
 - (void) unableToSetNilForKey: (NSString*)aKey
 {
   GSOnceMLog(@"This method is deprecated, use -setNilValueForKey:");
-  [NSException raise: NSInvalidArgumentException
-	      format: @"%@ -- %@ 0x%x: Given nil value to set for key \"%@\"",
-    NSStringFromSelector(_cmd), NSStringFromClass([self class]), self, aKey];
+  [NSException raise: NSInvalidArgumentException format:
+    @"%@ -- %@ 0x%"PRIxPTR": Given nil value to set for key \"%@\"",
+    NSStringFromSelector(_cmd), NSStringFromClass([self class]),
+    (NSUInteger)self, aKey];
 }
 
 

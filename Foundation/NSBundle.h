@@ -27,7 +27,7 @@
 
 #ifndef __NSBundle_h_GNUSTEP_BASE_INCLUDE
 #define __NSBundle_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if	defined(__cplusplus)
 extern "C" {
@@ -42,12 +42,12 @@ extern "C" {
 @class NSMutableArray;
 @class NSMutableDictionary;
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 enum {
   NSBundleExecutableArchitectureI386      = 0x00000007,
   NSBundleExecutableArchitecturePPC       = 0x00000012,
   NSBundleExecutableArchitecturePPC64     = 0x01000012,
-  NSBundleExecutableArchitectureX86_64    = 0x01000007,
+  NSBundleExecutableArchitectureX86_64    = 0x01000007
 };
 #endif
 
@@ -184,7 +184,7 @@ GS_EXPORT NSString* const NSLoadedClasses;
  * not readable, return nil.  If you want the main bundle of an
  * application or a tool, it's better if you use +mainBundle.  */
 + (NSBundle*) bundleWithPath: (NSString*)path;
-#if OS_API_VERSION(100600,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) 
 + (NSBundle*) bundleWithURL: (NSURL*)url;
 #endif
 
@@ -207,7 +207,7 @@ GS_EXPORT NSString* const NSLoadedClasses;
 		  inDirectory: (NSString*)bundlePath
 		  withVersion: (int)version;
 
-#if OS_API_VERSION(100600,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) 
 + (NSURL*) URLForResource: (NSString*)name
             withExtension: (NSString*)extension
              subdirectory: (NSString*)subpath
@@ -234,14 +234,18 @@ GS_EXPORT NSString* const NSLoadedClasses;
  * identifier already exists, the existing bundle is returned in place
  * of the receiver (and the receiver is deallocated).
  */
-- (id)initWithPath: (NSString*)path;
-- (void)reInitialize;
-#if OS_API_VERSION(100600,GS_API_LATEST) 
+- (id) initWithPath: (NSString*)path;
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) 
 - (id) initWithURL: (NSURL*)url;
 #endif
 
 /** Return the path to the bundle - an absolute path.  */
 - (NSString*) bundlePath;
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) 
+- (NSURL*) bundleURL;
+#endif
 
 /** Returns the class in the bundle with the given name. If no class
     of this name exists in the bundle, then Nil is returned.
@@ -313,7 +317,7 @@ GS_EXPORT NSString* const NSLoadedClasses;
 - (NSString*) pathForResource: (NSString*)name
 		       ofType: (NSString*)extension;
 
-#if OS_API_VERSION(100600,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) 
 - (NSURL*) URLForResource: (NSString*)name
             withExtension: (NSString*)extension;
 - (NSURL*) URLForResource: (NSString*)name
@@ -326,30 +330,44 @@ GS_EXPORT NSString* const NSLoadedClasses;
 #endif
 
 /**
-   <p>Returns the value for the key found in the strings file tableName, or
-   Localizable.strings if tableName is nil.</p>
-
-   <p>If the user default <code>NSShowNonLocalizedStrings</code> is set, the
-   value of the key will be returned as an uppercase string rather than any
-   localized equivalent found.  This can be useful during development to check
-   where a given string in the UI is "coming from".</p>
+ * <p>Returns the value for the key found in the strings file tableName, or
+ * Localizable.strings if tableName is nil.
+ * </p>
+ * <p>If the user default <code>NSShowNonLocalizedStrings</code> is set, the
+ * value of the key will be returned as an uppercase string rather than any
+ * localized equivalent found.  This can be useful during development to check
+ * where a given string in the UI is "coming from".</p>
  */
-#ifdef __clang__
-- (NSString*) localizedStringForKey: (NSString*)key
-			      value: (NSString*)value
-			      table: (NSString*)tableName
-				  __attribute__((format_arg(1)));
-#else
 - (NSString*) localizedStringForKey: (NSString*)key
 			      value: (NSString*)value
 			      table: (NSString*)tableName;
-#endif
 
 /** Returns the absolute path to the resources directory of the bundle.  */
 - (NSString*) resourcePath;
 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST)
+/** Returns the absolute path to the resources directory of the bundle.  */
+- (NSURL *) resourceURL;
+#endif
+
 /** Returns the full path to the plug-in subdirectory of the bundle.  */
 - (NSString *) builtInPlugInsPath;
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) 
+/** Returns the full path to the plug-in subdirectory of the bundle.  */
+- (NSURL *) builtInPlugInsURL;
+#endif
+
+/** Returns the full path to the private frameworks subdirectory of the bundle.  */
+- (NSString *) privateFrameworksPath;
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) 
+/** Returns the full path to the private frameworks subdirectory of the bundle.  */
+- (NSURL *) privateFrameworksURL;
+#endif
+
+
+
 
 /** Returns the bundle identifier, as defined by the CFBundleIdentifier
     key in the infoDictionary */
@@ -376,7 +394,7 @@ GS_EXPORT NSString* const NSLoadedClasses;
 + (NSArray *) preferredLocalizationsFromArray: (NSArray *)localizationsArray 
 			       forPreferences: (NSArray *)preferencesArray;
 
-#if OS_API_VERSION(100200,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2,GS_API_LATEST) 
 /**
  * Returns a boolean indicating whether code for the bundle has been loaded.
  */
@@ -407,7 +425,7 @@ GS_EXPORT NSString* const NSLoadedClasses;
 /** Returns the info property list associated with the bundle. */
 - (NSDictionary*) infoDictionary;
 
-#if OS_API_VERSION(100200,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2,GS_API_LATEST) 
 /** Returns a localized info property list based on the preferred
  *  localization or the most appropriate localization if the preferred
  *  one cannot be found.
@@ -439,7 +457,7 @@ GS_EXPORT NSString* const NSLoadedClasses;
  */
 - (BOOL) load;
 
-#if OS_API_VERSION(100200,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2,GS_API_LATEST) 
 /** * Not implemented
  */
 - (BOOL) unload;
@@ -447,9 +465,21 @@ GS_EXPORT NSString* const NSLoadedClasses;
 
 /** Returns the path to the executable code in the bundle */
 - (NSString *) executablePath;
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST)
+- (NSURL *) executableURL;
 #endif
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+- (NSString *) pathForAuxiliaryExecutable: (NSString *) executableName;
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST)
+- (NSURL *)URLForAuxiliaryExecutable: (NSString *) executableName;
+#endif
+
+
+#endif
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 /** Not implemented */
 - (NSArray *) executableArchitectures;
 /** Not implemented */
@@ -615,7 +645,7 @@ GS_EXPORT NSString* const NSLoadedClasses;
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSBundle+GNUstepBase.h>
+#import <GNUstepBase/NSBundle+GNUstepBase.h>
 #endif
 
 #endif	/* __NSBundle_h_GNUSTEP_BASE_INCLUDE */

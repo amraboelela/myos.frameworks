@@ -22,15 +22,14 @@
    Boston, MA 02111 USA.
 
    <title>NSNotification class reference</title>
-   $Date: 2010-02-25 10:49:31 -0800 (Thu, 25 Feb 2010) $ $Revision: 29753 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
 */
 
 #import "common.h"
 #define	EXPOSE_NSNotification_IVARS	1
-#import "NSNotification.h"
-#import "NSCoder.h"
-#import "NSDictionary.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSDictionary.h"
 
 @class	GSNotification;
 @interface GSNotification : NSObject	// Help the compiler

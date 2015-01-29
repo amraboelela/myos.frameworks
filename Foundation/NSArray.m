@@ -27,31 +27,32 @@
    Boston, MA 02111 USA.
 
    <title>NSArray class reference</title>
-   $Date: 2012-01-02 07:07:32 -0800 (Mon, 02 Jan 2012) $ $Revision: 34389 $
+   $Date: 2015-01-16 07:25:50 -0800 (Fri, 16 Jan 2015) $ $Revision: 38295 $
    */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSEnumerator.h"
-#import "NSCoder.h"
-#import "NSData.h"
-#import "NSRange.h"
-#import "NSException.h"
-#import "NSAutoreleasePool.h"
-#import "NSThread.h"
-#import "NSMapTable.h"
-#import "NSLock.h"
-#import "NSValue.h"
-#import "NSNull.h"
-#import "NSKeyValueCoding.h"
-#import "NSSet.h"
-#import "NSUserDefaults.h"
-#import "NSIndexSet.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSRange.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSThread.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSNull.h"
+#import "Foundation/NSKeyValueCoding.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/NSIndexSet.h"
 // For private method _decodeArrayOfObjectsForKey:
-#import "NSKeyedArchiver.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSKeyedArchiver.h"
 #import "GSPrivate.h"
 #import "GSFastEnumeration.h"
+#import "GSDispatch.h"
+#import "GSSorting.h"
 
 static BOOL GSMacOSXCompatiblePropertyLists(void)
 {
@@ -205,11 +206,11 @@ static SEL	rlSel;
  */
 + (id) arrayWithArray: (NSArray*)array
 {
-    id	o;
-    
-    o = [self allocWithZone: NSDefaultMallocZone()];
-    o = [o initWithArray: array];
-    return AUTORELEASE(o);
+  id	o;
+
+  o = [self allocWithZone: NSDefaultMallocZone()];
+  o = [o initWithArray: array];
+  return AUTORELEASE(o);
 }
 
 /**
@@ -261,6 +262,7 @@ static SEL	rlSel;
 + (id) arrayWithObjects: firstObject, ...
 {
   id	a = [self allocWithZone: NSDefaultMallocZone()];
+
   GS_USEIDLIST(firstObject,
     a = [a initWithObjects: __objects count: __count]);
   return AUTORELEASE(a);
@@ -378,28 +380,31 @@ static SEL	rlSel;
   return [copy initWithArray: self copyItems: YES];
 }
 
-/** <override-subclass />
- * Returns the number of elements contained in the receiver.
- */
 - (NSUInteger) count
 {
   [self subclassResponsibility: _cmd];
   return 0;
 }
 
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state 	
+- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state
 				   objects: (__unsafe_unretained id[])stackbuf
 				     count: (NSUInteger)len
 {
-  NSUInteger size = [self count];
   NSInteger count;
 
-  /* This is cached in the caller at the start and compared at each
+  /* In a mutable subclass, the mutationsPtr should be set to point to a
+   * value (unsigned long) which will be changed (incremented) whenever
+   * the container is mutated (content added, removed, re-ordered).
+   * This is cached in the caller at the start and compared at each
    * iteration.   If it changes during the iteration then
    * objc_enumerationMutation() will be called, throwing an exception.
+   * The abstract base class implementation points to a fixed value
+   * (the enumeration state pointer should exist and be unchanged for as
+   * long as the enumeration process runs), which is fine for enumerating
+   * an immutable array.
    */
-  state->mutationsPtr = (unsigned long *)size;
-  count = MIN(len, size - state->state);
+  state->mutationsPtr = (unsigned long *)&state->mutationsPtr;
+  count = MIN(len, [self count] - state->state);
   /* If a mutation has occurred then it's possible that we are being asked to
    * get objects from after the end of the array.  Don't pass negative values
    * to memcpy.
@@ -519,14 +524,14 @@ static SEL	rlSel;
   unsigned c = [self count];
 
   if (c > 0)
-  {
-    IMP	get = [self methodForSelector: oaiSel];
-    unsigned	i;
+    {
+      IMP	get = [self methodForSelector: oaiSel];
+      unsigned	i;
 
-    for (i = 0; i < c; i++)
-     if (anObject == (*get)(self, oaiSel, i))
-      return i;
-  }
+      for (i = 0; i < c; i++)
+	if (anObject == (*get)(self, oaiSel, i))
+	  return i;
+    }
   return NSNotFound;
 }
 
@@ -871,13 +876,6 @@ static SEL	rlSel;
   return self;
 }
 
-/** <init /> <override-subclass />
- * This should initialize the array with count (may be zero) objects.<br />
- * Retains each object placed in the array.<br />
- * Calls -init (which does nothing but maintain MacOS-X compatibility),
- * and needs to be re-implemented in subclasses in order to have all
- * other initialisers work.
- */
 - (id) initWithObjects: (const id[])objects count: (NSUInteger)count
 {
   self = [self init];
@@ -909,19 +907,15 @@ static SEL	rlSel;
   return [copy initWithArray: self copyItems: NO];
 }
 
-/** <override-subclass />
- * Returns the object at the specified index.
- * Raises an exception of the index is beyond the array.
- */
 - (id) objectAtIndex: (NSUInteger)index
 {
   [self subclassResponsibility: _cmd];
   return nil;
 }
 
-- (id)objectAtIndexedSubscript:(NSUInteger)idx
+- (id) objectAtIndexedSubscript: (size_t)anIndex
 {
-  return [self objectAtIndex: idx];
+  return [self objectAtIndex: (NSUInteger)anIndex];
 }
 
 - (NSArray *) objectsAtIndexes: (NSIndexSet *)indexes
@@ -976,29 +970,31 @@ static SEL	rlSel;
 /**
  * Returns the last object in the receiver, or nil if the receiver is empty.
  */
-- (id)lastObject
+- (id) lastObject
 {
-    unsigned count = [self count];
-    if (count == 0) {
-        return nil;
-    }
-    return [self objectAtIndex: count-1];
+  unsigned count = [self count];
+  if (count == 0)
+    return nil;
+  return [self objectAtIndex: count-1];
 }
 
 /**
  * Makes each object in the array perform aSelector.<br />
  * This is done sequentially from the first to the last object.
  */
-- (void)makeObjectsPerformSelector:(SEL)aSelector
+- (void) makeObjectsPerformSelector: (SEL)aSelector
 {
-    //DLog();
-    unsigned c = [self count];
-    if (c > 0) {
-        IMP	get = [self methodForSelector: oaiSel];
-        unsigned	i = 0;
-        while (i < c) {
-            [(*get)(self, oaiSel, i++) performSelector:aSelector];
-        }
+  unsigned	c = [self count];
+
+  if (c > 0)
+    {
+      IMP	get = [self methodForSelector: oaiSel];
+      unsigned	i = 0;
+
+      while (i < c)
+	{
+	  [(*get)(self, oaiSel, i++) performSelector: aSelector];
+	}
     }
 }
 
@@ -1042,17 +1038,24 @@ static SEL	rlSel;
 static NSComparisonResult
 compare(id elem1, id elem2, void* context)
 {
-    NSComparisonResult (*imp)(id, SEL, id);
-    if (context == 0) {
-        [NSException raise: NSInvalidArgumentException
-                    format: @"compare null selector given"];
+  NSComparisonResult (*imp)(id, SEL, id);
+
+  if (context == 0)
+    {
+      [NSException raise: NSInvalidArgumentException
+		   format: @"compare null selector given"];
     }
-    imp = (NSComparisonResult (*)(id, SEL, id))
+
+  imp = (NSComparisonResult (*)(id, SEL, id))
     [elem1 methodForSelector: context];
-    if (imp == NULL) {
-        [NSException raise:NSGenericException format:@"invalid selector passed to compare"];
+
+  if (imp == NULL)
+    {
+      [NSException raise: NSGenericException
+		  format: @"invalid selector passed to compare"];
     }
-    return (*imp)(elem1, context, elem2);
+
+  return (*imp)(elem1, context, elem2);
 }
 
 /**
@@ -1069,8 +1072,9 @@ compare(id elem1, id elem2, void* context)
  * according to a sort with comparator.  This invokes
  * -sortedArrayUsingFunction:context:hint: with a nil hint.
  */
-- (NSArray*) sortedArrayUsingFunction: (NSComparisonResult(*)(id,id,void*))comparator
-   context: (void*)context
+- (NSArray*) sortedArrayUsingFunction:
+  (NSComparisonResult(*)(id,id,void*))comparator
+  context: (void*)context
 {
   return [self sortedArrayUsingFunction: comparator context: context hint: nil];
 }
@@ -1090,9 +1094,10 @@ compare(id elem1, id elem2, void* context)
  * is passed two objects to compare, and the context as the third
  * argument.  The hint argument is currently ignored, and may be nil.
  */
-- (NSArray*) sortedArrayUsingFunction: (NSComparisonResult(*)(id,id,void*))comparator
-   context: (void*)context
-   hint: (NSData*)hint
+- (NSArray*) sortedArrayUsingFunction:
+  (NSComparisonResult(*)(id,id,void*))comparator
+  context: (void*)context
+  hint: (NSData*)hint
 {
   NSMutableArray	*sortedArray;
 
@@ -1102,6 +1107,106 @@ compare(id elem1, id elem2, void* context)
 
   return [sortedArray makeImmutableCopyOnFail: NO];
 }
+
+
+- (NSArray*) sortedArrayWithOptions: (NSSortOptions)options
+                    usingComparator: (NSComparator)comparator
+{
+  NSMutableArray	*sortedArray;
+
+  sortedArray = [[[NSMutableArrayClass allocWithZone:
+    NSDefaultMallocZone()] initWithArray: self copyItems: NO] autorelease];
+  [sortedArray sortWithOptions: options usingComparator: comparator];
+
+  return [sortedArray makeImmutableCopyOnFail: NO];
+}
+
+- (NSArray*) sortedArrayUsingComparator: (NSComparator)comparator
+{
+  return [self sortedArrayWithOptions: 0 usingComparator: comparator];
+}
+
+- (NSUInteger) indexOfObject: (id)key
+               inSortedRange: (NSRange)range
+                     options: (NSBinarySearchingOptions)options
+             usingComparator: (NSComparator)comparator
+{
+  if (range.length == 0)
+    {
+      return options & NSBinarySearchingInsertionIndex
+        ? range.location : NSNotFound;
+    }
+  if (range.length == 1)
+    {
+      switch (CALL_BLOCK(comparator, key, [self objectAtIndex: range.location]))
+        {
+          case NSOrderedSame:
+            return range.location;
+          case NSOrderedAscending:
+            return options & NSBinarySearchingInsertionIndex
+              ? range.location : NSNotFound;
+          case NSOrderedDescending:
+            return options & NSBinarySearchingInsertionIndex
+              ? (range.location + 1) : NSNotFound;
+          default:
+            // Shouldn't happen
+            return NSNotFound;
+        }
+    }
+  else
+    {
+      NSUInteger index = NSNotFound;
+      NSUInteger count = [self count];
+      GS_BEGINIDBUF(objects, count);
+
+      [self getObjects: objects];
+      // We use the timsort galloping to find the insertion index:
+      if (options & NSBinarySearchingLastEqual)
+        {
+          index = GSRightInsertionPointForKeyInSortedRange(key,
+            objects, range, comparator);
+        }
+      else
+        {
+          // Left insertion is our default
+          index = GSLeftInsertionPointForKeyInSortedRange(key,
+            objects, range, comparator);
+        }
+      GS_ENDIDBUF()
+
+      // If we were looking for the insertion point, we are done here
+      if (options & NSBinarySearchingInsertionIndex)
+        {
+          return index;
+        }
+
+      /* Otherwise, we need need another equality check in order to
+       * know whether we need return NSNotFound.
+       */
+
+      if (options & NSBinarySearchingLastEqual)
+        {
+          /* For search from the right, the equal object would be
+           * the one before the index, but only if it's not at the
+           * very beginning of the range (though that might not
+           * actually be possible, it's better to check nonetheless).
+           */
+          if (index > range.location)
+            {
+              index--;
+            }
+        }
+      /*
+       * For a search from the left, we'd have the correct index anyways. Check
+       * whether it's equal to the key and return NSNotFound otherwise
+       */
+      return (NSOrderedSame == CALL_BLOCK(comparator,
+        key, [self objectAtIndex: index]) ? index : NSNotFound);
+    }
+  // Never reached
+  return NSNotFound;
+}
+
 
 /**
  * Returns a string formed by concatenating the objects in the receiver,
@@ -1266,13 +1371,11 @@ compare(id elem1, id elem2, void* context)
 - (NSString*) descriptionWithLocale: (id)locale
 			     indent: (NSUInteger)level
 {
-    NSString	*result = nil;
-    
-    GSPropertyListMake(self, locale, NO, YES, level == 1 ? 3 : 2, &result);
-    
-    return [NSString stringWithFormat:@"<%@: %p; %@>", [self className], self, result];
-    
-    //return  result;
+  NSString	*result = nil;
+
+  GSPropertyListMake(self, locale, NO, YES, level == 1 ? 3 : 2, &result);
+
+  return result;
 }
 
 /**
@@ -1360,13 +1463,13 @@ compare(id elem1, id elem2, void* context)
 
   if ([key isEqualToString: @"@count"] == YES)
     {
-      result = [NSNumber numberWithUnsignedInt: [self count]];
+      result = [NSNumber numberWithUnsignedInteger: [self count]];
     }
   else if ([key isEqualToString: @"count"] == YES)
     {
       GSOnceMLog(
 @"[NSArray-valueForKey:] called wth 'count' is deprecated .. use '@count'");
-      result = [NSNumber numberWithUnsignedInt: [self count]];
+      result = [NSNumber numberWithUnsignedInteger: [self count]];
     }
   else
     {
@@ -1414,7 +1517,7 @@ compare(id elem1, id elem2, void* context)
         {
           if ([path isEqualToString: @"@count"] == YES)
             {
-              result = [NSNumber numberWithUnsignedInt: [self count]];
+              result = [NSNumber numberWithUnsignedInteger: [self count]];
             }
           else
             {
@@ -1429,7 +1532,7 @@ compare(id elem1, id elem2, void* context)
 
           if ([op isEqualToString: @"@count"] == YES)
             {
-              result = [NSNumber numberWithUnsignedInt: count];
+              result = [NSNumber numberWithUnsignedInteger: count];
             }
           else if ([op isEqualToString: @"@avg"] == YES)
             {
@@ -1439,7 +1542,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   while ((o = [e nextObject]) != nil)
                     {
                       d += [[o valueForKeyPath: rem] doubleValue];
@@ -1454,7 +1557,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   while ((o = [e nextObject]) != nil)
                     {
                       o = [o valueForKeyPath: rem];
@@ -1472,7 +1575,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   while ((o = [e nextObject]) != nil)
                     {
                       o = [o valueForKeyPath: rem];
@@ -1492,7 +1595,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   while ((o = [e nextObject]) != nil)
                     {
                       d += [[o valueForKeyPath: rem] doubleValue];
@@ -1506,7 +1609,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [NSMutableSet set];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -1526,7 +1629,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [NSMutableSet set];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -1546,7 +1649,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [NSMutableSet set];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -1566,7 +1669,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [GSMutableArray array];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -1586,7 +1689,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [GSMutableArray array];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -1606,7 +1709,7 @@ compare(id elem1, id elem2, void* context)
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [GSMutableArray array];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -1634,49 +1737,85 @@ compare(id elem1, id elem2, void* context)
   return result;
 }
 
+/**
+ * Call setValue:forKey: on each of the receiver's items
+ * with the value and key.
+ */
+- (void) setValue: (id)value forKey: (NSString*)key
+{
+  unsigned	i;
+  unsigned	count = [self count];
+  volatile id	object = nil;
+
+  for (i = 0; i < count; i++)
+    {
+      object = [self objectAtIndex: i];
+      [object setValue: value
+		forKey: key];
+    }
+}
+
 - (void) enumerateObjectsUsingBlock: (GSEnumeratorBlock)aBlock
 {
   [self enumerateObjectsWithOptions: 0 usingBlock: aBlock];
 }
-- (void) enumerateObjectsWithOptions: (NSEnumerationOptions)opts 
+- (void) enumerateObjectsWithOptions: (NSEnumerationOptions)opts
 			  usingBlock: (GSEnumeratorBlock)aBlock
 {
   NSUInteger count = 0;
-  BOOL shouldStop = NO;
+  BLOCK_SCOPE BOOL shouldStop = NO;
+  BOOL isReverse = (opts & NSEnumerationReverse);
   id<NSFastEnumeration> enumerator = self;
 
   /* If we are enumerating in reverse, use the reverse enumerator for fast
    * enumeration. */
-  if (opts & NSEnumerationReverse)
+  if (isReverse)
     {
       enumerator = [self reverseObjectEnumerator];
+      count = ([self count] - 1);
     }
 
+  {
+  GS_DISPATCH_CREATE_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
   FOR_IN (id, obj, enumerator)
-    CALL_BLOCK(aBlock, obj, count++, &shouldStop);
-    if (shouldStop)
-    {
-      return;
-    }
-  END_FOR_IN(enumerator)
+    GS_DISPATCH_SUBMIT_BLOCK(enumQueueGroup, enumQueue, if (YES == shouldStop) {return;}, return, aBlock, obj, count, &shouldStop);
+      if (isReverse)
+      {
+        count--;
+      }
+      else
+      {
+        count++;
+      }
+
+      if (shouldStop)
+      {
+        break;
+      }
+    END_FOR_IN(enumerator)
+    GS_DISPATCH_TEARDOWN_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
+  }
 }
 
 - (void) enumerateObjectsAtIndexes: (NSIndexSet*)indexSet
 			   options: (NSEnumerationOptions)opts
 		        usingBlock: (GSEnumeratorBlock)block
 {
-  [[self objectsAtIndexes: indexSet] enumerateObjectsWithOptions: opts 
+  [[self objectsAtIndexes: indexSet] enumerateObjectsWithOptions: opts
 						      usingBlock: block];
 }
 
-- (NSIndexSet *) indexesOfObjectsWithOptions: (NSEnumerationOptions)opts 
+- (NSIndexSet *) indexesOfObjectsWithOptions: (NSEnumerationOptions)opts
 				 passingTest: (GSPredicateBlock)predicate
 {
   /* TODO: Concurrency. */
   NSMutableIndexSet *set = [NSMutableIndexSet indexSet];
-  BOOL shouldStop = NO;
+  BLOCK_SCOPE BOOL shouldStop = NO;
   id<NSFastEnumeration> enumerator = self;
   NSUInteger count = 0;
+  BLOCK_SCOPE NSLock *setLock = nil;
+
+
 
   /* If we are enumerating in reverse, use the reverse enumerator for fast
    * enumeration. */
@@ -1684,20 +1823,44 @@ compare(id elem1, id elem2, void* context)
     {
       enumerator = [self reverseObjectEnumerator];
     }
+  if (opts & NSEnumerationConcurrent)
+  {
+    setLock = [NSLock new];
+  }
+  {
+    GS_DISPATCH_CREATE_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
+    FOR_IN (id, obj, enumerator)
+#     if __has_feature(blocks) && (GS_USE_LIBDISPATCH == 1)
 
-  FOR_IN (id, obj, enumerator)
-    if (CALL_BLOCK(predicate, obj, count, &shouldStop))
-      {
-	/* TODO: It would be more efficient to collect an NSRange and only
-	 * pass it to the index set when CALL_BLOCK returned NO. */
-	[set addIndex: count];
-      }
-    if (shouldStop)
-      {
-	return set;
-      }
-    count++;
-  END_FOR_IN(enumerator)
+      dispatch_group_async(enumQueueGroup, enumQueue, ^(void){
+        if (shouldStop)
+        {
+	  return;
+        }
+        if (predicate(obj, count, &shouldStop))
+        {
+	  [setLock lock];
+	  [set addIndex: count];
+	  [setLock unlock];
+        }
+      });
+#     else
+      if (CALL_BLOCK(predicate, obj, count, &shouldStop))
+        {
+	  /* TODO: It would be more efficient to collect an NSRange and only
+	   * pass it to the index set when CALL_BLOCK returned NO. */
+	  [set addIndex: count];
+        }
+#     endif
+      if (shouldStop)
+        {
+	  break;
+        }
+      count++;
+    END_FOR_IN(enumerator)
+    GS_DISPATCH_TEARDOWN_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts);
+  }
+  [setLock release];
   return set;
 }
 
@@ -1715,14 +1878,15 @@ compare(id elem1, id elem2, void* context)
     passingTest: predicate];
 }
 
-- (NSUInteger)indexOfObjectWithOptions: (NSEnumerationOptions)opts 
+- (NSUInteger)indexOfObjectWithOptions: (NSEnumerationOptions)opts
 			   passingTest: (GSPredicateBlock)predicate
 {
   /* TODO: Concurrency. */
   id<NSFastEnumeration> enumerator = self;
-  BOOL shouldStop = NO;
+  BLOCK_SCOPE BOOL shouldStop = NO;
   NSUInteger count = 0;
-
+  BLOCK_SCOPE NSUInteger index = NSNotFound;
+  BLOCK_SCOPE NSLock *indexLock = nil;
   /* If we are enumerating in reverse, use the reverse enumerator for fast
    * enumeration. */
   if (opts & NSEnumerationReverse)
@@ -1730,18 +1894,48 @@ compare(id elem1, id elem2, void* context)
       enumerator = [self reverseObjectEnumerator];
     }
 
-  FOR_IN (id, obj, enumerator)
-    if (CALL_BLOCK(predicate, obj, count, &shouldStop))
-      {
-	return count;
-      }
-    if (shouldStop)
-      {
-	return NSNotFound;
-      }
-    count++;
-  END_FOR_IN(enumerator)
-  return NSNotFound;
+  if (opts & NSEnumerationConcurrent)
+  {
+    indexLock = [NSLock new];
+  }
+  {
+    GS_DISPATCH_CREATE_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
+    FOR_IN (id, obj, enumerator)
+#     if __has_feature(blocks) && (GS_USE_LIBDISPATCH == 1)
+      dispatch_group_async(enumQueueGroup, enumQueue, ^(void){
+        if (shouldStop)
+        {
+	  return;
+        }
+        if (predicate(obj, count, &shouldStop))
+        {
+	  // FIXME: atomic operation on the shouldStop variable would be nicer,
+	  // but we don't expose the GSAtomic* primitives anywhere.
+	  [indexLock lock];
+	  index =  count;
+	  // Cancel all other predicate evaluations:
+	  shouldStop = YES;
+	  [indexLock unlock];
+        }
+      });
+#     else
+      if (CALL_BLOCK(predicate, obj, count, &shouldStop))
+        {
+
+	  index = count;
+	  shouldStop = YES;
+        }
+#     endif
+      if (shouldStop)
+        {
+	  break;
+        }
+      count++;
+    END_FOR_IN(enumerator)
+    GS_DISPATCH_TEARDOWN_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts);
+  }
+  [indexLock release];
+  return index;
 }
 
 - (NSUInteger) indexOfObjectPassingTest: (GSPredicateBlock)predicate
@@ -1798,23 +1992,12 @@ compare(id elem1, id elem2, void* context)
   return NSMutableArrayClass;
 }
 
-/** <init /> <override-subclass />
- * Initialise the array with the specified capacity ... this
- * should ensure that the array can have numItems added efficiently.<br />
- * Calls -init (which does nothing but maintain MacOS-X compatibility),
- * and needs to be re-implemented in subclasses in order to have all
- * other initialisers work.
- */
 - (id) initWithCapacity: (NSUInteger)numItems
 {
   self = [self init];
   return self;
 }
 
-/** <override-subclass />
- * Adds anObject at the end of the array, thus increasing the size of
- * the array.  The object is retained upon addition.
- */
 - (void) addObject: (id)anObject
 {
   [self subclassResponsibility: _cmd];
@@ -1835,14 +2018,14 @@ compare(id elem1, id elem2, void* context)
   RELEASE(tmp);
 }
 
-/** <override-subclass />
- * Places an object into the receiver at the specified location.<br />
- * Raises an exception if given an array index which is too large.<br />
- * The object is retained by the array.
- */
 - (void) replaceObjectAtIndex: (NSUInteger)index withObject: (id)anObject
 {
   [self subclassResponsibility: _cmd];
+}
+
+- (void) setObject: (id)anObject atIndexedSubscript: (size_t)anIndex
+{
+  [self replaceObjectAtIndex: (NSUInteger)anIndex withObject: anObject];
 }
 
 /** Replaces the values in the receiver at the locations given by the
@@ -1893,12 +2076,6 @@ compare(id elem1, id elem2, void* context)
 	 withObjectsFromArray: [anArray subarrayWithRange: anotherRange]];
 }
 
-/** <override-subclass />
- * Inserts an object into the receiver at the specified location.<br />
- * Raises an exception if given an array index which is too large.<br />
- * The size of the array increases by one.<br />
- * The object is retained by the array.
- */
 - (void) insertObject: anObject atIndex: (NSUInteger)index
 {
   [self subclassResponsibility: _cmd];
@@ -1923,11 +2100,6 @@ compare(id elem1, id elem2, void* context)
     }
 }
 
-/** <override-subclass />
- * Removes an object from the receiver at the specified location.<br />
- * The size of the array decreases by one.<br />
- * Raises an exception if given an array index which is too large.<br />
- */
 - (void) removeObjectAtIndex: (NSUInteger)index
 {
   [self subclassResponsibility: _cmd];
@@ -2212,8 +2384,8 @@ compare(id elem1, id elem2, void* context)
   NSUInteger count = [indexes count];
   NSUInteger indexArray[count];
 
-  [indexes getIndexes: indexArray 
-             maxCount: count 
+  [indexes getIndexes: indexArray
+             maxCount: count
          inIndexRange: NULL];
 
   [self removeObjectsFromIndices: indexArray
@@ -2338,97 +2510,71 @@ compare(id elem1, id elem2, void* context)
 - (void) sortUsingFunction: (NSComparisonResult (*)(id,id,void*))compare
 		   context: (void*)context
 {
-  /* Shell sort algorithm taken from SortingInAction - a NeXT example */
-#define STRIDE_FACTOR 3	// good value for stride factor is not well-understood
-                        // 3 is a fairly good choice (Sedgewick)
-  unsigned int	c;
-  unsigned int	d;
-  unsigned int	stride = 1;
-  BOOL		found;
-  unsigned int	count = [self count];
-#ifdef	GSWARN
-  BOOL		badComparison = NO;
-#endif
+  NSUInteger count = [self count];
 
-  while (stride <= count)
+  if ((1 < count) && (NULL != compare))
     {
-      stride = stride * STRIDE_FACTOR + 1;
-    }
+      NSArray *res = nil;
+      GS_BEGINIDBUF(objects, count);
+      [self getObjects: objects];
 
-  while (stride > (STRIDE_FACTOR - 1))
-    {
-      // loop to sort for each value of stride
-      stride = stride / STRIDE_FACTOR;
-      for (c = stride; c < count; c++)
-	{
-	  found = NO;
-	  if (stride > c)
-	    {
-	      break;
-	    }
-	  d = c - stride;
-	  while (!found)	/* move to left until correct place */
-	    {
-	      id			a = [self objectAtIndex: d + stride];
-	      id			b = [self objectAtIndex: d];
-	      NSComparisonResult	r;
+      GSSortUnstable(objects,
+        NSMakeRange(0,count), (id)compare, GSComparisonTypeFunction, context);
 
-	      r = (*compare)(a, b, context);
-	      if (r < 0)
-		{
-#ifdef	GSWARN
-		  if (r != NSOrderedAscending)
-		    {
-		      badComparison = YES;
-		    }
-#endif
-		  IF_NO_GC(RETAIN(a));
-		  [self replaceObjectAtIndex: d + stride withObject: b];
-		  [self replaceObjectAtIndex: d withObject: a];
-		  RELEASE(a);
-		  if (stride > d)
-		    {
-		      break;
-		    }
-		  d -= stride;		// jump by stride factor
-		}
-	      else
-		{
-#ifdef	GSWARN
-		  if (r != NSOrderedDescending && r != NSOrderedSame)
-		    {
-		      badComparison = YES;
-		    }
-#endif
-		  found = YES;
-		}
-	    }
-	}
+      res = [[NSArray alloc] initWithObjects: objects count: count];
+      [self setArray: res];
+      RELEASE(res);
+      GS_ENDIDBUF();
     }
-#ifdef	GSWARN
-  if (badComparison == YES)
-    {
-      NSWarnMLog(@"Detected bad return value from comparison");
-    }
-#endif
 }
 
-/**
- * Call setValue:forKey: on each of the receiver's items
- * with the value and key.
- */
-- (void) setValue: (id)value forKey: (NSString*)key
+- (void) sortWithOptions: (NSSortOptions)options
+         usingComparator: (NSComparator)comparator
 {
-  unsigned	i;
-  unsigned	count = [self count];
-  volatile id	object = nil;
+  NSUInteger count = [self count];
 
-  for (i = 0; i < count; i++)
+  if ((1 < count) && (NULL != comparator))
     {
-      object = [self objectAtIndex: i];
-      [object setValue: value
-		forKey: key];
+      NSArray *res = nil;
+      GS_BEGINIDBUF(objects, count);
+      [self getObjects: objects];
+
+      if (options & NSSortStable)
+        {
+          if (options & NSSortConcurrent)
+            {
+              GSSortStableConcurrent(objects, NSMakeRange(0,count),
+                (id)comparator, GSComparisonTypeComparatorBlock, NULL);
+            }
+          else
+            {
+              GSSortStable(objects, NSMakeRange(0,count),
+                (id)comparator, GSComparisonTypeComparatorBlock, NULL);
+            }
+        }
+      else
+        {
+          if (options & NSSortConcurrent)
+            {
+              GSSortUnstableConcurrent(objects, NSMakeRange(0,count),
+                (id)comparator, GSComparisonTypeComparatorBlock, NULL);
+            }
+          else
+            {
+              GSSortUnstable(objects, NSMakeRange(0,count),
+                (id)comparator, GSComparisonTypeComparatorBlock, NULL);
+            }
+        }
+      res = [[NSArray alloc] initWithObjects: objects count: count];
+      [self setArray: res];
+      RELEASE(res);
+      GS_ENDIDBUF();
     }
+}
+
+- (void) sortUsingComparator: (NSComparator)comparator
+{
+  [self sortWithOptions: 0 usingComparator: comparator];
 }
 @end
 

@@ -24,7 +24,9 @@
 
 #import "common.h"
 
-#define GS_XMLNODETYPE	xmlDtd
+#if defined(HAVE_LIBXML)
+
+#define GS_XMLNODETYPE	xmlEntity
 #define GSInternal	NSXMLDTDNodeInternal
 
 #import	"NSXMLPrivate.h"
@@ -51,29 +53,41 @@ GS_PRIVATE_INTERNAL(NSXMLDTDNode)
   GS_CREATE_INTERNAL(NSXMLDTDNode);
 }
 
-- (id) initWithKind: (NSXMLNodeKind)kind options: (NSUInteger)theOptions
+- (id) initWithKind: (NSXMLNodeKind)theKind options: (NSUInteger)theOptions
 {
-  if (NSXMLEntityDeclarationKind == kind
-      || NSXMLElementDeclarationKind == kind
-      || NSXMLNotationDeclarationKind == kind)
+  if (NSXMLEntityDeclarationKind == theKind
+    || NSXMLElementDeclarationKind == theKind
+    || NSXMLNotationDeclarationKind == theKind)
     {
-      return [super initWithKind: kind options: theOptions];
+      return [super initWithKind: theKind options: theOptions];
     }
   else
     {
       [self release];
-      return [[NSXMLNode alloc] initWithKind: kind
-                                     options: theOptions];
+      // This cast is here to keep clang quite that expects an init* method to 
+      // return an object of the same class, which is not true here.
+      return (NSXMLDTDNode*)[[NSXMLNode alloc] initWithKind: theKind
+                                                    options: theOptions];
     }
 }
 
 - (id) initWithXMLString: (NSString*)string
 {
-  // internal->node = xmlNewDtd(NULL,NULL,NULL);
-  // TODO: Parse the string and get the info to create this...
+  NSXMLDTDNode *result = nil;
+  NSError *error;
+  NSXMLDocument *tempDoc = 
+    [[NSXMLDocument alloc] initWithXMLString: string
+                                     options: 0
+                                       error: &error];
+  if (tempDoc != nil)
+    {
+      result = (NSXMLDTDNode*)RETAIN([tempDoc childAtIndex: 0]);
+      [result detach]; // detach from document.
+    }
+  [tempDoc release];
+  [self release];
 
-  [self notImplemented: _cmd];
-  return nil;
+  return result;
 }
 
 - (BOOL) isExternal
@@ -95,9 +109,9 @@ GS_PRIVATE_INTERNAL(NSXMLDTDNode)
  return StringFromXMLStringPtr(internal->node->ExternalID);
 }
 
-- (void) setDTDKind: (NSXMLDTDNodeKind)kind
+- (void) setDTDKind: (NSXMLDTDNodeKind)nodeKind
 {
-  internal->DTDKind = kind;
+  internal->DTDKind = nodeKind;
 }
 
 - (void) setNotationName: (NSString*)notationName
@@ -122,3 +136,4 @@ GS_PRIVATE_INTERNAL(NSXMLDTDNode)
 
 @end
 
+#endif	/* HAVE_LIBXML */

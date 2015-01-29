@@ -22,13 +22,13 @@
    Boston, MA 02111 USA.
    */ 
 
-#import "NSObject.h"
-#import "NSRunLoop.h"
-#import "NSTimer.h"
-#import "NSString.h"
-#import "NSArray.h"
-#import "NSException.h"
-#import "NSLock.h"
+#import "Foundation/NSObject.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSTimer.h"
+#import "Foundation/NSString.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSLock.h"
 #import "GSFastEnumeration.h"
 #include <avahi-common/watch.h>
 

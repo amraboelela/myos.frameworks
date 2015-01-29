@@ -26,9 +26,9 @@
 */
 
 #import "common.h"
-#import "NSException.h"
-#import "NSMapTable.h"
-#import "NSRunLoop.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSRunLoop.h"
 
 /*
  *      Setup for inline operation of arrays.
@@ -44,7 +44,7 @@
 #define GSI_ARRAY_RETAIN(A, X)	
 #endif
 
-#include "GSIArray.h"
+#include "GNUstepBase/GSIArray.h"
 
 #ifdef  HAVE_POLL
 typedef struct{

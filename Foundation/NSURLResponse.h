@@ -24,9 +24,9 @@
 
 #ifndef __NSURLResponse_h_GNUSTEP_BASE_INCLUDE
 #define __NSURLResponse_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
-#if OS_API_VERSION(100200,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2,GS_API_LATEST)
 
 #import	<Foundation/NSObject.h>
 
@@ -67,7 +67,7 @@ extern "C" {
   expectedContentLength: (NSInteger)length
   textEncodingName: (NSString *)name;
 
-#if OS_API_VERSION(100700,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_7,GS_API_LATEST)
 /**
  * Initialises the receiver with the URL, statusCode, HTTPVersion, and
  * headerFields provided.

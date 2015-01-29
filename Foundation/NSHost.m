@@ -24,19 +24,19 @@
    Boston, MA 02111 USA.
 
    <title>NSHost class reference</title>
-   $Date: 2012-01-25 11:52:34 -0800 (Wed, 25 Jan 2012) $ $Revision: 34629 $
+   $Date: 2014-12-02 09:00:00 -0800 (Tue, 02 Dec 2014) $ $Revision: 38223 $
   */
 
 #import "common.h"
 #define	EXPOSE_NSHost_IVARS	1
-#import "NSLock.h"
-#import "NSHost.h"
-#import "NSArray.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSNull.h"
-#import "NSSet.h"
-#import "NSCoder.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSHost.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSNull.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSCoder.h"
 
 #if defined(__MINGW__)
 #include <winsock2.h>
@@ -191,6 +191,7 @@ static id			null = nil;
 	    {
 	      NSString	*addr;
 
+	      memset((void*)&in, '\0', sizeof(in));
 	      memcpy((void*)&in.s_addr, (const void*)ptr, entry->h_length);
 	      addr = [NSString stringWithUTF8String: (char*)inet_ntoa(in)];
 	      [addresses addObject: addr];
@@ -235,28 +236,27 @@ static id			null = nil;
 static NSString*
 myHostName()
 {
-    static NSString	*name = nil;
-    static char		old[GSMAXHOSTNAMELEN+1];
-    char			buf[GSMAXHOSTNAMELEN+1];
-    int			res;
-    
-    [_hostCacheLock lock];
-    res = gethostname(buf, GSMAXHOSTNAMELEN);
-    if (res < 0 || *buf == '\0')
+  static NSString	*name = nil;
+  static char		old[GSMAXHOSTNAMELEN+1];
+  char			buf[GSMAXHOSTNAMELEN+1];
+  int			res;
+
+  [_hostCacheLock lock];
+  res = gethostname(buf, GSMAXHOSTNAMELEN);
+  if (res < 0 || *buf == '\0')
     {
-        printf("Unable to get name of current host - using 'localhost'");
-        //NSLog(@"Unable to get name of current host - using 'localhost'");
-        ASSIGN(name, @"localhost");
+      NSLog(@"Unable to get name of current host - using 'localhost'");
+      ASSIGN(name, @"localhost");
     }
-    else if (name == nil || strcmp(old, buf) != 0)
+  else if (name == nil || strcmp(old, buf) != 0)
     {
-        strncpy(old, buf, sizeof(old) - 1);
-        old[sizeof(old) - 1] = '\0';
-        RELEASE(name);
-        name = [[NSString alloc] initWithCString: buf];
+      strncpy(old, buf, sizeof(old) - 1);
+      old[sizeof(old) - 1] = '\0';
+      RELEASE(name);
+      name = [[NSString alloc] initWithCString: buf];
     }
-    [_hostCacheLock unlock];
-    return name;
+  [_hostCacheLock unlock];
+  return name;
 }
 
 + (void) initialize
@@ -265,8 +265,11 @@ myHostName()
     {
       hostClass = self;
       null = [[NSNull null] retain];
+      [[NSObject leakAt: &null] release];
       _hostCacheLock = [[NSRecursiveLock alloc] init];
+      [[NSObject leakAt: &_hostCacheLock] release];
       _hostCache = [NSMutableDictionary new];
+      [[NSObject leakAt: &_hostCache] release];
     }
 }
 
@@ -275,77 +278,88 @@ myHostName()
   return [self hostWithName: myHostName()];
 }
 
-+ (NSHost *)hostWithName:(NSString *)name
++ (NSHost*) hostWithName: (NSString*)name
 {
-    NSHost *host = nil;
-    const char	*n;
-    //printf("hostWithName 1");
-    if (name == nil) {
-        printf("Nil host name sent to [NSHost +hostWithName:]");
-        return nil;
+  NSHost	*host = nil;
+  const char	*n;
+
+  if (name == nil)
+    {
+      NSLog(@"Nil host name sent to [NSHost +hostWithName:]");
+      return nil;
     }
-    if ([name isEqual: @""] == YES) {
-        printf("Empty host name sent to [NSHost +hostWithName:]");
-        return nil;
+  if ([name isEqual: @""] == YES)
+    {
+      NSLog(@"Empty host name sent to [NSHost +hostWithName:]");
+      return nil;
     }
-    //printf("hostWithName 2");
-    /* If this looks like an address rather than a host name ...
-     * call the correct method instead of this one.
-     */
-    n = [name UTF8String];
-    if ((isdigit(n[0]) && sscanf(n, "%*d.%*d.%*d.%*d") == 4)
-        || 0 != strchr(n, ':')) {
-        return [self hostWithAddress: name];
+
+  /* If this looks like an address rather than a host name ...
+   * call the correct method instead of this one.
+   */
+  n = [name UTF8String];
+  if ((isdigit(n[0]) && sscanf(n, "%*d.%*d.%*d.%*d") == 4)
+    || 0 != strchr(n, ':'))
+    {
+      return [self hostWithAddress: name];
     }
-    
-    [_hostCacheLock lock];
-    if (YES == _hostCacheEnabled) {
-        host = [_hostCache objectForKey: name];
+
+  [_hostCacheLock lock];
+  if (YES == _hostCacheEnabled)
+    {
+      host = [_hostCache objectForKey: name];
     }
-    //printf("hostWithName 3");
-    if (host == nil) {
-        if ([name isEqualToString: localHostName] == YES) {
-            /*
-             * Special GNUstep extension host - we try to have a host entry
-             * with ALL the IP addresses of any interfaces on the local machine
-             */
-            host = [[self alloc] _initWithHostEntry: 0 key: localHostName];
-            IF_NO_GC([host autorelease];)
-        } else {
-            struct hostent	*h;
-            
-            h = gethostbyname((char*)n);
-            if (0 == h) {
-                if ([name isEqualToString: myHostName()] == YES) {
-                    printf("No network address appears to be available ");
-                    /*NSLog(@"No network address appears to be available "
-                     @"for this machine (%@) - using loopback address "
-                     @"(127.0.0.1)", name);
-                     NSLog(@"You probably need a line like '"
-                     @"127.0.0.1 %@ localhost' in your /etc/hosts file", name);*/
-                    host = [self hostWithAddress: @"127.0.0.1"];
-                    [host _addName: name];
-                } else {
-                    if (YES == _hostCacheEnabled) {
-                        [_hostCache setObject: null forKey: name];
-                    }
-                    printf("not found using 'gethostbyname()'");
-                    /*NSLog(@"Host '%@' not found using 'gethostbyname()' - "
-                     @"perhaps the hostname is wrong or networking is not "
-                     @"set up on your machine", name);*/
-                }
-            } else {
-                host = [[self alloc] _initWithHostEntry: h key: name];
-                IF_NO_GC([host autorelease];)
-            }
-        }
-    } else if ((id)host == null) {
-        host = nil;
-    } else {
-        IF_NO_GC([[host retain] autorelease];)
+  if (host == nil)
+    {
+      if ([name isEqualToString: localHostName] == YES)
+	{
+	  /*
+	   * Special GNUstep extension host - we try to have a host entry
+	   * with ALL the IP addresses of any interfaces on the local machine
+	   */
+	  host = [[self alloc] _initWithHostEntry: 0 key: localHostName];
+	  IF_NO_GC([host autorelease];)
+	}
+      else
+	{
+	  struct hostent	*h;
+
+	  h = gethostbyname((char*)n);
+	  if (0 == h)
+	    {
+	      if ([name isEqualToString: myHostName()] == YES)
+		{
+		  host = [self hostWithAddress: @"127.0.0.1"];
+		  [host _addName: name];
+		}
+	      else
+		{
+		  if (YES == _hostCacheEnabled)
+		    {
+		      [_hostCache setObject: null forKey: name];
+		    }
+		  NSLog(@"Host '%@' not found using 'gethostbyname()' - "
+		    @"perhaps the hostname is wrong or networking is not "
+		    @"set up on your machine", name);
+		}
+	    }
+	  else
+	    {
+	      host = [[self alloc] _initWithHostEntry: h key: name];
+	      IF_NO_GC([host autorelease];)
+	    }
+	}
     }
-    [_hostCacheLock unlock];
-    return host;
+  else if ((id)host == null)
+    {
+      host = nil;
+    }
+  else
+    {
+      IF_NO_GC([[host retain] autorelease];)
+    }
+  [_hostCacheLock unlock];
+  return host;
 }
 
 + (NSHost*) hostWithAddress: (NSString*)address
@@ -558,6 +572,17 @@ myHostName()
   return NO;
 }
 
+- (NSString*) localizedName
+{
+  NSString      *n = myHostName();
+
+  if (self != [NSHost hostWithName: n])
+    {
+      n = nil;
+    }
+  return n;
+}
+
 - (NSString*) name
 {
   return [_names anyObject];
@@ -593,3 +618,9 @@ myHostName()
 }
 @end
 
+@implementation	NSHost (NSProcessInfo)
++ (NSString*) _myHostName
+{
+  return myHostName();
+}
+@end

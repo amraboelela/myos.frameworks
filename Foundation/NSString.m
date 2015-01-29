@@ -1,5 +1,5 @@
 /** Implementation of GNUSTEP string class
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995-2012 Free Software Foundation, Inc.
 
    Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
    Date: January 1995
@@ -28,7 +28,7 @@
    Boston, MA 02111 USA.
 
    <title>NSString class reference</title>
-   $Date: 2012-03-05 18:25:43 -0800 (Mon, 05 Mar 2012) $ $Revision: 34883 $
+   $Date: 2014-03-19 01:26:48 -0700 (Wed, 19 Mar 2014) $ $Revision: 37757 $
 */
 
 /* Caveats:
@@ -46,35 +46,34 @@
 #define GS_UNSAFE_REGEX 1
 #import "common.h"
 #include <stdio.h>
-#include <string.h>
-#import "NSAutoreleasePool.h"
-#import "NSCalendarDate.h"
-#import "NSDecimal.h"
-#import "NSArray.h"
-#import "NSCharacterSet.h"
-#import "NSException.h"
-#import "NSValue.h"
-#import "NSDictionary.h"
-#import "NSFileManager.h"
-#import "NSPortCoder.h"
-#import "NSPathUtilities.h"
-#import "NSRange.h"
-#import "NSRegularExpression.h"
-#import "NSException.h"
-#import "NSData.h"
-#import "NSURL.h"
-#import "NSMapTable.h"
-#import "NSLocale.h"
-#import "NSLock.h"
-#import "NSNotification.h"
-#import "NSUserDefaults.h"
-#import "FoundationErrors.h"
+
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSCalendarDate.h"
+#import "Foundation/NSDecimal.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSCharacterSet.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSPortCoder.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSRange.h"
+#import "Foundation/NSRegularExpression.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSURL.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSLocale.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/FoundationErrors.h"
 // For private method _decodePropertyListForKey:
-#import "NSKeyedArchiver.h"
-#import "GSMime.h"
-#import "NSString+GNUstepBase.h"
-#import "NSMutableString+GNUstepBase.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSKeyedArchiver.h"
+#import "GNUstepBase/GSMime.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
+#import "GNUstepBase/NSMutableString+GNUstepBase.h"
 #import "GSPrivate.h"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -89,13 +88,18 @@
 #include <wchar.h>
 
 #ifdef HAVE_MALLOC_H
-#include <malloc.h>
+#  ifndef __OpenBSD__
+#    include <malloc.h>
+#  endif
 #endif
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>
 #endif
 #if	defined(HAVE_UNICODE_UCOL_H)
 # include <unicode/ucol.h>
+#endif
+#if	defined(HAVE_UNICODE_UNORM2_H)
+# include <unicode/unorm2.h>
 #endif
 #if     defined(HAVE_UNICODE_USTRING_H)
 # include <unicode/ustring.h>
@@ -104,7 +108,7 @@
 # include <unicode/usearch.h>
 #endif
 
-#import "Unicode.h"
+#import "GNUstepBase/Unicode.h"
 
 #import "GSPrivate.h"
 
@@ -266,7 +270,7 @@ pathSeps(void)
 	    {
 	      rPathSeps
 		= [NSCharacterSet characterSetWithCharactersInString: @"/\\"];
-	      IF_NO_GC(RETAIN(rPathSeps));
+              rPathSeps = [NSObject leakAt: &rPathSeps];
 	    }
 	  [placeholderLock unlock];
 	}
@@ -281,7 +285,7 @@ pathSeps(void)
 	    {
 	      uPathSeps
 		= [NSCharacterSet characterSetWithCharactersInString: @"/"];
-	      IF_NO_GC(RETAIN(uPathSeps));
+              uPathSeps = [NSObject leakAt: &uPathSeps];
 	    }
 	  [placeholderLock unlock];
 	}
@@ -296,7 +300,7 @@ pathSeps(void)
 	    {
 	      wPathSeps
 		= [NSCharacterSet characterSetWithCharactersInString: @"\\"];
-	      IF_NO_GC(RETAIN(wPathSeps));
+              wPathSeps = [NSObject leakAt: &wPathSeps];
 	    }
 	  [placeholderLock unlock];
 	}
@@ -326,10 +330,12 @@ pathSepMember(unichar c)
   return NO;
 }
 
-/*
- * For cross-platform portability we always use slash as the separator
+/* For cross-platform portability we always use slash as the separator
  * when building paths ... unless specific windows path handling is
  * required.
+ * This ensures that standardised paths and anything built by adding path
+ * components to them use a consistent separator character anad can be
+ * compared readily using standard string comparisons.
  */
 inline static unichar
 pathSepChar()
@@ -587,10 +593,11 @@ handle_printf_atsign (FILE *stream,
 #if GS_USE_ICU == 1
 /**
  * Returns an ICU collator for the given locale and options, or returns
- * NULL if a collator couldn't be created or the GNUstep comparison code should be
- * used instead.
+ * NULL if a collator couldn't be created or the GNUstep comparison code
+ * should be used instead.
  */
-static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *locale)
+static UCollator *
+GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *locale)
 {
   UErrorCode status = U_ZERO_ERROR;
   const char *localeCString;
@@ -603,12 +610,12 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
   
   if (locale == nil)
     {
-      /*
-       * a nil locale should trigger POSIX collation (i.e. 'A'-'Z' sort before 'a'),
-       * and support for this was added in ICU 4.6 under the locale name
-       * en_US_POSIX, but it doesn't fit our requirements (e.g. 'e' and 'E' don't
-       * compare as equal with case insensitive comparison.) - so return NULL to
-       * indicate that the GNUstep comparison code should be used.
+      /* A nil locale should trigger POSIX collation (i.e. 'A'-'Z' sort
+       * before 'a'), and support for this was added in ICU 4.6 under the
+       * locale name en_US_POSIX, but it doesn't fit our requirements
+       * (e.g. 'e' and 'E' don't compare as equal with case insensitive
+       * comparison.) - so return NULL to indicate that the GNUstep
+       * comparison code should be used.
        */
       return NULL;
     }
@@ -655,6 +662,96 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
   ucol_close(coll);
   return NULL;
 }
+
+#if defined(HAVE_UNICODE_UNORM2_H)
+- (NSString *) _normalizedICUStringOfType: (const char*)normalization
+                                     mode: (UNormalization2Mode)mode
+{
+  UErrorCode            err;
+  const UNormalizer2    *normalizer;
+  int32_t               length;
+  int32_t               newLength;
+  NSString              *newString;
+
+  length = (uint32_t)[self length];
+  if (0 == length)
+    {
+      return @"";       // Simple case ... empty string
+    }
+
+  err = 0;
+  normalizer = unorm2_getInstance(NULL, normalization, mode, &err);
+  if (U_FAILURE(err))
+    {
+      [NSException raise: NSCharacterConversionException
+                  format: @"libicu unorm2_getInstance() failed"];
+    }
+
+  if (length < 200)
+    {
+      unichar   src[length];
+      unichar   dst[length*3];
+
+      /* For a short string, it's very efficient to just use on-stack
+       * buffers for the libicu work, and then let the standard string
+       * initialiser convert that to an inline string.
+       */
+      [self getCharacters: (unichar *)src range: NSMakeRange(0, length)];
+      err = 0;
+      newLength = unorm2_normalize(normalizer, (UChar*)src, length,
+        (UChar*)dst, length*3, &err);
+      if (U_FAILURE(err))
+        {
+          [NSException raise: NSCharacterConversionException
+                      format: @"precompose/decompose failed"];
+        }
+      newString = [[NSString alloc] initWithCharacters: dst length: newLength];
+    }
+  else
+    {
+      unichar   *src;
+      unichar   *dst;
+
+      /* For longer strings, we copy the source into a buffer on the heap
+       * for the libicu operation, determine the length needed for the
+       * output buffer, then do the actual conversion to build the string.
+       */
+      src = (unichar*)malloc(length * sizeof(unichar));
+      [self getCharacters: (unichar*)src range: NSMakeRange(0, length)];
+      err = 0;
+      newLength = unorm2_normalize(normalizer, (UChar*)src, length,
+        0, 0, &err);
+      if (U_BUFFER_OVERFLOW_ERROR != err)
+        {
+          free(src);
+          [NSException raise: NSCharacterConversionException
+                      format: @"precompose/decompose length check failed"];
+        }
+#if	GS_WITH_GC
+      dst = NSAllocateCollectable(newLength * sizeof(unichar), 0);
+#else
+      dst = NSZoneMalloc(NSDefaultMallocZone(), newLength * sizeof(unichar));
+#endif
+      err = 0;
+      unorm2_normalize(normalizer, (UChar*)src, length,
+        (UChar*)dst, newLength, &err);
+      free(src);
+      if (U_FAILURE(err))
+        {
+#if	!GS_WITH_GC
+          NSZoneFree(NSDefaultMallocZone(), dst);
+#endif
+          [NSException raise: NSCharacterConversionException
+                      format: @"precompose/decompose failed"];
+        }
+      newString = [[NSString alloc] initWithCharactersNoCopy: dst
+                                                      length: newLength
+                                                freeWhenDone: YES];
+    }
+
+  return AUTORELEASE(newString);
+}
+#endif
 #endif
 
 + (void) atExit
@@ -1673,6 +1770,24 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
   return (unichar)0;
 }
 
+- (NSString *) decomposedStringWithCompatibilityMapping
+{
+#if (GS_USE_ICU == 1) && defined(HAVE_UNICODE_UNORM2_H)
+  return [self _normalizedICUStringOfType: "nfkc" mode: UNORM2_DECOMPOSE];
+#else
+  return [self notImplemented: _cmd];
+#endif
+}
+
+- (NSString *) decomposedStringWithCanonicalMapping
+{
+#if (GS_USE_ICU == 1) && defined(HAVE_UNICODE_UNORM2_H)
+  return [self _normalizedICUStringOfType: "nfc" mode: UNORM2_DECOMPOSE];
+#else
+  return [self notImplemented: _cmd];
+#endif
+}
+ 
 /**
  * Returns this string as an array of 16-bit <code>unichar</code> (unsigned
  * short) values.  buffer must be preallocated and should be capable of
@@ -1821,11 +1936,13 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
   NSRange	complete;
   NSRange	found;
   NSMutableArray *array;
+  IF_NO_GC(NSAutoreleasePool *pool; NSUInteger count;)
 
   if (separator == nil)
     [NSException raise: NSInvalidArgumentException format: @"separator is nil"];
 
   array = [NSMutableArray array];
+  IF_NO_GC(pool = [NSAutoreleasePool new]; count = 0;)
   search = NSMakeRange (0, [self length]);
   complete = search;
   found = [self rangeOfCharacterFromSet: separator];
@@ -1842,10 +1959,11 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
       found = [self rangeOfCharacterFromSet: separator
                                     options: 0
                                       range: search];
+      IF_NO_GC(if (0 == count % 200) [pool emptyPool];)
     }
   // Add the last search string range
   [array addObject: [self substringWithRange: search]];
-
+  IF_NO_GC([pool release];)
   // FIXME: Need to make mutable array into non-mutable array?
   return array;
 }
@@ -2146,10 +2264,10 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
 
 - (NSRange) rangeOfString: (NSString *)aString
                   options: (NSStringCompareOptions)mask
-                    range: (NSRange)aRange
+                    range: (NSRange)searchRange
                    locale: (NSLocale *)locale
 {
-  GS_RANGE_CHECK(aRange, [self length]);
+  GS_RANGE_CHECK(searchRange, [self length]);
   if (aString == nil)
     [NSException raise: NSInvalidArgumentException format: @"range of nil"];
 
@@ -2171,7 +2289,7 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
 	    ? NSMatchingAnchored : 0;
 	  r = [regex rangeOfFirstMatchInString: self
 				       options: options
-					 range: aRange];
+					 range: searchRange];
 	}
       [regex release];
       return r;
@@ -2185,7 +2303,7 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
 	{
 	  NSRange result = NSMakeRange(NSNotFound, 0);
 	  UErrorCode status = U_ZERO_ERROR; 
-	  NSUInteger countSelf = aRange.length;
+	  NSUInteger countSelf = searchRange.length;
 	  NSUInteger countOther = [aString length];       
 	  unichar *charsSelf;
 	  unichar *charsOther;
@@ -2198,7 +2316,7 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
 
 	  // Copy to buffer
       
-	  [self getCharacters: charsSelf range: aRange];
+	  [self getCharacters: charsSelf range: searchRange];
 	  [aString getCharacters: charsOther range: NSMakeRange(0, countOther)];
 	  
 	  search = usearch_openFromCollator(charsOther, countOther,
@@ -2224,18 +2342,26 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
 		    {
 		      if ((mask & NSBackwardsSearch) == NSBackwardsSearch)
 			{
-			  if (matchLocation + matchLength == NSMaxRange(aRange))
-			    result = NSMakeRange(aRange.location + matchLocation, matchLength);
+			  if (matchLocation + matchLength
+                            == NSMaxRange(searchRange))
+                            {
+                              result = NSMakeRange(searchRange.location
+                                + matchLocation, matchLength);
+                            }
 			}
 		      else
 			{
 			  if (matchLocation == 0)
-			    result = NSMakeRange(aRange.location + matchLocation, matchLength);
+                            {
+                              result = NSMakeRange(searchRange.location
+                                + matchLocation, matchLength);
+                            }
 			}
 		    }
 		  else 
 		    {
-		      result = NSMakeRange(aRange.location + matchLocation, matchLength);
+		      result = NSMakeRange(searchRange.location
+                        + matchLocation, matchLength);
 		    }
 		}
 	    }
@@ -2248,7 +2374,7 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
     }
 #endif
 
-  return strRangeNsNs(self, aString, mask, aRange);
+  return strRangeNsNs(self, aString, mask, searchRange);
 }
 
 - (NSUInteger) indexOfString: (NSString *)substring
@@ -2417,29 +2543,17 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
  */
 - (NSUInteger) hash
 {
-  unsigned	ret = 0;
-  unsigned	len = [self length];
+  uint32_t	ret = 0;
+  int   	len = (int)[self length];
 
   if (len > 0)
     {
       unichar		buf[64];
       unichar		*ptr = (len <= 64) ? buf :
 	NSZoneMalloc(NSDefaultMallocZone(), len * sizeof(unichar));
-      unichar		*p;
-      unsigned		char_count = 0;
 
       [self getCharacters: ptr range: NSMakeRange(0,len)];
-
-      p = ptr;
-
-      while (char_count++ < len)
-	{
-	  unichar	c = *p++;
-
-	  // FIXME ... should normalize composed character sequences.
-	  ret = (ret << 5) + ret + c;
-	}
-
+      ret = GSPrivateHash(0, (const void*)ptr, len * sizeof(unichar));
       if (ptr != buf)
 	{
 	  NSZoneFree(NSDefaultMallocZone(), ptr);
@@ -2809,12 +2923,12 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
 - (void) getParagraphStart: (NSUInteger *)startIndex 
                        end: (NSUInteger *)parEndIndex
                contentsEnd: (NSUInteger *)contentsEndIndex
-                  forRange: (NSRange)aRange
+                  forRange: (NSRange)range
 {
   [self _getStart: startIndex
 	      end: parEndIndex
       contentsEnd: contentsEndIndex
-         forRange: aRange
+         forRange: range
 	  lineSep: NO];
 }
 
@@ -3324,22 +3438,70 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
 
 /**
  * <p>Returns the string's content as an int.<br/>
- * Current implementation uses C library <code>atoi()</code>, which does not
+ * Current implementation uses a C runtime library function, which does not
  * detect conversion errors -- use with care!</p>
  */
 - (int) intValue
 {
-  return atoi([self UTF8String]);
+  const char *ptr = [self UTF8String];
+
+  while (isspace(*ptr))
+    {
+      ptr++;
+    }
+  if ('-' == *ptr)
+    {
+      return (int)atoi(ptr);
+    }
+  else
+    {
+      uint64_t v;
+
+      v = strtoul(ptr, 0, 10);
+      return (int)v;
+    } 
 }
 
 - (NSInteger) integerValue
 {
-  return atol([self UTF8String]);
+  const char *ptr = [self UTF8String];
+
+  while (isspace(*ptr))
+    {
+      ptr++;
+    }
+  if ('-' == *ptr)
+    {
+      return (NSInteger)atoll(ptr);
+    }
+  else
+    {
+      uint64_t  v;
+
+      v = (uint64_t)strtoull(ptr, 0, 10);
+      return (NSInteger)v;
+    } 
 }
 
 - (long long) longLongValue
 {
-  return atoll([self UTF8String]);
+  const char *ptr = [self UTF8String];
+
+  while (isspace(*ptr))
+    {
+      ptr++;
+    }
+  if ('-' == *ptr)
+    {
+      return atoll(ptr);
+    }
+  else
+    {
+      unsigned long long l;
+
+      l = strtoull(ptr, 0, 10);
+      return (long long)l;
+    } 
 }
 
 // Working With Encodings
@@ -3380,20 +3542,20 @@ static UCollator *GSICUCollatorOpen(NSStringCompareOptions mask, NSLocale *local
  */
 + (NSString*) localizedNameOfStringEncoding: (NSStringEncoding)encoding
 {
-    id ourbundle;
-    id ourname;
-    DLog();
-    /*
-     Should be path to localizable.strings file.
-     Until we have it, just make sure that bundle
-     is initialized.
-     */
-    ourbundle = [NSBundle bundleForLibrary: @"gnustep-base"];
-    
-    ourname = GSPrivateEncodingName(encoding);
-    return [ourbundle localizedStringForKey: ourname
-                                      value: ourname
-                                      table: nil];
+  id ourbundle;
+  id ourname;
+
+/*
+      Should be path to localizable.strings file.
+      Until we have it, just make sure that bundle
+      is initialized.
+*/
+  ourbundle = [NSBundle bundleForLibrary: @"gnustep-base"];
+
+  ourname = GSPrivateEncodingName(encoding);
+  return [ourbundle localizedStringForKey: ourname
+				    value: ourname
+				    table: nil];
 }
 
 /**
@@ -3770,6 +3932,24 @@ static NSFileManager *fm = nil;
   return @"";
 }
 
+- (NSString *) precomposedStringWithCompatibilityMapping
+{
+#if (GS_USE_ICU == 1) && defined(HAVE_UNICODE_UNORM2_H)
+  return [self _normalizedICUStringOfType: "nfkc" mode: UNORM2_COMPOSE];
+#else
+  return [self notImplemented: _cmd];
+#endif
+}
+ 
+- (NSString *) precomposedStringWithCanonicalMapping
+{
+#if (GS_USE_ICU == 1) && defined(HAVE_UNICODE_UNORM2_H)
+   return [self _normalizedICUStringOfType: "nfc" mode: UNORM2_COMPOSE];
+#else
+  return [self notImplemented: _cmd];
+#endif
+}
+ 
 - (NSString*) stringByAppendingPathComponent: (NSString*)aString
 {
   unsigned	originalLength = [self length];
@@ -3778,41 +3958,43 @@ static NSFileManager *fm = nil;
   unsigned	root;
   unichar	buf[length+aLength+1];
 
-  /* If the 'component' has a leading path separator (or drive spec
-   * in windows) then we need to find its length so we can strip it.
-   */
   root = rootOf(aString, aLength);
-  if (root > 0)
-    {
-      unichar c = [aString characterAtIndex: 0];
-
-      if (c == '~')
-        {
-	  root = 0;
-	}
-      else if (root > 1 && pathSepMember(c))
-        {
-	  int	i;
-
-	  for (i = 1; i < root; i++)
-	    {
-	      c = [aString characterAtIndex: i];
-	      if (!pathSepMember(c))
-	        {
-		  break;
-		}
-	    }
-	  root = i;
-	}
-    }
 
   if (length == 0)
     {
       [aString getCharacters: buf range: ((NSRange){0, aLength})];
       length = aLength;
+      root = rootOf(aString, aLength);
     }
   else
     {
+      /* If the 'component' has a leading path separator (or drive spec
+       * in windows) then we need to find its length so we can strip it.
+       */
+      if (root > 0)
+	{
+	  unichar c = [aString characterAtIndex: 0];
+
+	  if (c == '~')
+	    {
+	      root = 0;
+	    }
+	  else if (root > 1 && pathSepMember(c))
+	    {
+	      int	i;
+
+	      for (i = 1; i < root; i++)
+		{
+		  c = [aString characterAtIndex: i];
+		  if (!pathSepMember(c))
+		    {
+		      break;
+		    }
+		}
+	      root = i;
+	    }
+	}
+
       [self getCharacters: buf range: ((NSRange){0, length})];
 
       /* We strip back trailing path separators, and replace them with
@@ -3844,36 +4026,42 @@ static NSFileManager *fm = nil;
       root = rootOf(self, originalLength);
     }
 
-  // Trim trailing path separators
-  while (length > 1 && pathSepMember(buf[length-1]) == YES)
-    {
-      length--;
-    }
-
-  /* Trim multi separator sequences outside root (root may contain an
-   * initial // pair if it is a windows UNC path).
-   */
   if (length > 0)
     {
+      /* Trim trailing path separators as long as they are not part of
+       * the root. 
+       */
       aLength = length - 1;
-      while (aLength > root)
+      while (aLength > root && pathSepMember(buf[aLength]) == YES)
 	{
-	  if (pathSepMember(buf[aLength]) == YES)
-	    {
-	      buf[aLength] = pathSepChar();
-	      if (pathSepMember(buf[aLength-1]) == YES)
-		{
-		  unsigned	pos;
-
-		  buf[aLength-1] = pathSepChar();
-		  for (pos = aLength+1; pos < length; pos++)
-		    {
-		      buf[pos-1] = buf[pos];
-		    }
-		  length--;
-		}
-	    }
 	  aLength--;
+	  length--;
+	}
+
+      /* Trim multi separator sequences outside root (root may contain an
+       * initial // pair if it is a windows UNC path).
+       */
+      if (length > 0)
+	{
+	  while (aLength > root)
+	    {
+	      if (pathSepMember(buf[aLength]) == YES)
+		{
+		  buf[aLength] = pathSepChar();
+		  if (pathSepMember(buf[aLength-1]) == YES)
+		    {
+		      unsigned	pos;
+
+		      buf[aLength-1] = pathSepChar();
+		      for (pos = aLength+1; pos < length; pos++)
+			{
+			  buf[pos-1] = buf[pos];
+			}
+		      length--;
+		    }
+		}
+	      aLength--;
+	    }
 	}
     }
   return [NSStringClass stringWithCharacters: buf length: length];
@@ -4152,9 +4340,20 @@ static NSFileManager *fm = nil;
 {
   NSString	*homedir = NSHomeDirectory ();
 
-  if (![self hasPrefix: homedir])
+  if (YES == [self hasPrefix: @"~"])
     {
       return IMMUTABLE(self);
+    }
+  if (NO == [self hasPrefix: homedir])
+    {
+      /* OSX compatibility ... we clean up the path to try to get a
+       * home directory we can abbreviate.
+       */
+      self = [self stringByStandardizingPath];
+      if (NO == [self hasPrefix: homedir])
+        {
+          return IMMUTABLE(self);
+        }
     }
   if ([self length] == [homedir length])
     {
@@ -4361,6 +4560,12 @@ static NSFileManager *fm = nil;
 #else
 
 {
+  #if defined(__GLIBC__) || defined(__FreeBSD__)
+  #define GS_MAXSYMLINKS sysconf(_SC_SYMLOOP_MAX)
+  #else
+  #define GS_MAXSYMLINKS MAXSYMLINKS
+  #endif
+ 
   #ifndef PATH_MAX
   #define PATH_MAX 1024
   /* Don't use realpath unless we know we have the correct path size limit */
@@ -4458,7 +4663,7 @@ static NSFileManager *fm = nil;
               char	buf[PATH_MAX];
 	      int	l;
 
-              if (++num_links > MAXSYMLINKS)
+              if (++num_links > GS_MAXSYMLINKS)
 		{
 		  return IMMUTABLE(self);	/* Too many links.	*/
 		}
@@ -4559,13 +4764,19 @@ static NSFileManager *fm = nil;
       s = AUTORELEASE([self mutableCopy]);
     }
 
-  if (GSPathHandlingUnix() == YES)
-    {
-      [s replaceString: @"\\" withString: @"/"];
-    }
-  else if (GSPathHandlingWindows() == YES)
+  /* We must always use the standard path separator unless specifically set
+   * to use the mswindows one.  That ensures that standardised paths and
+   * anything built by adding path components to them use a consistent
+   * separator character anad can be compared readily using standard string
+   * comparisons.
+   */
+  if (GSPathHandlingWindows() == YES)
     {
       [s replaceString: @"/" withString: @"\\"];
+    }
+  else
+    {
+      [s replaceString: @"\\" withString: @"/"];
     }
 
   l = [s length];
@@ -4995,23 +5206,26 @@ static NSFileManager *fm = nil;
  * ICU collator for that locale. If locale is an instance of a class 
  * other than NSLocale, perform a comparison using +[NSLocale currentLocale].
  * If locale is nil, or ICU is not available, use a POSIX-style
- * collation (for example, latin capital letters A-Z are ordered before all of the 
- * lowercase letter, a-z.) 
- *
- * <p>mask may be <code>NSLiteralSearch</code>, which requests a literal byte-by-byte
+ * collation (for example, latin capital letters A-Z are ordered before
+ * all of the lowercase letter, a-z.) 
+ * </p>
+ * <p>mask may be <code>NSLiteralSearch</code>, which requests a literal
+ * byte-by-byte
  * comparison, which is fastest but may return inaccurate results in cases
  * where two different composed character sequences may be used to express
  * the same character; <code>NSCaseInsensitiveSearch</code>, which ignores case
- * differences; <code>NSDiacriticInsensitiveSearch</code> which ignores accent differences;
- * <code>NSNumericSearch</code>, which sorts groups of digits as numbers, so "abc2" 
- * sorts before "abc100".</p>
- * 
- * <p>compareRange refers to this instance, and should be set to 0..length to compare
- * the whole string.</p>
- *
+ * differences; <code>NSDiacriticInsensitiveSearch</code>
+ * which ignores accent differences;
+ * <code>NSNumericSearch</code>, which sorts groups of digits as numbers,
+ * so "abc2" sorts before "abc100".
+ * </p>
+ * <p>compareRange refers to this instance, and should be set to 0..length
+ * to compare the whole string.
+ * </p>
  * <p>Returns <code>NSOrderedAscending</code>, <code>NSOrderedDescending</code>,
  * or <code>NSOrderedSame</code>, depending on whether this instance occurs
- * before or after string in lexical order, or is equal to it.</p>
+ * before or after string in lexical order, or is equal to it.
+ * </p>
  */
 - (NSComparisonResult) compare: (NSString *)string
 		       options: (NSUInteger)mask
@@ -5022,13 +5236,13 @@ static NSFileManager *fm = nil;
   if (string == nil)
     [NSException raise: NSInvalidArgumentException format: @"compare with nil"];
 
+#if GS_USE_ICU == 1
   if (nil != locale
-      && ![locale isKindOfClass: [NSLocale class]])
+    && ![locale isKindOfClass: [NSLocale class]])
     {
       locale = [NSLocale currentLocale];
     }
 
-#if GS_USE_ICU == 1
     {
       UCollator *coll = GSICUCollatorOpen(mask, locale);
 
@@ -5138,7 +5352,7 @@ static NSFileManager *fm = nil;
       return NO;
     }
   return [d writeToFile: path
-	        options: atomically ? NSAtomicWrite : 0
+	        options: atomically ? NSDataWritingAtomic : 0
 		  error: error];
 }
 
@@ -5173,7 +5387,7 @@ static NSFileManager *fm = nil;
       return NO;
     }
   return [d writeToURL: url
-	       options: atomically ? NSAtomicWrite : 0
+	       options: atomically ? NSDataWritingAtomic : 0
 		 error: error];
 }
 
@@ -5623,14 +5837,13 @@ static NSFileManager *fm = nil;
 /**
  *  Modifies this string by appending aString.
  */
-- (void)appendString:(NSString *)aString
+- (void) appendString: (NSString*)aString
 {
-    NSRange aRange;
-    
-    aRange.location = [self length];
-    aRange.length = 0;
-    //DLog(@"aString: %@", aString);
-    [self replaceCharactersInRange:aRange withString:aString];
+  NSRange aRange;
+
+  aRange.location = [self length];
+  aRange.length = 0;
+  [self replaceCharactersInRange: aRange withString: aString];
 }
 
 /**
@@ -5676,9 +5889,10 @@ static NSFileManager *fm = nil;
  * Modifies this instance by deleting characters in range and then inserting
  * aString at its beginning.
  */
-- (void)replaceCharactersInRange:(NSRange)range withString:(NSString *)aString
+- (void) replaceCharactersInRange: (NSRange)range
+		       withString: (NSString*)aString
 {
-    [self subclassResponsibility: _cmd];
+  [self subclassResponsibility: _cmd];
 }
 
 /**

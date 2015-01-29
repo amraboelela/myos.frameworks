@@ -22,14 +22,13 @@
    Boston, MA 02111 USA.
 
    <title>NSAssertionHandler class reference</title>
-   $Date: 2011-07-24 13:47:36 -0700 (Sun, 24 Jul 2011) $ $Revision: 33625 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
-#import "GSConfig.h"
-#import "NSException.h"
-#import "NSDictionary.h"
-#import "NSThread.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSThread.h"
 
 /**
  * <p>NSAssertionHandler objects are used to raise exceptions on behalf of
@@ -97,7 +96,7 @@ NSString *const NSAssertionHandlerKey = @"NSAssertionHandler";
   va_start(ap, format);
   message =
     [NSString
-      stringWithFormat: @"%@:%d  Assertion failed in %@.  %@",
+      stringWithFormat: @"%@:%"PRIdPTR"  Assertion failed in %@.  %@",
       fileName, line, functionName, format];
   NSLogv(message, ap);
 
@@ -124,8 +123,8 @@ NSString *const NSAssertionHandlerKey = @"NSAssertionHandler";
 
   va_start(ap, format);
   message =
-    [NSString
-      stringWithFormat: @"%@:%d  Assertion failed in %@(%@), method %@.  %@",
+    [NSString stringWithFormat:
+      @"%@:%"PRIdPTR"  Assertion failed in %@(%@), method %@.  %@",
       fileName, line, NSStringFromClass([object class]),
       class_isMetaClass([object class]) ? @"class" : @"instance",
       NSStringFromSelector(aSelector), format];

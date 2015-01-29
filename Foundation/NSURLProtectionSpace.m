@@ -26,7 +26,7 @@
 
 #define	EXPOSE_NSURLProtectionSpace_IVARS	1
 #import "GSURLPrivate.h"
-#import "NSURL+GNUstepBase.h"
+#import "GNUstepBase/NSURL+GNUstepBase.h"
 
 NSString * const NSURLProtectionSpaceFTPProxy = @"ftp";	
 NSString * const NSURLProtectionSpaceHTTPProxy = @"http";

@@ -1,5 +1,5 @@
 /** Implementation for NSProcessInfo for GNUStep
-   Copyright (C) 1995-2001 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
 
    Written by:  Georg Tuparev <Tuparev@EMBL-Heidelberg.de>
                 Heidelberg, Germany
@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSProcessInfo class reference</title>
-   $Date: 2012-01-03 02:31:41 -0800 (Tue, 03 Jan 2012) $ $Revision: 34399 $
+   $Date: 2014-10-17 06:42:34 -0700 (Fri, 17 Oct 2014) $ $Revision: 38120 $
 */
 
 /*************************************************************************
@@ -57,14 +57,9 @@
 #import "common.h"
 
 #include <stdio.h>
-#include <string.h>
 
 #ifdef HAVE_WINDOWS_H
 #  include <windows.h>
-#endif
-
-#ifdef HAVE_STRERROR
-#  include <errno.h>
 #endif
 
 #if	defined(HAVE_SYS_SIGNAL_H)
@@ -113,26 +108,21 @@
 #include <crt_externs.h>
 #endif
 
-#import "GSConfig.h"
-#import "NSArray.h"
-#import "NSSet.h"
-#import "NSCharacterSet.h"
-#import "NSDictionary.h"
-#import "NSDate.h"
-#import "NSException.h"
-#import "NSFileManager.h"
-#import "NSProcessInfo.h"
-#import "NSAutoreleasePool.h"
-#import "NSHost.h"
-#import "NSLock.h"
-#import "NSProcessInfo+GNUstepBase.h"
-#import "NSString+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSCharacterSet.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSProcessInfo.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSHost.h"
+#import "Foundation/NSLock.h"
+#import "GNUstepBase/NSProcessInfo+GNUstepBase.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
 
 #import "GSPrivate.h"
-
-@interface NSBundle (Private)
-+ (NSString*) _gnustep_target_os;
-@end
 
 /* This error message should be called only if the private main function
  * was not executed successfully. This may happen ONLY if another library
@@ -164,6 +154,10 @@ we recommend you use versions of base and gui which were released together.\n\
 For more detailed assistance, please report the error to bug-gnustep@gnu.org.\n\n"
 #endif
 #endif
+
+@interface      NSHost (NSProcessInfo)
++ (NSString*) _myHostName;
+@end
 
 /*************************************************************************
  *** _NSConcreteProcessInfo
@@ -206,6 +200,10 @@ For more detailed assistance, please report the error to bug-gnustep@gnu.org.\n\
 /*************************************************************************
  *** Static global vars
  *************************************************************************/
+
+// The lock to protect shared process resources.
+static NSRecursiveLock  *procLock = nil;
+
 // The shared NSProcessInfo instance
 static NSProcessInfo	*_gnu_sharedProcessInfoObject = nil;
 
@@ -218,7 +216,7 @@ static char		*_gnu_arg_zero = 0;
 static NSString		*_gnu_processName = nil;
 
 // Array of NSStrings (argv[1] .. argv[argc-1])
-static NSMutableArray		*_gnu_arguments = nil;
+static NSArray		*_gnu_arguments = nil;
 
 // Dictionary of environment vars and their values
 static NSDictionary	*_gnu_environment = nil;
@@ -236,229 +234,230 @@ static NSMutableSet	*mySet = nil;
  *** Implementing the gnustep_base_user_main function
  *************************************************************************/
 
-static void _gnu_process_args(int argc, char *argv[], char *env[])
+static void
+_gnu_process_args(int argc, char *argv[], char *env[])
 {
-    NSAutoreleasePool *arp = [NSAutoreleasePool new];
-    NSString	*arg0 = nil;
-    int i;
-    
-    if (_gnu_arg_zero != 0)
+  NSAutoreleasePool *arp = [NSAutoreleasePool new];
+  NSString	*arg0 = nil;
+  int i;
+
+  if (_gnu_arg_zero != 0)
     {
-        free(_gnu_arg_zero);
+      free(_gnu_arg_zero);
     }
-    
-    if (argv != 0 && argv[0] != 0)
+
+  if (argv != 0 && argv[0] != 0)
     {
-        int	len;
-        
-        len = strlen(argv[0]) + 1;
-        _gnu_arg_zero = (char*)malloc(len);
-        memcpy(_gnu_arg_zero, argv[0], len);
-        arg0 = [[NSString alloc] initWithCString: _gnu_arg_zero];
+      int	len;
+
+      len = strlen(argv[0]) + 1;
+      _gnu_arg_zero = (char*)malloc(len);
+      memcpy(_gnu_arg_zero, argv[0], len);
+      arg0 = [[NSString alloc] initWithCString: _gnu_arg_zero];
     }
-    else
+  else
     {
 #if	defined(__MINGW__)
-        unichar	*buffer;
-        int	buffer_size = 0;
-        int	needed_size = 0;
-        int	len;
-        const char	*tmp;
-        
-        while (needed_size == buffer_size)
-        {
-            buffer_size = buffer_size + 256;
-            buffer = (unichar*)malloc(buffer_size * sizeof(unichar));
-            needed_size = GetModuleFileNameW(NULL, buffer, buffer_size);
-            if (needed_size < buffer_size)
-            {
-                unsigned	i;
-                
-                for (i = 0; i < needed_size; i++)
-                {
-                    if (buffer[i] == 0)
-                    {
-                        break;
-                    }
-                }
-                arg0 = [[NSString alloc] initWithCharacters: buffer length: i];
-            }
-            else
-            {
-                free(buffer);
-            }
-        }
-        tmp = [arg0 cStringUsingEncoding: [NSString defaultCStringEncoding]];
-        len = strlen(tmp) + 1;
-        _gnu_arg_zero = (char*)malloc(len);
-        memcpy(_gnu_arg_zero, tmp, len);
+      unichar	*buffer;
+      int	buffer_size = 0;
+      int	needed_size = 0;
+      int	len;
+      const char	*tmp;
+
+      while (needed_size == buffer_size)
+	{
+          buffer_size = buffer_size + 256;
+          buffer = (unichar*)malloc(buffer_size * sizeof(unichar));
+          needed_size = GetModuleFileNameW(NULL, buffer, buffer_size);
+          if (needed_size < buffer_size)
+	    {
+	      unsigned	i;
+
+	      for (i = 0; i < needed_size; i++)
+		{
+		  if (buffer[i] == 0)
+		    {
+		      break;
+		    }
+		}
+	      arg0 = [[NSString alloc] initWithCharacters: buffer length: i];
+	    }
+          else
+	    {
+              free(buffer);
+	    }
+	}
+      tmp = [arg0 cStringUsingEncoding: [NSString defaultCStringEncoding]];
+      len = strlen(tmp) + 1;
+      _gnu_arg_zero = (char*)malloc(len);
+      memcpy(_gnu_arg_zero, tmp, len);
 #else
-        fprintf(stderr, "Error: for some reason, argv not properly set up "
-                "during GNUstep base initialization\n");
-        abort();
+      fprintf(stderr, "Error: for some reason, argv not properly set up "
+	      "during GNUstep base initialization\n");
+      abort();
 #endif
     }
-    
-    /* Getting the process name */
-    IF_NO_GC(RELEASE(_gnu_processName));
-    _gnu_processName = [arg0 lastPathComponent];
+
+  /* Getting the process name */
+  IF_NO_GC(RELEASE(_gnu_processName));
+  _gnu_processName = [arg0 lastPathComponent];
 #if	defined(__MINGW__)
-    /* On windows we remove any .exe extension for consistency with app names
-     * under unix
-     */
-    {
-        NSString	*e = [_gnu_processName pathExtension];
-        
-        if (e != nil && [e caseInsensitiveCompare: @"EXE"] == NSOrderedSame)
-        {
-            _gnu_processName = [_gnu_processName stringByDeletingPathExtension];
-        }
-    }
+  /* On windows we remove any .exe extension for consistency with app names
+   * under unix
+   */
+  {
+    NSString	*e = [_gnu_processName pathExtension];
+
+    if (e != nil && [e caseInsensitiveCompare: @"EXE"] == NSOrderedSame)
+      {
+	_gnu_processName = [_gnu_processName stringByDeletingPathExtension];
+      }
+  }
 #endif
-    IF_NO_GC(RETAIN(_gnu_processName));
-    
-    /* Copy the argument list */
+  IF_NO_GC(RETAIN(_gnu_processName));
+
+  /* Copy the argument list */
 #if	defined(__MINGW__)
+{
+  unichar **argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
+  NSString *str;
+  id obj_argv[argc];
+  int added = 1;
+  
+  /* Copy the zero'th argument to the argument list */
+  obj_argv[0] = arg0;
+  
+  if (mySet == nil) mySet = [NSMutableSet new];
+
+  for (i = 1; i < argc; i++)
     {
-        unichar **argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
-        NSString *str;
-        id obj_argv[argc];
-        int added = 1;
-        
-        /* Copy the zero'th argument to the argument list */
-        obj_argv[0] = arg0;
-        
-        if (mySet == nil) mySet = [NSMutableSet new];
-        
-        for (i = 1; i < argc; i++)
-        {
-            str = [NSString stringWithCharacters: argvw[i] length: wcslen(argvw[i])];
-            if ([str hasPrefix: @"--GNU-Debug="])
-            {
-                [mySet addObject: [str substringFromIndex: 12]];
-            }
-            else
-            {
-                obj_argv[added++] = str;
-            }
-        }
-        
-        IF_NO_GC(RELEASE(_gnu_arguments));
-        _gnu_arguments = [[NSMutableArray alloc] initWithObjects: obj_argv count: added];
-        RELEASE(arg0);
+      str = [NSString stringWithCharacters: argvw[i] length: wcslen(argvw[i])];
+      if ([str hasPrefix: @"--GNU-Debug="])
+	{
+	  [mySet addObject: [str substringFromIndex: 12]];
+	}
+      else
+	{
+	  obj_argv[added++] = str;
+	}
     }
+    
+  IF_NO_GC(RELEASE(_gnu_arguments));
+  _gnu_arguments = [[NSArray alloc] initWithObjects: obj_argv count: added];
+  RELEASE(arg0);
+}
 #else
-    if (argv)
+  if (argv)
     {
-        NSString		*str;
-        id		obj_argv[argc];
-        int		added = 1;
-        NSStringEncoding	enc = GSPrivateDefaultCStringEncoding();
-        
-        /* Copy the zero'th argument to the argument list */
-        obj_argv[0] = arg0;
-        
-        if (mySet == nil) mySet = [NSMutableSet new];
-        
-        for (i = 1; i < argc; i++)
-        {
-            str = [NSString stringWithCString: argv[i] encoding: enc];
-            
-            if ([str hasPrefix: @"--GNU-Debug="])
-            [mySet addObject: [str substringFromIndex: 12]];
-            else
-            obj_argv[added++] = str;
-        }
-        
-        IF_NO_GC(RELEASE(_gnu_arguments));
-        _gnu_arguments = [[NSMutableArray alloc] initWithObjects: obj_argv count: added];
-        RELEASE(arg0);
+      NSString		*str;
+      id		obj_argv[argc];
+      int		added = 1;
+      NSStringEncoding	enc = GSPrivateDefaultCStringEncoding();
+
+      /* Copy the zero'th argument to the argument list */
+      obj_argv[0] = arg0;
+
+      if (mySet == nil) mySet = [NSMutableSet new];
+
+      for (i = 1; i < argc; i++)
+	{
+	  str = [NSString stringWithCString: argv[i] encoding: enc];
+
+	  if ([str hasPrefix: @"--GNU-Debug="])
+	    [mySet addObject: [str substringFromIndex: 12]];
+	  else
+	    obj_argv[added++] = str;
+	}
+
+      IF_NO_GC(RELEASE(_gnu_arguments));
+      _gnu_arguments = [[NSArray alloc] initWithObjects: obj_argv count: added];
+      RELEASE(arg0);
     }
-#endif
+#endif	
 	
-    /* Copy the evironment list */
-    {
-        NSMutableArray	*keys = [NSMutableArray new];
-        NSMutableArray	*values = [NSMutableArray new];
-        NSStringEncoding	enc = GSPrivateDefaultCStringEncoding();
-        
+  /* Copy the evironment list */
+  {
+    NSMutableArray	*keys = [NSMutableArray new];
+    NSMutableArray	*values = [NSMutableArray new];
+    NSStringEncoding	enc = GSPrivateDefaultCStringEncoding();
+
 #if defined(__MINGW__)
-        if (fallbackInitialisation == NO)
-        {
-            unichar	*base;
-            
-            base = GetEnvironmentStringsW();
-            if (base != 0)
-            {
-                const unichar	*wenvp = base;
-                
-                while (*wenvp != 0)
-                {
-                    const unichar	*start = wenvp;
-                    NSString		*key;
-                    NSString		*val;
-                    
-                    start = wenvp;
-                    while (*wenvp != '=' && *wenvp != 0)
-                    {
-                        wenvp++;
-                    }
-                    if (*wenvp == '=')
-                    {
-                        key = [NSString stringWithCharacters: start
-                                                      length: wenvp - start];
-                        wenvp++;
-                        start = wenvp;
-                    }
-                    else
-                    {
-                        break;	// Bad format ... expected '='
-                    }
-                    while (*wenvp != 0)
-                    {
-                        wenvp++;
-                    }
-                    val = [NSString stringWithCharacters: start
-                                                  length: wenvp - start];
-                    wenvp++;	// Skip past variable terminator
-                    [keys addObject: key];
-                    [values addObject: val];
-                }
-                FreeEnvironmentStringsW(base);
-                env = 0;	// Suppress standard code.
-            }
-        }
+    if (fallbackInitialisation == NO)
+      {
+	unichar	*base;
+
+	base = GetEnvironmentStringsW();
+	if (base != 0)
+	  {
+	    const unichar	*wenvp = base;
+
+	    while (*wenvp != 0)
+	      {
+		const unichar	*start = wenvp;
+		NSString		*key;
+		NSString		*val;
+
+		start = wenvp;
+		while (*wenvp != '=' && *wenvp != 0)
+		  {
+		    wenvp++;
+		  }
+		if (*wenvp == '=')
+		  {
+		    key = [NSString stringWithCharacters: start
+						  length: wenvp - start];
+		    wenvp++;
+		    start = wenvp;
+		  }
+		else
+		  {
+		    break;	// Bad format ... expected '='
+		  }
+		while (*wenvp != 0)
+		  {
+		    wenvp++;
+		  }
+		val = [NSString stringWithCharacters: start
+					      length: wenvp - start];
+		wenvp++;	// Skip past variable terminator
+		[keys addObject: key];
+		[values addObject: val];
+	      }
+	    FreeEnvironmentStringsW(base);
+	    env = 0;	// Suppress standard code.
+	  }
+      }
 #endif
-        if (env != 0)
-        {
-            i = 0;
-            while (env[i])
-            {
-                int		len = strlen(env[i]);
-                char	*cp = strchr(env[i], '=');
-                
-                if (len && cp)
-                {
-                    char	buf[len+2];
-                    
-                    memcpy(buf, env[i], len + 1);
-                    cp = &buf[cp - env[i]];
-                    *cp++ = '\0';
-                    [keys addObject:
-                     [NSString stringWithCString: buf encoding: enc]];
-                    [values addObject:
-                     [NSString stringWithCString: cp encoding: enc]];
-                }
-                i++;
-            }
-        }
-        IF_NO_GC(RELEASE(_gnu_environment));
-        _gnu_environment = [[NSDictionary alloc] initWithObjects: values
-                                                         forKeys: keys];
-        IF_NO_GC(RELEASE(keys));
-        IF_NO_GC(RELEASE(values));
-    }
-    [arp drain];
+    if (env != 0)
+      {
+	i = 0;
+	while (env[i])
+	  {
+	    int		len = strlen(env[i]);
+	    char	*cp = strchr(env[i], '=');
+
+	    if (len && cp)
+	      {
+		char	buf[len+2];
+
+		memcpy(buf, env[i], len + 1);
+		cp = &buf[cp - env[i]];
+		*cp++ = '\0';
+		[keys addObject:
+		  [NSString stringWithCString: buf encoding: enc]];
+		[values addObject:
+		  [NSString stringWithCString: cp encoding: enc]];
+	      }
+	    i++;
+	  }
+      }
+    IF_NO_GC(RELEASE(_gnu_environment));
+    _gnu_environment = [[NSDictionary alloc] initWithObjects: values
+						     forKeys: keys];
+    IF_NO_GC(RELEASE(keys));
+    IF_NO_GC(RELEASE(values));
+  }
+  [arp drain];
 }
 
 #if !GS_FAKE_MAIN && ((defined(HAVE_PROCFS)  || defined(HAVE_KVM_ENV) || defined(HAVE_PROCFS_PSINFO) || defined(__APPLE__)) && (defined(HAVE_LOAD_METHOD)))
@@ -582,23 +581,23 @@ static char	**_gnu_noobjc_env = NULL;
   
   ifp = fopen(proc_file_name, "r");
   if (ifp == NULL)
-  {
-    fprintf(stderr, "Error: Failed to open the process info file:%s\n", 
-	    proc_file_name);
-    abort();
-  }
+    {
+      fprintf(stderr, "Error: Failed to open the process info file:%s\n", 
+              proc_file_name);
+      abort();
+    }
   
   fread(&pinfo, sizeof(pinfo), 1, ifp);
   fclose(ifp);
   
   vectors = (char **)pinfo.pr_envp;
   if (!vectors)
-  {
-    fprintf(stderr, "Error: for some reason, environ == NULL "
-      "during GNUstep base initialization\n"
-      "Please check the linking process\n");
-    abort();
-  }
+    {
+      fprintf(stderr, "Error: for some reason, environ == NULL "
+        "during GNUstep base initialization\n"
+        "Please check the linking process\n");
+      abort();
+    }
   
   /* copy the environment strings */
   for (count = 0; vectors[count]; count++)
@@ -607,11 +606,11 @@ static char	**_gnu_noobjc_env = NULL;
   if (!_gnu_noobjc_env)
     goto malloc_error;
   for (i = 0; i < count; i++)
-  {
-  	_gnu_noobjc_env[i] = (char *)strdup(vectors[i]);
-    if (!_gnu_noobjc_env[i])
-      goto malloc_error;
-  }
+    {
+      _gnu_noobjc_env[i] = (char *)strdup(vectors[i]);
+      if (!_gnu_noobjc_env[i])
+        goto malloc_error;
+    }
   _gnu_noobjc_env[i] = NULL;
 
   /* get the argument vectors */
@@ -762,8 +761,7 @@ static char	**_gnu_noobjc_env = NULL;
   if (_gnu_noobjc_argv == NULL)
     goto malloc_error;
 
-
-  ifp=fopen(proc_file_name,"r");
+  ifp = fopen(proc_file_name,"r");
   //freopen(proc_file_name, "r", ifp);
   if (ifp == NULL)
     {
@@ -785,17 +783,25 @@ static char	**_gnu_noobjc_env = NULL;
 	  argument++;
 	  length = 0;
 	  if (c == EOF) // End of command line
-	    break;
+	    {
+	      _gnu_noobjc_argc = argument;
+	      break;
+	    }
 	}
     }
   fclose(ifp);
-  ifp=fopen(proc_file_name,"r");
+  ifp = fopen(proc_file_name,"r");
   //freopen(proc_file_name, "r", ifp);
   if (ifp == NULL)
     {
-      for (c = 0; c < _gnu_noobjc_argc; c++)
-	free(_gnu_noobjc_argv[c]);
-      free(_gnu_noobjc_argv);
+      if (0 != _gnu_noobjc_argv)
+	{
+	  for (c = 0; c < _gnu_noobjc_argc; c++)
+	    {
+	      free(_gnu_noobjc_argv[c]);
+	    }
+	  free(_gnu_noobjc_argv);
+	}
       goto proc_fs_error;
     }
   argument = 0;
@@ -844,6 +850,7 @@ static char	**_gnu_noobjc_env = NULL;
 #endif /* HAVE_FUNCTION_STRERROR */
   fprintf(stderr, "Your gnustep-base library is compiled for a kernel supporting the /proc filesystem, but it can't access it.\n");
   fprintf(stderr, "You should recompile or change your kernel.\n");
+  free(proc_file_name);
 #ifdef HAVE_PROGRAM_INVOCATION_NAME
   fprintf(stderr, "We try to go on anyway; but the program will ignore any argument which were passed to it.\n");
   _gnu_noobjc_argc = 1;
@@ -894,36 +901,41 @@ _gnu_noobjc_free_vars(void)
   _gnu_noobjc_env = 0;
 }
 
-+ (void)initialize
++ (void) initialize
 {
-    if (self == [NSProcessInfo class]
-        && !_gnu_processName && !_gnu_arguments && !_gnu_environment) {
-        if (_gnu_noobjc_argv == 0 || _gnu_noobjc_env == 0) {
-            _NSLog_printf_handler(_GNU_MISSING_MAIN_FUNCTION_CALL);
-            exit(1);
-        }
-        _gnu_process_args(_gnu_noobjc_argc, _gnu_noobjc_argv, _gnu_noobjc_env);
-        _gnu_noobjc_free_vars();
+  if (nil == procLock) procLock = [NSRecursiveLock new];
+  if (self == [NSProcessInfo class]
+    && !_gnu_processName && !_gnu_arguments && !_gnu_environment)
+    {
+      if (_gnu_noobjc_argv == 0 || _gnu_noobjc_env == 0)
+	{
+          _NSLog_printf_handler(_GNU_MISSING_MAIN_FUNCTION_CALL);
+          exit(1);
+	}
+      _gnu_process_args(_gnu_noobjc_argc, _gnu_noobjc_argv, _gnu_noobjc_env);
+      _gnu_noobjc_free_vars();
     }
 }
 #else /*! HAVE_PROCFS !HAVE_LOAD_METHOD !HAVE_KVM_ENV */
 
 #ifdef __MINGW__
 /* For WindowsAPI Library, we know the global variables (argc, etc) */
-+ (void)initialize
++ (void) initialize
 {
+  if (nil == procLock) procLock = [NSRecursiveLock new];
   if (self == [NSProcessInfo class]
-    && !_gnu_processName && !_gnu_arguments && !_gnu_environment) {
+    && !_gnu_processName && !_gnu_arguments && !_gnu_environment)
+    {
       _gnu_process_args(__argc, __argv, _environ);
     }
 }
-
 #elif defined(__BEOS__)
 
 extern int __libc_argc;
 extern char **__libc_argv;
 + (void) initialize
 {
+  if (nil == procLock) procLock = [NSRecursiveLock new];
   if (self == [NSProcessInfo class]
     && !_gnu_processName && !_gnu_arguments && !_gnu_environment)
     {
@@ -933,6 +945,10 @@ extern char **__libc_argv;
 
 
 #else
++ (void) initialize
+{
+  if (nil == procLock) procLock = [NSRecursiveLock new];
+}
 #ifndef GS_PASS_ARGUMENTS
 #undef main
 /* The gnustep_base_user_main function is declared 'weak' so that the linker
@@ -990,44 +1006,37 @@ int main(int argc, char *argv[], char *env[])
 
 #endif /* HAS_LOAD_METHOD && HAS_PROCFS */
 
-+ (NSProcessInfo *)processInfo
++ (NSProcessInfo *) processInfo
 {
-    // Check if the main() function was successfully called
-    // We can't use NSAssert, which calls NSLog, which calls NSProcessInfo...
-    /*printf("processInfo 0");
-    printf("_gnu_processName: %s\n", [_gnu_processName cString]);
-    printf("_gnu_arguments: %s\n", [[_gnu_arguments description] cString]);
-    printf("_gnu_environment: %s\n", [[_gnu_environment description] cString]);*/
-    if (!(_gnu_processName && _gnu_arguments && _gnu_environment)) {
-#ifdef MNGUEST
-        printf([_GNU_MISSING_MAIN_FUNCTION_CALL cString]);
-#else
-        _NSLog_printf_handler(_GNU_MISSING_MAIN_FUNCTION_CALL);
-#endif
-        exit(1);
+  // Check if the main() function was successfully called
+  // We can't use NSAssert, which calls NSLog, which calls NSProcessInfo...
+  if (!(_gnu_processName && _gnu_arguments && _gnu_environment))
+    {
+      _NSLog_printf_handler(_GNU_MISSING_MAIN_FUNCTION_CALL);
+      exit(1);
     }
-    //printf("processInfo 1");
-    if (!_gnu_sharedProcessInfoObject) {
-        _gnu_sharedProcessInfoObject = [[_NSConcreteProcessInfo alloc] init];
-        [gnustep_global_lock lock];
-        //printf("processInfo 2");
-        if (mySet != nil) {
-            NSEnumerator	*e = [mySet objectEnumerator];
-            NSMutableSet	*s = [_gnu_sharedProcessInfoObject debugSet];
-            id o;
-            //printf("processInfo 3");
-            while ((o = [e nextObject]) != nil) {
-                [s addObject: o];
-            }
-            //printf("processInfo 4");
-            [mySet release];
-            mySet = nil;
+
+  if (!_gnu_sharedProcessInfoObject)
+    {
+      _gnu_sharedProcessInfoObject = [[_NSConcreteProcessInfo alloc] init];
+      [procLock lock];
+      if (mySet != nil)
+	{
+	  NSEnumerator	*e = [mySet objectEnumerator];
+	  NSMutableSet	*s = [_gnu_sharedProcessInfoObject debugSet];
+	  id		o;
+
+	  while ((o = [e nextObject]) != nil)
+	    {
+              [s addObject: o];
+	    }
+	  [mySet release];
+	  mySet = nil;
         }
-        [gnustep_global_lock unlock];
+      [procLock unlock];
     }
-    //printf("_gnu_sharedProcessInfoObject: %s", [[_gnu_sharedProcessInfoObject description] cString]);
-    //exit(1);
-    return _gnu_sharedProcessInfoObject;
+
+  return _gnu_sharedProcessInfoObject;
 }
 
 + (BOOL) _exists: (int)pid
@@ -1062,24 +1071,35 @@ int main(int argc, char *argv[], char *env[])
   return _gnu_environment;
 }
 
-- (NSString *)globallyUniqueString
+- (NSString *) globallyUniqueString
 {
   static unsigned long	counter = 0;
   unsigned long		count;
   static NSString	*host = nil;
+  NSString              *thost = nil;
   static int		pid;
+  int                   tpid;
   static unsigned long	start;
 
-  [gnustep_global_lock lock];
-  if (host == nil)
+  /* We obtain the host name and pid outside the locked region in case
+   * the lookup is slow or indirectly calls this method fromm another
+   * thread (as unlikely as that is ... some subclass/category could
+   * do it).
+   */
+  if (nil == host)
     {
-      pid = [self processIdentifier];
+      thost = [[self hostName] stringByReplacingString: @"." withString: @"_"];
+      tpid = [self processIdentifier];
+    }
+  [procLock lock];
+  if (nil == host)
+    {
       start = (unsigned long)GSPrivateTimeNow();
-      host = [[self hostName] stringByReplacingString: @"." withString: @"_"];
-      IF_NO_GC(RETAIN(host);)
+      ASSIGN(host, thost);
+      pid = tpid;
     }
   count = counter++;
-  [gnustep_global_lock unlock];
+  [procLock unlock];
 
   // $$$ The format of the string is not specified by the OpenStep
   // specification.
@@ -1087,164 +1107,148 @@ int main(int argc, char *argv[], char *env[])
     host, pid, start, count];
 }
 
-- (NSString *)description
+- (NSString *) hostName
 {
-    //printf("description");
-    /*return [NSString stringWithFormat: @"<%@: %p; hostName:%@; globallyUniqueString:%@; operatingSystem:%d; operatingSystemName:%@, operatingSystemVersionString:%@; processIdentifier:%d; processName:%@; >",
-            [self class], self, [self hostName], [self operatingSystem], [self operatingSystemName],
-            [self operatingSystemVersionString], [self processIdentifier], [self processName]];
-    */
-    /*return [NSString stringWithFormat: @"<hostName:%@; operatingSystem:%d; operatingSystemName:%@, operatingSystemVersionString:%@; >",
-            [self hostName], [self operatingSystem], [self operatingSystemName],
-            [self operatingSystemVersionString]];*/
-    return [NSString stringWithFormat: @"<%@:%p; hostName:%@; operatingSystem:%d; operatingSystemName:%@, operatingSystemVersionString:%@; processIdentifier:%d; processName:%@>",
-            [self class], self, [self hostName], [self operatingSystem], [self operatingSystemName],
-            [self operatingSystemVersionString], [self processIdentifier], [self processName]];
-    //return @"mashy";
-}
-
-- (NSString *)hostName
-{
-    if (!_gnu_hostName) {
-        _gnu_hostName = [[[NSHost currentHost] name] copy];
+  if (!_gnu_hostName)
+    {
+      _gnu_hostName = [[NSHost _myHostName] copy];
     }
-    return _gnu_hostName;
+  return _gnu_hostName;
 }
 
 static void determineOperatingSystem()
 {
-    DLog();
-    if (_operatingSystem == 0)
+  if (_operatingSystem == 0)
     {
-        NSString	*os = nil;
-        BOOL	parseOS = YES;
-        
+      NSString	*os = nil;
+      BOOL	parseOS = YES;
+
 #if	defined(__MINGW__)
-        OSVERSIONINFOW	osver;
-        
-        osver.dwOSVersionInfoSize = sizeof(osver);
-        GetVersionExW (&osver);
-        /* Hmm, we could use this to determine operating system version, but
-         * that would not distinguish between mingw and cygwin, so we just
-         * use the information from NSBundle and only get the version info
-         * here.
-         */
-        _operatingSystemVersion = [[NSString alloc] initWithFormat: @"%d.%d",
-                                   osver.dwMajorVersion, osver.dwMinorVersion];
+      OSVERSIONINFOW	osver;
+
+      osver.dwOSVersionInfoSize = sizeof(osver);
+      GetVersionExW (&osver);
+      /* Hmm, we could use this to determine operating system version, but
+       * that would not distinguish between mingw and cygwin, so we just
+       * use the information from NSBundle and only get the version info
+       * here.
+       */
+      _operatingSystemVersion = [[NSString alloc] initWithFormat: @"%d.%d",
+        osver.dwMajorVersion, osver.dwMinorVersion];
 #else
 #if	defined(HAVE_SYS_UTSNAME_H)
-        struct utsname uts;
-        
-        /* The system supports uname, so we can use it rather than the
-         * value determined at configure/compile time.
-         * That's good if the binary is running on a system other than
-         * the one it was built for (rare, but can happen).
-         */
-        if (uname(&uts) == 0)
-        {
-            os = [NSString stringWithCString: uts.sysname                                                           encoding: [NSString defaultCStringEncoding]];
-            os = [os lowercaseString];
-            /* Get the operating system version ... usually the version string
-             * is pretty horrible, and the kernel release string actually
-             * makes more sense.
-             */
-            _operatingSystemVersion = [[NSString alloc]
-                                       initWithCString: uts.release
-                                       encoding: [NSString defaultCStringEncoding]];
-            
-            /* Hack for sunos/solaris ... sunos version 5 is solaris
-             */
-            if ([os isEqualToString: @"sunos"] == YES
-                && [_operatingSystemVersion intValue] > 4)
-            {
-                os = @"solaris";
-            }
-        }
+      struct utsname uts;
+
+      /* The system supports uname, so we can use it rather than the
+       * value determined at configure/compile time.
+       * That's good if the binary is running on a system other than
+       * the one it was built for (rare, but can happen).
+       */
+      if (!(uname(&uts) < 0))
+	{
+	  os = [NSString stringWithCString: uts.sysname                                                           encoding: [NSString defaultCStringEncoding]];
+	  os = [os lowercaseString];
+	  /* Get the operating system version ... usually the version string
+	   * is pretty horrible, and the kernel release string actually
+	   * makes more sense.
+	   */
+	  _operatingSystemVersion = [[NSString alloc]
+	    initWithCString: uts.release
+	    encoding: [NSString defaultCStringEncoding]];
+
+	  /* Hack for sunos/solaris ... sunos version 5 is solaris
+	   */
+	  if ([os isEqualToString: @"sunos"] == YES
+	    && [_operatingSystemVersion intValue] > 4)
+	    {
+	      os = @"solaris";
+	    }
+	}
 #endif	/* HAVE_SYS_UTSNAME_H */
 #endif	/* __MINGW__ */
-        
-        if (_operatingSystemVersion == nil)
+
+      if (_operatingSystemVersion == nil)
         {
-            NSWarnFLog(@"Unable to determine system version, using 0.0");
-            _operatingSystemVersion = @"0.0";
-        }
-        
-        while (parseOS == YES)
+	  NSWarnFLog(@"Unable to determine system version, using 0.0");
+	  _operatingSystemVersion = @"0.0";
+	}
+
+      while (parseOS == YES)
+	{
+	  NSString	*fallback = [NSBundle _gnustep_target_os];
+
+	  if (os == nil)
+	    {
+	      os = fallback;
+	    }
+	  parseOS = NO;
+
+	  if ([os hasPrefix: @"linux"] == YES)
+	    {
+	      _operatingSystemName = @"GSGNULinuxOperatingSystem";
+	      _operatingSystem = GSGNULinuxOperatingSystem;
+	    }
+	  else if ([os hasPrefix: @"mingw"] == YES)
+	    {
+	      _operatingSystemName = @"NSWindowsNTOperatingSystem";
+	      _operatingSystem = NSWindowsNTOperatingSystem;
+	    }
+	  else if ([os isEqualToString: @"cygwin"] == YES)
+	    {
+	      _operatingSystemName = @"GSCygwinOperatingSystem";
+	      _operatingSystem = GSCygwinOperatingSystem;
+	    }
+	  else if ([os hasPrefix: @"bsd"] == YES
+	    || [os hasPrefix: @"freebsd"] == YES
+	    || [os hasPrefix: @"netbsd"] == YES
+	    || [os hasPrefix: @"openbsd"] == YES)
+	    {
+	      _operatingSystemName = @"GSBSDOperatingSystem";
+	      _operatingSystem = GSBSDOperatingSystem;
+	    }
+	  else if ([os hasPrefix: @"beos"] == YES)
+	    {
+	      _operatingSystemName = @"GSBeOperatingSystem";
+	      _operatingSystem = GSBeOperatingSystem;
+	    }
+	  else if ([os hasPrefix: @"darwin"] == YES)
+	    {
+	      _operatingSystemName = @"NSMACHOperatingSystem";
+	      _operatingSystem = NSMACHOperatingSystem;
+	    }
+	  else if ([os hasPrefix: @"solaris"] == YES)
+	    {
+	      _operatingSystemName = @"NSSolarisOperatingSystem";
+	      _operatingSystem = NSSolarisOperatingSystem;
+	    }
+	  else if ([os hasPrefix: @"hpux"] == YES)
+	    {
+	      _operatingSystemName = @"NSHPUXOperatingSystem";
+	      _operatingSystem = NSHPUXOperatingSystem;
+	    }
+	  else if ([os hasPrefix: @"sunos"] == YES)
+	    {
+	      _operatingSystemName = @"NSSunOSOperatingSystem";
+	      _operatingSystem = NSSunOSOperatingSystem;
+	    }
+	  else if ([os hasPrefix: @"osf"] == YES)
+	    {
+	      _operatingSystemName = @"NSOSF1OperatingSystem";
+	      _operatingSystem = NSOSF1OperatingSystem;
+	    }
+	  if (_operatingSystem == 0 && [os isEqual: fallback] == NO)
+	    {
+	      os = fallback;
+	      parseOS = YES;	// Try again with fallback
+	    }
+	}
+
+      if (_operatingSystem == 0)
         {
-            NSString	*fallback = [NSBundle _gnustep_target_os];
-            
-            if (os == nil)
-            {
-                os = fallback;
-            }
-            parseOS = NO;
-            
-            if ([os hasPrefix: @"linux"] == YES)
-            {
-                _operatingSystemName = @"GSGNULinuxOperatingSystem";
-                _operatingSystem = GSGNULinuxOperatingSystem;
-            }
-            else if ([os hasPrefix: @"mingw"] == YES)
-            {
-                _operatingSystemName = @"NSWindowsNTOperatingSystem";
-                _operatingSystem = NSWindowsNTOperatingSystem;
-            }
-            else if ([os isEqualToString: @"cygwin"] == YES)
-            {
-                _operatingSystemName = @"GSCygwinOperatingSystem";
-                _operatingSystem = GSCygwinOperatingSystem;
-            }
-            else if ([os hasPrefix: @"bsd"] == YES
-                     || [os hasPrefix: @"freebsd"] == YES
-                     || [os hasPrefix: @"netbsd"] == YES
-                     || [os hasPrefix: @"openbsd"] == YES)
-            {
-                _operatingSystemName = @"GSBSDOperatingSystem";
-                _operatingSystem = GSBSDOperatingSystem;
-            }
-            else if ([os hasPrefix: @"beos"] == YES)
-            {
-                _operatingSystemName = @"GSBeOperatingSystem";
-                _operatingSystem = GSBeOperatingSystem;
-            }
-            else if ([os hasPrefix: @"darwin"] == YES)
-            {
-                _operatingSystemName = @"NSMACHOperatingSystem";
-                _operatingSystem = NSMACHOperatingSystem;
-            }
-            else if ([os hasPrefix: @"solaris"] == YES)
-            {
-                _operatingSystemName = @"NSSolarisOperatingSystem";
-                _operatingSystem = NSSolarisOperatingSystem;
-            }
-            else if ([os hasPrefix: @"hpux"] == YES)
-            {
-                _operatingSystemName = @"NSHPUXOperatingSystem";
-                _operatingSystem = NSHPUXOperatingSystem;
-            }
-            else if ([os hasPrefix: @"sunos"] == YES)
-            {
-                _operatingSystemName = @"NSSunOSOperatingSystem";
-                _operatingSystem = NSSunOSOperatingSystem;
-            }
-            else if ([os hasPrefix: @"osf"] == YES)
-            {
-                _operatingSystemName = @"NSOSF1OperatingSystem";
-                _operatingSystem = NSOSF1OperatingSystem;
-            }
-            if (_operatingSystem == 0 && [os isEqual: fallback] == NO)
-            {
-                os = fallback;
-                parseOS = YES;	// Try again with fallback
-            }
-        }
-        
-        if (_operatingSystem == 0)
-        {
-            NSWarnFLog(@"Unable to determine O/S ... assuming GNU/Linux");
-            _operatingSystemName = @"GSGNULinuxOperatingSystem";
-            _operatingSystem = GSGNULinuxOperatingSystem;
-        }
+	  NSWarnFLog(@"Unable to determine O/S ... assuming GNU/Linux");
+	  _operatingSystemName = @"GSGNULinuxOperatingSystem";
+	  _operatingSystem = GSGNULinuxOperatingSystem;
+	}
     }
 }
 
@@ -1287,22 +1291,22 @@ static void determineOperatingSystem()
   return pid;
 }
 
-- (NSString *)processName
+- (NSString *) processName
 {
-    return _gnu_processName;
+  return _gnu_processName;
 }
 
-- (void)setProcessName:(NSString *)newName
+- (void) setProcessName: (NSString *)newName
 {
-    //DLog();
-    if (newName && [newName length]) {
-        [_gnu_processName autorelease];
-        _gnu_processName = [newName copyWithZone: [self zone]];
+  if (newName && [newName length])
+    {
+      [_gnu_processName autorelease];
+      _gnu_processName = [newName copyWithZone: [self zone]];
     }
-    return;
+  return;
 }
 
-- (NSUInteger)processorCount
+- (NSUInteger) processorCount
 {
   static NSUInteger	procCount = 0;
   static BOOL		beenHere = NO;
@@ -1466,11 +1470,11 @@ static void determineOperatingSystem()
 void
 GSInitializeProcess(int argc, char **argv, char **envp)
 {
-    [NSProcessInfo class];
-    [gnustep_global_lock lock];
-    fallbackInitialisation = YES;
-    _gnu_process_args(argc, argv, envp);
-    [gnustep_global_lock unlock];
+  [NSProcessInfo class];
+  [procLock lock];
+  fallbackInitialisation = YES;
+  _gnu_process_args(argc, argv, envp);
+  [procLock unlock];
 }
 
 @implementation	NSProcessInfo (GNUstep)
@@ -1482,7 +1486,7 @@ GSInitializeProcess(int argc, char **argv, char **envp)
   GSInitializeProcess(argc, argv, env);
 }
 
-- (BOOL)setLogFile: (NSString*)path
+- (BOOL) setLogFile: (NSString*)path
 {
   extern int	_NSLogDescriptor;
   int		desc;
@@ -1506,24 +1510,32 @@ GSInitializeProcess(int argc, char **argv, char **envp)
 }
 @end
 
-BOOL GSPrivateEnvironmentFlag(const char *name, BOOL def)
+BOOL
+GSPrivateEnvironmentFlag(const char *name, BOOL def)
 {
-    const char	*c = getenv(name);
-    BOOL		a = def;
-    if (c != 0) {
-        a = NO;
-        if ((c[0] == 'y' || c[0] == 'Y') && (c[1] == 'e' || c[1] == 'E')
-            && (c[2] == 's' || c[2] == 'S') && c[3] == 0) {
-            a = YES;
-        } else if ((c[0] == 't' || c[0] == 'T') && (c[1] == 'r' || c[1] == 'R')
-                 && (c[2] == 'u' || c[2] == 'U') && (c[3] == 'e' || c[3] == 'E')
-                 && c[4] == 0) {
-            a = YES;
-        } else if (isdigit(c[0]) && c[0] != '0') {
-            a = YES;
-        }
+  const char	*c = getenv(name);
+  BOOL		a = def;
+
+  if (c != 0)
+    {
+      a = NO;
+      if ((c[0] == 'y' || c[0] == 'Y') && (c[1] == 'e' || c[1] == 'E')
+	&& (c[2] == 's' || c[2] == 'S') && c[3] == 0)
+	{
+	  a = YES;
+	}
+      else if ((c[0] == 't' || c[0] == 'T') && (c[1] == 'r' || c[1] == 'R')
+	&& (c[2] == 'u' || c[2] == 'U') && (c[3] == 'e' || c[3] == 'E')
+	&& c[4] == 0)
+	{
+	  a = YES;
+	}
+      else if (isdigit(c[0]) && c[0] != '0')
+	{
+	  a = YES;
+	}
     }
-    return a;
+  return a;
 }
 
 const char*

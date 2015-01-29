@@ -22,16 +22,15 @@
    Boston, MA 02111 USA.
 
    <title>NSPortMessage class reference</title>
-   $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSPortMessage_IVARS	1
-#import "NSAutoreleasePool.h"
-#import "NSData.h"
-#import "NSException.h"
-#import "NSPortMessage.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPortMessage.h"
 
 @implementation	NSPortMessage
 
@@ -45,9 +44,9 @@
 
 - (NSString*) description
 {
-  return [NSString stringWithFormat:
-    @"NSPortMessage 0x%x (Id %u)\n  Send: %@\n  Recv: %@\n  Components -\n%@",
-    self, _msgid, _send, _recv, _components];
+  return [NSString stringWithFormat: @"NSPortMessage 0x%"PRIxPTR
+    @" (Id %u)\n  Send: %@\n  Recv: %@\n  Components -\n%@",
+    (NSUInteger)self, _msgid, _send, _recv, _components];
 }
 
 /*	PortMessages MUST be initialised with ports and data.	*/

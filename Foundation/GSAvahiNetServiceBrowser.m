@@ -24,15 +24,15 @@
 
 #import "GSNetServices.h"
 #import "GSAvahiClient.h"
-#import "NSNetServices.h"
-#import "NSNetServices+GNUstepBase.h"
-#import "NSArray.h"
-#import "NSDebug.h"
-#import "NSDictionary.h"
-#import "NSLock.h"
-#import "NSRunLoop.h"
-#import "NSString.h"
-#import "GSObjCRuntime.h"
+#import "Foundation/NSNetServices.h"
+#import "GNUstepBase/NSNetServices+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSDebug.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSString.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 #include <avahi-client/lookup.h>
 
 #define SERVICE_KEY(name, type, domain, iface, proto) [NSString stringWithFormat: @"%@.%@.%@%d:%d", name, type, domain, iface, proto]

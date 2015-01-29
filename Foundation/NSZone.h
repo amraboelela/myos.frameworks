@@ -28,7 +28,7 @@
 
 #ifndef __NSZone_h_GNUSTEP_BASE_INCLUDE
 #define __NSZone_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	"GNUstepBase/GSVersionMacros.h"
 
 /**
  * Primary structure representing an <code>NSZone</code>.  Technically it
@@ -54,7 +54,7 @@
  */
 typedef struct _NSZone NSZone;
 
-#import "NSObjCRuntime.h"
+#import	<Foundation/NSObjCRuntime.h>
 
 @class NSString;
 
@@ -295,7 +295,7 @@ NSCopyMemoryPages (const void *src, void *dest, NSUInteger bytes);
 
 enum {
   NSScannedOption = (1<<0),
-  NSCollectorDisabledOption = (1<<1),
+  NSCollectorDisabledOption = (1<<1)
 };
 
 /** Allocate memory.  If garbage collection is not enabled this uses the

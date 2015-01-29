@@ -20,22 +20,22 @@
    Boston, MA 02111 USA.
 
    <title>NSMessagePortNameServer class reference</title>
-   $Date: 2011-12-15 01:42:39 -0800 (Thu, 15 Dec 2011) $ $Revision: 34290 $
+   $Date: 2014-06-20 07:17:17 -0700 (Fri, 20 Jun 2014) $ $Revision: 37956 $
    */
 
 #import "common.h"
-#import "NSPortNameServer.h"
-#import "NSAutoreleasePool.h"
-#import "NSException.h"
-#import "NSLock.h"
-#import "NSDistributedLock.h"
-#import "NSMapTable.h"
-#import "NSPathUtilities.h"
-#import "NSPort.h"
-#import "NSFileManager.h"
-#import "NSValue.h"
-#import "NSThread.h"
-#import "GSMime.h"
+#import "Foundation/NSPortNameServer.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSDistributedLock.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSPort.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSThread.h"
+#import "GNUstepBase/GSMime.h"
 
 #import "GSPortPrivate.h"
 
@@ -54,7 +54,6 @@
 #  include	<fcntl.h>
 #endif
 
-#include <string.h>
 #include <sys/un.h>
 
 /* Older systems (Solaris) compatibility */
@@ -96,27 +95,6 @@ static NSMapTable *portToNamesMap;
 @end
 
 
-static void clean_up_names(void)
-{
-  NSMapEnumerator	mEnum;
-  NSMessagePort		*port;
-  NSString		*name;
-  BOOL			unknownThread = GSRegisterCurrentThread();
-  NSAutoreleasePool	*arp = [NSAutoreleasePool new];
-
-  mEnum = NSEnumerateMapTable(portToNamesMap);
-  while (NSNextMapEnumeratorPair(&mEnum, (void *)&port, (void *)&name))
-    {
-      [defaultServer removePort: port];
-    }
-  NSEndMapTableEnumeration(&mEnum);
-  [arp drain];
-  if (unknownThread == YES)
-    {
-      GSUnregisterCurrentThread();
-    }
-}
-
 /**
  * Subclass of [NSPortNameServer] taking/returning instances of [NSMessagePort].
  * Port removal functionality is not supported; if you want to cancel a service,
@@ -125,23 +103,47 @@ static void clean_up_names(void)
  */
 @implementation NSMessagePortNameServer
 
++ (void) atExit
+{
+  NSMapEnumerator	mEnum;
+  NSMessagePort		*port;
+  NSString		*name;
+  NSAutoreleasePool	*arp = [NSAutoreleasePool new];
+
+  mEnum = NSEnumerateMapTable(portToNamesMap);
+  while (NSNextMapEnumeratorPair(&mEnum, (void *)&port, (void *)&name))
+    {
+      [defaultServer removePort: port];
+    }
+  NSEndMapTableEnumeration(&mEnum);
+  DESTROY(portToNamesMap);
+  DESTROY(serverLock);
+  [arp drain];
+}
+
 + (void) initialize
 {
   if (self == [NSMessagePortNameServer class])
     {
+      NSAutoreleasePool *pool = [NSAutoreleasePool new];
       NSFileManager	*mgr;
       NSString		*path;
-      NSString		*pref;
+      NSString		*pid;
       NSString		*file;
       NSEnumerator	*files;
 
       serverLock = [NSRecursiveLock new];
-      portToNamesMap = NSCreateMapTable(NSNonRetainedObjectMapKeyCallBacks,
-			 NSObjectMapValueCallBacks, 0);
-      atexit(clean_up_names);
+      /* Use NSNonOwnedPointerMapKeyCallBacks for the ports used as keys
+       * since we want as pointer test for equality as we may be doing
+       * lookup while dealocating the port (in which case the -isEqual:
+       * method could fail).
+       */
+      portToNamesMap = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,
+        NSObjectMapValueCallBacks, 0);
+      [self registerAtExit];
 
       /* It's possible that an old process, with the same process ID as
-       * this one, got forcibly killed or crashed so that clean_up_names
+       * this one, got forcibly killed or crashed so that +atExit
        * was never called.
        * To deal with that unlikely situation, we need to remove all such
        * names which have been left over.
@@ -149,35 +151,41 @@ static void clean_up_names(void)
       path = NSTemporaryDirectory();
       path = [path stringByAppendingPathComponent: @"NSMessagePort"];
       path = [path stringByAppendingPathComponent: @"names"];
-      pref = [NSString stringWithFormat: @"%i.",
+      pid = [NSString stringWithFormat: @"%i",
 	[[NSProcessInfo processInfo] processIdentifier]];
       mgr = [NSFileManager defaultManager];
       files = [[mgr directoryContentsAtPath: path] objectEnumerator];
       while ((file = [files nextObject]) != nil)
 	{
           NSString	*old = [path stringByAppendingPathComponent: file];
-	  NSString	*port = [NSString stringWithContentsOfFile: old];
+          NSArray       *lines;
+          NSString      *line;
+          int           opid;
 
-	  if (YES == [port hasPrefix: pref])
-	    {
-	      NSDebugMLLog(@"NSMessagePort", @"Removing old name %@", old);
-	      [mgr removeFileAtPath: old handler: nil];
-	    }
-	  else
-	    {
-	      int	pid = [port intValue];
-
-	      if (pid > 0)
-		{
-		  if (NO == [NSProcessInfo _exists: pid])
-		    {
-		      NSDebugMLLog(@"NSMessagePort",
-		        @"Removing old name %@ for process %d", old, pid);
-		      [mgr removeFileAtPath: old handler: nil];
-		    }
-		}
-	    }
+	  lines = [[NSString stringWithContentsOfFile: old]
+            componentsSeparatedByString: @"\n"];
+          if ([lines count] > 1
+            && (opid = [(line = [lines objectAtIndex: 1]) intValue]) > 0)
+            {
+              if (YES == [line isEqual: pid])
+                {
+                  NSDebugMLLog(@"NSMessagePort", @"Removing old name %@", old);
+                  [mgr removeFileAtPath: old handler: nil];
+                }
+              else if (NO == [NSProcessInfo _exists: opid])
+                {
+                  NSDebugMLLog(@"NSMessagePort",
+                    @"Removing old name %@ for process %d", old, opid);
+                  [mgr removeFileAtPath: old handler: nil];
+                }
+            }
+          else
+            {
+              NSDebugMLLog(@"NSMessagePort", @"Removing bad name %@", old);
+              [mgr removeFileAtPath: old handler: nil];
+            }
 	}
+      [pool release];
     }
 }
 
@@ -269,20 +277,28 @@ static void clean_up_names(void)
   [serverLock lock];
   if (!base_path)
     {
-      NSNumber		*p = [NSNumber numberWithInt: 0700];
       NSDictionary	*attr;
 
-      path = NSTemporaryDirectory();
-      attr = [NSDictionary dictionaryWithObject: p
-				     forKey: NSFilePosixPermissions];
+      if (nil == (path = NSTemporaryDirectory()))
+        {
+          [serverLock unlock];
+          return nil;
+        }
+
+      attr = [NSDictionary dictionaryWithObject: [NSNumber numberWithInt: 0700]
+                                         forKey: NSFilePosixPermissions];
 
       path = [path stringByAppendingPathComponent: @"NSMessagePort"];
       [[NSFileManager defaultManager] createDirectoryAtPath: path
-				      attributes: attr];
+                                withIntermediateDirectories: YES
+                                                 attributes: attr
+                                                      error: NULL];
 
       path = [path stringByAppendingPathComponent: @"names"];
       [[NSFileManager defaultManager] createDirectoryAtPath: path
-				      attributes: attr];
+                                withIntermediateDirectories: YES
+                                                 attributes: attr
+                                                      error: NULL];
 
       base_path = RETAIN(path);
     }

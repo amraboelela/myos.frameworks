@@ -24,18 +24,17 @@
    Boston, MA 02111 USA.
 
    <title>NSValue class reference</title>
-   $Date: 2011-07-31 08:31:39 -0700 (Sun, 31 Jul 2011) $ $Revision: 33660 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
 */
 
 #import "common.h"
-#import "NSValue.h"
-#import "NSCoder.h"
-#import "NSDictionary.h"
-#import "NSException.h"
-#import "NSMapTable.h"
-#import "NSLock.h"
-#import "NSData.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSData.h"
 
 @interface	GSPlaceholderValue : NSValue
 @end
@@ -175,6 +174,8 @@ static NSLock			*placeholderLock;
   if (!type)
     return theClass;
 
+  /* Try for an exact type match.
+   */
   if (strcmp(@encode(id), type) == 0)
     theClass = nonretainedObjectValueClass;
   else if (strcmp(@encode(NSPoint), type) == 0)
@@ -186,6 +187,21 @@ static NSLock			*placeholderLock;
   else if (strcmp(@encode(NSRect), type) == 0)
     theClass = rectValueClass;
   else if (strcmp(@encode(NSSize), type) == 0)
+    theClass = sizeValueClass;
+
+  /* Try for equivalent types match.
+   */
+  else if (GSSelectorTypesMatch(@encode(id), type))
+    theClass = nonretainedObjectValueClass;
+  else if (GSSelectorTypesMatch(@encode(NSPoint), type))
+    theClass = pointValueClass;
+  else if (GSSelectorTypesMatch(@encode(void *), type))
+    theClass = pointerValueClass;
+  else if (GSSelectorTypesMatch(@encode(NSRange), type))
+    theClass = rangeValueClass;
+  else if (GSSelectorTypesMatch(@encode(NSRect), type))
+    theClass = rectValueClass;
+  else if (GSSelectorTypesMatch(@encode(NSSize), type))
     theClass = sizeValueClass;
 
   return theClass;
@@ -207,13 +223,12 @@ static NSLock			*placeholderLock;
 + (NSValue*) valueWithBytes: (const void *)value
 		   objCType: (const char *)type
 {
-    Class		theClass = [self valueClassWithObjCType: type];
-    NSValue	*theObj;
-    
-    theObj = [theClass allocWithZone: NSDefaultMallocZone()];
-    //DLog(@"type: %s", type);
-    theObj = [theObj initWithBytes: value objCType: type];
-    return AUTORELEASE(theObj);
+  Class		theClass = [self valueClassWithObjCType: type];
+  NSValue	*theObj;
+
+  theObj = [theClass allocWithZone: NSDefaultMallocZone()];
+  theObj = [theObj initWithBytes: value objCType: type];
+  return AUTORELEASE(theObj);
 }
 		
 + (NSValue*) valueWithNonretainedObject: (id)anObject
@@ -622,7 +637,9 @@ static NSLock			*placeholderLock;
 	    [coder decodeArrayOfObjCType: @encode(unsigned char)
 				   count: size
 				      at: (void*)serialized];
-	    d = [d initWithBytesNoCopy: (void*)serialized length: size];
+	    d = [d initWithBytesNoCopy: (void*)serialized
+				length: size
+			  freeWhenDone: NO];
 	    [d deserializeDataAt: data
 		      ofObjCType: objctype
 			atCursor: &cursor

@@ -24,7 +24,7 @@
 
 #import "Foundation/NSSortDescriptor.h"
 
-#import "GSObjCRuntime.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 #import "Foundation/NSException.h"
 #import "GSPrivate.h"
 

@@ -1,5 +1,5 @@
 /** NSException - Object encapsulation of a general exception handler
-   Copyright (C) 1993, 1994, 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993-2013 Free Software Foundation, Inc.
 
    Written by:  Adam Fedor <fedor@boulder.colorado.edu>
    Date: Mar 1995
@@ -21,23 +21,23 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2012-01-03 01:34:10 -0800 (Tue, 03 Jan 2012) $ $Revision: 34398 $
+   $Date: 2013-11-07 06:41:58 -0800 (Thu, 07 Nov 2013) $ $Revision: 37368 $
 */
 
 #import "common.h"
 #define	EXPOSE_NSException_IVARS	1
 #define	EXPOSE_NSThread_IVARS	1
 #import "GSPrivate.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSArray.h"
-#import "NSCoder.h"
-#import "NSNull.h"
-#import "NSThread.h"
-#import "NSLock.h"
-#import "NSDictionary.h"
-#import "NSValue.h"
-#import "NSString+GNUstepBase.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSNull.h"
+#import "Foundation/NSThread.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSValue.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
 
 #ifdef __GNUSTEP_RUNTIME__
 #include <objc/hooks.h>
@@ -48,7 +48,9 @@
 #endif
 
 #ifdef HAVE_MALLOC_H
+#if !defined(__OpenBSD__)
 #include <malloc.h>
+#endif
 #endif
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>
@@ -74,13 +76,13 @@ static  NSUncaughtExceptionHandler *_NSUncaughtExceptionHandler = 0;
 
 /* This is the GNU name for the CTOR list */
 
-@interface GSStackTrace : NSObject {
-    NSArray	*symbols;
-    NSArray	*addresses;
+@interface GSStackTrace : NSObject
+{
+  NSArray	*symbols;
+  NSArray	*addresses;
 }
-
-- (NSArray *)addresses;
-- (NSArray *)symbols;
+- (NSArray*) addresses;
+- (NSArray*) symbols;
 
 @end
 
@@ -196,6 +198,8 @@ GSPrivateBaseAddress(void *addr, void **base)
 
 @end
 
+
+
 @implementation GSFunctionInfo
 
 - (void*) address
@@ -259,6 +263,8 @@ GSPrivateBaseAddress(void *addr, void **base)
 }
 
 @end
+
+
 
 @implementation GSBinaryFileInfo
 
@@ -546,168 +552,194 @@ GSListModules()
 
 @implementation GSStackTrace : NSObject
 
-#pragma mark - Life cycle
+- (NSArray*) addresses
+{
+  return addresses;
+}
 
-// grab the current stack
-- (id)init
+- (oneway void) dealloc
+{
+  DESTROY(addresses);
+  DESTROY(symbols);
+  [super dealloc];
+}
+
+- (NSString*) description
+{
+  NSMutableString *result;
+  NSArray *s;
+  int i;
+  int n;
+
+  result = [NSMutableString string];
+  s = [self symbols];
+  n = [s count];
+  for (i = 0; i < n; i++)
+    {
+      NSString	*line = [s objectAtIndex: i];
+
+      [result appendFormat: @"%3d: %@\n", i, line];
+    }
+  return result;
+}
+
+// grab the current stack 
+- (id) init
 {
 #if	defined(HAVE_BACKTRACE)
-    void **addr;
-    id *vals;
-    int count;
-    int i;
-    //DLog(@"HAVE_BACKTRACE");
-    addr = calloc(sizeof(void*),1024);
-    count = backtrace(addr, 1024);
-    addr = realloc(addr, count * sizeof(void*));
-    vals = alloca(count * sizeof(id));
-    for (i = 0; i < count; i++) {
-        vals[i] = [NSNumber numberWithUnsignedInteger:
-                   (NSUInteger)addr[i]];
+  void		**addr;
+  id		*vals;
+  int		count;
+  int		i;
+
+  addr = calloc(sizeof(void*),1024);
+  count = backtrace(addr, 1024);
+  addr = realloc(addr, count * sizeof(void*));
+  vals = alloca(count * sizeof(id));
+  for (i = 0; i < count; i++)
+    {
+      vals[i] = [NSNumber numberWithUnsignedInteger:
+	(NSUInteger)addr[i]];
     }
-    addresses = [[NSArray alloc] initWithObjects: vals count: count];
-    free(addr);
+  addresses = [[NSArray alloc] initWithObjects: vals count: count];
+  free(addr);
 #else
-    addresses = [GSPrivateStackAddresses() copy];
-    //DLog(@"addresses: %@", addresses);
+  addresses = [GSPrivateStackAddresses() copy];
 #endif
-    return self;
+  return self;
 }
 
-
-- (oneway void)dealloc
+- (NSArray*) symbols
 {
-    DESTROY(addresses);
-    DESTROY(symbols);
-    [super dealloc];
-}
+  if (nil == symbols) 
+    {
+      NSUInteger	count = [addresses count];
 
-#pragma mark - Accessors
-
-- (NSArray *)addresses
-{
-    return addresses;
-}
-
-- (NSArray *)symbols
-{
+      if (count > 0)
+	{
 #if	defined(HAVE_BACKTRACE)
-    //DLog();
-    if (nil == symbols) {
-        char	**strs;
-        void	**addr;
-        NSString	**symbolArray;
-        unsigned	count;
-        int 	i;
-        
-        count = [addresses count];
-        addr = alloca(count * sizeof(void*));
-        for (i = 0; i < count; i++) {
-            addr[i] = (void*)[[addresses objectAtIndex: i] unsignedIntegerValue];
-        }
-        
-        strs = backtrace_symbols(addr, count);
-        symbolArray = alloca(count * sizeof(NSString*));
-        for (i = 0; i < count; i++) {
-            symbolArray[i] = [NSString stringWithUTF8String: strs[i]];
-        }
-        symbols = [[NSArray alloc] initWithObjects: symbolArray count: count];
-        free(strs);
-    }
-#elif defined(USE_BINUTILS)
-    //DLog();
-    if (nil == symbols) {
-        NSMutableArray	*a;
-        int i;
-        int n;
-        
-        n = [addresses count];
-        DLog(@"n: %d", n);
-        a = [[NSMutableArray alloc] initWithCapacity: n];
-        
-        for (i = 0; i < n; i++) {
-            GSFunctionInfo	*aFrame = nil;
-            void *address;
-            void *base;
-            NSString *modulePath;
-            GSBinaryFileInfo *bfi;
-            address = (void *)[[addresses objectAtIndex:i] pointerValue];
-            modulePath = GSPrivateBaseAddress(address, &base);
-            DLog(@"modulePath: %@", modulePath);
-            if (modulePath != nil && (bfi = GSLoadModule(modulePath)) != nil) {
-                aFrame = [bfi functionForAddress: (void *)(address - base)];
-                if (aFrame == nil) {
-                    /* We know we have the right module but function lookup
-                     * failed ... perhaps we need to use the absolute
-                     * address rather than offest by 'base' in this case.
-                     */
-                    aFrame = [bfi functionForAddress: address];
-                }
-            } else {
-                NSArray	*modules;
-                int j;
-                int m;
-                modules = GSListModules();
-                m = [modules count];
-                for (j = 0; j < m; j++) {
-                    bfi = [modules objectAtIndex:j];
-                    if ((id)bfi != (id)[NSNull null]) {
-                        aFrame = [bfi functionForAddress:address];
-                        if (aFrame != nil) {
-                            break;
-                        }
-                    }
-                }
-            }
-            // not found (?!), add an 'unknown' function
-            if (aFrame == nil) {
-                aFrame = [GSFunctionInfo alloc];
-                [aFrame initWithModule:nil
-                               address:address
-                                  file:nil
-                              function:nil
-                                  line:0];
-                [aFrame autorelease];
-            }
-            [a addObject:[aFrame description]];
-        }
-        symbols = [a copy];
-        [a release];
-    }
-#endif
-    //DLog();
-    return symbols;
-}
+	  char		**strs;
+	  void		**addr;
+	  NSString	**symbolArray;
+	  NSUInteger 	i;
 
-- (NSString *)description
-{
-    NSMutableString *result;
-    NSArray *s;
-    int i;
-    int n;
-    result = [NSMutableString string];
-    s = [self symbols];
-    //DLog(@"s: %@", s);
-    n = [s count];
-    //DLog(@"n: %d", n);
-    for (i = 0; i < n; i++) {
-        NSString *line = [s objectAtIndex:i];
-        //DLog(@"line: %@", line);
-        [result appendFormat: @"%3d: %@\n", i, line];
+	  addr = alloca(count * sizeof(void*));
+	  for (i = 0; i < count; i++)
+	    {
+	      addr[i] = (void*)[[addresses objectAtIndex: i]
+		unsignedIntegerValue];
+	    }
+
+	  strs = backtrace_symbols(addr, count);
+	  symbolArray = alloca(count * sizeof(NSString*));
+	  for (i = 0; i < count; i++)
+	    {
+	      symbolArray[i] = [NSString stringWithUTF8String: strs[i]];
+	    }
+	  symbols = [[NSArray alloc] initWithObjects: symbolArray count: count];
+	  free(strs);
+#elif	defined(USE_BINUTILS)
+	  NSMutableArray	*a;
+	  NSUInteger 		i;
+
+	  a = [[NSMutableArray alloc] initWithCapacity: count];
+
+	  for (i = 0; i < count; i++)
+	    {
+	      GSFunctionInfo	*aFrame = nil;
+	      void		*address;
+	      void		*base;
+	      NSString		*modulePath;
+	      GSBinaryFileInfo	*bfi;
+
+	      address = (void*)[[addresses objectAtIndex: i] pointerValue];
+	      modulePath = GSPrivateBaseAddress(address, &base);
+	      if (modulePath != nil && (bfi = GSLoadModule(modulePath)) != nil)
+		{
+		  aFrame = [bfi functionForAddress: (void*)(address - base)];
+		  if (aFrame == nil)
+		    {
+		      /* We know we have the right module but function lookup
+		       * failed ... perhaps we need to use the absolute
+		       * address rather than offest by 'base' in this case.
+		       */
+		      aFrame = [bfi functionForAddress: address];
+		    }
+		}
+	      else
+		{
+		  NSArray	*modules;
+		  int		j;
+		  int		m;
+
+		  modules = GSListModules();
+		  m = [modules count];
+		  for (j = 0; j < m; j++)
+		    {
+		      bfi = [modules objectAtIndex: j];
+
+		      if ((id)bfi != (id)[NSNull null])
+			{
+			  aFrame = [bfi functionForAddress: address];
+			  if (aFrame != nil)
+			    {
+			      break;
+			    }
+			}
+		    }
+		}
+
+	      // not found (?!), add an 'unknown' function
+	      if (aFrame == nil)
+		{
+		  aFrame = [GSFunctionInfo alloc];
+		  [aFrame initWithModule: nil
+				 address: address 
+				    file: nil
+				function: nil
+				    line: 0];
+		  [aFrame autorelease];
+		}
+	      [a addObject: [aFrame description]];
+	    }
+	  symbols = [a copy];
+	  [a release];
+#endif
+	}
+      else
+	{
+	  symbols = [NSArray new];
+	}
     }
-    return result;
+  return symbols;
 }
 
 @end
 
-NSString *const NSCharacterConversionException = @"NSCharacterConversionException";
-NSString *const NSGenericException = @"NSGenericException";
-NSString *const NSInternalInconsistencyException = @"NSInternalInconsistencyException";
-NSString *const NSInvalidArgumentException = @"NSInvalidArgumentException";
-NSString *const NSMallocException = @"NSMallocException";
-NSString *const NSOldStyleException = @"NSOldStyleException";
-NSString *const NSParseErrorException = @"NSParseErrorException";
-NSString *const NSRangeException = @"NSRangeException";
+
+NSString* const NSCharacterConversionException
+  = @"NSCharacterConversionException";
+
+NSString* const NSGenericException
+  = @"NSGenericException";
+
+NSString* const NSInternalInconsistencyException
+  = @"NSInternalInconsistencyException";
+
+NSString* const NSInvalidArgumentException
+  = @"NSInvalidArgumentException";
+
+NSString* const NSMallocException
+  = @"NSMallocException";
+
+NSString* const NSOldStyleException
+  = @"NSOldStyleException";
+
+NSString* const NSParseErrorException
+  = @"NSParseErrorException";
+
+NSString* const NSRangeException
+ = @"NSRangeException";
 
 static void _terminate()
 {
@@ -729,71 +761,48 @@ static void _terminate()
     }
 }
 
-static void _NSFoundationUncaughtExceptionHandler (NSException *exception)
+static void
+_NSFoundationUncaughtExceptionHandler (NSException *exception)
 {
-    NSAutoreleasePool *pool = [NSAutoreleasePool new];
-    NSLog(@"Uncaught exception: %@", exception);
-    //fprintf(stderr, "%s: Uncaught exception %s, reason: %s\n", GSPrivateArgZero(), [[exception name] lossyCString], [[exception reason] lossyCString]);
-    fflush(stderr);	/* NEEDED UNDER MINGW */
-    if (GSPrivateEnvironmentFlag("GNUSTEP_STACK_TRACE", NO) == YES) {
-        fprintf(stderr, "Stack\n%s\n",
-                [[[exception _callStack] description] lossyCString]);
+  NSAutoreleasePool	*pool = [NSAutoreleasePool new];
+
+  fprintf(stderr, "%s: Uncaught exception %s, reason: %s\n",
+    GSPrivateArgZero(),
+    [[exception name] lossyCString], [[exception reason] lossyCString]);
+  fflush(stderr);	/* NEEDED UNDER MINGW */
+  if (GSPrivateEnvironmentFlag("GNUSTEP_STACK_TRACE", NO) == YES)
+    {
+      fprintf(stderr, "Stack\n%s\n",
+	[[[exception _callStack] description] lossyCString]);
     }
-    fflush(stderr);	/* NEEDED UNDER MINGW */
-    [pool drain];
-    _terminate();
+  fflush(stderr);	/* NEEDED UNDER MINGW */
+  [pool drain];
+  _terminate();
 }
 
 static void
 callUncaughtHandler(id value)
 {
-    if (_NSUncaughtExceptionHandler != NULL) {
-        DLog();
-        (*_NSUncaughtExceptionHandler)(value);
+  if (_NSUncaughtExceptionHandler != NULL)
+    {
+      (*_NSUncaughtExceptionHandler)(value);
     }
-    /* The uncaught exception handler which is set has not exited,
-     * so we MUST call the builtin handler, (normal behavior of MacOS-X).
-     * The standard handler is guaranteed to exit/abort, which is the
-     * required behavior for OSX compatibility.
-     * NB Cocoa's Exception Handling framework might bypass this behavior
-     * somehow (it's not clear if it does that or simply wraps various
-     * things with its own exception handlers thus preventing the
-     * uncaught handler from ever being needed) ... if anyone contributes
-     * an implementation, perhaps we could integrate it here.
-     */
-    _NSFoundationUncaughtExceptionHandler(value);
+  /* The uncaught exception handler which is set has not exited,
+   * so we MUST call the builtin handler, (normal behavior of MacOS-X).
+   * The standard handler is guaranteed to exit/abort, which is the
+   * required behavior for OSX compatibility.
+   * NB Cocoa's Exception Handling framework might bypass this behavior
+   * somehow (it's not clear if it does that or simply wraps various
+   * things with its own exception handlers thus preventing the
+   * uncaught handler from ever being needed) ... if anyone contributes
+   * an implementation, perhaps we could integrate it here.
+   */
+  _NSFoundationUncaughtExceptionHandler(value);
 }
 
 @implementation NSException
 
-#pragma mark - Life cycle
-
-/* For OSX compatibility -init returns nil.
- */
-- (id) init
-{
-    DESTROY(self);
-    return nil;
-}
-
-- (id) initWithName: (NSString*)name
-             reason: (NSString*)reason
-           userInfo: (NSDictionary*)userInfo
-{
-    ASSIGN(_e_name, name);
-    ASSIGN(_e_reason, reason);
-    if (userInfo != nil)
-    {
-        if (_reserved == 0)
-        {
-            _reserved = NSZoneCalloc([self zone], 2, sizeof(id));
-        }
-        ASSIGN(_e_info, userInfo);
-    }
-    return self;
-}
-
-+ (void)initialize
++ (void) initialize
 {
 #if	defined(USE_BINUTILS)
   if (modLock == nil)
@@ -822,22 +831,7 @@ callUncaughtHandler(id value)
 				   userInfo: userInfo]);
 }
 
-- (void)dealloc
-{
-    DESTROY(_e_name);
-    DESTROY(_e_reason);
-    if (_reserved != 0) {
-        DESTROY(_e_info);
-        DESTROY(_e_stack);
-        NSZoneFree([self zone], _reserved);
-        _reserved = 0;
-    }
-    [super dealloc];
-}
-
-#pragma mark - Public methods
-
-+ (void)raise:(NSString*)name
++ (void) raise: (NSString*)name
 	format: (NSString*)format,...
 {
   va_list args;
@@ -848,122 +842,183 @@ callUncaughtHandler(id value)
   va_end(args);
 }
 
-+ (void)raise:(NSString *)name format:(NSString *)format arguments:(va_list)argList
++ (void) raise: (NSString*)name
+	format: (NSString*)format
+     arguments: (va_list)argList
 {
-    NSString *reason;
-    NSException	*except;
-    
-    reason = [NSString stringWithFormat:format arguments:argList];
-    except = [self exceptionWithName:name reason:reason userInfo:nil];
-    [except raise];
+  NSString	*reason;
+  NSException	*except;
+
+  reason = [NSString stringWithFormat: format arguments: argList];
+  except = [self exceptionWithName: name reason: reason userInfo: nil];
+  [except raise];
 }
 
-- (NSArray *)callStackReturnAddresses
+/* For OSX compatibility -init returns nil.
+ */
+- (id) init
 {
-    if (_reserved == 0) {
-        return nil;
-    }
-    return [_e_stack addresses];
+  DESTROY(self);
+  return nil;
 }
 
-- (NSArray *)callStackSymbols
+- (id) initWithName: (NSString*)name
+	     reason: (NSString*)reason
+	   userInfo: (NSDictionary*)userInfo
 {
-    if (_reserved == 0) {
-        return nil;
-    }
-    return [_e_stack symbols];
-}
-
-#pragma mark - Accessors
-
-- (NSString *)description
-{
-    //NSAutoreleasePool *pool = [NSAutoreleasePool new];
-    //NSString *result;
-    
-    if (_e_name == nil) {
-        [NSException raise:NSInvalidArgumentException format:@"Atttempt to use uninitialised NSException"];
-    }
-    if (_reserved != 0) {
-        //DLog();
-        if (_e_stack != nil && YES) { //GSPrivateEnvironmentFlag("GNUSTEP_STACK_TRACE", NO) == YES) {
-            if (_e_info != nil) {
-                return [NSString stringWithFormat:
-                          @"%@ NAME:%@ REASON:%@ INFO:%@ STACK:%@",
-                          [super description], _e_name, _e_reason, _e_info, _e_stack];
-            } else {
-                //result = [NSString stringWithFormat:
-                //          @"%@ NAME:%@ REASON:%@ STACK:%@", [super description], _e_name, _e_reason, _e_stack];
-                return [NSString stringWithFormat:@"<%@: %p; name:%@; reason:%@; stack:%@>", [self className], self, _e_name, _e_reason, _e_stack];
-            }
-        } else {
-            return [NSString stringWithFormat: @"%@ NAME:%@ REASON:%@ INFO:%@", [super description], _e_name, _e_reason, _e_info];
-        }
-    } else {
-        //DLog();
-        return [NSString stringWithFormat: @"%@ name:%@, reason:%@, stack: %@", [super description], _e_name, _e_reason, [self callStackReturnAddresses]];
-    }
-    //[result retain];
-    //[pool drain];
-    //return [result autorelease];
-}
-
-- (void)raise
-{
-    //DLog(@"self: %@", self);
-    if (_reserved == 0) {
-        _reserved = NSZoneCalloc([self zone], 2, sizeof(id));
-    }
-    if (nil == _e_stack) {
-        // Only set the stack when first raised
-        _e_stack = [GSStackTrace new];
-    }
-    
-#if defined(_NATIVE_OBJC_EXCEPTIONS)
-    //DLog(@"_NATIVE_OBJC_EXCEPTIONS");
-    @throw self;
-#else
+  ASSIGN(_e_name, name);
+  ASSIGN(_e_reason, reason);
+  if (userInfo != nil)
     {
-        NSThread *thread;
-        NSHandler *handler;
-        
-        thread = GSCurrentThread();
-        handler = thread->_exception_handler;
-        if (NULL == handler) {
-            //DLog();
-            static	int	recursion = 0;
-            
-            /*
-             * Set/check a counter to prevent recursive uncaught exceptions.
-             * Allow a little recursion in case we have different handlers
-             * being tried.
-             */
-            if (recursion++ > 3) {
-                fprintf(stderr, "recursion encountered handling uncaught exception\n");
-                fflush(stderr);	/* NEEDED UNDER MINGW */
-                _terminate();
+      if (_reserved == 0)
+        {
+          _reserved = NSZoneCalloc([self zone], 2, sizeof(id));
+        }
+      ASSIGN(_e_info, userInfo);
+    }
+  return self;
+}
+
+- (NSArray*) callStackReturnAddresses
+{
+  if (_reserved == 0)
+    {
+      return nil;
+    }
+  return [_e_stack addresses];
+}
+
+- (NSArray *) callStackSymbols
+{
+  if (_reserved == 0)
+    {
+      return nil;
+    }
+  return [_e_stack symbols];
+}
+
+- (void) dealloc
+{
+  DESTROY(_e_name);
+  DESTROY(_e_reason);
+  if (_reserved != 0)
+    {
+      DESTROY(_e_info);
+      DESTROY(_e_stack);
+      NSZoneFree([self zone], _reserved);
+      _reserved = 0;
+    }
+  [super dealloc];
+}
+
+- (NSString*) description
+{
+  NSAutoreleasePool	*pool = [NSAutoreleasePool new];
+  NSString      	*result;
+
+  if (_e_name == nil)
+    {
+      [NSException raise: NSInvalidArgumentException
+		  format: @"Atttempt to use uninitialised NSException"];
+    }
+  if (_reserved != 0)
+    {
+      if (_e_stack != nil
+        && GSPrivateEnvironmentFlag("GNUSTEP_STACK_TRACE", NO) == YES)
+        {
+          if (_e_info != nil)
+            {
+              result = [NSString stringWithFormat:
+                @"%@ NAME:%@ REASON:%@ INFO:%@ STACK:%@",
+                [super description], _e_name, _e_reason, _e_info, _e_stack];
             }
-            /*
-             * Call the uncaught exception handler (if there is one).
-             * The calls the built-in default handler to terminate the program!
-             */
-            callUncaughtHandler(self);
-        } else {
-            //DLog();
-            thread->_exception_handler = handler->next;
-            handler->exception = self;
-            longjmp(handler->jumpState, 1);
+          else
+            {
+              result = [NSString stringWithFormat:
+                @"%@ NAME:%@ REASON:%@ STACK:%@",
+                [super description], _e_name, _e_reason, _e_stack];
+            }
+        }
+      else
+        {
+          result = [NSString stringWithFormat:
+            @"%@ NAME:%@ REASON:%@ INFO:%@",
+            [super description], _e_name, _e_reason, _e_info];
         }
     }
+  else
+    {
+      result = [NSString stringWithFormat: @"%@ NAME:%@ REASON:%@",
+        [super description], _e_name, _e_reason];
+    }
+  [result retain];
+  [pool drain];
+  return [result autorelease];
+}
+
+- (void) raise
+{
+  if (_reserved == 0)
+    {
+      _reserved = NSZoneCalloc([self zone], 2, sizeof(id));
+    }
+  if (nil == _e_stack)
+    {
+      // Only set the stack when first raised
+      _e_stack = [GSStackTrace new];
+    }
+
+#if     defined(_NATIVE_OBJC_EXCEPTIONS)
+  @throw self;
+#else
+{
+  NSThread      *thread;
+  NSHandler	*handler;
+
+  thread = GSCurrentThread();
+  handler = thread->_exception_handler;
+  if (NULL == handler)
+    {
+      static	int	recursion = 0;
+
+      /*
+       * Set/check a counter to prevent recursive uncaught exceptions.
+       * Allow a little recursion in case we have different handlers
+       * being tried.
+       */
+      if (recursion++ > 3)
+	{
+	  fprintf(stderr,
+	    "recursion encountered handling uncaught exception\n");
+	  fflush(stderr);	/* NEEDED UNDER MINGW */
+	  _terminate();
+	}
+
+      /*
+       * Call the uncaught exception handler (if there is one).
+       * The calls the built-in default handler to terminate the program!
+       */
+      callUncaughtHandler(self);
+    }
+  else
+    {
+      thread->_exception_handler = handler->next;
+      handler->exception = self;
+      longjmp(handler->jumpState, 1);
+    }
+}
 #endif
 }
 
-- (NSString *)name
+- (NSString*) name
 {
-    if (_e_name != nil) {
-        return _e_name;
-    } else {
-        return NSStringFromClass([self class]);
+  if (_e_name != nil)
+    {
+      return _e_name;
+    }
+  else
+    {
+      return NSStringFromClass([self class]);
     }
 }
 
@@ -1043,16 +1098,27 @@ callUncaughtHandler(id value)
 
 @implementation	NSException (GSPrivate)
 
-- (GSStackTrace *)_callStack
+- (GSStackTrace*) _callStack
 {
-    if (_reserved == 0) {
-        return nil;
+  if (_reserved == 0)
+    {
+      return nil;
     }
-    return _e_stack;
+  return _e_stack;
 }
 
 @end
 
+@implementation NSThread (CallStackSymbols)
+
++ (NSArray *) callStackSymbols
+{
+  GSStackTrace *stackTrace = [[[GSStackTrace alloc] init] autorelease];
+  NSArray *symbols = [stackTrace symbols];
+  return symbols;
+}
+
+@end
 
 void
 _NSAddHandler (NSHandler* handler)

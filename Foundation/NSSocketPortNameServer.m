@@ -21,31 +21,35 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2011-03-09 04:40:50 -0800 (Wed, 09 Mar 2011) $ $Revision: 32517 $
+   $Date: 2014-06-20 07:17:17 -0700 (Fri, 20 Jun 2014) $ $Revision: 37956 $
    */
+
+/* define to get system-v functions including inet_aton()
+ */
+#define _SVID_SOURCE    1
 
 #import "common.h"
 #define	EXPOSE_NSSocketPortNameServer_IVARS	1
-#import "NSData.h"
-#import "NSByteOrder.h"
-#import "NSException.h"
-#import "NSAutoreleasePool.h"
-#import "NSFileManager.h"
-#import "NSLock.h"
-#import "NSFileHandle.h"
-#import "NSRunLoop.h"
-#import "NSNotification.h"
-#import "NSNotificationQueue.h"
-#import "NSPort.h"
-#import "NSMapTable.h"
-#import "NSSet.h"
-#import "NSHost.h"
-#import "NSTask.h"
-#import "NSTask+GNUstepBase.h"
-#import "NSDate.h"
-#import "NSTimer.h"
-#import "NSPathUtilities.h"
-#import "NSPortNameServer.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSFileHandle.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSNotificationQueue.h"
+#import "Foundation/NSPort.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSHost.h"
+#import "Foundation/NSTask.h"
+#import "GNUstepBase/NSTask+GNUstepBase.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSTimer.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSPortNameServer.h"
 
 #import "GSPortPrivate.h"
 
@@ -60,7 +64,7 @@
 /*
  *	Protocol definition stuff for talking to gdomap process.
  */
-#include        "Tools/gdomap.h"
+#include        "../Tools/gdomap.h"
 
 #define stringify_it(X) #X
 #define	make_gdomap_port(X)	stringify_it(X)
@@ -557,10 +561,13 @@ typedef enum {
   if (self == [NSSocketPortNameServer class])
     {
       serverLock = [NSRecursiveLock new];
+      [[NSObject leakAt: &serverLock] release];
       modes = [[NSArray alloc] initWithObjects: &mode count: 1];
+      [[NSObject leakAt: &modes] release];
 #ifdef	GDOMAP_PORT_OVERRIDE
       serverPort = RETAIN([NSString stringWithUTF8String:
 	make_gdomap_port(GDOMAP_PORT_OVERRIDE)]);
+      [[NSObject leakAt: &serverPort] release];
 #endif
       portClass = [NSSocketPort class];
     }
@@ -583,7 +590,12 @@ typedef enum {
 	}
       s = (NSSocketPortNameServer*)NSAllocateObject(self, 0,
 	NSDefaultMallocZone());
-      s->_portMap = NSCreateMapTable(NSNonRetainedObjectMapKeyCallBacks,
+      /* Use NSNonOwnedPointerMapKeyCallBacks for the ports used as keys
+       * since we want as pointer test for equality as we may be doing
+       * lookup while dealocating the port (in which case the -isEqual:
+       * method could fail).
+       */
+      s->_portMap = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,
 			NSObjectMapValueCallBacks, 0);
       s->_nameMap = NSCreateMapTable(NSObjectMapKeyCallBacks,
 			NSNonOwnedPointerMapValueCallBacks, 0);

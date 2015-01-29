@@ -23,22 +23,22 @@
 */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSValue.h"
-#import "NSData.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSURL.h"
-#import "NSURLHandle.h"
-#import "NSNotification.h"
-#import "NSRunLoop.h"
-#import "NSByteOrder.h"
-#import "NSLock.h"
-#import "NSFileHandle.h"
-#import "GSMime.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSURL.h"
+#import "Foundation/NSURLHandle.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSByteOrder.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSFileHandle.h"
+#import "GNUstepBase/GSMime.h"
 #import "GSPrivate.h"
 
 GS_EXPORT NSString * const GSTelnetNotification;
@@ -540,7 +540,9 @@ static NSLock			*urlLock = nil;
   if (self == [GSFTPURLHandle class])
     {
       urlCache = [NSMutableDictionary new];
+      [[NSObject leakAt: &urlCache] release];
       urlLock = [NSLock new];
+      [[NSObject leakAt: &urlLock] release];
     }
 }
 

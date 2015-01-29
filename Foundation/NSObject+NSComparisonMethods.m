@@ -26,20 +26,7 @@
 */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSObject+GNUstepBase.h"
-
-@interface NSObject (NSComparisonMethods)
-- (BOOL) doesContain: (id) object;
-- (BOOL) isCaseInsensitiveLike: (id) object;
-- (BOOL) isEqualTo: (id) object;
-- (BOOL) isGreaterThan: (id) object;
-- (BOOL) isGreaterThanOrEqualTo: (id) object;
-- (BOOL) isLessThan: (id) object;
-- (BOOL) isLessThanOrEqualTo: (id) object;
-- (BOOL) isLike: (NSString *)object;
-- (BOOL) isNotEqualTo: (id) object;
-@end
+#import "Foundation/NSArray.h"
 
 @implementation NSObject (NSComparisonMethods)
 - (BOOL) doesContain: (id) object

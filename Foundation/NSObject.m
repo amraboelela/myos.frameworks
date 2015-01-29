@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSObject class reference</title>
-   $Date: 2012-02-27 22:20:53 -0800 (Mon, 27 Feb 2012) $ $Revision: 34841 $
+   $Date: 2015-01-16 06:29:38 -0800 (Fri, 16 Jan 2015) $ $Revision: 38294 $
    */
 
 /* On some versions of mingw we need to work around bad function declarations
@@ -34,24 +34,20 @@
 #endif
 
 #import "common.h"
-
-#ifdef ANDROID
-#include <objc/protocol.h>
-#endif
-
-#import "NSMethodSignature.h"
-#import "NSInvocation.h"
-#import "NSLock.h"
-#import "NSAutoreleasePool.h"
-#import "NSArray.h"
-#import "NSException.h"
-#import "NSPortCoder.h"
-#import "NSDistantObject.h"
-#import "NSThread.h"
-#import "NSNotification.h"
-#import "NSMapTable.h"
-#import "GSLocale.h"
-#import "NSObject+GNUstepBase.h"
+#include <objc/Protocol.h>
+#import "Foundation/NSMethodSignature.h"
+#import "Foundation/NSInvocation.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPortCoder.h"
+#import "Foundation/NSDistantObject.h"
+#import "Foundation/NSThread.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSUserDefaults.h"
+#import "GNUstepBase/GSLocale.h"
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -96,6 +92,8 @@ static id autorelease_class = nil;
 static SEL autorelease_sel;
 static IMP autorelease_imp;
 
+
+
 #if GS_WITH_GC
 
 #include	<gc/gc.h>
@@ -110,20 +108,20 @@ static Class	NSConstantStringClass;
 @class	NSDataMalloc;
 @class	NSMutableDataMalloc;
 
-@interface NSZombie {
-    Class isa;
+GS_ROOT_CLASS @interface	NSZombie
+{
+  Class	isa;
 }
-
-- (Class)class;
-- (void)forwardInvocation:(NSInvocation *)anInvocation;
-- (NSMethodSignature *)methodSignatureForSelector: (SEL)aSelector;
-
+- (Class) class;
+- (void) forwardInvocation: (NSInvocation*)anInvocation;
+- (NSMethodSignature*) methodSignatureForSelector: (SEL)aSelector;
 @end
 
-@interface GSContentAccessingProxy : NSProxy {
+@interface GSContentAccessingProxy : NSProxy
+{
   NSObject<NSDiscardableContent> *object;
 }
-- (id)initWithObject:(id)anObject;
+- (id) initWithObject: (id)anObject;
 @end
 
 /*
@@ -136,42 +134,49 @@ BOOL	NSZombieEnabled = NO;
 BOOL	NSDeallocateZombies = NO;
 
 @class	NSZombie;
-static Class zombieClass = Nil;
-static NSMapTable *zombieMap = 0;
+static Class		zombieClass = Nil;
+static NSMapTable	*zombieMap = 0;
 
 #if	!GS_WITH_GC
-static void GSMakeZombie(NSObject *o)
+static void GSMakeZombie(NSObject *o, Class c)
 {
-    Class c;
-    c = object_getClass(o);
-    object_setClass(o, zombieClass);
-    if (0 != zombieMap) {
-        [allocationLock lock];
-        NSMapInsert(zombieMap, (void*)o, (void*)c);
-        [allocationLock unlock];
+  object_setClass(o, zombieClass);
+  if (0 != zombieMap)
+    {
+      [allocationLock lock];
+      NSMapInsert(zombieMap, (void*)o, (void*)c);
+      [allocationLock unlock];
     }
 }
 #endif
 
 static void GSLogZombie(id o, SEL sel)
 {
-    Class	c = 0;
-    
-    if (0 != zombieMap) {
-        [allocationLock lock];
-        c = NSMapGet(zombieMap, (void*)o);
-        [allocationLock unlock];
+  Class	c = 0;
+
+  if (0 != zombieMap)
+    {
+      [allocationLock lock];
+      c = NSMapGet(zombieMap, (void*)o);
+      [allocationLock unlock];
     }
-    if (c == 0) {
-        NSLog(@"*** -[??? %@]: message sent to deallocated instance %p",
-              NSStringFromSelector(sel), o);
-    } else {
-        NSLog(@"*** -[%@ %@]: message sent to deallocated instance %p", c, NSStringFromSelector(sel), o);
+  if (c == 0)
+    {
+      NSLog(@"*** -[??? %@]: message sent to deallocated instance %p",
+	NSStringFromSelector(sel), o);
     }
-    if (GSPrivateEnvironmentFlag("CRASH_ON_ZOMBIE", NO) == YES) {
-        abort();
+  else
+    {
+      NSLog(@"*** -[%@ %@]: message sent to deallocated instance %p",
+	c, NSStringFromSelector(sel), o);
     }
-}
+  if (GSPrivateEnvironmentFlag("CRASH_ON_ZOMBIE", NO) == YES)
+    {
+      abort();
+    }
+}
+
+
 /*
  *	Reference count and memory management
  *	Reference counts for object are stored
@@ -332,7 +337,7 @@ GSAtomicIncrement(gsatomic_t X)
   int tmp;
 
   __asm__ __volatile__ (
-#if !defined(__mips64__)
+#if !defined(__mips64)
     "   .set  mips2  \n"
 #endif
     "0: ll    %0, %1 \n"
@@ -349,7 +354,7 @@ GSAtomicDecrement(gsatomic_t X)
   int tmp;
 
   __asm__ __volatile__ (
-#if !defined(__mips64__)
+#if !defined(__mips64)
     "   .set  mips2  \n"
 #endif
     "0: ll    %0, %1 \n"
@@ -389,14 +394,10 @@ static inline NSLock *GSAllocationLockForObject(id p)
 
 #endif
 
-#ifdef ALIGN
-#undef ALIGN
-#endif
 #if defined(__GNUC__) && __GNUC__ < 4
 #define __builtin_offsetof(s, f) (uintptr_t)(&(((s*)0)->f))
 #endif
 #define alignof(type) __builtin_offsetof(struct { const char c; type member; }, member)
-#define	ALIGN alignof(double)
 
 /*
  *	Define a structure to hold information that is held locally
@@ -407,13 +408,22 @@ typedef struct obj_layout_unpadded {
 } unp;
 #define	UNP sizeof(unp)
 
+/* GCC provides a defined value for the largest alignment required on a
+ * machine, and we must lay objects out to that alignment.
+ * For compilers that don't define it, we try to pick a likely value.
+ */
+#ifndef	__BIGGEST_ALIGNMENT__
+#define	__BIGGEST_ALIGNMENT__ (SIZEOF_VOIDP * 2)
+#endif
+
 /*
  *	Now do the REAL version - using the other version to determine
  *	what padding (if any) is required to get the alignment of the
  *	structure correct.
  */
 struct obj_layout {
-    char	padding[ALIGN - ((UNP % ALIGN) ? (UNP % ALIGN) : ALIGN)];
+    char	padding[__BIGGEST_ALIGNMENT__ - ((UNP % __BIGGEST_ALIGNMENT__)
+      ? (UNP % __BIGGEST_ALIGNMENT__) : __BIGGEST_ALIGNMENT__)];
     NSUInteger	retained;
 };
 typedef	struct obj_layout *obj;
@@ -422,18 +432,18 @@ typedef	struct obj_layout *obj;
 
 /**
  * If -base is compiled in GC mode, then we want to still support manual
- * reference counting if we are linked with non-GC code.  
+ * reference counting if we are linked with non-GC code.
  */
 static BOOL GSDecrementExtraRefCountWasZero(id anObject);
 
 BOOL
 NSDecrementExtraRefCountWasZero(id anObject)
 {
-    if (!objc_collecting_enabled())
+  if (!objc_collecting_enabled())
     {
-        return GSDecrementExtraRefCountWasZero(anObject);
+      return GSDecrementExtraRefCountWasZero(anObject);
     }
-    return NO;
+  return NO;
 }
 
 
@@ -451,57 +461,69 @@ NSDecrementExtraRefCountWasZero(id anObject)
 #endif
 {
 #if	!GS_WITH_GC
-    if (double_release_check_enabled) {
-        NSUInteger release_count;
-        NSUInteger retain_count = [anObject retainCount];
-        release_count = [autorelease_class autoreleaseCountForObject:anObject];
-        if (release_count >= retain_count)
-            [NSException raise: NSGenericException
-                        format: @"Release would release object too many times."];
+  if (double_release_check_enabled)
+    {
+      NSUInteger release_count;
+      NSUInteger retain_count = [anObject retainCount];
+      release_count = [autorelease_class autoreleaseCountForObject: anObject];
+      if (release_count >= retain_count)
+        [NSException raise: NSGenericException
+		    format: @"Release would release object too many times."];
     }
-    if (allocationLock != 0) {
+  if (allocationLock != 0)
+    {
 #if	defined(GSATOMICREAD)
-        int	result;
-        
-        result = GSAtomicDecrement((gsatomic_t)&(((obj)anObject)[-1].retained));
-        if (result < 0) {
-            if (result != -1) {
-                [NSException raise: NSInternalInconsistencyException
-                            format: @"NSDecrementExtraRefCount() decremented too far"];
-            }
-            /* The counter has become negative so it must have been zero.
-             * We reset it and return YES ... in a correctly operating
-             * process we know we can safely reset back to zero without
-             * worrying about atomicity, since there can be no other
-             * thread accessing the object (or its reference count would
-             * have been greater than zero)
-             */
-            (((obj)anObject)[-1].retained) = 0;
-            return YES;
-        }
+      int	result;
+
+      result = GSAtomicDecrement((gsatomic_t)&(((obj)anObject)[-1].retained));
+      if (result < 0)
+	{
+	  if (result != -1)
+	    {
+	      [NSException raise: NSInternalInconsistencyException
+		format: @"NSDecrementExtraRefCount() decremented too far"];
+	    }
+	  /* The counter has become negative so it must have been zero.
+	   * We reset it and return YES ... in a correctly operating
+	   * process we know we can safely reset back to zero without
+	   * worrying about atomicity, since there can be no other
+	   * thread accessing the object (or its reference count would
+	   * have been greater than zero)
+	   */
+	  (((obj)anObject)[-1].retained) = 0;
+	  return YES;
+	}
 #else	/* GSATOMICREAD */
-        NSLock *theLock = GSAllocationLockForObject(anObject);
-        
-        [theLock lock];
-        if (((obj)anObject)[-1].retained == 0) {
-            [theLock unlock];
-            return YES;
-        } else {
-            ((obj)anObject)[-1].retained--;
-            [theLock unlock];
-            return NO;
-        }
+      NSLock *theLock = GSAllocationLockForObject(anObject);
+
+      [theLock lock];
+      if (((obj)anObject)[-1].retained == 0)
+	{
+	  [theLock unlock];
+	  return YES;
+	}
+      else
+	{
+	  ((obj)anObject)[-1].retained--;
+	  [theLock unlock];
+	  return NO;
+	}
 #endif	/* GSATOMICREAD */
-    } else {
-        if (((obj)anObject)[-1].retained == 0) {
-            return YES;
-        } else {
-            ((obj)anObject)[-1].retained--;
-            return NO;
-        }
+    }
+  else
+    {
+      if (((obj)anObject)[-1].retained == 0)
+	{
+	  return YES;
+	}
+      else
+	{
+	  ((obj)anObject)[-1].retained--;
+	  return NO;
+	}
     }
 #endif /* !GS_WITH_GC */
-    return NO;
+  return NO;
 }
 
 /**
@@ -529,7 +551,7 @@ NSExtraRefCount(id anObject)
 
 /**
  * If -base is compiled in GC mode, then we want to still support manual
- * reference counting if we are linked with non-GC code.  
+ * reference counting if we are linked with non-GC code.
  */
 static void GSIncrementExtraRefCount(id anObject);
 
@@ -646,15 +668,6 @@ callCXXConstructors(Class aClass, id anObject)
  */
 #if	GS_WITH_GC
 
-inline NSZone *
-GSObjCZone(NSObject *object)
-{
-  GSOnceFLog(@"GSObjCZone() is deprecated ... use -zone instead");
-  /* MacOS-X 10.5 seems to return the default malloc zone if GC is enabled.
-   */
-  return NSDefaultMallocZone();
-}
-
 static void
 GSFinalize(void* object, void* data)
 {
@@ -743,34 +756,23 @@ NSDeallocateObject(id anObject)
 
 #else	/* GS_WITH_GC */
 
-#if !__OBJC_GC__
-inline NSZone *
-GSObjCZone(NSObject *object)
-{
-  GSOnceFLog(@"GSObjCZone() is deprecated ... use -zone instead");
-  if (object_getClass(object) == NSConstantStringClass)
-    return NSDefaultMallocZone();
-  return NSZoneFromPointer(object);
-}
-#endif
-
 #if __OBJC_GC__
-inline NSZone *
-GSObjCZone(NSObject *object)
-{
-  return NSDefaultMallocZone();
-}
 static inline id
 GSAllocateObject (Class aClass, NSUInteger extraBytes, NSZone *zone);
 
 inline id
 NSAllocateObject(Class aClass, NSUInteger extraBytes, NSZone *zone)
 {
+  id    new;
+
   if (!objc_collecting_enabled())
     {
-      GSAllocateObject(aClass, extraBytes, zone);
+      new = GSAllocateObject(aClass, extraBytes, zone);
     }
-  id	new = class_createInstance(aClass, extraBytes);
+  else
+    {
+      new = class_createInstance(aClass, extraBytes);
+    }
   if (0 == cxx_construct)
     {
       cxx_construct = sel_registerName(".cxx_construct");
@@ -823,8 +825,9 @@ static void GSDeallocateObject(id anObject);
 
 inline void NSDeallocateObject(id anObject)
 {
-    if (!objc_collecting_enabled()) {
-        GSDeallocateObject(anObject);
+  if (!objc_collecting_enabled())
+    {
+      GSDeallocateObject(anObject);
     }
 }
 
@@ -834,27 +837,33 @@ inline void
 NSDeallocateObject(id anObject)
 #endif
 {
-    Class aClass = object_getClass(anObject);
-    if ((anObject != nil) && !class_isMetaClass(aClass)) {
-        obj	o = &((obj)anObject)[-1];
-        NSZone	*z = NSZoneFromPointer(o);
-        
-        /* Call the default finalizer to handle C++ destructors.
-         */
-        (*finalize_imp)(anObject, finalize_sel);
-        
-        AREM(aClass, (id)anObject);
-        if (NSZombieEnabled == YES) {
-            GSMakeZombie(anObject);
-            if (NSDeallocateZombies == YES) {
-                NSZoneFree(z, o);
-            }
-        } else {
-            object_setClass((id)anObject, (Class)(void*)0xdeadface);
-            NSZoneFree(z, o);
-        }
+  Class aClass = object_getClass(anObject);
+
+  if ((anObject != nil) && !class_isMetaClass(aClass))
+    {
+      obj	o = &((obj)anObject)[-1];
+      NSZone	*z = NSZoneFromPointer(o);
+
+      /* Call the default finalizer to handle C++ destructors.
+       */
+      (*finalize_imp)(anObject, finalize_sel);
+
+      AREM(aClass, (id)anObject);
+      if (NSZombieEnabled == YES)
+	{
+	  GSMakeZombie(anObject, aClass);
+	  if (NSDeallocateZombies == YES)
+	    {
+	      NSZoneFree(z, o);
+	    }
+	}
+      else
+	{
+	  object_setClass((id)anObject, (Class)(void*)0xdeadface);
+	  NSZoneFree(z, o);
+	}
     }
-    return;
+  return;
 }
 
 #endif	/* GS_WITH_GC */
@@ -991,147 +1000,150 @@ static id gs_weak_load(id obj)
 
 + (void) initialize
 {
-    if (self == [NSObject class])
+  if (self == [NSObject class])
     {
 #if	GS_WITH_GC
-        /* Make sure that the garbage collection library is initialised.
-         * This is not necessary on most platforms, but is good practice.
-         */
-        GC_init();
-        GC_set_warn_proc(GSGarbageCollectorLog);
+      /* Make sure that the garbage collection library is initialised.
+       * This is not necessary on most platforms, but is good practice.
+       */
+      GC_init();
+      GC_set_warn_proc(GSGarbageCollectorLog);
 #endif
-        
+
 #ifdef __MINGW__
-        {
-            // See libgnustep-base-entry.m
-            extern void gnustep_base_socket_init(void);
-            gnustep_base_socket_init();
-        }
+      {
+        // See libgnustep-base-entry.m
+        extern void gnustep_base_socket_init(void);
+        gnustep_base_socket_init();
+      }
 #else /* __MINGW__ */
-        
+
 #ifdef	SIGPIPE
-        /*
-         * If SIGPIPE is not handled or ignored, we will abort on any attempt
-         * to write to a pipe/socket that has been closed by the other end!
-         * We therefore need to ignore the signal if nothing else is already
-         * handling it.
-         */
+    /*
+     * If SIGPIPE is not handled or ignored, we will abort on any attempt
+     * to write to a pipe/socket that has been closed by the other end!
+     * We therefore need to ignore the signal if nothing else is already
+     * handling it.
+     */
 #ifdef	HAVE_SIGACTION
-        {
-            struct sigaction	act;
-            
-            if (sigaction(SIGPIPE, 0, &act) == 0)
-            {
-                if (act.sa_handler == SIG_DFL)
-                {
-                    // Not ignored or handled ... so we ignore it.
-                    act.sa_handler = SIG_IGN;
-                    if (sigaction(SIGPIPE, &act, 0) != 0)
-                    {
-                        fprintf(stderr, "Unable to ignore SIGPIPE\n");
-                    }
-                }
-            }
-            else
-            {
-                fprintf(stderr, "Unable to retrieve information about SIGPIPE\n");
-            }
-        }
+      {
+	struct sigaction	act;
+
+	if (sigaction(SIGPIPE, 0, &act) == 0)
+	  {
+	    if (act.sa_handler == SIG_DFL)
+	      {
+		// Not ignored or handled ... so we ignore it.
+		act.sa_handler = SIG_IGN;
+		if (sigaction(SIGPIPE, &act, 0) != 0)
+		  {
+		    fprintf(stderr, "Unable to ignore SIGPIPE\n");
+		  }
+	      }
+	  }
+	else
+	  {
+	    fprintf(stderr, "Unable to retrieve information about SIGPIPE\n");
+	  }
+      }
 #else /* HAVE_SIGACTION */
-        {
-            void	(*handler)(NSInteger);
-            
-            handler = signal(SIGPIPE, SIG_IGN);
-            if (handler != SIG_DFL)
-            {
-                signal(SIGPIPE, handler);
-            }
-        }
+      {
+	void	(*handler)(NSInteger);
+
+	handler = signal(SIGPIPE, SIG_IGN);
+	if (handler != SIG_DFL)
+	  {
+	    signal(SIGPIPE, handler);
+	  }
+      }
 #endif /* HAVE_SIGACTION */
 #endif /* SIGPIPE */
 #endif /* __MINGW__ */
-        
-        finalize_sel = @selector(finalize);
-        finalize_imp = class_getMethodImplementation(self, finalize_sel);
-        
+
+      finalize_sel = @selector(finalize);
+      finalize_imp = class_getMethodImplementation(self, finalize_sel);
+
 #if defined(__FreeBSD__) && defined(__i386__)
-        // Manipulate the FPU to add the exception mask. (Fixes SIGFPE
-        // problems on *BSD)
-        // Note this only works on x86
+      // Manipulate the FPU to add the exception mask. (Fixes SIGFPE
+      // problems on *BSD)
+      // Note this only works on x86
 #  if defined(FE_INVALID)
-        fedisableexcept(FE_INVALID);
+      fedisableexcept(FE_INVALID);
 #  else
-        {
-            volatile short cw;
-            
-            __asm__ volatile ("fstcw (%0)" : : "g" (&cw));
-            cw |= 1; /* Mask 'invalid' exception */
-            __asm__ volatile ("fldcw (%0)" : : "g" (&cw));
-        }
+      {
+        volatile short cw;
+
+        __asm__ volatile ("fstcw (%0)" : : "g" (&cw));
+        cw |= 1; /* Mask 'invalid' exception */
+        __asm__ volatile ("fldcw (%0)" : : "g" (&cw));
+      }
 #  endif
 #endif
-        
-        /* Create the global lock.
-         * NB. Ths is one of the first things we do ... setting up a new lock
-         * must not call any other Objective-C classes and must not involve
-         * any use of the autorelease system.
-         */
-        gnustep_global_lock = [NSRecursiveLock new];
-        
-        /* Behavior debugging ... enable with environment variable if needed.
-         */
-        GSObjCBehaviorDebug(GSPrivateEnvironmentFlag("GNUSTEP_BEHAVIOR_DEBUG",
-                                                     GSObjCBehaviorDebug(-1)));
-        
-        /* See if we should cleanup at process exit.
-         */
-        if (YES == GSPrivateEnvironmentFlag("GNUSTEP_SHOULD_CLEAN_UP", NO))
-        {
-            [self setShouldCleanUp: YES];
-            [self registerAtExit: @selector(_atExit)];
-        }
-        
-        /* Set up the autorelease system ... we must do this before using any
-         * other class whose +initialize might autorelease something.
-         */
-        autorelease_class = [NSAutoreleasePool class];
-        autorelease_sel = @selector(addObject:);
-        autorelease_imp = [autorelease_class methodForSelector: autorelease_sel];
-        
-        /* Make sure the constant string class works and set up well-known
-         * string constants etc.
-         */
-        NSConstantStringClass = [NSString constantStringClass];
-        
-        GSPrivateBuildStrings();
-        
-        /* Determine zombie management flags and set up a map to store
-         * information about zombie objects.
-         */
-        NSZombieEnabled = GSPrivateEnvironmentFlag("NSZombieEnabled", NO);
-        //printf("============================== NSZombieEnabled ==============================");
-        
-        NSDeallocateZombies = GSPrivateEnvironmentFlag("NSDeallocateZombies", NO);
-        zombieMap = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,
-                                     NSNonOwnedPointerMapValueCallBacks, 0);
-        
-        /* We need to cache the zombie class.
-         * We can't call +class because NSZombie doesn't have that method.
-         * We can't use NSClassFromString() because that would use an NSString
-         * object, and that class hasn't been initialized yet ...
-         */
-        zombieClass = objc_lookUpClass("NSZombie");
-        
-        /* Now that we have a workign autorelease system and working string
-         * classes we are able to set up notifications.
-         */
-        [[NSNotificationCenter defaultCenter]
-         addObserver: self
-         selector: @selector(_becomeMultiThreaded:)
-         name: NSWillBecomeMultiThreadedNotification
+
+      /* Create the global lock.
+       * NB. Ths is one of the first things we do ... setting up a new lock
+       * must not call any other Objective-C classes and must not involve
+       * any use of the autorelease system.
+       */
+      gnustep_global_lock = [NSRecursiveLock new];
+
+      /* Behavior debugging ... enable with environment variable if needed.
+       */
+      GSObjCBehaviorDebug(GSPrivateEnvironmentFlag("GNUSTEP_BEHAVIOR_DEBUG",
+	GSObjCBehaviorDebug(-1)));
+
+      /* See if we should cleanup at process exit.
+       */
+      if (YES == GSPrivateEnvironmentFlag("GNUSTEP_SHOULD_CLEAN_UP", NO))
+	{
+	  [self setShouldCleanUp: YES];
+	  [self registerAtExit: @selector(_atExit)];
+	}
+
+      /* Set up the autorelease system ... we must do this before using any
+       * other class whose +initialize might autorelease something.
+       */
+      autorelease_class = [NSAutoreleasePool class];
+      autorelease_sel = @selector(addObject:);
+      autorelease_imp = [autorelease_class methodForSelector: autorelease_sel];
+
+      /* Make sure the constant string class works and set up well-known
+       * string constants etc.
+       */
+      NSConstantStringClass = [NSString constantStringClass];
+
+      GSPrivateBuildStrings();
+
+      /* Determine zombie management flags and set up a map to store
+       * information about zombie objects.
+       */
+      NSZombieEnabled = GSPrivateEnvironmentFlag("NSZombieEnabled", NO);
+      NSDeallocateZombies = GSPrivateEnvironmentFlag("NSDeallocateZombies", NO);
+      zombieMap = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,
+	NSNonOwnedPointerMapValueCallBacks, 0);
+
+      /* We need to cache the zombie class.
+       * We can't call +class because NSZombie doesn't have that method.
+       * We can't use NSClassFromString() because that would use an NSString
+       * object, and that class hasn't been initialized yet ...
+       */
+      zombieClass = objc_lookUpClass("NSZombie");
+
+      /* Now that we have a working autorelease system and working string
+       * classes we are able to set up notifications.
+       */
+      [[NSNotificationCenter defaultCenter]
+	addObserver: self
+	   selector: @selector(_becomeMultiThreaded:)
+	       name: NSWillBecomeMultiThreadedNotification
 	     object: nil];
+
+      /* It is also safer to set upo the user defaults system before doing
+       * other stuff which might use it.
+       */
+      [NSUserDefaults class];
     }
-    return;
+  return;
 }
 
 + (void) _atExit
@@ -1380,19 +1392,43 @@ static id gs_weak_load(id obj)
  *   the superclass implementation.
  * </p>
  */
-- (void)dealloc
+- (void) dealloc
 {
-    NSDeallocateObject(self);
+  NSDeallocateObject (self);
 }
 
 - (void) finalize
 {
   Class	destructorClass = Nil;
-  IMP	destructor = 0;
+  IMP	  destructor = 0;
+  /*
+   * We're pretending to be the Objective-C runtime here, so we have to do some
+   * unsafe things (i.e. access the class directly, and not via the
+   * object_getClass() so that hidden classes get their destructors called.  If
+   * the runtime supports small objects (those embedded in a pointer), then we
+   * must use object_getClass() for them, because they do not have an isa
+   * pointer (but can not have a hidden class interposed).
+   */
+#ifdef	__clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-objc-pointer-introspection"
+#pragma clang diagnostic ignored "-Wdeprecated-objc-isa-usage"
+#endif
 #ifdef OBJC_SMALL_OBJECT_MASK
   if (((NSUInteger)self & OBJC_SMALL_OBJECT_MASK) == 0)
-#endif
+    {
+      destructorClass = isa;                    // Potentially hidden class
+    }
+  else
+    {
+      destructorClass = object_getClass(self);  // Small object
+    }
+#else
   destructorClass = isa;
+#endif
+#ifdef	__clang__
+#pragma clang diagnostic pop
+#endif
 
   /* C++ destructors must be called in the opposite order to their
    * creators, so start at the leaf class and then go up the tree until we
@@ -1411,7 +1447,7 @@ static id gs_weak_load(id obj)
       destructorClass = class_getSuperclass(destructorClass);
 
       if (newDestructor != destructor)
-	  {
+	{
 	  newDestructor(self, cxx_destruct);
 	  destructor = newDestructor;
 	}
@@ -1483,7 +1519,22 @@ static id gs_weak_load(id obj)
 	}
       return NO;
     }
-  return class_respondsToSelector(self, aSelector) ? YES : NO;
+
+  if (class_respondsToSelector(self, aSelector))
+    {
+      return YES;
+    }
+
+  if (class_isMetaClass(self))
+    {
+      /* It seems convoluted to attempt to access the class from the 
+         metaclass just to call +resolveClassMethod: in this rare case. */
+      return NO;
+    }
+  else
+    {
+      return [self resolveInstanceMethod: aSelector];
+    }
 }
 
 /**
@@ -1550,13 +1601,15 @@ static id gs_weak_load(id obj)
   if (aSelector == 0)
     [NSException raise: NSInvalidArgumentException
 		format: @"%@ null selector given", NSStringFromSelector(_cmd)];
-  /*
-   *	If 'self' is an instance, object_getClass() will get the class,
-   *	and class_getMethodImplementation() will get the instance method.
-   *	If 'self' is a class, object_getClass() will get the meta-class,
-   *	and class_getMethodImplementation() will get the class method.
+  /* The Apple runtime API would do:
+   * return class_getMethodImplementation(object_getClass(self), aSelector);
+   * but this cannot ask self for information about any method reached by
+   * forwarding, so the returned forwarding function would ge a generic one
+   * rather than one aware of hardware issues with returning structures
+   * and floating points.  We therefore prefer the GNU API which is able to
+   * use forwarding callbacks to get better type information.
    */
-  return class_getMethodImplementation(object_getClass(self), aSelector);
+  return objc_msg_lookup(self, aSelector);
 }
 
 /**
@@ -1813,7 +1866,8 @@ static id gs_weak_load(id obj)
         [NSException
 	  raise: NSGenericException
 	  format: @"Autorelease would release object too many times.\n"
-	  @"%d release(s) versus %d retain(s)", release_count, retain_count];
+	  @"%"PRIuPTR" release(s) versus %"PRIuPTR" retain(s)",
+	  release_count, retain_count];
     }
 
   (*autorelease_imp)(autorelease_class, autorelease_sel, self);
@@ -1848,13 +1902,16 @@ static id gs_weak_load(id obj)
 - (NSUInteger) hash
 {
   /*
-   * Ideally we would shift left to lose any zero bits produced by the
-   * alignment of the object in memory ... but that depends on the
-   * processor architecture and the memory allocatiion implementation.
-   * In the absence of detailed information, pick a reasonable value
-   * assuming the object will be aligned to an eight byte boundary.
+   *  malloc() must return pointers aligned to point to any data type
    */
-  return (NSUInteger)(uintptr_t)self >> 3;
+#define MAXALIGN (__alignof__(_Complex long double))
+
+  static int shift = MAXALIGN==16 ? 4 : (MAXALIGN==8 ? 3 : 2);
+
+  /* We shift left to lose any zero bits produced by the
+   * alignment of the object in memory.
+   */
+  return (NSUInteger)((uintptr_t)self >> shift);
 }
 
 /**
@@ -1931,22 +1988,31 @@ static id gs_weak_load(id obj)
  * The method must be one which takes no arguments and returns an object.
  * <br />Raises NSInvalidArgumentException if given a null selector.
  */
-- (id)performSelector:(SEL)aSelector
+- (id) performSelector: (SEL)aSelector
 {
-    IMP msg;
-    
-    if (aSelector == 0) {
-        //DLog();
-        [NSException raise:NSInvalidArgumentException format:@"%@ null selector given", NSStringFromSelector(_cmd)];
+  IMP msg;
+
+  if (aSelector == 0)
+    [NSException raise: NSInvalidArgumentException
+		format: @"%@ null selector given", NSStringFromSelector(_cmd)];
+
+  /* The Apple runtime API would do:
+   * msg = class_getMethodImplementation(object_getClass(self), aSelector);
+   * but this cannot ask self for information about any method reached by
+   * forwarding, so the returned forwarding function would ge a generic one
+   * rather than one aware of hardware issues with returning structures
+   * and floating points.  We therefore prefer the GNU API which is able to
+   * use forwarding callbacks to get better type information.
+   */
+  msg = objc_msg_lookup(self, aSelector);
+  if (!msg)
+    {
+      [NSException raise: NSGenericException
+		   format: @"invalid selector passed to %s",
+		     sel_getName(_cmd)];
+      return nil;
     }
-    msg = class_getMethodImplementation(object_getClass(self), aSelector);
-    if (!msg) {
-        //DLog();
-        //[NSException raise:NSGenericException format:@"invalid selector passed to %s", sel_getName(_cmd)];
-        [NSException raise:NSGenericException format:@"invalid selector: %@, target: %@", NSStringFromSelector(aSelector), self];
-        return nil;
-    }
-    return (*msg)(self, aSelector);
+  return (*msg)(self, aSelector);
 }
 
 /**
@@ -1955,21 +2021,32 @@ static id gs_weak_load(id obj)
  * The method must be one which takes one argument and returns an object.
  * <br />Raises NSInvalidArgumentException if given a null selector.
  */
-- (id)performSelector:(SEL)aSelector withObject:(id)anObject
+- (id) performSelector: (SEL)aSelector withObject: (id) anObject
 {
-    IMP msg;
-    
-    if (aSelector == 0) {
-        DLog();
-        [NSException raise:NSInvalidArgumentException format:@"%@ null selector given", NSStringFromSelector(_cmd)];
+  IMP msg;
+
+  if (aSelector == 0)
+    [NSException raise: NSInvalidArgumentException
+		format: @"%@ null selector given", NSStringFromSelector(_cmd)];
+
+  /* The Apple runtime API would do:
+   * msg = class_getMethodImplementation(object_getClass(self), aSelector);
+   * but this cannot ask self for information about any method reached by
+   * forwarding, so the returned forwarding function would ge a generic one
+   * rather than one aware of hardware issues with returning structures
+   * and floating points.  We therefore prefer the GNU API which is able to
+   * use forwarding callbacks to get better type information.
+   */
+  msg = objc_msg_lookup(self, aSelector);
+  if (!msg)
+    {
+      [NSException raise: NSGenericException
+		   format: @"invalid selector passed to %s",
+		   sel_getName(_cmd)];
+      return nil;
     }
-    msg = class_getMethodImplementation(object_getClass(self), aSelector);
-    if (!msg) {
-        DLog();
-        [NSException raise:NSGenericException format:@"invalid selector passed to %s", sel_getName(_cmd)];
-        return nil;
-    }
-    return (*msg)(self, aSelector, anObject);
+
+  return (*msg)(self, aSelector, anObject);
 }
 
 /**
@@ -1978,21 +2055,33 @@ static id gs_weak_load(id obj)
  * The method must be one which takes two arguments and returns an object.
  * <br />Raises NSInvalidArgumentException if given a null selector.
  */
-- (id)performSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2
+- (id) performSelector: (SEL)aSelector
+	    withObject: (id) object1
+	    withObject: (id) object2
 {
-    IMP msg;
-    
-    if (aSelector == 0) {
-        DLog();
-        [NSException raise:NSInvalidArgumentException format:@"%@ null selector given", NSStringFromSelector(_cmd)];
+  IMP msg;
+
+  if (aSelector == 0)
+    [NSException raise: NSInvalidArgumentException
+		format: @"%@ null selector given", NSStringFromSelector(_cmd)];
+
+  /* The Apple runtime API would do:
+   * msg = class_getMethodImplementation(object_getClass(self), aSelector);
+   * but this cannot ask self for information about any method reached by
+   * forwarding, so the returned forwarding function would ge a generic one
+   * rather than one aware of hardware issues with returning structures
+   * and floating points.  We therefore prefer the GNU API which is able to
+   * use forwarding callbacks to get better type information.
+   */
+  msg = objc_msg_lookup(self, aSelector);
+  if (!msg)
+    {
+      [NSException raise: NSGenericException
+		  format: @"invalid selector passed to %s", sel_getName(_cmd)];
+      return nil;
     }
-    msg = class_getMethodImplementation(object_getClass(self), aSelector);
-    if (!msg) {
-        DLog();
-        [NSException raise:NSGenericException format:@"invalid selector passed to %s", sel_getName(_cmd)];
-        return nil;
-    }
-    return (*msg)(self, aSelector, object1, object2);
+
+  return (*msg)(self, aSelector, object1, object2);
 }
 
 /**
@@ -2038,17 +2127,34 @@ static id gs_weak_load(id obj)
  * <br />If given a null selector, raises NSInvalidArgumentException when
  * in MacOS-X compatibility more, or returns NO otherwise.
  */
-- (BOOL)respondsToSelector:(SEL)aSelector
+- (BOOL) respondsToSelector: (SEL)aSelector
 {
-    if (aSelector == 0) {
-        if (GSPrivateDefaultsFlag(GSMacOSXCompatible)) {
-            [NSException raise: NSInvalidArgumentException
-                        format: @"%@ null selector given",
-             NSStringFromSelector(_cmd)];
-        }
-        return NO;
+  Class cls = object_getClass(self);
+
+  if (aSelector == 0)
+    {
+      if (GSPrivateDefaultsFlag(GSMacOSXCompatible))
+	{
+	  [NSException raise: NSInvalidArgumentException
+		    format: @"%@ null selector given",
+	    NSStringFromSelector(_cmd)];
+	}
+      return NO;
     }
-    return class_respondsToSelector(object_getClass(self), aSelector) ? YES : NO;
+
+  if (class_respondsToSelector(cls, aSelector))
+    {
+      return YES;
+    }
+
+  if (class_isMetaClass(cls))
+    {
+      return [(Class)self resolveClassMethod: aSelector];
+    }
+  else
+    {
+      return [cls resolveInstanceMethod: aSelector];
+    }
 }
 
 /**
@@ -2325,9 +2431,9 @@ static id gs_weak_load(id obj)
  * NSDebug.h, or use the NSZombie features.
  * </p>
  */
-+ (void)enableDoubleReleaseCheck:(BOOL)enable
++ (void) enableDoubleReleaseCheck: (BOOL)enable
 {
-    double_release_check_enabled = enable;
+  double_release_check_enabled = enable;
 }
 
 /**
@@ -2335,14 +2441,14 @@ static id gs_weak_load(id obj)
  * the -description method and discards the locale
  * information.
  */
-- (NSString *)descriptionWithLocale:(id)aLocale
+- (NSString*) descriptionWithLocale: (id)aLocale
 {
-    return [self description];
+  return [self description];
 }
 
-+ (NSString *)descriptionWithLocale:(id)aLocale
++ (NSString*) descriptionWithLocale: (id)aLocale
 {
-    return [self description];
+  return [self description];
 }
 
 /**
@@ -2350,14 +2456,16 @@ static id gs_weak_load(id obj)
  * the -descriptionWithLocale: method and discards the
  * level information.
  */
-- (NSString *)descriptionWithLocale:(id)aLocale indent:(NSUInteger)level
+- (NSString*) descriptionWithLocale: (id)aLocale
+			     indent: (NSUInteger)level
 {
-    return [self descriptionWithLocale:aLocale];
+  return [self descriptionWithLocale: aLocale];
 }
 
-+ (NSString *)descriptionWithLocale:(id)aLocale indent:(NSUInteger)level
++ (NSString*) descriptionWithLocale: (id)aLocale
+			     indent: (NSUInteger)level
 {
-    return [self descriptionWithLocale:aLocale];
+  return [self descriptionWithLocale: aLocale];
 }
 
 - (BOOL) _dealloc
@@ -2428,67 +2536,62 @@ static id gs_weak_load(id obj)
 
 @end
 
+
+
 @implementation	NSZombie
-
-- (Class)class
+- (Class) class
 {
-    return object_getClass(self);
+  return object_getClass(self);
 }
-
-- (Class)originalClass
+- (Class) originalClass
 {
-    return zombieMap ? NSMapGet(zombieMap, (void*)self) : Nil;
+  return zombieMap ? NSMapGet(zombieMap, (void*)self) : Nil;
 }
-
-- (void)forwardInvocation:(NSInvocation *)anInvocation
+- (void) forwardInvocation: (NSInvocation*)anInvocation
 {
-    NSUInteger	size = [[anInvocation methodSignature] methodReturnLength];
-    unsigned char	v[size];
-    
-    memset(v, '\0', size);
-    //DLog(@"anInvocation: %@", anInvocation);
-    GSLogZombie(self, [anInvocation selector]);
-    [anInvocation setReturnValue: (void*)v];
-    return;
+  NSUInteger	size = [[anInvocation methodSignature] methodReturnLength];
+  unsigned char	v[size];
+
+  memset(v, '\0', size);
+  GSLogZombie(self, [anInvocation selector]);
+  [anInvocation setReturnValue: (void*)v];
+  return;
 }
-
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
+- (NSMethodSignature*) methodSignatureForSelector: (SEL)aSelector
 {
-    Class c;
-    
-    if (0 == aSelector) {
-        return nil;
+  Class	c;
+
+  if (0 == aSelector)
+    {
+      return nil;
     }
-    [allocationLock lock];
-    c = zombieMap ? NSMapGet(zombieMap, (void*)self) : Nil;
-    [allocationLock unlock];
-    return [c instanceMethodSignatureForSelector: aSelector];
+  [allocationLock lock];
+  c = zombieMap ? NSMapGet(zombieMap, (void*)self) : Nil;
+  [allocationLock unlock];
+  return [c instanceMethodSignatureForSelector: aSelector];
 }
-
 @end
 
 @implementation GSContentAccessingProxy
-
-- (void)dealloc
+- (void) dealloc
 {
-    [object endContentAccess];
-    [super dealloc];
+  [object endContentAccess];
+  [super dealloc];
 }
 
-- (void)finalize
+- (void) finalize
 {
-    [object endContentAccess];
+  [object endContentAccess];
 }
 
-- (id)forwardingTargetForSelector: (SEL)aSelector
+- (id) forwardingTargetForSelector: (SEL)aSelector
 {
-    return object;
+  return object;
 }
-
 /* Support for legacy runtimes... */
 - (void) forwardInvocation: (NSInvocation*)anInvocation
 {
-    [anInvocation invokeWithTarget: object];
+  [anInvocation invokeWithTarget: object];
 }
 
 - (id) initWithObject: (id)anObject

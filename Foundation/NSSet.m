@@ -22,23 +22,23 @@
    Boston, MA 02111 USA.
 
    <title>NSSet class reference</title>
-   $Date: 2011-12-31 23:38:53 -0800 (Sat, 31 Dec 2011) $ $Revision: 34374 $
+   $Date: 2015-01-16 07:25:50 -0800 (Fri, 16 Jan 2015) $ $Revision: 38295 $
    */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSSet.h"
-#import "NSCoder.h"
-#import "NSArray.h"
-#import "NSEnumerator.h"
-#import "NSKeyValueCoding.h"
-#import "NSValue.h"
-#import "NSException.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSKeyValueCoding.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSException.h"
 // For private method _decodeArrayOfObjectsForKey:
-#import "NSKeyedArchiver.h"
+#import "Foundation/NSKeyedArchiver.h"
 #import "GSPrivate.h"
-#import "NSObject+GNUstepBase.h"
 #import "GSFastEnumeration.h"
+#import "GSDispatch.h"
 
 @class	GSSet;
 @interface GSSet : NSObject	// Help the compiler
@@ -260,7 +260,7 @@ static Class NSMutableSet_concrete_class;
         {
 	  unsigned	i;
 	  GS_BEGINIDBUF(objs, count);
-	
+
 	  for (i = 0; i < count; i++)
 	    {
 	      [aCoder decodeValueOfObjCType: @encode(id) at: &objs[i]];
@@ -612,19 +612,35 @@ static Class NSMutableSet_concrete_class;
 /**
  *  Returns listing of objects in set.
  */
-- (NSString *)description
+- (NSString*) description
 {
-    return [self descriptionWithLocale: nil];
+  return [self descriptionWithLocale: nil];
 }
 
 /**
  *  Returns listing of objects in set.
  */
-- (NSString *)descriptionWithLocale:(id)locale
+- (NSString*) descriptionWithLocale: (id)locale
 {
-    //return @"Amr descriptionWithLocale";
-    return [NSString stringWithFormat:@"<%@: %p; %@>", [self className], self, [[self allObjects] descriptionWithLocale:locale]];
-    //return [[self allObjects] descriptionWithLocale: locale];
+  return [[self allObjects] descriptionWithLocale: locale];
+}
+
+- (id) valueForKey: (NSString*)key
+{
+  NSEnumerator *e = [self objectEnumerator];
+  id object = nil;
+  NSMutableSet *results = [NSMutableSet setWithCapacity: [self count]];
+
+  while ((object = [e nextObject]) != nil)
+    {
+      id result = [object valueForKey: key];
+
+      if (result == nil)
+        continue;
+
+      [results addObject: result];
+    }
+  return results;
 }
 
 - (id) valueForKeyPath: (NSString*)path
@@ -640,7 +656,7 @@ static Class NSMutableSet_concrete_class;
         {
           if ([path isEqualToString: @"@count"] == YES)
             {
-              result = [NSNumber numberWithUnsignedInt: [self count]];
+              result = [NSNumber numberWithUnsignedInteger: [self count]];
             }
           else
             {
@@ -655,7 +671,7 @@ static Class NSMutableSet_concrete_class;
 
           if ([op isEqualToString: @"@count"] == YES)
             {
-              result = [NSNumber numberWithUnsignedInt: count];
+              result = [NSNumber numberWithUnsignedInteger: count];
             }
           else if ([op isEqualToString: @"@avg"] == YES)
             {
@@ -665,7 +681,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   while ((o = [e nextObject]) != nil)
                     {
                       d += [[o valueForKeyPath: rem] doubleValue];
@@ -680,7 +696,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   while ((o = [e nextObject]) != nil)
                     {
                       o = [o valueForKeyPath: rem];
@@ -698,7 +714,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   while ((o = [e nextObject]) != nil)
                     {
                       o = [o valueForKeyPath: rem];
@@ -718,7 +734,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   while ((o = [e nextObject]) != nil)
                     {
                       d += [[o valueForKeyPath: rem] doubleValue];
@@ -732,7 +748,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [NSMutableSet set];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -752,7 +768,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [NSMutableSet set];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -772,7 +788,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [NSMutableSet set];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -792,7 +808,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [GSMutableArray array];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -812,7 +828,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [GSMutableArray array];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -832,7 +848,7 @@ static Class NSMutableSet_concrete_class;
                 {
                   NSEnumerator  *e = [self objectEnumerator];
                   id            o;
-                  
+
                   result = [GSMutableArray array];
                   while ((o = [e nextObject]) != nil)
                     {
@@ -868,18 +884,52 @@ static Class NSMutableSet_concrete_class;
 - (void) enumerateObjectsWithOptions: (NSEnumerationOptions)opts
                           usingBlock: (GSSetEnumeratorBlock)aBlock
 {
-  BOOL shouldStop = NO;
+  BLOCK_SCOPE BOOL shouldStop = NO;
   id<NSFastEnumeration> enumerator = self;
-  
+
+  GS_DISPATCH_CREATE_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
   FOR_IN (id, obj, enumerator)
   {
-    CALL_BLOCK(aBlock, obj, &shouldStop);
+    GS_DISPATCH_SUBMIT_BLOCK(enumQueueGroup,enumQueue, if (shouldStop) {return;}, return;, aBlock, obj, &shouldStop);
     if (shouldStop)
       {
-	return;
+	break;
       }
   }
   END_FOR_IN(enumerator)
+  GS_DISPATCH_TEARDOWN_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
+}
+
+- (NSSet *) objectsPassingTest: (GSSetFilterBlock)aBlock
+{
+  return [self objectsWithOptions: 0 passingTest: aBlock];
+}
+
+- (NSSet *) objectsWithOptions: (NSEnumerationOptions)opts
+                   passingTest: (GSSetFilterBlock)aBlock
+{
+  BOOL                  shouldStop = NO;
+  id<NSFastEnumeration> enumerator = self;
+  NSMutableSet          *resultSet;
+
+  resultSet = [NSMutableSet setWithCapacity: [self count]];
+    
+  FOR_IN (id, obj, enumerator)
+    {
+      BOOL include = CALL_BLOCK(aBlock, obj, &shouldStop);
+
+      if (include)
+        {
+          [resultSet addObject:obj];
+        }
+      if (shouldStop)
+        {
+          break;
+        }
+    }
+  END_FOR_IN(enumerator)
+    
+  return [resultSet makeImmutableCopyOnFail: NO];
 }
 
 /** Return a set formed by adding anObject to the receiver.
@@ -924,7 +974,7 @@ static Class NSMutableSet_concrete_class;
   return [s autorelease];
 }
 
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state 	
+- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state
                                    objects: (id*)stackbuf
                                      count: (NSUInteger)len
 {
@@ -939,21 +989,22 @@ static Class NSMutableSet_concrete_class;
  */
 @implementation NSMutableSet
 
-+ (void)initialize
++ (void) initialize
 {
-    if (self == [NSMutableSet class]) {
-        NSMutableSet_abstract_class = self;
-        NSMutableSet_concrete_class = [GSMutableSet class];
+  if (self == [NSMutableSet class])
+    {
+      NSMutableSet_abstract_class = self;
+      NSMutableSet_concrete_class = [GSMutableSet class];
     }
 }
 
 /**
  *  New autoreleased instance with given capacity.
  */
-+ (id)setWithCapacity:(NSUInteger)numItems
++ (id) setWithCapacity: (NSUInteger)numItems
 {
-    return AUTORELEASE([[self allocWithZone: NSDefaultMallocZone()]
-                        initWithCapacity: numItems]);
+  return AUTORELEASE([[self allocWithZone: NSDefaultMallocZone()]
+    initWithCapacity: numItems]);
 }
 
 + (id) allocWithZone: (NSZone*)z

@@ -25,7 +25,7 @@
 
 #ifndef __NSDistantObject_h_GNUSTEP_BASE_INCLUDE
 #define __NSDistantObject_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSProxy.h>
 

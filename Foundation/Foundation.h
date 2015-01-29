@@ -27,12 +27,12 @@
 #ifndef __Foundation_h_GNUSTEP_BASE_INCLUDE
 #define __Foundation_h_GNUSTEP_BASE_INCLUDE
 
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 #import	<objc/objc.h>
 
 #import	<Foundation/FoundationErrors.h>
 #import	<Foundation/NSObjCRuntime.h>
-#import "GSConfig.h"
+#import <GNUstepBase/GSConfig.h>
 #import	<Foundation/NSDebug.h>
 #import	<Foundation/NSObject.h>
 
@@ -76,6 +76,7 @@
 #import	<Foundation/NSIndexPath.h>
 #import	<Foundation/NSIndexSet.h>
 #import	<Foundation/NSInvocation.h>
+#import <Foundation/NSInvocationOperation.h>
 #import	<Foundation/NSJSONSerialization.h>
 #import	<Foundation/NSKeyedArchiver.h>
 #import	<Foundation/NSKeyValueCoding.h>
@@ -83,6 +84,7 @@
 #import	<Foundation/NSLock.h>
 #import	<Foundation/NSLocale.h>
 #import	<Foundation/NSMapTable.h>
+#import <Foundation/NSMetadata.h>
 #import	<Foundation/NSMethodSignature.h>
 #import	<Foundation/NSNotification.h>
 #import	<Foundation/NSNotificationQueue.h>
@@ -101,8 +103,10 @@
 #import	<Foundation/NSProtocolChecker.h>
 #import	<Foundation/NSProxy.h>
 #import	<Foundation/NSRange.h>
+#import	<Foundation/NSRegularExpression.h>
 #import	<Foundation/NSRunLoop.h>
 #import	<Foundation/NSScanner.h>
+#import	<Foundation/NSScriptWhoseTests.h>
 #import	<Foundation/NSSerialization.h>
 #import	<Foundation/NSSet.h>
 #import	<Foundation/NSSortDescriptor.h>
@@ -110,6 +114,7 @@
 #import	<Foundation/NSStream.h>
 #import	<Foundation/NSString.h>
 #import	<Foundation/NSTask.h>
+#import	<Foundation/NSTextCheckingResult.h>
 #import	<Foundation/NSThread.h>
 #import	<Foundation/NSTimer.h>
 #import	<Foundation/NSTimeZone.h>
@@ -128,6 +133,8 @@
 #import	<Foundation/NSURLRequest.h>
 #import	<Foundation/NSURLResponse.h>
 #import	<Foundation/NSUserDefaults.h>
+#import	<Foundation/NSUserNotification.h>
+#import	<Foundation/NSUUID.h>
 #import	<Foundation/NSValue.h>
 #import	<Foundation/NSValueTransformer.h>
 #import <Foundation/NSXMLDocument.h>

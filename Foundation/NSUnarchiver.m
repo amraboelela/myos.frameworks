@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSUnarchiver class reference</title>
-   $Date: 2012-02-27 15:26:18 -0800 (Mon, 27 Feb 2012) $ $Revision: 34837 $
+   $Date: 2013-09-09 01:13:20 -0700 (Mon, 09 Sep 2013) $ $Revision: 37054 $
    */
 
 #import "common.h"
@@ -32,10 +32,9 @@
 #endif
 
 #define	EXPOSE_NSUnarchiver_IVARS	1
-#include <string.h>
-#import "NSDictionary.h"
-#import "NSException.h"
-#import "NSByteOrder.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSByteOrder.h"
 
 /*
  *	Setup for inline operation of arrays.
@@ -44,16 +43,16 @@
 #define	GSI_ARRAY_NO_RELEASE	1
 #define	GSI_ARRAY_TYPES	GSUNION_OBJ|GSUNION_SEL|GSUNION_PTR
 
-#include "GSIArray.h"
+#include "GNUstepBase/GSIArray.h"
 
 #define	_IN_NSUNARCHIVER_M
-#import "NSArchiver.h"
+#import "Foundation/NSArchiver.h"
 #undef	_IN_NSUNARCHIVER_M
 
-#import "NSAutoreleasePool.h"
-#import "NSCoder.h"
-#import "NSData.h"
-#import "NSArray.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSArray.h"
 
 @class NSDataMalloc;
 @interface NSDataMalloc : NSObject	// Help the compiler
@@ -398,16 +397,22 @@ mapClassName(NSUnarchiverObjectInfo *info)
 @implementation NSUnarchiver
 
 static Class NSDataMallocClass;
+static unsigned	encodingVersion;
 
 + (void) initialize
 {
   if ([self class] == [NSUnarchiver class])
     {
+      NSArchiver	*archiver = [NSArchiver new];
+
+      encodingVersion = [archiver systemVersion];
+      [archiver release];
       desSel = @selector(deserializeDataAt:ofObjCType:atCursor:context:);
       tagSel = @selector(deserializeTypeTag:andCrossRef:atCursor:);
       dValSel = @selector(decodeValueOfObjCType:at:);
       clsDict = [[NSMutableDictionary alloc] initWithCapacity: 200];
       NSDataMallocClass = [NSDataMalloc class];
+      
     }
 }
 
@@ -533,10 +538,12 @@ static Class NSDataMallocClass;
   NSUInteger	offset = 0;
   unsigned int	size = (unsigned int)objc_sizeof_type(type);
   unsigned char	info;
+  unsigned char	ainfo;
+  unsigned char	amask;
   NSUInteger	count;
 
   (*tagImp)(src, tagSel, &info, 0, &cursor);
-  if ([self systemVersion] > 12401)
+  if ([self systemVersion] == 12402)
     {
       uint8_t	c;
 
@@ -565,10 +572,14 @@ static Class NSDataMallocClass;
     }
   else
     {
-      unsigned	c;
+      uint32_t	c;
 
-      (*desImp)(src, desSel, &c, @encode(unsigned), &cursor, nil);
+      (*desImp)(src, desSel, &c, @encode(uint32_t), &cursor, nil);
       count = c;
+      if (0xffffffff == c)
+	{
+	  (*desImp)(src, desSel, &count, @encode(NSUInteger), &cursor, nil);
+	}
     }
   if (info != _GSC_ARY_B)
     {
@@ -578,7 +589,7 @@ static Class NSDataMallocClass;
   if (count != expected)
     {
       [NSException raise: NSInternalInconsistencyException
-		  format: @"expected array count %u and got %u",
+		  format: @"expected array count %"PRIuPTR" and got %"PRIuPTR"",
 			expected, count];
     }
 
@@ -607,25 +618,209 @@ static Class NSDataMallocClass;
 	  (*dValImp)(self, dValSel, type, (char*)buf + offset);
 	  offset += size;
 	}
+      return;
     }
-  else
+
+  (*tagImp)(src, tagSel, &ainfo, 0, &cursor);
+  amask = (ainfo & _GSC_MASK);
+
+  /* If we have a perfect type match or we are coding a class as an ID,
+   * we can just decode the array simply.
+   */
+  if (info == amask || (info == _GSC_ID && amask == _GSC_CID))
     {
-      unsigned char	ainfo;
-
-      (*tagImp)(src, tagSel, &ainfo, 0, &cursor);
-      if (info != (ainfo & _GSC_MASK))
-        {
-	  if (info != _GSC_ID || (ainfo & _GSC_MASK) != _GSC_CID)
-	    {
-	      [NSException raise: NSInternalInconsistencyException
-			  format: @"expected %s and got %s",
-			    typeToName2(info), typeToName2(ainfo)];
-	    }
-        }
-
       for (i = 0; i < count; i++)
 	{
 	  (*desImp)(src, desSel, (char*)buf + offset, type, &cursor, nil);
+	  offset += size;
+	}
+      return;
+    }
+
+  /* This will raise an exception if the types don't match at all.
+   */
+  typeCheck(*type, ainfo);
+
+  /* We fall through to here only when we have to decode a value
+   * whose natural size on this system is not the same as on the
+   * machine on which the archive was created.
+   */
+
+  if (*type == _C_FLT)
+    {
+      for (i = 0; i < count; i++)
+	{
+	  double	d;
+
+	  (*desImp)(src, desSel, &d, @encode(double), &cursor, nil);
+	  *(float*)(buf + offset) = (float)d;
+	  offset += size;
+	}
+    }
+  else if (*type == _C_DBL)
+    {
+      for (i = 0; i < count; i++)
+	{
+	  float		f;
+
+	  (*desImp)(src, desSel, &f, @encode(float), &cursor, nil);
+	  *(double*)(buf + offset) = (double)f;
+	  offset += size;
+	}
+    }
+  else if (*type == _C_SHT
+    || *type == _C_INT
+    || *type == _C_LNG
+    || *type == _C_LNG_LNG)
+    {
+      int64_t	big;
+      int64_t	max;
+      int64_t	min;
+
+      switch (size)
+	{
+	  case 1:
+	    max = INT8_MAX;
+	    min = INT8_MIN;
+	    break;
+	  case 2:
+	    max = INT16_MAX;
+	    min = INT16_MAX;
+	    break;
+	  case 4:
+	    max = INT32_MAX;
+	    min = INT32_MIN;
+	    break;
+	  default:
+	    max = INT64_MAX;
+	    min = INT64_MIN;
+	}
+
+      for (i = 0; i < count; i++)
+	{
+	  void	*address = (void*)buf + offset;
+
+	  switch (ainfo & _GSC_SIZE)
+	    {
+	      case _GSC_I16:	/* Encoded as 16-bit	*/
+		{
+		  int16_t	val;
+
+		  (*desImp)(src, desSel, &val, @encode(int16_t), &cursor, nil);
+		  big = val;
+		  break;
+		}
+
+	      case _GSC_I32:	/* Encoded as 32-bit	*/
+		{
+		  int32_t	val;
+
+		  (*desImp)(src, desSel, &val, @encode(int32_t), &cursor, nil);
+		  big = val;
+		  break;
+		}
+
+	      case _GSC_I64:	/* Encoded as 64-bit	*/
+		{
+		  (*desImp)(src, desSel, &big, @encode(int64_t), &cursor, nil);
+		  break;
+		}
+	    }
+	  /*
+	   * Now we copy from the big value to the destination location.
+	   */
+	  switch (size)
+	    {
+	      case 1:
+		*(int8_t*)address = (int8_t)big;
+		break;
+	      case 2:
+		*(int16_t*)address = (int16_t)big;
+		break;
+	      case 4:
+		*(int32_t*)address = (int32_t)big;
+		break;
+	      default:
+		*(int64_t*)address = big;
+	    }
+	  if (big < min || big > max)
+	    {
+	      NSLog(@"Loss of information converting large decoded value");
+	    }
+	  offset += size;
+	}
+    }
+  else
+    {
+      uint64_t  big;
+      uint64_t	max;
+
+      switch (size)
+	{
+	  case 1:
+	    max = UINT8_MAX;
+	    break;
+	  case 2:
+	    max = UINT16_MAX;
+	    break;
+	  case 4:
+	    max = UINT32_MAX;
+	    break;
+	  default:
+	    max = UINT64_MAX;
+	}
+
+      for (i = 0; i < count; i++)
+	{
+	  void	*address = (void*)buf + offset;
+
+	  switch (info & _GSC_SIZE)
+	    {
+	      case _GSC_I16:	/* Encoded as 16-bit	*/
+		{
+		  uint16_t	val;
+
+		  (*desImp)(src, desSel, &val, @encode(uint16_t), &cursor, nil);
+		  big = val;
+		  break;
+		}
+
+	      case _GSC_I32:	/* Encoded as 32-bit	*/
+		{
+		  uint32_t	val;
+
+		  (*desImp)(src, desSel, &val, @encode(uint32_t), &cursor, nil);
+		  big = val;
+		  break;
+		}
+
+	      case _GSC_I64:	/* Encoded as 64-bit	*/
+		{
+		  (*desImp)(src, desSel, &big, @encode(uint64_t), &cursor, nil);
+		  break;
+		}
+	    }
+	  /*
+	   * Now we copy from the big value to the destination location.
+	   */
+	  switch (size)
+	    {
+	      case 1:
+		*(uint8_t*)address = (uint8_t)big;
+		break;
+	      case 2:
+		*(uint16_t*)address = (uint16_t)big;
+		break;
+	      case 4:
+		*(uint32_t*)address = (uint32_t)big;
+		break;
+	      case 8:
+		*(uint64_t*)address = big;
+	    }
+	  if (big > max)
+	    {
+	      NSLog(@"Loss of information converting large decoded value");
+	    }
 	  offset += size;
 	}
     }
@@ -1524,6 +1719,11 @@ static Class NSDataMallocClass;
 		    classes: &sizeC
 		    objects: &sizeO
 		   pointers: &sizeP];
+  if (version > encodingVersion)
+    {
+      [NSException raise: NSInvalidArgumentException
+	format: @"Archive systemVersion (%u) not recognised", version];
+    }
 
   if (clsMap == 0)
     {

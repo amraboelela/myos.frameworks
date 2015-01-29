@@ -36,7 +36,7 @@
 #import "Foundation/NSNumberFormatter.h"
 #import "Foundation/NSUserDefaults.h"
 #import "Foundation/NSString.h"
-#import "GSLock.h"
+#import "GNUstepBase/GSLock.h"
 
 NSString * const NSCurrentLocaleDidChangeNotification =
   @"NSCurrentLocaleDidChangeNotification";

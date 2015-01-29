@@ -25,7 +25,7 @@
 #import "common.h"
 #define	EXPOSE_NSCachedURLResponse_IVARS	1
 #import "GSURLPrivate.h"
-#import "NSCoder.h"
+#import "Foundation/NSCoder.h"
 
 // Internal data storage
 typedef struct {

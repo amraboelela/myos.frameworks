@@ -26,10 +26,10 @@
 
 #define	EXPOSE_NSCache_IVARS	1
 
-#import "NSArray.h"
-#import "NSCache.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSCache.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
 
 /**
  * _GSCachedObject is effectively used as a structure containing the various

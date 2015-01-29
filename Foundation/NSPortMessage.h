@@ -24,7 +24,7 @@
 
 #ifndef __NSPortMessage_h_GNUSTEP_BASE_INCLUDE
 #define __NSPortMessage_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSArray.h>
 #import	<Foundation/NSPort.h>

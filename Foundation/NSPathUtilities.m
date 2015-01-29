@@ -26,7 +26,7 @@
    Boston, MA 02111 USA.
 
    <title>NSPathUtilities function reference</title>
-   $Date: 2011-11-14 02:01:24 -0800 (Mon, 14 Nov 2011) $ $Revision: 34169 $
+   $Date: 2014-11-05 07:31:19 -0800 (Wed, 05 Nov 2014) $ $Revision: 38162 $
    */
 
 /**
@@ -60,16 +60,17 @@
 
 #import "common.h"
 #include "objc-load.h"
-#import "NSPathUtilities.h"
-#import "NSException.h"
-#import "NSArray.h"
-#import "NSDictionary.h"
-#import "NSFileManager.h"
-#import "NSProcessInfo.h"
-#import "NSValue.h"
-#import "NSLock.h"
-#import "NSUserDefaults.h"
-#import "NSString+GNUstepBase.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSBundle.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSProcessInfo.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSUserDefaults.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
 
 #import "GSPrivate.h"
 
@@ -199,6 +200,8 @@ static NSString *gnustepUserDocumentation = nil;
 static NSString *gnustepUserDocumentationInfo = nil;
 static NSString *gnustepUserDocumentationMan = nil;
 
+static NSString	*gnustepDeveloperDir = nil;
+
 /* These are the same as the corresponding User variables, but
  * they hold the path before GNUSTEP_HOME is prepended.  It's what
  * we read from config files.
@@ -222,6 +225,9 @@ static BOOL ParseConfigurationFile(NSString *name, NSMutableDictionary *dict,
 
 static void InitialisePathUtilities(void);
 static void ShutdownPathUtilities(void);
+
+@interface GSPathUtilities : NSObject
+@end
 
 /* Conditionally assign an object from a dictionary to var
  * We don't need to retain val before releasing var, because we
@@ -269,9 +275,11 @@ static void ShutdownPathUtilities(void);
     }\
 })
 
-/* Conditionally assign lval to var only if var is nil */
+/* Conditionally assign lval to var only if var is nil
+
+lval must be casted because Clang disallows ObjC literals comparison */
 #define TEST_ASSIGN(var, lval) ({\
-  if ((var == nil)&&(lval != nil))\
+  if ((var == nil)&&((NSString *)lval != nil))\
     {\
       var = RETAIN(lval);\
     }\
@@ -390,7 +398,7 @@ getPathConfig(NSDictionary *dict, NSString *key)
 	  NSLog(@"GNUstep configuration file entry '%@' ('%@') is not "
 	    @"an absolute path.  Please fix your configuration file",
 	    key, [dict objectForKey: key]);
-#if	defined(__MINGW32_)
+#if	defined(__MINGW_)
 	  if ([path length] > 2)
 	    {
 	      unichar	buf[3];
@@ -426,6 +434,9 @@ static void ExtractValuesFromConfig(NSDictionary *config)
 
   ASSIGN_PATH(gnustepMakefiles, c,
     @"GNUSTEP_MAKEFILES");
+
+  ASSIGN_PATH(gnustepDeveloperDir, c,
+    @"GNUSTEP_DEVELOPER_DIR");
 
   ASSIGN_PATH(gnustepSystemUsersDir, c,
     @"GNUSTEP_SYSTEM_USERS_DIR");
@@ -572,7 +583,7 @@ static void ExtractValuesFromConfig(NSDictionary *config)
     }
   [c removeObjectForKey: @"GNUSTEP_SYSTEM_DEFAULTS_FILE"];
 
-  /* If GNUSTEP_CREATE_DIRECTORIES is YES then we should ensure that the
+  /* If GNUSTEP_CREATE_LIBRARY_PATH is YES then we should ensure that the
    * per-user directory and the Library subdirectory exist so resources
    * can safely be stored in them.
    */
@@ -631,17 +642,17 @@ static void ExtractValuesFromConfig(NSDictionary *config)
     }
   if (gnustepUserDirDocumentation == nil)
     {
-      ASSIGN(gnustepUserDirDocumentation, 
+      ASSIGN(gnustepUserDirDocumentation,
 	     @GNUSTEP_TARGET_USER_DIR_DOC);
     }
   if (gnustepUserDirDocumentationMan == nil)
     {
-      ASSIGN(gnustepUserDirDocumentationMan, 
+      ASSIGN(gnustepUserDirDocumentationMan,
 	     @GNUSTEP_TARGET_USER_DIR_DOC_MAN);
     }
   if (gnustepUserDirDocumentationInfo == nil)
     {
-      ASSIGN(gnustepUserDirDocumentationInfo, 
+      ASSIGN(gnustepUserDirDocumentationInfo,
 	     @GNUSTEP_TARGET_USER_DIR_DOC_INFO);
     }
 
@@ -680,7 +691,10 @@ static void ExtractValuesFromConfig(NSDictionary *config)
       if ([manager fileExistsAtPath: path isDirectory: &flag] == NO
 	|| flag == NO)
 	{
-	  [manager createDirectoryAtPath: path attributes: attr];
+	  [manager createDirectoryAtPath: path
+             withIntermediateDirectories: YES
+                              attributes: attr
+                                   error: NULL];
 	}
     }
 
@@ -889,10 +903,16 @@ NSMutableDictionary*
 GNUstepConfig(NSDictionary *newConfig)
 {
   static NSDictionary	*config = nil;
+  static BOOL beenHere = NO;
   NSMutableDictionary	*conf = nil;
   BOOL			changedSystemConfig = NO;
 
   [gnustep_global_lock lock];
+  if (NO == beenHere)
+    {
+      beenHere = YES;
+      [[NSObject leakAt: &config] release];
+    }
   if (config == nil || (newConfig != nil && [config isEqual: newConfig] == NO))
     {
       NS_DURING
@@ -964,7 +984,7 @@ GNUstepConfig(NSDictionary *newConfig)
 			@"an absolute path.  Please rebuild GNUstep-base "
 			@"specifying a valid path to the config file.", file);
 		    }
-#if	defined(__MINGW32_)
+#if	defined(__MINGW_)
 		  if ([file length] > 2)
 		    {
 		      unichar	buf[3];
@@ -1000,7 +1020,7 @@ GNUstepConfig(NSDictionary *newConfig)
 		    }
 		}
 
-	      /* Merge in any values from property lists in the 
+	      /* Merge in any values from property lists in the
 	       * GlobalDefaults directory.
 	       */
 	      path = [gnustepConfigPath stringByAppendingPathComponent:
@@ -1110,71 +1130,81 @@ GNUstepUserConfig(NSMutableDictionary *config, NSString *userName)
 /* Initialise all things required by this module */
 static void InitialisePathUtilities(void)
 {
-    if (gnustepMakefiles != nil) {
-        return;	// Protect from multiple calls
-    }
-    //printf("InitialisePathUtilities 1");
-    /* Set up our root paths */
-    NS_DURING
+  if (gnustepMakefiles != nil)
     {
-        NSMutableDictionary	*config;
-        //printf("InitialisePathUtilities 2");
-        [gnustep_global_lock lock];
-        //printf("InitialisePathUtilities 3");
-        ASSIGNCOPY(uninstalled, [[[NSProcessInfo processInfo] environment] objectForKey: @"GNUSTEP_UNINSTALLED_LIBRARY_DIRECTORY"]);
-        //printf("InitialisePathUtilities 3.1");
-        gnustepUserName = [NSUserName() copy];
-        //printf("InitialisePathUtilities 4");
-#if defined(__MINGW__)
+      return;	// Protect from multiple calls
+    }
+
+  /* Set up our root paths */
+  NS_DURING
+    {
+      NSMutableDictionary	*config;
+      static BOOL               beenHere = NO;
+
+      [gnustep_global_lock lock];
+      if (NO == beenHere)
         {
-            union {
-                SID	sid;
-                char	dummy[1024];
-            } s;
-            LPTSTR	str;
-            unichar buf[1024];
-            unichar dom[1024];
-            SID_NAME_USE use;
-            DWORD bsize = 1024;
-            DWORD ssize = 1024;
-            printf("InitialisePathUtilities 5");
-            if (GetUserNameW(buf, &bsize) == 0 || buf[0] == '\0') {
-                [NSException raise: NSInternalInconsistencyException
-                            format: @"Unable to determine current user name: %@",
-                 [NSError _last]];
+          beenHere = YES;
+          if (YES == [NSObject shouldCleanUp])
+            {
+              // Get path utilities shutdown called at process exit.
+              [GSPathUtilities class];
             }
-            printf("InitialisePathUtilities 6");
-            bsize = 1024;
-            if (LookupAccountNameW(0, buf, &s.sid, &ssize, dom, &bsize, &use) == 0) {
-                [NSException raise: NSInternalInconsistencyException
-                            format: @"Unable to determine current account: %@",
-                 [NSError _last]];
-            }
-            printf("InitialisePathUtilities 7");
-            if (ConvertSidToStringSid(&s.sid, &str) == 0) {
-                [NSException raise: NSInternalInconsistencyException
-                            format: @"Unable to get current user ID string: %@",
-                 [NSError _last]];
-            }
-            gnustepUserID = [[NSString alloc] initWithUTF8String: str];
         }
+      ASSIGNCOPY(uninstalled, [[[NSProcessInfo processInfo] environment]
+	objectForKey: @"GNUSTEP_UNINSTALLED_LIBRARY_DIRECTORY"]);
+      gnustepUserName = [NSUserName() copy];
+#if defined(__MINGW__)
+      {
+        union {
+	  SID	sid;
+	  char	dummy[1024];
+	} s;
+	LPTSTR	str;
+	unichar buf[1024];
+	unichar dom[1024];
+	SID_NAME_USE use;
+	DWORD bsize = 1024;
+	DWORD ssize = 1024;
+
+	if (GetUserNameW(buf, &bsize) == 0 || buf[0] == '\0')
+	  {
+	    [NSException raise: NSInternalInconsistencyException
+			format: @"Unable to determine current user name: %@",
+	      [NSError _last]];
+	  }
+	bsize = 1024;
+	if (LookupAccountNameW(0, buf, &s.sid, &ssize, dom, &bsize, &use) == 0)
+	  {
+	    [NSException raise: NSInternalInconsistencyException
+			format: @"Unable to determine current account: %@",
+	      [NSError _last]];
+	  }
+	if (ConvertSidToStringSid(&s.sid, &str) == 0)
+	  {
+	    [NSException raise: NSInternalInconsistencyException
+			format: @"Unable to get current user ID string: %@",
+	      [NSError _last]];
+	  }
+        gnustepUserID = [[NSString alloc] initWithUTF8String: str];
+      }
 #else
-        gnustepUserID = [[NSString alloc] initWithFormat: @"%ld", (long)getuid()];
+      gnustepUserID = [[NSString alloc] initWithFormat: @"%ld", (long)getuid()];
 #endif
-        config = GNUstepConfig(nil);
-        GNUstepUserConfig(config, gnustepUserName);
-        gnustepUserHome = [NSHomeDirectoryForUser(gnustepUserName) copy];
-        ExtractValuesFromConfig(config);
-        
-        [gnustep_global_lock unlock];
+      config = GNUstepConfig(nil);
+      GNUstepUserConfig(config, gnustepUserName);
+      gnustepUserHome = [NSHomeDirectoryForUser(gnustepUserName) copy];
+      ExtractValuesFromConfig(config);
+
+      [gnustep_global_lock unlock];
     }
-    NS_HANDLER
+  NS_HANDLER
     {
-        /* unlock then re-raise the exception */
-        [gnustep_global_lock unlock];
-        [localException raise];
+      /* unlock then re-raise the exception */
+      [gnustep_global_lock unlock];
+      [localException raise];
     }
-    NS_ENDHANDLER
+  NS_ENDHANDLER
 }
 
 /*
@@ -1228,6 +1258,8 @@ static void ShutdownPathUtilities(void)
   DESTROY(gnustepLocalDocumentation);
   DESTROY(gnustepLocalDocumentationMan);
   DESTROY(gnustepLocalDocumentationInfo);
+
+  DESTROY(gnustepDeveloperDir);
 
   DESTROY(gnustepUserApps);
   DESTROY(gnustepUserAdminApps);
@@ -1295,7 +1327,7 @@ ParseConfigurationFile(NSString *fileName, NSMutableDictionary *dict,
   if (userName != nil)
     {
       NSString	*fileOwner = [attributes fileOwnerAccountName];
-  
+
       if ([userName isEqual: fileOwner] == NO)
 	{
 #if defined(__MINGW__)
@@ -1766,10 +1798,10 @@ NSHomeDirectoryForUser(NSString *loginName)
     {
       s = nil;
       NSLog(@"Trying to get home for '%@' when user is '%@'",
-	loginName, NSUserName());    
-      NSLog(@"Can't determine other user home directories in Win32.");    
+	loginName, NSUserName());
+      NSLog(@"Can't determine other user home directories in Win32.");
     }
-  
+
   if ([s length] == 0 && [loginName length] != 1)
     {
       s = nil;
@@ -1803,6 +1835,7 @@ NSFullUserName(void)
 #else
 #ifdef  HAVE_PWD_H
 #if     defined(HAVE_GETPWNAM_R)
+#if     defined(HAVE_PW_GECOS_IN_PASSWD)
       struct passwd pw;
       struct passwd *p;
       char buf[BUFSIZ*10];
@@ -1814,8 +1847,10 @@ NSFullUserName(void)
               userName = [NSString stringWithUTF8String: pw.pw_gecos];
 	    }
         }
+#endif /* HAVE_PW_GECOS_IN_PASSWD */
 #else
 #if     defined(HAVE_GETPWNAM)
+#if     defined(HAVE_PW_GECOS_IN_PASSWD)
       struct passwd	*pw;
 
       [gnustep_global_lock lock];
@@ -1825,6 +1860,7 @@ NSFullUserName(void)
           userName = [NSString stringWithUTF8String: pw->pw_gecos];
         }
       [gnustep_global_lock lock];
+#endif /* HAVE_PW_GECOS_IN_PASSWD */
 #endif /* HAVE_GETPWNAM */
 #endif /* HAVE_GETPWNAM_R */
 #endif /* HAVE_PWD_H */
@@ -1839,41 +1875,46 @@ NSFullUserName(void)
  * This examines the GNUSTEP_USER_CONFIG_FILE for the specified user,
  * with settings in it over-riding those in the main GNUstep.conf.
  */
-NSString *GSDefaultsRootForUser(NSString *userName)
+NSString *
+GSDefaultsRootForUser(NSString *userName)
 {
-    NSString *home;
-    NSString *defaultsDir;
-    //printf("GSDefaultsRootForUser 1");
-    InitialisePathUtilities();
-    //printf("GSDefaultsRootForUser 1.1");
-    if ([userName length] == 0) {
-        userName = NSUserName();
+  NSString *defaultsDir;
+
+  InitialisePathUtilities();
+  if ([userName length] == 0)
+    {
+      userName = NSUserName();
     }
-    //printf("GSDefaultsRootForUser 1.2");
-    home = NSHomeDirectoryForUser(userName);
-    //printf("GSDefaultsRootForUser 2");
-    if ([userName isEqual: NSUserName()]) {
-        defaultsDir = gnustepUserDefaultsDir;
-    } else {
-        NSMutableDictionary	*config;
-        
-        config = GNUstepConfig(nil);
-        GNUstepUserConfig(config, userName);
-        defaultsDir = [config objectForKey: @"GNUSTEP_USER_DEFAULTS_DIR"];
-        if (defaultsDir == nil)
-        {
-            defaultsDir = @GNUSTEP_TARGET_USER_DEFAULTS_DIR;
-        }
+  if ([userName isEqual: NSUserName()])
+    {
+      defaultsDir = gnustepUserDefaultsDir;
     }
-    //printf("GSDefaultsRootForUser 3");
+  else
+    {
+      NSMutableDictionary	*config;
+
+      config = GNUstepConfig(nil);
+      GNUstepUserConfig(config, userName);
+      defaultsDir = [config objectForKey: @"GNUSTEP_USER_DEFAULTS_DIR"];
+      if (defaultsDir == nil)
+	{
+	  defaultsDir = @GNUSTEP_TARGET_USER_DEFAULTS_DIR;
+	}
+    }
 #if	defined(__MINGW__)
-    if ([defaultsDir rangeOfString: @":REGISTRY:"].length > 0) {
-        return defaultsDir;	// Just use windows registry.
+  if ([defaultsDir rangeOfString: @":REGISTRY:"].length > 0)
+    {
+      return defaultsDir;	// Just use windows registry.
     }
 #endif
-    home = [home stringByAppendingPathComponent: defaultsDir];
-    //printf("GSDefaultsRootForUser 4");
-    return home;
+  if (NO == [defaultsDir isAbsolutePath])
+    {
+      NSString  *home = NSHomeDirectoryForUser(userName);
+
+      defaultsDir = [home stringByAppendingPathComponent: defaultsDir];
+    }
+
+  return defaultsDir;
 }
 
 NSArray *
@@ -1928,6 +1969,7 @@ NSTemporaryDirectory(void)
 	  if (baseTempDirName == nil)
 	    {
 #if	defined(__CYGWIN__)
+#warning Basing temporary directory in /cygdrive/c; any reason?
 	      baseTempDirName = @"/cygdrive/c/";
 #elif	defined(__MINGW__)
 	      baseTempDirName = @"C:\\";
@@ -1968,7 +2010,9 @@ NSTemporaryDirectory(void)
   perm = perm & 0777;
 
 // Mateu Batle: secure temporary directories don't work in MinGW
-#ifndef __MINGW__
+// Ivan Vucica: there are also problems with Cygwin
+//              probable cause: http://stackoverflow.com/q/9561759/39974
+#if !defined(__MINGW__) && !defined(__CYGWIN__)
 
 #if	defined(__MINGW__)
   uid = owner;
@@ -1982,6 +2026,10 @@ NSTemporaryDirectory(void)
   if ((perm != 0700 && perm != 0600) || owner != uid)
     {
       NSString	*secure;
+      NSNumber	*p = [NSNumber numberWithInt: 0700];
+
+      attr = [NSDictionary dictionaryWithObject: p
+                                         forKey: NSFilePosixPermissions];
 
       /*
        * The name of the secure subdirectory reflects the user ID rather
@@ -1996,18 +2044,20 @@ NSTemporaryDirectory(void)
 
       if ([manager fileExistsAtPath: tempDirName] == NO)
 	{
-	  NSNumber	*p = [NSNumber numberWithInt: 0700];
-
-	  attr = [NSDictionary dictionaryWithObject: p
-					     forKey: NSFilePosixPermissions];
 	  if ([manager createDirectoryAtPath: tempDirName
-				  attributes: attr] == NO)
+                 withIntermediateDirectories: YES
+				  attributes: attr
+                                       error: NULL] == NO)
 	    {
 	      NSWarnFLog(@"Attempt to create a secure temporary"
 	        @" directory (%@) failed.", tempDirName);
 	      return nil;
 	    }
 	}
+      else
+        {
+          [manager changeFileAttributes: attr atPath: tempDirName];
+        }
 
       /*
        * Check that the new directory is really secure.
@@ -2047,6 +2097,56 @@ NSOpenStepRootDirectory(void)
 #endif
   return root;
 }
+
+#if	defined(__MINGW__)
+/* The developer root on a windows system (where we have an msys environment
+ * set up) is the point in the filesystem where we can reference make.exe via
+ * msys/.../bin/.  That is, it's the windows path at which msys is installed.
+ */
+static NSString*
+devroot(NSFileManager *manager, NSString *path)
+{
+  NSString      *tmp = @"";
+
+  while (NO == [tmp isEqual: path])
+    {
+      NSString	*pb;
+      NSString	*msys;
+      BOOL 	isDir;
+
+      msys = [path stringByAppendingPathComponent: @"msys"];
+      if (YES == [manager fileExistsAtPath: msys isDirectory: &isDir]
+	&& YES == isDir)
+	{
+	  NSEnumerator  *e;
+	  NSString      *file;
+
+	  e = [[manager directoryContentsAtPath: msys] objectEnumerator];
+	  while (nil != (file = [e nextObject]))
+	    {
+	      if (isdigit([file characterAtIndex: 0]))
+		{
+		  float 	v = atof([file UTF8String]);
+
+		  if (v <= 0)
+		    {
+		      continue;
+		    }
+		  file = [msys stringByAppendingPathComponent: file];
+		  pb = [file stringByAppendingPathComponent: @"bin/make.exe"];
+		  if ([manager isExecutableFileAtPath: pb])
+		    {
+		      return path;
+		    }
+		}
+	    }
+	}
+      tmp = path;
+      path = [tmp stringByDeletingLastPathComponent];
+    }
+  return nil;
+}
+#endif
 
 NSArray *
 NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory directoryKey,
@@ -2143,21 +2243,12 @@ if (domainMask & mask) \
 
       case NSDeveloperApplicationDirectory:
 	{
+	  /* Deprecated key ... for now just point to normal apps.
+	   */
 	  ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserApps);
 	  ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalApps);
 	  ADD_PLATFORM_PATH(NSNetworkDomainMask, gnustepNetworkApps);
 	  ADD_PLATFORM_PATH(NSSystemDomainMask, gnustepSystemApps);
-
-	  /* I imagine if ever wanted a separate Developer directory, the
-	   * only way for this to have some meaning across filesystems
-	   * would be as a subdirectory of Applications, as follows.
-	   */
-	  /*
-	    ADD_PATH(NSUserDomainMask, gnustepUserApps, @"Developer");
-	    ADD_PATH(NSLocalDomainMask, gnustepLocalApps, @"Developer");
-	    ADD_PATH(NSNetworkDomainMask, gnustepNetworkApps, @"Developer");
-	    ADD_PATH(NSSystemDomainMask, gnustepSystemApps, @"Developer");
-	  */
 	}
 	break;
 
@@ -2196,13 +2287,117 @@ if (domainMask & mask) \
 
       case NSDeveloperDirectory:
 	{
-	  /* The only way of having a Developer directory is as a
-	   * sub-dir of Library.
+#if	defined(__MINGW__)
+          if (nil == gnustepDeveloperDir)
+            {
+              NSString          *path = nil;
+	      NSString		*bpath = nil;
+	      NSString		*ipath = nil;
+	      NSString		*mpath = nil;
+              NSFileManager	*mgr;
+
+              mgr = [NSFileManager defaultManager];
+
+              /* See if we can find the developer root above the
+               * system tools directory of the current running process.
+               */
+	      path = devroot(mgr, gnustepSystemTools);
+
+	      /* Failing that, try looking above the base library.
+	       */
+	      if (nil == path)
+		{
+		  NSBundle	*baseBundle;
+
+		  baseBundle = [NSBundle bundleForLibrary: @"gnustep-base"];
+		  bpath = [baseBundle bundlePath];
+		  path = devroot(mgr, bpath);
+		}
+
+              /* If we havent found the developer area relative to the
+	       * hierarchy used by the current process, look for the
+	       * GNUstep package installation root in case we have the
+	       * developer environment installed from a package.
+               */
+              if (nil == path)
+                {
+                  HKEY	regKey;
+                  BOOL	found = NO;
+
+                  /* Open the key for the current user or local machine where
+                   * the installation path for the GNUstep package is stored.
+                   */
+                  if (ERROR_SUCCESS == RegOpenKeyExW(HKEY_CURRENT_USER,
+L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\GNUstep",
+                    0,
+                    KEY_READ,
+                    &regKey))
+                    {
+                      found = YES;
+                    }
+                  else
+                    {
+                      if (ERROR_SUCCESS == RegOpenKeyExW(HKEY_LOCAL_MACHINE,
+L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\GNUstep",
+                        0,
+                        KEY_READ,
+                        &regKey))
+                        {
+                          found = YES;
+                        }
+                    }
+                  if (found)
+                    {
+                      wchar_t       buf[1024];
+                      DWORD         bufsize;
+                      DWORD         type;
+
+                      bufsize = sizeof(buf);
+                      if (ERROR_SUCCESS == RegQueryValueExW(regKey,
+                        0, 0, &type, (BYTE *)buf, &bufsize))
+                        {
+                          ipath = [NSString stringWithCharacters: buf
+                            length: wcslen(buf)];
+
+			  path = devroot(mgr, ipath);
+                        }
+                      RegCloseKey(regKey);
+                    }
+                }
+              if (nil == path)
+                {
+		  mpath = [NSBundle _absolutePathOfExecutable: @"make.exe"];
+		  if (nil != mpath)
+		    {
+		      path = devroot(mgr, mpath);
+		    }
+		}
+              ASSIGNCOPY(gnustepDeveloperDir, path);
+	      if (nil == gnustepDeveloperDir)
+		{
+	          NSLog(@"Failed to locate NSDeveloperDirectory by GNUstep configuration, installed GNUstep package, or process PATH.");
+
+		}
+            }
+#endif
+	  if (nil == gnustepDeveloperDir)
+	    {
+	      gnustepDeveloperDir = RETAIN(NSOpenStepRootDirectory());
+	    }
+
+	  /* The Developer directory is deprecated on OSX, but for GNUstep
+	   * specific apps we return the root of the system containing the
+	   * development environment.  On most systems, that's the root
+	   * directory, but on windows it can be anywhere the user has put it.
+	   * If not explicitly defined, or found relative to the hierarchy
+	   * of the running process, *with the GNUstep package installed it's
+	   * the location of the msys filesystem within the GNUstep package
+	   * installation.
 	   */
-	  ADD_PATH(NSUserDomainMask, gnustepUserLibrary, @"Developer");
-	  ADD_PATH(NSLocalDomainMask, gnustepLocalLibrary, @"Developer");
-	  ADD_PATH(NSNetworkDomainMask, gnustepNetworkLibrary, @"Developer");
-	  ADD_PATH(NSSystemDomainMask, gnustepSystemLibrary, @"Developer");
+	  ADD_PLATFORM_PATH(NSUserDomainMask, gnustepDeveloperDir);
+	  ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepDeveloperDir);
+	  ADD_PLATFORM_PATH(NSNetworkDomainMask, gnustepDeveloperDir);
+	  ADD_PLATFORM_PATH(NSSystemDomainMask, gnustepDeveloperDir);
 	}
 	break;
 
@@ -2230,7 +2425,7 @@ if (domainMask & mask) \
       case NSDocumentDirectory:
 	{
 	  /* this is relative to the user home annd for the user domain only
-	   * verified on Macintosh 
+	   * verified on Macintosh
 	   * despite the name it is Documents and not Document....
 	   */
 	  ADD_PATH(NSUserDomainMask, gnustepUserHome, @"Documents");
@@ -2447,3 +2642,14 @@ if (domainMask & mask) \
 
   return paths;
 }
+
+@implementation GSPathUtilities
++ (void) atExit
+{
+  ShutdownPathUtilities();
+}
++ (void) initialize
+{
+  [self registerAtExit];
+}
+@end

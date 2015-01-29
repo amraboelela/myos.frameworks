@@ -22,9 +22,9 @@
    Boston, MA 02111 USA.
    */
 #import "common.h"
-#import "NSException.h"
-#import "NSCoder.h"
-#import "NSDistantObject.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSDistantObject.h"
 #import "GSInvocation.h"
 #import <avcall.h>
 #import <callback.h>
@@ -38,8 +38,8 @@
 
 #import "GSInvocation.h"
 
-#ifndef INLINE
-#define INLINE inline
+#ifndef GS_STATIC_INLINE
+#define GS_STATIC_INLINE static inline
 #endif
 
 
@@ -88,7 +88,7 @@ typedef struct _vacallReturnTypeInfo_t
   +------+--------+----------+-------+
  */
 
-static INLINE unsigned int
+GS_STATIC_INLINE unsigned int
 ReturnTypeHash (vacallReturnTypeInfo *ret_type)
 {
   return ret_type->type
@@ -105,7 +105,7 @@ ReturnTypeHash (vacallReturnTypeInfo *ret_type)
   so that the earlier comparisons
   fail more often than later comparisons.
  */
-static INLINE BOOL
+GS_STATIC_INLINE BOOL
 ReturnTypeEqualsReturnType (vacallReturnTypeInfo *a, vacallReturnTypeInfo *b)
 {
   return (a->structSize == b->structSize)
@@ -122,7 +122,7 @@ ReturnTypeEqualsReturnType (vacallReturnTypeInfo *a, vacallReturnTypeInfo *b)
 #define GSI_MAP_RELEASE_VAL(M, X)
 #define	GSI_MAP_NOCLEAN	1
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 /* This determines the number of precomputed
    callback data entries.  The list is indexed
@@ -287,7 +287,7 @@ gs_splittable (const char *type)
  * we work around it.
  */
 
-static INLINE GSMethod
+GS_STATIC_INLINE GSMethod
 gs_method_for_receiver_and_selector (id receiver, SEL sel)
 {
   if (receiver)
@@ -319,7 +319,7 @@ gs_method_for_receiver_and_selector (id receiver, SEL sel)
  * return types between all equivalent selectors.
  */
 
-static INLINE SEL
+GS_STATIC_INLINE SEL
 gs_find_best_typed_sel (SEL sel)
 {
   if (!sel_get_type (sel))
@@ -346,7 +346,7 @@ gs_find_best_typed_sel (SEL sel)
  * In all other cases fallback
  * to gs_find_best_typed_sel ().
  */
-static INLINE SEL
+GS_STATIC_INLINE SEL
 gs_find_by_receiver_best_typed_sel (id receiver, SEL sel)
 {
   if (sel_get_type (sel))
@@ -918,7 +918,8 @@ GSInvocationCallback (void *callback_data, va_alist args)
       const char	*receiverTypes = [sig methodType];
       const char	*runtimeTypes = sel_get_type (selector);
 
-      if (runtimeTypes == 0 || strcmp(receiverTypes, runtimeTypes) != 0)
+      if (runtimeTypes == 0
+        || NO == GSSelectorTypesMatch(receiverTypes, runtimeTypes))
 	{
 	  const char	*runtimeName = sel_getName(selector);
 

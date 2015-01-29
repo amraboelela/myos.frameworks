@@ -24,7 +24,7 @@
 
 #ifndef __NSXMLDTDNode_h_GNUSTEP_BASE_INCLUDE
 #define __NSXMLDTDNode_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import <Foundation/NSXMLNode.h>
 
@@ -77,7 +77,7 @@ typedef NSUInteger NSXMLDTDNodeKind;
 {
 #if     GS_NONFRAGILE
 #  if	defined(GS_NSXMLDTDNode_IVARS)
-@public GS_NSXMLDTDNode_IVARS
+@public GS_NSXMLDTDNode_IVARS;
 #  endif
 #endif
   /* The pointer to private additional data used to avoid breaking ABI
@@ -115,7 +115,7 @@ typedef NSUInteger NSXMLDTDNodeKind;
 /**
  * Sets what kind of DTD node this is.
  */
-- (void) setDTDKind: (NSXMLDTDNodeKind)kind;
+- (void) setDTDKind: (NSXMLDTDNodeKind)nodeKind;
 
 /**
  * Sets the notation name if the receiver is an entity.

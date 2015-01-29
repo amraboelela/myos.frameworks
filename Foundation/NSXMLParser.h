@@ -26,9 +26,9 @@
 
 #ifndef __NSXMLParser_h_GNUSTEP_BASE_INCLUDE
 #define __NSXMLParser_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
-#if OS_API_VERSION(100300, GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_3, GS_API_LATEST)
 
 #import	<Foundation/NSObject.h>
 
@@ -190,7 +190,7 @@ GS_EXPORT NSString* const NSXMLParserErrorDomain;
  * This is now a formal protocol.
  */
 @protocol NSXMLParserDelegate <NSObject>
-#ifdef __clang__
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6,GS_API_LATEST) && GS_PROTOCOLS_HAVE_OPTIONAL
 @optional
 #else
 @end

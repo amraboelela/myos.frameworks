@@ -22,22 +22,21 @@
    Boston, MA 02111 USA.
 
    <title>NSPort class reference</title>
-   $Date: 2011-07-31 08:31:39 -0700 (Sun, 31 Jul 2011) $ $Revision: 33660 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSPort_IVARS	1
-#import "NSException.h"
-#import "NSNotification.h"
-#import "NSNotificationQueue.h"
-#import "NSPort.h"
-#import "NSPortCoder.h"
-#import "NSPortNameServer.h"
-#import "NSRunLoop.h"
-#import "NSAutoreleasePool.h"
-#import "NSUserDefaults.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSNotificationQueue.h"
+#import "Foundation/NSPort.h"
+#import "Foundation/NSPortCoder.h"
+#import "Foundation/NSPortNameServer.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSUserDefaults.h"
 #import "GSPrivate.h"
-#import "NSObject+GNUstepBase.h"
 
 
 @class NSMessagePort;

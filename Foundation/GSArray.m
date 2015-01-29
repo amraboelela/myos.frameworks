@@ -22,21 +22,22 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2011-08-16 09:04:43 -0700 (Tue, 16 Aug 2011) $ $Revision: 33756 $
+   $Date: 2015-01-16 07:25:50 -0800 (Fri, 16 Jan 2015) $ $Revision: 38295 $
    */
 
 #import "common.h"
-#import "NSArray.h"
-#import "GSObjCRuntime.h"
-#import "NSDictionary.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSPortCoder.h"
-#import "NSValue.h"
+#import "Foundation/NSArray.h"
+#import "GNUstepBase/GSObjCRuntime.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSPortCoder.h"
+#import "Foundation/NSValue.h"
 // For private method _decodeArrayOfObjectsForKey:
-#import "NSKeyedArchiver.h"
+#import "Foundation/NSKeyedArchiver.h"
 
 #import "GSPrivate.h"
+#import "GSSorting.h"
 
 static SEL	eqSel;
 static SEL	oaiSel;
@@ -83,12 +84,12 @@ static Class	GSInlineArrayClass;
   NSString     *reason;
 
   info = [NSDictionary dictionaryWithObjectsAndKeys:
-    [NSNumber numberWithUnsignedInt: index], @"Index",
-    [NSNumber numberWithUnsignedInt: _count], @"Count",
+    [NSNumber numberWithUnsignedInteger: index], @"Index",
+    [NSNumber numberWithUnsignedInteger: _count], @"Count",
     self, @"Array", nil, nil];
 
   reason = [NSString stringWithFormat:
-    @"Index %d is out of range %d (in '%@')",
+    @"Index %"PRIuPTR" is out of range %d (in '%@')",
     index, _count, NSStringFromSelector(sel)];
 
   exception = [NSException exceptionWithName: NSRangeException
@@ -333,12 +334,13 @@ static Class	GSInlineArrayClass;
   return _contents_array[index];
 }
 
-- (void)makeObjectsPerformSelector:(SEL)aSelector
+- (void) makeObjectsPerformSelector: (SEL)aSelector
 {
-    //DLog();
-    NSUInteger i;
-    for (i = 0; i < _count; i++) {
-        [_contents_array[i] performSelector: aSelector];
+  NSUInteger i;
+
+  for (i = 0; i < _count; i++)
+    {
+      [_contents_array[i] performSelector: aSelector];
     }
 }
 
@@ -374,7 +376,7 @@ static Class	GSInlineArrayClass;
     }
 }
 
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state 	
+- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state
 				   objects: (__unsafe_unretained id[])stackbuf
 				     count: (NSUInteger)len
 {
@@ -413,21 +415,21 @@ static Class	GSInlineArrayClass;
     = (id*)(((void*)self) + class_getInstanceSize([self class]));
 
   if (count > 0)
-  {
-    NSUInteger	i;
-
-    for (i = 0; i < count; i++)
     {
-      if ((_contents_array[i] = RETAIN(objects[i])) == nil)
+      NSUInteger	i;
+
+      for (i = 0; i < count; i++)
+	{
+	  if ((_contents_array[i] = RETAIN(objects[i])) == nil)
 	    {
 	      _count = i;
 	      DESTROY(self);
 	      [NSException raise: NSInvalidArgumentException
 			  format: @"Tried to init array with nil object"];
 	    }
+	}
+      _count = count;
     }
-    _count = count;
-  }
   return self;
 }
 @end
@@ -589,7 +591,7 @@ static Class	GSInlineArrayClass;
       NSDictionary *info;
 
       info = [NSDictionary dictionaryWithObjectsAndKeys:
-	[NSNumber numberWithUnsignedInt: index], @"Index",
+	[NSNumber numberWithUnsignedInteger: index], @"Index",
 	self, @"Array", nil, nil];
 
       exception = [NSException exceptionWithName: NSInvalidArgumentException
@@ -770,8 +772,8 @@ static Class	GSInlineArrayClass;
       NSDictionary *info;
 
       info = [NSDictionary dictionaryWithObjectsAndKeys:
-	[NSNumber numberWithUnsignedInt: index], @"Index",
-        _contents_array[index], @"OLdObject",
+	[NSNumber numberWithUnsignedInteger: index], @"Index",
+        _contents_array[index], @"OldObject",
 	self, @"Array", nil, nil];
 
       exception = [NSException exceptionWithName: NSInvalidArgumentException
@@ -790,81 +792,51 @@ static Class	GSInlineArrayClass;
   _version++;
 }
 
-- (void) sortUsingFunction: (NSComparisonResult(*)(id,id,void*))compare
+- (void) sortUsingFunction: (NSComparisonResult (*)(id,id,void*))compare
 		   context: (void*)context
 {
-  /* Shell sort algorithm taken from SortingInAction - a NeXT example */
-#define STRIDE_FACTOR 3	// good value for stride factor is not well-understood
-                        // 3 is a fairly good choice (Sedgewick)
-  NSUInteger	c;
-  NSUInteger	d;
-  NSUInteger	stride = 1;
-  BOOL		found;
-  NSUInteger	count = _count;
-#ifdef	GSWARN
-  BOOL		badComparison = NO;
-#endif
-
   _version++;
-  while (stride <= count)
+  if ((1 < _count) && (NULL != compare))
     {
-      stride = stride * STRIDE_FACTOR + 1;
+      GSSortUnstable(_contents_array, NSMakeRange(0,_count), (id)compare,
+        GSComparisonTypeFunction, context);
     }
+  _version++;
+}
 
-  while (stride > (STRIDE_FACTOR - 1))
+- (void) sortWithOptions: (NSSortOptions)options
+         usingComparator: (NSComparator)comparator
+{
+  _version++;
+  if ((1 < _count) && (NULL != comparator))
     {
-      // loop to sort for each value of stride
-      stride = stride / STRIDE_FACTOR;
-      for (c = stride; c < count; c++)
-	{
-	  found = NO;
-	  if (stride > c)
-	    {
-	      break;
-	    }
-	  d = c - stride;
-	  while (!found)	/* move to left until correct place */
-	    {
-	      id			a = _contents_array[d + stride];
-	      id			b = _contents_array[d];
-	      NSComparisonResult	r;
-
-	      r = (*compare)(a, b, context);
-	      if (r < 0)
-		{
-#ifdef	GSWARN
-		  if (r != NSOrderedAscending)
-		    {
-		      badComparison = YES;
-		    }
-#endif
-		  _contents_array[d+stride] = b;
-		  _contents_array[d] = a;
-		  if (stride > d)
-		    {
-		      break;
-		    }
-		  d -= stride;		// jump by stride factor
-		}
-	      else
-		{
-#ifdef	GSWARN
-		  if (r != NSOrderedDescending && r != NSOrderedSame)
-		    {
-		      badComparison = YES;
-		    }
-#endif
-		  found = YES;
-		}
-	    }
-	}
+      if (options & NSSortStable)
+        {
+          if (options & NSSortConcurrent)
+            {
+              GSSortStableConcurrent(_contents_array, NSMakeRange(0,_count),
+                  (id)comparator, GSComparisonTypeComparatorBlock, NULL);
+            }
+          else
+            {
+              GSSortStable(_contents_array, NSMakeRange(0,_count),
+                (id)comparator, GSComparisonTypeComparatorBlock, NULL);
+            }
+        }
+      else
+        {
+          if (options & NSSortConcurrent)
+            {
+              GSSortUnstableConcurrent(_contents_array, NSMakeRange(0,_count),
+                (id)comparator, GSComparisonTypeComparatorBlock, NULL);
+            }
+          else
+            {
+              GSSortUnstable(_contents_array, NSMakeRange(0,_count),
+                (id)comparator, GSComparisonTypeComparatorBlock, NULL);
+            }
+        }
     }
-#ifdef	GSWARN
-  if (badComparison == YES)
-    {
-      NSWarnMLog(@"Detected bad return value from comparison");
-    }
-#endif
   _version++;
 }
 
@@ -884,7 +856,7 @@ static Class	GSInlineArrayClass;
   return AUTORELEASE([enumerator initWithArray: (GSArray*)self]);
 }
 
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state 	
+- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state
 				   objects: (__unsafe_unretained id[])stackbuf
 				     count: (NSUInteger)len
 {

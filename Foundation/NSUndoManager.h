@@ -1,4 +1,4 @@
-/* Interface for <Foundation/NSUndoManager> for GNUStep
+/* Interface for <NSUndoManager> for GNUStep
    Copyright (C) 1998 Free Software Foundation, Inc.
 
    Written by:  Richard Frith-Macdonald <richard@brainstorm.co.uk>
@@ -23,7 +23,7 @@
 
 #ifndef __NSUndoManager_h_OBJECTS_INCLUDE
 #define __NSUndoManager_h_OBJECTS_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if	OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 

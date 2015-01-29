@@ -47,7 +47,7 @@
 
 #ifndef __NSAttributedString_h_GNUSTEP_BASE_INCLUDE
 #define __NSAttributedString_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if	defined(__cplusplus)
 extern "C" {
@@ -66,9 +66,9 @@ extern "C" {
 }
 
 //Creating an NSAttributedString
-- (id) initWithString: (NSString *)aString;
-- (id) initWithAttributedString: (NSAttributedString *)attributedString;
-- (id) initWithString: (NSString *)aString attributes: (NSDictionary *)attributes;
+- (id) initWithString: (NSString*)aString;
+- (id) initWithAttributedString: (NSAttributedString*)attributedString;
+- (id) initWithString: (NSString*)aString attributes: (NSDictionary*)attributes;
 
 //Retrieving character information
 - (NSUInteger) length;
@@ -77,12 +77,12 @@ extern "C" {
  * so if you need an immutable instance yu should copy the returned value,
  * not jhust retain it.
  */
-- (NSString *) string;					//Primitive method!
+- (NSString*) string;					//Primitive method!
 
 //Retrieving attribute information
-- (NSDictionary *) attributesAtIndex: (NSUInteger)index
+- (NSDictionary*) attributesAtIndex: (NSUInteger)index
 		     effectiveRange: (NSRange*)aRange;	//Primitive method!
-- (NSDictionary *) attributesAtIndex: (NSUInteger)index
+- (NSDictionary*) attributesAtIndex: (NSUInteger)index
 	      longestEffectiveRange: (NSRange*)aRange
 			    inRange: (NSRange)rangeLimit;
 - (id) attribute: (NSString*)attributeName
@@ -92,10 +92,10 @@ extern "C" {
   longestEffectiveRange: (NSRange*)aRange inRange: (NSRange)rangeLimit;
 
 //Comparing attributed strings
-- (BOOL)isEqualToAttributedString: (NSAttributedString*)otherString;
+- (BOOL) isEqualToAttributedString: (NSAttributedString*)otherString;
 
 //Extracting a substring
-- (NSAttributedString*)attributedSubstringFromRange: (NSRange)aRange;
+- (NSAttributedString*) attributedSubstringFromRange: (NSRange)aRange;
 
 @end //NSAttributedString
 
@@ -105,21 +105,21 @@ extern "C" {
 }
 
 //Retrieving character information
-- (NSMutableString *) mutableString;
+- (NSMutableString*) mutableString;
 
 //Changing characters
 - (void) deleteCharactersInRange: (NSRange)aRange;
 
 //Changing attributes
-- (void) setAttributes: (NSDictionary *)attributes
+- (void) setAttributes: (NSDictionary*)attributes
 		 range: (NSRange)aRange;		//Primitive method!
-- (void) addAttribute: (NSString *)name value: (id)value range: (NSRange)aRange;
-- (void) addAttributes: (NSDictionary *)attributes range: (NSRange)aRange;
-- (void) removeAttribute: (NSString *)name range: (NSRange)aRange;
+- (void) addAttribute: (NSString*)name value: (id)value range: (NSRange)aRange;
+- (void) addAttributes: (NSDictionary*)attributes range: (NSRange)aRange;
+- (void) removeAttribute: (NSString*)name range: (NSRange)aRange;
 
 //Changing characters and attributes
-- (void) appendAttributedString:(NSAttributedString *)attributedString;
-- (void) insertAttributedString:(NSAttributedString *)attributedString
+- (void) appendAttributedString: (NSAttributedString*)attributedString;
+- (void) insertAttributedString: (NSAttributedString*)attributedString
 			atIndex: (NSUInteger)index;
 - (void) replaceCharactersInRange: (NSRange)aRange
 	     withAttributedString: (NSAttributedString*)attributedString;
@@ -140,7 +140,7 @@ extern "C" {
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSAttributedString+GNUstepBase.h>
+#import <GNUstepBase/NSAttributedString+GNUstepBase.h>
 #endif
 
 #endif	/* __NSAttributedString_h_GNUSTEP_BASE_INCLUDE */

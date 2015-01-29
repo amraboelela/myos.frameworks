@@ -33,8 +33,8 @@
 #endif
 
 #include "callframe.h"
-#import "NSException.h"
-#import "NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSData.h"
 #import "GSInvocation.h"
 
 #if defined(ALPHA) || (defined(MIPS) && (_MIPS_SIM == _ABIN32))

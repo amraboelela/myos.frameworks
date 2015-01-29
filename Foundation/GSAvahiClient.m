@@ -23,10 +23,10 @@
    */ 
 
 #import "GSAvahiClient.h"
-#import "NSNetServices.h"
-#import "NSDebug.h"
-#import "NSDictionary.h"
-#import "NSValue.h"
+#import "Foundation/NSNetServices.h"
+#import "Foundation/NSDebug.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSValue.h"
 
 #include <avahi-client/client.h>
 #include <avahi-common/error.h>
@@ -284,6 +284,7 @@ GSAvahiClientState(AvahiClient *client, AvahiClientState state, void *userInfo)
 
 - (void) avahiClientDealloc
 {
+  [ctx removeFromRunLoop: [ctx runLoop] forMode: [ctx mode]];
   [self freeClient];
   [ctx release];
   [_lock release];

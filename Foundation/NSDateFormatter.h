@@ -25,7 +25,7 @@
 
 #ifndef __NSDateFormatter_h_GNUSTEP_BASE_INCLUDE
 #define __NSDateFormatter_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 
@@ -52,7 +52,7 @@ enum
 {
   NSDateFormatterBehaviorDefault = 0,
   NSDateFormatterBehavior10_0    = 1000,
-  NSDateFormatterBehavior10_4    = 1040,
+  NSDateFormatterBehavior10_4    = 1040
 };
 typedef NSUInteger NSDateFormatterBehavior;
 #endif

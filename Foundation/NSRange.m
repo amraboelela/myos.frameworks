@@ -22,15 +22,15 @@
  * Boston, MA 02111 USA.
 
    <title>NSRange class reference</title>
-   $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
+   $Date: 2013-07-02 23:46:41 -0700 (Tue, 02 Jul 2013) $ $Revision: 36810 $
  */
 
 #import "common.h"
 
 #define	IN_NSRANGE_M 1
-#import "NSException.h"
-#import "NSRange.h"
-#import "NSScanner.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSRange.h"
+#import "Foundation/NSScanner.h"
 
 @class	NSString;
 
@@ -88,7 +88,8 @@ NSString *
 NSStringFromRange(NSRange range)
 {
   setupCache();
-  return [NSStringClass stringWithFormat: @"{location=%d, length=%d}",
+  return [NSStringClass
+    stringWithFormat: @"{location=%"PRIuPTR", length=%"PRIuPTR"}",
     range.location, range.length];
 }
 

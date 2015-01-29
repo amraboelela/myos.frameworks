@@ -24,9 +24,9 @@
 
 #ifndef __NSByteOrder_h_GNUSTEP_BASE_INCLUDE
 #define __NSByteOrder_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
-#import "GSConfig.h"
+#import <GNUstepBase/GSConfig.h>
 
 #if	defined(__cplusplus)
 extern "C" {

@@ -31,8 +31,8 @@
 #import	<Foundation/Foundation.h>
 #endif
 
-#import	"GSConfig.h"
-#import	"GSVersionMacros.h"
+#import	"GNUstepBase/GSConfig.h"
+#import	"GNUstepBase/GSVersionMacros.h"
 
 /* Set localisation macro for use within the base library itsself.
  */
@@ -40,7 +40,7 @@
   [NSBundle bundleForLibrary: @"gnustep-base" version: \
   OBJC_STRINGIFY(GNUSTEP_BASE_MAJOR_VERSION.GNUSTEP_BASE_MINOR_VERSION)]
 
-#import	"GNUstep.h"
+#import	"GNUstepBase/GNUstep.h"
 
 /* Foundation/NSObject.h imports <Foundation/NSZone.h> and
  * <Foundation/NSObjCRuntime.h> so we import local versions first.
@@ -52,7 +52,7 @@
  * "Foundation/NSObject.h" first, to ensure we have a local copy.
  */
 #import	"Foundation/NSObject.h"
-#import	"NSObject+GNUstepBase.h"
+#import	"GNUstepBase/NSObject+GNUstepBase.h"
 
 /* These headers are used in almost every file.
  */
@@ -64,7 +64,7 @@
  * some day, so localisation needs ot be in the common header for all code.
  */
 #import	"Foundation/NSBundle.h"
-#import	"NSBundle+GNUstepBase.h"
+#import	"GNUstepBase/NSBundle+GNUstepBase.h"
 
 /* We need to wrap unistd.h because it is used throughout the code and some
  * versions include __block as a variable name, and clang also defines that

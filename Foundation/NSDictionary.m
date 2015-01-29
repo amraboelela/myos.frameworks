@@ -23,25 +23,27 @@
    Boston, MA 02111 USA.
 
    <title>NSDictionary class reference</title>
-   $Date: 2011-10-24 07:33:30 -0700 (Mon, 24 Oct 2011) $ $Revision: 34049 $
+   $Date: 2013-12-05 05:16:36 -0800 (Thu, 05 Dec 2013) $ $Revision: 37431 $
    */
 
 #import "common.h"
-#import "NSDictionary.h"
-#import "NSArray.h"
-#import "NSData.h"
-#import "NSException.h"
-#import "NSAutoreleasePool.h"
-#import "NSFileManager.h"
-#import "NSCoder.h"
-#import "NSValue.h"
-#import "NSKeyValueCoding.h"
-#import "NSUserDefaults.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSLock.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSKeyValueCoding.h"
+#import "Foundation/NSUserDefaults.h"
 // For private method _decodeArrayOfObjectsForKey:
-#import "NSKeyedArchiver.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSKeyedArchiver.h"
 #import "GSPrivate.h"
 #import "GSFastEnumeration.h"
+#import "GSDispatch.h"
 
 static BOOL GSMacOSXCompatiblePropertyLists(void)
 {
@@ -128,6 +130,62 @@ static SEL	appSel;
 }
 
 /**
+ * Returns a new copy of the receiver.<br />
+ * The default abstract implementation of a copy is to use the
+ * -initWithDictionary:copyItems: method with the flag set to YES.<br />
+ * Immutable subclasses generally simply retain and return the receiver.
+ */
+- (id) copyWithZone: (NSZone*)z
+{
+  NSDictionary	*copy = [NSDictionaryClass allocWithZone: z];
+
+  return [copy initWithDictionary: self copyItems: NO];
+}
+
+/**
+ * Returns an unsigned integer which is the number of elements
+ * stored in the dictionary.
+ */
+- (NSUInteger) count
+{
+  [self subclassResponsibility: _cmd];
+  return 0;
+}
+
+- (void) enumerateKeysAndObjectsUsingBlock:
+  (GSKeysAndObjectsEnumeratorBlock)aBlock
+{
+  [self enumerateKeysAndObjectsWithOptions: 0
+                                usingBlock: aBlock];
+}
+
+- (void) enumerateKeysAndObjectsWithOptions: (NSEnumerationOptions)opts
+  usingBlock: (GSKeysAndObjectsEnumeratorBlock)aBlock
+{
+  /*
+   * NOTE: According to the Cocoa documentation, NSEnumerationReverse is
+   * undefined for NSDictionary. NSEnumerationConcurrent will be handled through
+   * the GS_DISPATCH_* macros if libdispatch is available.
+   */
+   id<NSFastEnumeration> enumerator = [self keyEnumerator];
+   SEL objectForKeySelector = @selector(objectForKey:);
+   IMP objectForKey = [self methodForSelector: objectForKeySelector];
+   BLOCK_SCOPE BOOL shouldStop = NO;
+   id obj;
+
+   GS_DISPATCH_CREATE_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
+   FOR_IN(id, key, enumerator)
+     obj = (*objectForKey)(self, objectForKeySelector, key);
+     GS_DISPATCH_SUBMIT_BLOCK(enumQueueGroup, enumQueue, if (shouldStop){return;};, return;, aBlock, key, obj, &shouldStop);
+     if (YES == shouldStop)
+       {
+	 break;
+       }
+   END_FOR_IN(enumerator)
+   GS_DISPATCH_TEARDOWN_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
+}
+
+/**
  * <p>In MacOS-X class clusters do not have designated initialisers,
  * and there is a general rule that -init is treated as the designated
  * initialiser of the class cluster, but that other intitialisers
@@ -167,7 +225,7 @@ static SEL	appSel;
  * other initialisers work.
  */
 - (id) initWithObjects: (const id[])objects
-	       forKeys: (const id[])keys
+	       forKeys: (const id <NSCopying>[])keys
 		 count: (NSUInteger)count
 {
   self = [self init];
@@ -175,13 +233,11 @@ static SEL	appSel;
 }
 
 /**
- * Returns an unsigned integer which is the number of elements
- * stored in the dictionary.
+ * Return an enumerator object containing all the keys of the dictionary.
  */
-- (NSUInteger) count
+- (NSEnumerator*) keyEnumerator
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+  return [self subclassResponsibility: _cmd];
 }
 
 /**
@@ -190,17 +246,12 @@ static SEL	appSel;
  */
 - (id) objectForKey: (id)aKey
 {
-  [self subclassResponsibility: _cmd];
-  return 0;
+  return [self subclassResponsibility: _cmd];
 }
 
-/**
- * Return an enumerator object containing all the keys of the dictionary.
- */
-- (NSEnumerator*) keyEnumerator
+- (id) objectForKeyedSubscript: (id)aKey
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
+  return [self objectForKey: aKey];
 }
 
 /**
@@ -208,21 +259,7 @@ static SEL	appSel;
  */
 - (NSEnumerator*) objectEnumerator
 {
-  [self subclassResponsibility: _cmd];
-  return nil;
-}
-
-/**
- * Returns a new copy of the receiver.<br />
- * The default abstract implementation of a copy is to use the
- * -initWithDictionary:copyItems: method with the flag set to YES.<br />
- * Immutable subclasses generally simply retain and return the receiver.
- */
-- (id) copyWithZone: (NSZone*)z
-{
-  NSDictionary	*copy = [NSDictionaryClass allocWithZone: z];
-
-  return [copy initWithDictionary: self copyItems: NO];
+  return [self subclassResponsibility: _cmd];
 }
 
 /**
@@ -366,7 +403,7 @@ static SEL	appSel;
 	  id	*vals = NSZoneMalloc(NSDefaultMallocZone(), sizeof(id)*count);
 	  unsigned	i;
 	  IMP	dec;
-	
+
 	  dec = [aCoder methodForSelector: @selector(decodeObject)];
 	  for (i = 0; i < count; i++)
 	    {
@@ -407,7 +444,7 @@ static SEL	appSel;
  * element of the keys array.
  */
 + (id) dictionaryWithObjects: (const id[])objects
-		     forKeys: (const id[])keys
+		     forKeys: (const id <NSCopying>[])keys
 		       count: (NSUInteger)count
 {
   return AUTORELEASE([[self allocWithZone: NSDefaultMallocZone()]
@@ -824,6 +861,7 @@ static SEL	appSel;
       return AUTORELEASE(result);
     }
 }
+
 - (void)getObjects: (__unsafe_unretained id[])objects
            andKeys: (__unsafe_unretained id[])keys
 {
@@ -964,6 +1002,69 @@ compareIt(id o1, id o2, void* context)
     }
 }
 
+- (NSSet*) keysOfEntriesWithOptions: (NSEnumerationOptions)opts
+                        passingTest: (GSKeysAndObjectsPredicateBlock)aPredicate
+{
+  /*
+   * See -enumerateKeysAndObjectsWithOptions:usingBlock: for note about
+   * NSEnumerationOptions.
+   */
+  id<NSFastEnumeration> enumerator = [self keyEnumerator];
+  SEL objectForKeySelector = @selector(objectForKey:);
+  IMP objectForKey = [self methodForSelector: objectForKeySelector];
+  BLOCK_SCOPE BOOL shouldStop = NO;
+  NSMutableSet *buildSet = [NSMutableSet new];
+  SEL addObjectSelector = @selector(addObject:);
+  IMP addObject = [buildSet methodForSelector: addObjectSelector];
+  NSSet *resultSet = nil;
+  id obj = nil;
+  BLOCK_SCOPE NSLock *setLock = nil;
+
+  if (opts & NSEnumerationConcurrent)
+    {
+      setLock = [NSLock new];
+    }
+  GS_DISPATCH_CREATE_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
+  FOR_IN(id, key, enumerator)
+    obj = (*objectForKey)(self, objectForKeySelector, key);
+#if (__has_feature(blocks) && (GS_USE_LIBDISPATCH == 1))
+      dispatch_group_async(enumQueueGroup, enumQueue, ^(void){
+        if (shouldStop)
+          {
+	    return;
+          }
+        if (aPredicate(key, obj, &shouldStop))
+          {
+	    [setLock lock];
+	    addObject(buildSet, addObjectSelector, key);
+	    [setLock unlock];
+          }
+    });
+#else
+    if (CALL_BLOCK(aPredicate, key, obj, &shouldStop))
+      {
+        addObject(buildSet, addObjectSelector, key);
+      }
+#endif
+
+    if (YES == shouldStop)
+      {
+	break;
+      }
+  END_FOR_IN(enumerator)
+  GS_DISPATCH_TEARDOWN_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
+  [setLock release];
+  resultSet = [NSSet setWithSet: buildSet];
+  [buildSet release];
+  return resultSet;
+}
+
+- (NSSet*) keysOfEntriesPassingTest: (GSKeysAndObjectsPredicateBlock)aPredicate
+{
+  return [self keysOfEntriesWithOptions: 0
+                            passingTest: aPredicate];
+}
+
 /**
  * <p>Writes the contents of the dictionary to the file specified by path.
  * The file contents will be in property-list format ... under GNUstep
@@ -1038,9 +1139,9 @@ compareIt(id o1, id o2, void* context)
  * Returns the result of invoking -descriptionWithLocale:indent: with a nil
  * locale and zero indent.
  */
-- (NSString *)description
+- (NSString*) description
 {
-    return [self descriptionWithLocale: nil indent: 0];
+  return [self descriptionWithLocale: nil indent: 0];
 }
 
 /**
@@ -1076,9 +1177,9 @@ compareIt(id o1, id o2, void* context)
  * Returns the result of invoking -descriptionWithLocale:indent: with
  * a zero indent.
  */
-- (NSString *)descriptionWithLocale:(id)locale
+- (NSString*) descriptionWithLocale: (id)locale
 {
-    return [self descriptionWithLocale: locale indent: 0];
+  return [self descriptionWithLocale: locale indent: 0];
 }
 
 /**
@@ -1109,7 +1210,7 @@ compareIt(id o1, id o2, void* context)
  */
 - (id) valueForKey: (NSString*)key
 {
-  id	o; 
+  id	o;
 
   if ([key hasPrefix: @"@"] == YES)
     {
@@ -1121,12 +1222,12 @@ compareIt(id o1, id o2, void* context)
     }
   return o;
 }
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state 	
+- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*)state
                                    objects: (__unsafe_unretained id[])stackbuf
                                      count: (NSUInteger)len
 {
-    [self subclassResponsibility: _cmd];
-    return 0;
+  [self subclassResponsibility: _cmd];
+  return 0;
 }
 @end
 
@@ -1222,6 +1323,11 @@ compareIt(id o1, id o2, void* context)
   [self subclassResponsibility: _cmd];
 }
 
+- (void) setObject: (id)anObject forKeyedSubscript: (id)aKey
+{
+  [self setObject: anObject forKey: aKey];
+}
+
 /**
  *  Remove key-value mapping for given key aKey.  No error if there is no
  *  mapping for the key.  A warning will be generated if aKey is nil.
@@ -1251,7 +1357,7 @@ compareIt(id o1, id o2, void* context)
  * element of the keys array.
  */
 - (id) initWithObjects: (const id[])objects
-	       forKeys: (const id[])keys
+	       forKeys: (const id <NSCopying>[])keys
 		 count: (NSUInteger)count
 {
   self = [self initWithCapacity: count];

@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSDateFormatter class reference</title>
-   $Date: 2011-08-13 08:28:22 -0700 (Sat, 13 Aug 2011) $ $Revision: 33724 $
+   $Date: 2014-02-18 13:14:11 -0800 (Tue, 18 Feb 2014) $ $Revision: 37695 $
    */
 
 #define	GS_NSDateFormatter_IVARS \
@@ -35,16 +35,16 @@
 
 #define	EXPOSE_NSDateFormatter_IVARS	1
 #import "common.h"
-#import "NSArray.h"
-#import "NSDate.h"
-#import "NSDictionary.h"
-#import "NSCalendar.h"
-#import "NSCalendarDate.h"
-#import "NSLocale.h"
-#import "NSTimeZone.h"
-#import "NSFormatter.h"
-#import "NSDateFormatter.h"
-#import "NSCoder.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSCalendar.h"
+#import "Foundation/NSCalendarDate.h"
+#import "Foundation/NSLocale.h"
+#import "Foundation/NSTimeZone.h"
+#import "Foundation/NSFormatter.h"
+#import "Foundation/NSDateFormatter.h"
+#import "Foundation/NSCoder.h"
 
 #if defined(HAVE_UNICODE_UDAT_H)
 #define id id_ucal
@@ -257,7 +257,7 @@ static NSDateFormatterBehavior _defaultBehavior = 0;
   if (self == nil)
     return nil;
 
-  _dateFormat = [format copy];
+  [self setDateFormat: format];
   _allowsNaturalLanguage = flag;
   internal->_behavior = NSDateFormatterBehavior10_0;
   return self;
@@ -422,9 +422,7 @@ static NSDateFormatterBehavior _defaultBehavior = 0;
   
   NSZoneFree ([self zone], pattern);
 #endif
-  if (_dateFormat)
-    RELEASE(_dateFormat);
-  _dateFormat = RETAIN(string);
+  ASSIGNCOPY(_dateFormat, string);
 }
 
 - (NSDateFormatterStyle) dateStyle

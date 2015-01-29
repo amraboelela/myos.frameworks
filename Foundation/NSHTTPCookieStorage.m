@@ -25,13 +25,12 @@
 #import "common.h"
 #define	EXPOSE_NSHTTPCookieStorage_IVARS	1
 #import "GSURLPrivate.h"
-#import "NSSet.h"
-#import "NSArray.h"
-#import "NSFileManager.h"
-#import "NSPathUtilities.h"
-#import "NSString.h"
-#import "NSDistributedNotificationCenter.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSSet.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSPathUtilities.h"
+#import "Foundation/NSString.h"
+#import "Foundation/NSDistributedNotificationCenter.h"
 
 NSString * const NSHTTPCookieManagerAcceptPolicyChangedNotification
   = @"NSHTTPCookieManagerAcceptPolicyChangedNotification";
@@ -123,11 +122,14 @@ static NSHTTPCookieStorage   *storage = nil;
   	  NSUserDomainMask, YES);
   path = [[dirs objectAtIndex: 0] stringByAppendingPathComponent: @"Cookies"];
   if ([[NSFileManager defaultManager] 
-        fileExistsAtPath: path isDirectory: &isDir] == NO || isDir == NO)
+    fileExistsAtPath: path isDirectory: &isDir] == NO || isDir == NO)
     {
       BOOL ok;
+
       ok = [[NSFileManager defaultManager] createDirectoryAtPath: path 
-      	      withIntermediateDirectories: YES attributes: nil error: NULL];
+                                     withIntermediateDirectories: YES
+                                                      attributes: nil
+                                                           error: NULL];
       if (ok == NO)
         return nil; 
     }
@@ -170,7 +172,10 @@ static NSHTTPCookieStorage   *storage = nil;
     }
   properties = nil;
   NS_DURING
-    properties = [[NSString stringWithContentsOfFile: path] propertyList];
+    if (YES == [[NSFileManager defaultManager] fileExistsAtPath: path])
+      {
+        properties = [[NSString stringWithContentsOfFile: path] propertyList];
+      }
   NS_HANDLER
     NSLog(@"NSHTTPCookieStorage: Error reading cookies plist");
   NS_ENDHANDLER

@@ -41,7 +41,7 @@
 #endif
 
 #import "Foundation/NSMethodSignature.h"
-#import "DistributedObjects.h"
+#import "GNUstepBase/DistributedObjects.h"
 #import "GSPrivate.h"
 
 typedef struct _cifframe_t {

@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSNumberFormatter class reference</title>
-   $Date: 2012-01-25 17:40:12 -0800 (Wed, 25 Jan 2012) $ $Revision: 34634 $
+   $Date: 2013-04-15 00:00:42 -0700 (Mon, 15 Apr 2013) $ $Revision: 36536 $
    */
 
 /* Unfortunately, libicu does not define the maximum values allowed for all
@@ -47,19 +47,19 @@
 
 #import "common.h"
 #define	EXPOSE_NSNumberFormatter_IVARS	1
-#import "NSAttributedString.h"
-#import "NSDecimalNumber.h"
-#import "NSDictionary.h"
-#import "NSError.h"
-#import "NSException.h"
-#import "NSLocale.h"
-#import "NSMapTable.h"
-#import "NSValue.h"
-#import "NSNumberFormatter.h"
-#import "NSUserDefaults.h"
-#import "NSCharacterSet.h"
+#import "Foundation/NSAttributedString.h"
+#import "Foundation/NSDecimalNumber.h"
+#import "Foundation/NSDictionary.h"
+#import "Foundation/NSError.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSLocale.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSValue.h"
+#import "Foundation/NSNumberFormatter.h"
+#import "Foundation/NSUserDefaults.h"
+#import "Foundation/NSCharacterSet.h"
 
-#import "GSLocale.h"
+#import "GNUstepBase/GSLocale.h"
 
 @class NSDoubleNumber;
 
@@ -644,7 +644,7 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
     {
       BOOL result;
       NSRange range = NSMakeRange (0, [string length]);
-      NSError *outError;
+      NSError *outError = nil;
       
       result = [self getObjectValue: anObject
                           forString: string
@@ -1434,7 +1434,8 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
   range = [string rangeOfString: @"."];
   if (range.location == NSNotFound)
     {
-      intNum = unum_parseInt64 (internal->_formatter, ustring, length, NULL, &err);
+      intNum = unum_parseInt64(internal->_formatter,
+        ustring, length, NULL, &err);
       if (U_FAILURE(err))
         return nil;
       if (intNum == 0 || intNum == 1)
@@ -1446,7 +1447,8 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
     }
   else
     {
-      doubleNum = unum_parseDouble (internal->_formatter, ustring, length, NULL, &err);
+      doubleNum = unum_parseDouble(internal->_formatter,
+        ustring, length, NULL, &err);
       if (U_FAILURE(err))
         return nil;
       result = [NSNumber numberWithDouble: doubleNum];

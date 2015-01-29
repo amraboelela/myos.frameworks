@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSMethodSignature class reference</title>
-   $Date: 2011-05-25 04:15:08 -0700 (Wed, 25 May 2011) $ $Revision: 33109 $
+   $Date: 2013-07-06 00:14:45 -0700 (Sat, 06 Jul 2013) $ $Revision: 36843 $
    */
 
 #import "common.h"
@@ -35,9 +35,9 @@
 
 #define	EXPOSE_NSMethodSignature_IVARS	1
 
-#import "NSMethodSignature.h"
-#import "NSException.h"
-#import "NSCoder.h"
+#import "Foundation/NSMethodSignature.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSCoder.h"
 
 #import "GSInvocation.h"
 
@@ -76,7 +76,11 @@ next_arg(const char *typePtr, NSArgumentInfo *info, char *outTypes)
   BOOL			flag;
   BOOL			negative = NO;
 
-  if (info == 0)
+  if (0 == typePtr)
+    {
+      return 0;
+    }
+  if (0 == info)
     {
       info = &local;
     }
@@ -122,6 +126,11 @@ next_arg(const char *typePtr, NSArgumentInfo *info, char *outTypes)
       case _C_ID:
 	info->size = sizeof(id);
 	info->align = __alignof__(id);
+	/* Blocks are encoded as @? */
+	if (*(typePtr) == '?')
+	  {
+	    typePtr++;
+	  }
 	break;
 
       case _C_CLASS:

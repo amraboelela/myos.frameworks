@@ -22,33 +22,32 @@
    Boston, MA 02111 USA.
 
    <title>NSTask class reference</title>
-   $Date: 2011-12-15 01:42:39 -0800 (Thu, 15 Dec 2011) $ $Revision: 34290 $
+   $Date: 2014-01-13 09:32:31 -0800 (Mon, 13 Jan 2014) $ $Revision: 37598 $
    */
 
 #import "common.h"
 #define	EXPOSE_NSTask_IVARS	1
-#import "NSAutoreleasePool.h"
-#import "NSCharacterSet.h"
-#import "NSData.h"
-#import "NSDate.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSFileHandle.h"
-#import "NSFileManager.h"
-#import "NSMapTable.h"
-#import "NSProcessInfo.h"
-#import "NSRunLoop.h"
-#import "NSNotification.h"
-#import "NSNotificationQueue.h"
-#import "NSTask.h"
-#import "NSThread.h"
-#import "NSTimer.h"
-#import "NSLock.h"
-#import "NSString+GNUstepBase.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSCharacterSet.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSDate.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSFileHandle.h"
+#import "Foundation/NSFileManager.h"
+#import "Foundation/NSMapTable.h"
+#import "Foundation/NSProcessInfo.h"
+#import "Foundation/NSRunLoop.h"
+#import "Foundation/NSNotification.h"
+#import "Foundation/NSNotificationQueue.h"
+#import "Foundation/NSTask.h"
+#import "Foundation/NSThread.h"
+#import "Foundation/NSTimer.h"
+#import "Foundation/NSLock.h"
+#import "GNUstepBase/NSString+GNUstepBase.h"
+#import "GNUstepBase/NSTask+GNUstepBase.h"
 #import "GSPrivate.h"
 
-#include <string.h>
 #include <sys/types.h>
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <fcntl.h>
@@ -105,14 +104,6 @@
 #define	NOFILE	256
 #endif
 
-
-@interface	NSBundle(Private)
-+ (NSString *) _absolutePathOfExecutable: (NSString *)path;
-+ (NSString*) _gnustep_target_cpu;
-+ (NSString*) _gnustep_target_dir;
-+ (NSString*) _gnustep_target_os;
-+ (NSString*) _library_combo;
-@end
 
 static NSRecursiveLock  *tasksLock = nil;
 static NSMapTable       *activeTasks = 0;
@@ -260,6 +251,7 @@ pty_slave(const char* name)
       if (tasksLock == nil)
         {
           tasksLock = [NSRecursiveLock new];
+          [[NSObject leakAt: &tasksLock] release];
 	  /* The activeTasks map contains the NSTask objects corresponding
 	   * to running subtasks, and retains them until the subprocess
 	   * actually terminates.
@@ -284,6 +276,7 @@ pty_slave(const char* name)
 	   */
           activeTasks = NSCreateMapTable(NSIntegerMapKeyCallBacks,
                 NSObjectMapValueCallBacks, 0);
+          [[NSObject leakAt: &activeTasks] release];
         }
       [gnustep_global_lock unlock];
 
@@ -732,7 +725,6 @@ pty_slave(const char* name)
  */
 - (NSString*) validatedLaunchPath
 {
-  NSFileManager	*mgr;
   NSString	*libs;
   NSString	*cpu;
   NSString	*os;
@@ -747,7 +739,6 @@ pty_slave(const char* name)
       return nil;
     }
 
-  mgr = [NSFileManager defaultManager];
   libs = [NSBundle _library_combo];
   os = [NSBundle _gnustep_target_os];
   cpu = [NSBundle _gnustep_target_cpu];
@@ -772,31 +763,13 @@ pty_slave(const char* name)
   full_path = [arch_path stringByAppendingPathComponent: libs];
 
   lpath = [full_path stringByAppendingPathComponent: prog];
-#ifdef	__MINGW__
-  if ([mgr isExecutableFileAtPath: lpath] == NO
-    && [mgr isExecutableFileAtPath:
-    (lpath = [lpath stringByAppendingPathExtension: @"exe"])] == NO)
-#else
-  if ([mgr isExecutableFileAtPath: lpath] == NO)
-#endif
+  if (nil == (lpath = [NSTask executablePath: lpath]))
     {
       lpath = [arch_path stringByAppendingPathComponent: prog];
-#ifdef	__MINGW__
-      if ([mgr isExecutableFileAtPath: lpath] == NO
-	&& [mgr isExecutableFileAtPath:
-	(lpath = [lpath stringByAppendingPathExtension: @"exe"])] == NO)
-#else
-      if ([mgr isExecutableFileAtPath: lpath] == NO)
-#endif
+      if (nil == (lpath = [NSTask executablePath: lpath]))
 	{
 	  lpath = [base_path stringByAppendingPathComponent: prog];
-#ifdef	__MINGW__
-	  if ([mgr isExecutableFileAtPath: lpath] == NO
-	    && [mgr isExecutableFileAtPath:
-	    (lpath = [lpath stringByAppendingPathExtension: @"exe"])] == NO)
-#else
-	  if ([mgr isExecutableFileAtPath: lpath] == NO)
-#endif
+	  if (nil == (lpath = [NSTask executablePath: lpath]))
 	    {
 	      /*
 	       * Last resort - if the launch path was simply a program name
@@ -809,40 +782,30 @@ pty_slave(const char* name)
 		}
 	      if (lpath != nil)
 		{
-#ifdef	__MINGW__
-		  if ([mgr isExecutableFileAtPath: lpath] == NO
-		    && [mgr isExecutableFileAtPath:
-		    (lpath = [lpath stringByAppendingPathExtension: @"exe"])]
-		    == NO)
-#else
-		  if ([mgr isExecutableFileAtPath: lpath] == NO)
-#endif
-		    {
-		      lpath = nil;
-		    }
+		  lpath = [NSTask executablePath: lpath];
 		}
 	    }
 	}
     }
   if (lpath != nil)
     {
-      /*
-       * Make sure we have a standardised absolute path to pass to execve()
+      /* Make sure we have a standardised absolute path to pass to execve()
        */
       if ([lpath isAbsolutePath] == NO)
 	{
-	  NSString	*current = [mgr currentDirectoryPath];
+	  NSString	*current;
 
+	  current = [[NSFileManager defaultManager] currentDirectoryPath];
 	  lpath = [current stringByAppendingPathComponent: lpath];
 	}
       lpath = [lpath stringByStandardizingPath];
-    }
-#ifdef	__MINGW__
-  /** We need this to be native windows format, and some of the standardisation
-   * above may have left unix style separators in the string.
-   */
-  lpath = [lpath stringByReplacingString: @"/" withString: @"\\"];
+#if	defined(__MINGW__)
+      if ([lpath rangeOfString: @"/"].length > 0)
+	{
+	  lpath = [lpath stringByReplacingString: @"/" withString: @"\\"];
+	}
 #endif
+    }
   return lpath;
 }
 
@@ -854,14 +817,15 @@ pty_slave(const char* name)
  */
 - (void) waitUntilExit
 {
+  CREATE_AUTORELEASE_POOL(arp);
+  NSRunLoop     *loop = [NSRunLoop currentRunLoop];
   NSTimer	*timer = nil;
+  NSDate	*limit = nil;
 
+  IF_NO_GC([[self retain] autorelease];)
   while ([self isRunning])
     {
-      NSDate	*limit;
-
-      /*
-       *	Poll at 0.1 second intervals.
+      /* Poll at 0.1 second intervals.
        */
       limit = [[NSDate alloc] initWithTimeIntervalSinceNow: 0.1];
       if (timer == nil)
@@ -872,11 +836,17 @@ pty_slave(const char* name)
 						 userInfo: nil
 						  repeats: YES];
 	}
-      [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
-			       beforeDate: limit];
-      RELEASE(limit);
+      [loop runMode: NSDefaultRunLoopMode beforeDate: limit];
+      DESTROY(limit);
     }
   [timer invalidate];
+
+  /* Run loop one last time (with limit date in past) so that any
+   * notification about the task ending is sent immediately.
+   */
+  limit = [NSDate dateWithTimeIntervalSinceNow: 0.0];
+  [loop runMode: NSDefaultRunLoopMode beforeDate: limit];
+  IF_NO_GC([arp release];)
 }
 @end
 

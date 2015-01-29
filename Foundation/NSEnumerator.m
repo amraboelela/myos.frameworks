@@ -22,14 +22,13 @@
    Boston, MA 02111 USA.
 
    <title>NSEnumerator class reference</title>
-   $Date: 2010-02-19 00:12:46 -0800 (Fri, 19 Feb 2010) $ $Revision: 29669 $
+   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
 */
 
 #import "common.h"
-#import "NSArray.h"
-#import "NSEnumerator.h"
-#import "NSException.h"
-#import "NSObject+GNUstepBase.h"
+#import "Foundation/NSArray.h"
+#import "Foundation/NSEnumerator.h"
+#import "Foundation/NSException.h"
 
 
 /**

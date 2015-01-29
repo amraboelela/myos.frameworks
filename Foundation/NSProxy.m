@@ -22,17 +22,17 @@
    Boston, MA 02111 USA.
 
    <title>NSProxy class reference</title>
-   $Date: 2011-07-26 03:47:16 -0700 (Tue, 26 Jul 2011) $ $Revision: 33634 $
+   $Date: 2013-04-13 03:40:15 -0700 (Sat, 13 Apr 2013) $ $Revision: 36517 $
    */
 
 #import "common.h"
-#import "NSInvocation.h"
-#import "NSProxy.h"
-#import "NSMethodSignature.h"
-#import "NSAutoreleasePool.h"
-#import "NSException.h"
-#import "NSDistantObject.h"
-#import "NSPortCoder.h"
+#import "Foundation/NSInvocation.h"
+#import "Foundation/NSProxy.h"
+#import "Foundation/NSMethodSignature.h"
+#import "Foundation/NSAutoreleasePool.h"
+#import "Foundation/NSException.h"
+#import "Foundation/NSDistantObject.h"
+#import "Foundation/NSPortCoder.h"
 
 // Get objc_delete_weak_refs(), if it is present in the runtime.
 #ifdef __GNUSTEP_RUNTIME__
@@ -264,7 +264,7 @@
  */
 - (void) dealloc
 {
-    NSDeallocateObject((NSObject*)self);
+  NSDeallocateObject((NSObject*)self);
 }
 
 /**
@@ -404,35 +404,49 @@
   return nil;
 }
 
-- (id)performSelector:(SEL)aSelector
+- (id) performSelector: (SEL)aSelector
 {
-    IMP msg = objc_msg_lookup(self, aSelector);
-    if (!msg) {
-        [NSException raise:NSGenericException format:@"invalid selector passed to %s", sel_getName(_cmd)];
-        return nil;
+  IMP msg = objc_msg_lookup(self, aSelector);
+
+  if (!msg)
+    {
+      [NSException raise: NSGenericException
+		  format: @"invalid selector passed to %s",
+				sel_getName(_cmd)];
+      return nil;
     }
-    return (*msg)(self, aSelector);
+  return (*msg)(self, aSelector);
 }
 
-- (id)performSelector:(SEL)aSelector withObject:(id)anObject
+- (id) performSelector: (SEL)aSelector
+	    withObject: (id)anObject
 {
-    IMP msg = objc_msg_lookup(self, aSelector);
-    if (!msg) {
-        [NSException raise:NSGenericException format:@"invalid selector passed to %s", sel_getName(_cmd)];
-        return nil;
+  IMP msg = objc_msg_lookup(self, aSelector);
+
+  if (!msg)
+    {
+      [NSException raise: NSGenericException
+		  format: @"invalid selector passed to %s",
+				sel_getName(_cmd)];
+      return nil;
     }
-    return (*msg)(self, aSelector, anObject);
+  return (*msg)(self, aSelector, anObject);
 }
 
-- (id)performSelector:(SEL)aSelector withObject:(id)anObject withObject:(id)anotherObject
+- (id) performSelector: (SEL)aSelector
+	    withObject: (id)anObject
+	    withObject: (id)anotherObject
 {
-    IMP msg = objc_msg_lookup(self, aSelector);
-    if (!msg) {
-        DLog();
-        [NSException raise:NSGenericException format:@"invalid selector passed to %s", sel_getName(_cmd)];
-        return nil;
+  IMP msg = objc_msg_lookup(self, aSelector);
+
+  if (!msg)
+    {
+      [NSException raise: NSGenericException
+		  format: @"invalid selector passed to %s",
+				sel_getName(_cmd)];
+      return nil;
     }
-    return (*msg)(self, aSelector, anObject, anotherObject);
+  return (*msg)(self, aSelector, anObject, anotherObject);
 }
 
 /**
@@ -536,7 +550,7 @@
  */
 - (Class) superclass
 {
-  return class_getSuperclass(isa);
+  return class_getSuperclass(object_getClass(self));
 }
 
 /**

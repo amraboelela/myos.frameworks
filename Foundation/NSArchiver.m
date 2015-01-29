@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSArchiver class reference</title>
-   $Date: 2012-02-27 19:26:46 -0800 (Mon, 27 Feb 2012) $ $Revision: 34840 $
+   $Date: 2013-04-13 23:25:22 -0700 (Sat, 13 Apr 2013) $ $Revision: 36518 $
    */
 
 #import "common.h"
@@ -51,15 +51,15 @@
 #endif
 
 
-#include "GSIMap.h"
+#include "GNUstepBase/GSIMap.h"
 
 #define	_IN_NSARCHIVER_M
-#import "NSArchiver.h"
+#import "Foundation/NSArchiver.h"
 #undef	_IN_NSARCHIVER_M
 
-#import "NSCoder.h"
-#import "NSData.h"
-#import "NSException.h"
+#import "Foundation/NSCoder.h"
+#import "Foundation/NSData.h"
+#import "Foundation/NSException.h"
 
 typedef	unsigned char	uchar;
 
@@ -254,20 +254,21 @@ static Class	NSMutableDataMallocClass;
 			 count: (NSUInteger)count
 			    at: (const void*)buf
 {
-  unsigned      c = count;
+  uint32_t      c;
   uint8_t	bytes[20];
   uint8_t	*bytePtr = 0;
   uint8_t	byteCount = 0;
   NSUInteger	i;
   NSUInteger	offset = 0;
-  unsigned	size = objc_sizeof_type(type);
+  uint32_t	size;
+  uint32_t	version;
   uchar		info;
 
-  /* The array count is encoded as a sequence of bytes containing 7bits of
-   * data and using the eighth (top) bit to indicate that there are more
-   * bytes in the sequence.
-   */
-  if ([self systemVersion] > 12401)
+  type = GSSkipTypeQualifierAndLayoutInfo(type);
+  size = objc_sizeof_type(type);
+  version = [self systemVersion];
+
+  if (12402 == version)
     {
       NSUInteger	tmp = count;
 
@@ -279,6 +280,19 @@ static Class	NSMutableDataMallocClass;
 	  tmp /= 128;
 	}
       bytePtr = &bytes[sizeof(bytes) - byteCount];
+    }
+
+  /* We normally store the count as a 32bit integer ... but if it's
+   * very big, we store 0xffffffff and then an additional 64bit value
+   * containing the actual count.
+   */
+  if (count >= 0xffffffff)
+    {
+      c = 0xffffffff;
+    }
+  else
+    {
+      c = count;
     }
 
   switch (*type)
@@ -308,15 +322,19 @@ static Class	NSMutableDataMallocClass;
       if (_initialPass == NO)
 	{
 	  (*_tagImp)(_dst, tagSel, _GSC_ARY_B);
-	  if (0 == byteCount)
-	    {
-	      (*_serImp)(_dst, serSel, &c, @encode(unsigned), nil);
-	    }
-	  else
+	  if (12402 == version)
 	    {
 	      for (i = 0; i < byteCount; i++)
 		{
 		  (*_serImp)(_dst, serSel, bytePtr + i, @encode(uint8_t), nil);
+		}
+	    }
+	  else
+	    {
+	      (*_serImp)(_dst, serSel, &c, @encode(uint32_t), nil);
+	      if (0xffffffff == c)
+		{
+		  (*_serImp)(_dst, serSel, &count, @encode(NSUInteger), nil);
 		}
 	    }
 	}
@@ -330,15 +348,19 @@ static Class	NSMutableDataMallocClass;
   else if (_initialPass == NO)
     {
       (*_tagImp)(_dst, tagSel, _GSC_ARY_B);
-      if (0 == byteCount)
-	{
-	  (*_serImp)(_dst, serSel, &c, @encode(unsigned), nil);
-	}
-      else
+      if (12402 == version)
 	{
 	  for (i = 0; i < byteCount; i++)
 	    {
 	      (*_serImp)(_dst, serSel, bytePtr + i, @encode(uint8_t), nil);
+	    }
+	}
+      else
+	{
+	  (*_serImp)(_dst, serSel, &c, @encode(uint32_t), nil);
+	  if (0xffffffff == c)
+	    {
+	      (*_serImp)(_dst, serSel, &count, @encode(NSUInteger), nil);
 	    }
 	}
 
@@ -354,6 +376,7 @@ static Class	NSMutableDataMallocClass;
 - (void) encodeValueOfObjCType: (const char*)type
 			    at: (const void*)buf
 {
+  type = GSSkipTypeQualifierAndLayoutInfo(type);
   switch (*type)
     {
       case _C_ID:

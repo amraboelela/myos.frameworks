@@ -1,7 +1,7 @@
 #if defined(__has_include)
 #if __has_include(<objc/hooks.h>)
-#import "NSObject.h"
-#import "CXXException.h"
+#import "Foundation/NSObject.h"
+#import "GNUstepBase/CXXException.h"
 #include <objc/runtime.h>
 #include <objc/hooks.h>
 

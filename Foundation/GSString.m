@@ -43,7 +43,7 @@
 #import "Foundation/NSException.h"
 #import "Foundation/NSValue.h"
 #import "Foundation/NSKeyedArchiver.h"
-#import "GSObjCRuntime.h"
+#import "GNUstepBase/GSObjCRuntime.h"
 
 #import "GSPrivate.h"
 
@@ -59,7 +59,7 @@
 
 /* memcpy(), strlen(), strcmp() are gcc builtin's */
 
-#import "Unicode.h"
+#import "GNUstepBase/Unicode.h"
 
 static NSStringEncoding externalEncoding = 0;
 static NSStringEncoding internalEncoding = NSISOLatin1StringEncoding;

@@ -21,7 +21,7 @@
 
 #ifndef __NSCalendarDate_h_GNUSTEP_BASE_INCLUDE
 #define __NSCalendarDate_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSDate.h>
 
@@ -161,7 +161,7 @@ extern "C" {
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSCalendarDate+GNUstepBase.h>
+#import <GNUstepBase/NSCalendarDate+GNUstepBase.h>
 #endif
 
 #if	defined(__cplusplus)

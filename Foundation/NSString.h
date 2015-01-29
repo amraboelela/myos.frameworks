@@ -44,9 +44,11 @@
  path handling methods cope with both 'unix' and 'windows' style paths in
  portable and tolerant manner:<br />
  Paths are read in literally so they can be in the native format provided
- by the operating system or in a non-native format.<br />
+ by the operating system or in a non-native format. See
+ [NSFileManager-stringWithFileSystemRepresentation:length:].<br />
  Paths are written out using the native format of the system the application
- is running on (eg on windows slashes are converted to backslashes).<br />
+ is running on (eg on windows slashes are converted to backslashes).
+ See [NSFileManager-fileSystemRepresentationWithPath:].<br />
  The path handling methods accept either a forward or backward slash as a
  path separator when parsing any path.<br />
  Unless operating in 'unix' mode, a leading letter followed by a colon is
@@ -60,14 +62,29 @@
  An important case to note is that on windows a path which looks at first
  glance like an absolute path may actually be a relative one.<br />
  'C:file' is a relative path because it specifies  a file on the C drive
- but does not say what directory it is in.
+ but does not say what directory it is in.<br />
+Similarly, '/dir/file' is a relative path because it specifies the full
+location fo a file on a drive, but does not specify which drive it is on.
  </p>
+<p>As a consequence of this path handling, you are able to work completely
+portably using relative paths (adding components, extensions and
+relative paths to a pth, or removing components, extensions and relative
+paths from a path etc), and when you save paths as strings in files
+which may be transferred to another platform, you should save a relative
+path.<br />
+When you need to know absolute paths of various points in the filesystem,
+you can use various path utility functions to obtain those absolute paths.
+For instance, instead of saving an absolute path to a file, you might want
+to save a path relative to a user's home directory.  You could do that by
+calling NSHomeDirectory() to get the home directory, and only saving the
+part of the full path after that prefix.
+</p>
 </chapter>
  */ 
 
 #ifndef __NSString_h_GNUSTEP_BASE_INCLUDE
 #define __NSString_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 #import	<Foundation/NSRange.h>
@@ -81,7 +98,7 @@ extern "C" {
  */
 typedef uint16_t unichar;
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 #define NSMaximumStringLength   (INT_MAX-1)
 #endif
 
@@ -104,13 +121,13 @@ enum
   NSBackwardsSearch = 4,
   NSAnchoredSearch = 8,
   NSNumericSearch = 64	/* MacOS-X 10.2 */
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
  ,
  NSDiacriticInsensitiveSearch = 128,
  NSWidthInsensitiveSearch = 256,
  NSForcedOrderingSearch = 512
 #endif
-#if OS_API_VERSION(100700,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_7,GS_API_LATEST) 
  ,
  /**
   * Treats the search string as a regular expression.  This option may be
@@ -196,7 +213,7 @@ typedef enum _NSStringEncoding
   NSBIG5StringEncoding,			// Traditional chinese
   NSKoreanEUCStringEncoding		// Korean
 
-#if OS_API_VERSION(100400,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST) 
   ,
   NSUTF16BigEndianStringEncoding = 0x90000100,
   NSUTF16LittleEndianStringEncoding = 0x94000100,
@@ -210,7 +227,7 @@ enum {
   NSOpenStepUnicodeReservedBase = 0xF400
 };
 
-#if OS_API_VERSION(100400,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST) 
 enum {
   NSStringEncodingConversionAllowLossy = 1,
   NSStringEncodingConversionExternalRepresentation = 2
@@ -267,19 +284,19 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 + (id) string;
 + (id) stringWithCharacters: (const unichar*)chars
 		     length: (NSUInteger)length;
-#if OS_API_VERSION(100400,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
 + (id) stringWithCString: (const char*)byteString
 		encoding: (NSStringEncoding)encoding;
 #endif
 + (id) stringWithCString: (const char*)byteString
 		  length: (NSUInteger)length;
 + (id) stringWithCString: (const char*)byteString;
-+ (id) stringWithFormat: (NSString*)format,...;
++ (id) stringWithFormat: (NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
 + (id) stringWithContentsOfFile:(NSString *)path;
 
 // Initializing Newly Allocated Strings
 - (id) init;
-#if OS_API_VERSION(100400,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
 - (id) initWithBytes: (const void*)bytes
 	      length: (NSUInteger)length
 	    encoding: (NSStringEncoding)encoding;
@@ -288,7 +305,7 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 		  encoding: (NSStringEncoding)encoding 
 	      freeWhenDone: (BOOL)flag;
 #endif
-#if OS_API_VERSION(100400,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST)
 + (id) stringWithContentsOfFile: (NSString*)path
                    usedEncoding: (NSStringEncoding*)enc
                           error: (NSError**)error;
@@ -322,7 +339,7 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 	   encoding: (NSStringEncoding)enc
 	      error: (NSError**)error;
 #endif
-#if OS_API_VERSION(100500,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST)
 - (NSString*)stringByReplacingOccurrencesOfString: (NSString*)replace
                                        withString: (NSString*)by
                                           options: (NSStringCompareOptions)opts
@@ -344,9 +361,9 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 	        length: (NSUInteger)length;
 - (id) initWithCString: (const char*)byteString;
 - (id) initWithString: (NSString*)string;
-- (id) initWithFormat: (NSString*)format, ...;
+- (id) initWithFormat: (NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
 - (id) initWithFormat: (NSString*)format
-	    arguments: (va_list)argList;
+	    arguments: (va_list)argList NS_FORMAT_FUNCTION(1,0);
 - (id) initWithData: (NSData*)data
 	   encoding: (NSStringEncoding)encoding;
 - (id) initWithContentsOfFile: (NSString*)path;
@@ -361,7 +378,8 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 		 range: (NSRange)aRange;
 
 // Combining Strings
-- (NSString*) stringByAppendingFormat: (NSString*)format,...;
+- (NSString*) stringByAppendingFormat: (NSString*)format, ...
+  NS_FORMAT_FUNCTION(1,2);
 - (NSString*) stringByAppendingString: (NSString*)aString;
 
 // Dividing Strings into Substrings
@@ -386,8 +404,26 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 // Determining Composed Character Sequences
 - (NSRange) rangeOfComposedCharacterSequenceAtIndex: (NSUInteger)anIndex;
 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2,GS_API_LATEST) 
+/** Returns a copy of the receiver normalised using the KD form.
+ */
+- (NSString *) decomposedStringWithCompatibilityMapping;
+
+/** Returns a copy of the receiver normalised using the D form.
+ */
+- (NSString *) decomposedStringWithCanonicalMapping;
+
+/** Returns a copy of the receiver normalised using the KC form.
+ */
+- (NSString *) precomposedStringWithCompatibilityMapping;
+
+/** Returns a copy of the receiver normalised using the C form.
+ */
+- (NSString *) precomposedStringWithCanonicalMapping;
+#endif
+
 // Converting String Contents into a Property List
-- (id)propertyList;
+- (id) propertyList;
 - (NSDictionary*) propertyListFromStringsFileFormat;
 
 // Identifying and Comparing Strings
@@ -416,7 +452,7 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 - (const char*) cString;
 #if OS_API_VERSION(GS_API_MACOSX, GS_API_LATEST)
 
-#if OS_API_VERSION(100400,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4,GS_API_LATEST) && GS_API_VERSION( 10200,GS_API_LATEST)
 - (const char*) cStringUsingEncoding: (NSStringEncoding)encoding;
 - (BOOL) getCString: (char*)buffer
 	  maxLength: (NSUInteger)maxLength
@@ -724,16 +760,17 @@ typedef NSUInteger NSStringEncodingConversionOptions;
  */
 - (NSArray*) stringsByAppendingPaths: (NSArray*)paths;
 
-+ (NSString*) localizedStringWithFormat: (NSString*)format, ...;
++ (NSString*) localizedStringWithFormat: (NSString*)format, ...
+  NS_FORMAT_FUNCTION(1,2);
 
 + (id) stringWithString: (NSString*)aString;
 + (id) stringWithContentsOfURL: (NSURL*)url;
 + (id) stringWithUTF8String: (const char*)bytes;
 - (id) initWithFormat: (NSString*)format
-	       locale: (NSDictionary*)locale, ...;
+	       locale: (NSDictionary*)locale, ... NS_FORMAT_FUNCTION(1,3);
 - (id) initWithFormat: (NSString*)format
 	       locale: (NSDictionary*)locale
-	    arguments: (va_list)argList;
+	    arguments: (va_list)argList NS_FORMAT_FUNCTION(1,0);
 - (id) initWithUTF8String: (const char *)bytes;
 - (id) initWithContentsOfURL: (NSURL*)url;
 - (NSString*) substringWithRange: (NSRange)aRange;
@@ -765,7 +802,7 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 - (const char *)UTF8String;
 #endif
 
-#if OS_API_VERSION(100300,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_3,GS_API_LATEST) 
 /** Not implemented */
 - (void) getParagraphStart: (NSUInteger *)startIndex
                        end: (NSUInteger *)parEndIndex
@@ -775,7 +812,7 @@ typedef NSUInteger NSStringEncodingConversionOptions;
  - (NSRange) paragraphRangeForRange: (NSRange)range;
 #endif
 
-#if OS_API_VERSION(100500,GS_API_LATEST) 
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5,GS_API_LATEST) 
 /**
  * Returns YES when scanning the receiver's text from left to right
  * finds an initial digit in the range 1-9 or a letter in the set
@@ -813,7 +850,7 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 + (id) stringWithCString: (const char*)byteString
 		  length: (NSUInteger)length;
 + (id) stringWithCString: (const char*)byteString;
-+ (id) stringWithFormat: (NSString*)format,...;
++ (id) stringWithFormat: (NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
 + (id) stringWithContentsOfFile: (NSString*)path;
 + (NSMutableString*) stringWithCapacity: (NSUInteger)capacity;
 
@@ -821,7 +858,7 @@ typedef NSUInteger NSStringEncodingConversionOptions;
 - (id) initWithCapacity: (NSUInteger)capacity;
 
 // Modify A String
-- (void) appendFormat: (NSString*)format, ...;
+- (void) appendFormat: (NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
 - (void) appendString: (NSString*)aString;
 - (void) deleteCharactersInRange: (NSRange)range;
 - (void) insertString: (NSString*)aString atIndex: (NSUInteger)loc;
@@ -878,8 +915,8 @@ extern struct objc_class _NSConstantStringClassReference;
 #endif
 
 #if     !NO_GNUSTEP && !defined(GNUSTEP_BASE_INTERNAL)
-#import <Foundation/NSString+GNUstepBase.h>
-#import <Foundation/NSMutableString+GNUstepBase.h>
+#import <GNUstepBase/NSString+GNUstepBase.h>
+#import <GNUstepBase/NSMutableString+GNUstepBase.h>
 #endif
 
 #endif /* __NSString_h_GNUSTEP_BASE_INCLUDE */

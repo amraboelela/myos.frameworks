@@ -26,7 +26,7 @@
 
 #ifndef __NSMethodSignature_h_GNUSTEP_BASE_INCLUDE
 #define __NSMethodSignature_h_GNUSTEP_BASE_INCLUDE
-#import	"GSVersionMacros.h"
+#import	<GNUstepBase/GSVersionMacros.h>
 
 #import	<Foundation/NSObject.h>
 
