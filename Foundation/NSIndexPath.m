@@ -32,7 +32,7 @@
 #import	"Foundation/NSIndexPath.h"
 #import	"Foundation/NSKeyedArchiver.h"
 #import	"Foundation/NSLock.h"
-#import	"GNUstepBase/GSLock.h"
+#import	"GSLock.h"
 
 static	GSLazyRecursiveLock	*lock = nil;
 static	NSHashTable	*shared = 0;

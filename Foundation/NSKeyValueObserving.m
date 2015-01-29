@@ -38,9 +38,9 @@
 #import "Foundation/NSNull.h"
 #import "Foundation/NSSet.h"
 #import "Foundation/NSValue.h"
-#import "GNUstepBase/GSObjCRuntime.h"
-#import "GNUstepBase/Unicode.h"
-#import "GNUstepBase/GSLock.h"
+#import "GSObjCRuntime.h"
+#import "Unicode.h"
+#import "GSLock.h"
 #import "GSInvocation.h"
 
 #if defined(USE_LIBFFI)

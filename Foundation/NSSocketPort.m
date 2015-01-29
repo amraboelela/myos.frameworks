@@ -25,7 +25,7 @@
 #import "common.h"
 #define	EXPOSE_NSPort_IVARS	1
 #define	EXPOSE_NSSocketPort_IVARS	1
-#import "GNUstepBase/GSLock.h"
+#import "GSLock.h"
 #import "Foundation/NSArray.h"
 #import "Foundation/NSNotification.h"
 #import "Foundation/NSNotificationQueue.h"

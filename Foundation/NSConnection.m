@@ -82,7 +82,7 @@
 #endif
 
 #import "Foundation/NSEnumerator.h"
-#import "GNUstepBase/GSLock.h"
+#import "GSLock.h"
 
 /* Skip past an argument and also any offset information before the next.
  */
@@ -119,14 +119,14 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
 #endif
 
 
-#include "GNUstepBase/GSIMap.h"
+#include "GSIMap.h"
 
 #define	_IN_CONNECTION_M
 #import "Foundation/NSConnection.h"
 #undef	_IN_CONNECTION_M
 
 #import "Foundation/NSPortCoder.h"
-#import "GNUstepBase/DistributedObjects.h"
+#import "DistributedObjects.h"
 
 #import "Foundation/NSHashTable.h"
 #import "Foundation/NSMapTable.h"
