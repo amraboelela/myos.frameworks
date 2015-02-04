@@ -18,6 +18,7 @@
 LDLIBS=-lCoreFoundation -lFoundation
 OBJECTS = \
     IOWindow.o \
+    IOPipe.o \
 
 ifeq ($(TARGET),NativeApp)
     LIB_NAME=NAIOKit
@@ -30,7 +31,6 @@ endif
 ifeq ($(BASE_OS),android)
     OBJECTS+= \
         NSFileHandle+IOKit.o \
-        IOPipe.o \
 
     ifeq ($(TARGET),NativeApp)
     else
