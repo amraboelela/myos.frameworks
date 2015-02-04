@@ -582,13 +582,15 @@ void _CGDataProviderSetMAAppName(NSString *maAppName)
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
-    //DLog(@"filename: %s", filename);
+    DLog(@"filename: %s", filename);
     NSString *path = [NSString stringWithCString:filename];
+#ifdef ANDROID
     if ([path rangeOfString:@"/"].length > 0) {
     } else {
         path = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", _maAppName, path];
     }
-    //DLog(@"path: %@", path);
+#endif
+    DLog(@"path: %@", path);
     void *info = fopen([path cString], "rb");
     if (NULL == info) {
         ALog(@"NULL == info");
