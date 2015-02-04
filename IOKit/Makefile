@@ -18,6 +18,7 @@
 LDLIBS=-lCoreFoundation -lFoundation
 OBJECTS = \
     IOWindow.o \
+    NSFileHandle+IOKit.o \
     IOPipe.o \
 
 ifeq ($(TARGET),NativeApp)
@@ -29,9 +30,6 @@ else
 endif
 
 ifeq ($(BASE_OS),android)
-    OBJECTS+= \
-        NSFileHandle+IOKit.o \
-
     ifeq ($(TARGET),NativeApp)
     else
         SLIBS=MAKit
