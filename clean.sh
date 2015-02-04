@@ -22,9 +22,9 @@ echo "****************************** Cleaning frameworks ***********************
 
 #rm ${MYOS_PATH}/frameworks/libs/*.so
 
-#cd CoreFoundation
-#make clean
-#cd ..
+cd CoreFoundation
+make clean
+cd ..
 
 cd Foundation
 make clean
@@ -38,18 +38,18 @@ cd CoreText
 make clean
 cd ..
 
-#cd IOKit
-#make clean
-#cd ..
+cd IOKit
+make clean
+cd ..
 
-#cd OpenGLES
-#make clean
-#cd ..
+cd OpenGLES
+make clean
+cd ..
 
-#cd CoreAnimation
-#make clean
-#cd ..
+cd CoreAnimation
+make clean
+cd ..
 
-#cd UIKit
-#make clean
-#cd ..
+cd UIKit
+make clean
+cd ..
