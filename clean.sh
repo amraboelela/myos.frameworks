@@ -22,13 +22,13 @@ echo "****************************** Cleaning frameworks ***********************
 
 #rm ${MYOS_PATH}/frameworks/libs/*.so
 
-cd CoreFoundation
-make clean
-cd ..
+#cd CoreFoundation
+#make clean
+#cd ..
 
-cd Foundation
-make clean
-cd ..
+#cd Foundation
+#make clean
+#cd ..
 
 cd CoreGraphics
 make clean
