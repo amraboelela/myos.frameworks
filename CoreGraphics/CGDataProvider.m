@@ -582,7 +582,7 @@ void _CGDataProviderSetMAAppName(NSString *maAppName)
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
-    DLog(@"filename: %s", filename);
+    //DLog(@"filename: %s", filename);
     NSString *path = [NSString stringWithCString:filename];
 #ifdef ANDROID
     if ([path rangeOfString:@"/"].length > 0) {
@@ -590,7 +590,7 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
         path = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", _maAppName, path];
     }
 #endif
-    DLog(@"path: %@", path);
+    //DLog(@"path: %@", path);
     void *info = fopen([path cString], "rb");
     if (NULL == info) {
         ALog(@"NULL == info");
