@@ -175,10 +175,14 @@ static void _EAGLCreateContext(EAGLContext *context)
         GLX_BLUE_SIZE, 1,
         None
     };
+    DLog();
     context->_window = [IOWindowGetSharedWindow() retain];
+    DLog();
     context->_display = XOpenDisplay(NULL);
+    DLog();
     //Display *display = context->_window->display;
     int screen = DefaultScreen(context->_display);
+    DLog();
     XVisualInfo *visualInfo;
     visualInfo = glXChooseVisual(context->_display, screen, attribList);
     if (!visualInfo) {
