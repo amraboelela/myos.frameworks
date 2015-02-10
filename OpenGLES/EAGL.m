@@ -166,7 +166,7 @@ static void _EAGLCreateContext(EAGLContext *context)
     context->_window = [IOWindowGetSharedWindow() retain];
     DLog(@"context->_window: %@", context->_window);
     context->_display = XOpenDisplay(NULL);
-    DLog(@"context->_display: %@", context->_display);
+    DLog(@"context->_display: %p", context->_display);
     //Display *display = context->_window->display;
     int screen = DefaultScreen(context->_display);
     DLog(@"screen: %d", screen);
