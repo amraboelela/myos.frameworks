@@ -834,7 +834,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     // Setting up the screen sleeping ability
     //_application->_lastActivityTime = CACurrentMediaTime();
     //DLog();
-    _application->_blackScreen = [[UIView alloc] initWithFrame:cr];
+    _application->_blackScreen = [[UIView alloc] initWithFrame:screen->_bounds];
     DLog();
     _application->_blackScreen.backgroundColor = [UIColor blackColor];
     DLog();
