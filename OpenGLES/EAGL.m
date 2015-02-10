@@ -48,19 +48,6 @@ static void _EAGLCreateContext(EAGLContext *context)
         EGL_NONE
     };
     
-    //        EGL_SURFACE_TYPE,   EGL_WINDOW_BIT,
-    
-    /*static const EGLint attribs[] =
-    {
-        EGL_RED_SIZE,       8,
-        EGL_GREEN_SIZE,     8,
-        EGL_BLUE_SIZE,      8,
-        EGL_DEPTH_SIZE,     0,
-        EGL_ALPHA_SIZE,     EGL_DONT_CARE,
-        EGL_STENCIL_SIZE,   EGL_DONT_CARE,
-        EGL_NONE
-    };*/
-    
     EGLint w, h, dummy, format;
     EGLint numConfigs;
     EGLConfig config;
@@ -163,7 +150,7 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
     context->_height = h;
 }
 
-#else
+#else // not ANDROID
 
 static void _EAGLCreateContext(EAGLContext *context)
 {
@@ -175,16 +162,16 @@ static void _EAGLCreateContext(EAGLContext *context)
         GLX_BLUE_SIZE, 1,
         None
     };
-    DLog();
+    DLog(@"context: %@", context);
     context->_window = [IOWindowGetSharedWindow() retain];
-    DLog();
+    DLog(@"context->_window: %@", context->_window);
     context->_display = XOpenDisplay(NULL);
-    DLog();
+    DLog(@"context->_display: %@", context->_display);
     //Display *display = context->_window->display;
     int screen = DefaultScreen(context->_display);
-    DLog();
-    XVisualInfo *visualInfo;
-    visualInfo = glXChooseVisual(context->_display, screen, attribList);
+    DLog(@"screen: %d", screen);
+    XVisualInfo *visualInfo = glXChooseVisual(context->_display, screen, attribList);
+    DLog(@"visualInfo: %@", visualInfo);
     if (!visualInfo) {
         NSLog(@"glXChooseVisual failed");
         return;
@@ -217,21 +204,7 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
     DLog(@"created GLX context: %p", context->_glXContext);
 }
 
-#endif
-/*
-static void _EAGLDestroyContext(EAGLContext *context)
-{
-    if (context->_eglDisplay != EGL_NO_DISPLAY) {
-        eglMakeCurrent(context->_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        if (context != EGL_NO_CONTEXT) {
-            eglDestroyContext(context->_eglDisplay, context->_eglContext);
-        }
-        if (context->_eglSurface != EGL_NO_SURFACE) {
-            eglDestroySurface(context->_eglDisplay, context->_eglSurface);
-        }
-        eglTerminate(context->_eglDisplay);
-    }
-}*/
+#endif /* ANDROID */
 
 static bool checkGLXExtension(const char* extName)
 {
