@@ -68,7 +68,6 @@ void IOWindowDestroySharedWindow()
 
 #ifdef ANDROID
 
-
 void *IOWindowCreateNativeWindow(int pipeRead)
 {
     /*ANativeWindow *nWindow = nil;
