@@ -781,7 +781,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
-    //DLog();
+    DLog();
     
     [[UIScreen alloc] init];
     
@@ -789,14 +789,15 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     _application->_lastActivityTime = CACurrentMediaTime();
     _application->_blackScreen = [[UIView alloc] initWithFrame:cr];
     _application->_blackScreen.backgroundColor = [UIColor blackColor];
+    DLog();
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application
                                                                                  action:@selector(turnOnScreen:)];
     [_application->_blackScreen addGestureRecognizer:tapGesture];
-    
+    DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    
+    DLog();
     //NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-    //DLog(@"currentRunLoop: %@", currentRunLoop);
+    DLog(@"currentRunLoop: %@", currentRunLoop);
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
