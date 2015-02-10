@@ -419,7 +419,7 @@ void EAGLGetVersion(unsigned int *major, unsigned int *minor)
 
 EAGLContext *_EAGLGetCurrentContext()
 {
-    //DLog();
+    DLog();
     return _currentContext;
 }
 

@@ -59,11 +59,13 @@ NSMutableArray *_allScreens = nil;
     if ((self = [super init])) {
         _bounds = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
         [_allScreens addObject:self];
+        DLog();
         EAGLContext *context = _EAGLGetCurrentContext();
+        DLog();
         _hScale = context->_width * 1.0 / _kScreenWidth;
         _vScale = context->_height * 1.0 / _kScreenHeight;
         _scale = MAX(_hScale, _vScale);
-        //DLog(@"_scale: %f", _scale);
+        DLog(@"_scale: %f", _scale);
         
         //_layer = [[CALayer layer] retain];
         //_layer.delegate = self;		// required to get the magic of the UIViewLayoutManager...
