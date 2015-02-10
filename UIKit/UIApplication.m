@@ -311,47 +311,6 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent *event)
 
 #else
 
-static void _UIApplicationInitWindow()
-{
-    //IOWindow *window = IOWindowCreateSharedWindow();
-    //IOWindowCreateNativeWindow(0);
-    DLog();
-    
-    _CAAnimatorInitialize();
-    DLog();
-    [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
-    DLog();
-    EAGLContext *context = _EAGLGetCurrentContext();
-    DLog();
-    UIScreen *screen = [[UIScreen alloc] init];
-    DLog();
-    
-    IOWindow *window = IOWindowCreateSharedWindow();
-    //CGRect cr = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
-    //CGContextRef ctx = IOWindowCreateContextWithRect(cr);
-    //UIGraphicsPushContext(ctx);
-
-    
-    
-    CGContextRef ctx = IOWindowCreateContextWithRect(screen->_bounds);
-    DLog();
-    UIGraphicsPushContext(ctx);
-    DLog();
-    [_CAAnimatorConditionLock unlock];
-    
-    BOOL canDraw = NO;
-    while (!canDraw) {
-        if (IOEventCanDrawWindow(window)) {
-            canDraw = YES;
-        }
-    }
-    
-    DLog();
-    _application->_lastActivityTime = CACurrentMediaTime();
-    DLog();
-    _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    DLog();
-}
 
 #endif
 
@@ -815,6 +774,48 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
+    NSTimeInterval currentTime = CACurrentMediaTime();
+    DLog();
+    _application = [[UIApplication alloc] init];
+    Class appDelegateClass = NSClassFromString(delegateClassName);
+    id appDelegate = [[appDelegateClass alloc] init];
+    _application->_delegate = appDelegate;
+    DLog();
+    
+    _CAAnimatorInitialize();
+    DLog();
+    [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
+    DLog();
+    EAGLContext *context = _EAGLGetCurrentContext();
+    DLog();
+    UIScreen *screen = [[UIScreen alloc] init];
+    DLog();
+    
+    IOWindow *window = IOWindowCreateSharedWindow();
+    //CGRect cr = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
+    //CGContextRef ctx = IOWindowCreateContextWithRect(cr);
+    //UIGraphicsPushContext(ctx);
+    
+    CGContextRef ctx = IOWindowCreateContextWithRect(screen->_bounds);
+    DLog();
+    UIGraphicsPushContext(ctx);
+    DLog();
+    [_CAAnimatorConditionLock unlock];
+    
+    BOOL canDraw = NO;
+    while (!canDraw) {
+        if (IOEventCanDrawWindow(window)) {
+            canDraw = YES;
+        }
+    }
+    
+    DLog();
+    _application->_lastActivityTime = CACurrentMediaTime();
+    DLog();
+    //_UIApplicationLaunchApplicationWithDefaultWindow(nil);
+    //DLog();
+    
+    
     /*IOWindow *window = IOWindowCreateSharedWindow();
     CGRect cr = CGRectMake(0,0,640,480);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
@@ -825,20 +826,14 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
             canDraw = YES;
         }
     }*/
-    NSTimeInterval currentTime = CACurrentMediaTime();
-    DLog();
-    _application = [[UIApplication alloc] init];
-    Class appDelegateClass = NSClassFromString(delegateClassName);
-    id appDelegate = [[appDelegateClass alloc] init];
-    _application->_delegate = appDelegate;
-    DLog();
+
     
-    _UIApplicationInitWindow();
+    //_UIApplicationInitWindow();
     //[[UIScreen alloc] init];
     
     // Setting up the screen sleeping ability
-    _application->_lastActivityTime = CACurrentMediaTime();
-    DLog();
+    //_application->_lastActivityTime = CACurrentMediaTime();
+    //DLog();
     _application->_blackScreen = [[UIView alloc] initWithFrame:cr];
     DLog();
     _application->_blackScreen.backgroundColor = [UIColor blackColor];
