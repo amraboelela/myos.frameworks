@@ -783,7 +783,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     _application->_delegate = appDelegate;
     //DLog();
     
-    [[UIScreen alloc] initWithBounds:cr];
+    //[[UIScreen alloc] initWithBounds:cr];
     
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
@@ -900,7 +900,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     _application->_delegate = appDelegate;
     //DLog();
     
-    [[UIScreen alloc] initWithBounds:cr];
+    //[[UIScreen alloc] initWithBounds:cr];
     
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
