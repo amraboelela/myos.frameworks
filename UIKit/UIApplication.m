@@ -794,11 +794,11 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     _application->_delegate = appDelegate;
     DLog();
     
-    [[UIScreen alloc] init];
     _CAAnimatorInitialize();
     DLog();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
     DLog();
+    [[UIScreen alloc] init];
     
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
