@@ -108,9 +108,9 @@ void IOWindowSetNativeWindow(void *nWindow)
 CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
 {
     _window->_rect = aRect;
-    //DLog(@"aRect: %@", NSStringFromRect(NSRectFromCGRect(aRect)));
+    DLog(@"aRect: %@", NSStringFromRect(NSRectFromCGRect(aRect)));
     _window->_context = IOWindowCreateContext();
-    //DLog(@"Created context\n");
+    DLog(@"Created context\n");
     return _window->_context;
 }
 
@@ -120,7 +120,7 @@ CGContextRef IOWindowCreateContext()
     return _CGBitmapContextCreateWithOptions(_window->_rect.size, YES, 1.0);
 }
 
-#else
+#else // not ANDROID
 
 CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
 {
@@ -128,7 +128,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     
     _window->_rect = aRect;
     _window->display = XOpenDisplay(NULL);
-    //DLog(@"display: %p", _window->display);
+    DLog(@"display: %p", _window->display);
     if (!_window->display) {
         fprintf(stderr, "Cannot open display: %s\n", XDisplayName(NULL));
         exit(EXIT_FAILURE);

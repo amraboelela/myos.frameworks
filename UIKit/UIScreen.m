@@ -66,13 +66,6 @@ NSMutableArray *_allScreens = nil;
         _vScale = context->_height * 1.0 / _kScreenHeight;
         _scale = MAX(_hScale, _vScale);
         DLog(@"_scale: %f", _scale);
-        
-        //_layer = [[CALayer layer] retain];
-        //_layer.delegate = self;		// required to get the magic of the UIViewLayoutManager...
-        //_layer.layoutManager = [UIViewLayoutManager layoutManager];
-        
-        //  _layer.geometryFlipped = YES;
-        //_layer.sublayerTransform = CATransform3DMakeScale(1,-1,1);
     }
     return self;
 }

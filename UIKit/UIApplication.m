@@ -768,10 +768,51 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
     [pool release];
 }
 
-#else
+#else // not ANDROID
 
 int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
 {
+    
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    
+    IOWindow *window = IOWindowCreateSharedWindow();
+    CGRect cr = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
+    CGContextRef ctx = IOWindowCreateContextWithRect(cr);
+    UIGraphicsPushContext(ctx);
+    DLog();
+    BOOL canDraw = NO;
+    while (!canDraw) {
+        if (IOEventCanDrawWindow(window)) {
+            canDraw = YES;
+        }
+    }
+    NSTimeInterval currentTime = CACurrentMediaTime();
+    
+    _application = [[UIApplication alloc] init];
+    Class appDelegateClass = NSClassFromString(delegateClassName);
+    id appDelegate = [[appDelegateClass alloc] init];
+    _application->_delegate = appDelegate;
+    DLog();
+    
+    [[UIScreen alloc] init];
+    _CAAnimatorInitialize();
+    DLog();
+    [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
+    DLog();
+    
+    // Setting up the screen sleeping ability
+    _application->_lastActivityTime = CACurrentMediaTime();
+    _application->_blackScreen = [[UIView alloc] initWithFrame:cr];
+    _application->_blackScreen.backgroundColor = [UIColor blackColor];
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application
+                                                                                 action:@selector(turnOnScreen:)];
+    [_application->_blackScreen addGestureRecognizer:tapGesture];
+    
+    _UIApplicationLaunchApplicationWithDefaultWindow(nil);
+    
+    
+    
+    /*
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
     NSTimeInterval currentTime = CACurrentMediaTime();
@@ -814,18 +855,6 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     DLog();
     //_UIApplicationLaunchApplicationWithDefaultWindow(nil);
     //DLog();
-    
-    
-    /*IOWindow *window = IOWindowCreateSharedWindow();
-    CGRect cr = CGRectMake(0,0,640,480);
-    CGContextRef ctx = IOWindowCreateContextWithRect(cr);
-    UIGraphicsPushContext(ctx);
-    BOOL canDraw = NO;
-    while (!canDraw) {
-        if (IOEventCanDrawWindow(window)) {
-            canDraw = YES;
-        }
-    }*/
 
     
     //_UIApplicationInitWindow();
@@ -846,7 +875,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     DLog();
     //NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
     //DLog(@"currentRunLoop: %@", currentRunLoop);
-    
+    */
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
         
