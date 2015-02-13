@@ -179,8 +179,8 @@ static void _EAGLCreateContext(EAGLContext *context)
     context->_glXContext = glXCreateContext(context->_display, visualInfo, NULL, GL_TRUE);
     DLog(@"created GLX context: %p", context->_glXContext);
     
-    context->_width = XDisplayWidth(context->_display, screen);
-    context->_height = XDisplayHeight(context->_display, screen);
+    context->_width = context->_window->_rect.size.width;
+    context->_height = context->_window->_rect.size.height;
     DLog(@"context->_width: %d, context->_height: %@", context->_width, context->_height);
 }
 
