@@ -25,10 +25,13 @@
 {
     self = [super init];
     if (self) {
+        DLog();
         _values = CFDictionaryCreateMutable(kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        DLog();
         CFDictionarySetValue(_values, kCATransactionAnimationDuration, [NSNumber numberWithFloat:0.25]);
+        DLog();
         CFDictionarySetValue(_values, kCATransactionDisableActions, [NSNumber numberWithBool:NO]);
-        //DLog(@"_values: %@", _values);
+        DLog(@"_values: %@", _values);
     }
     return self;
 }
