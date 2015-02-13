@@ -912,7 +912,7 @@ if (aValue >= -1 && aValue <= 12)\
     DLog();
     if (useSmallFloat) {
         DLog();
-        return boxDouble(aValue, SMALL_FLOAT_MASK);
+        return boxDouble(aValue, SMALL_REPEATING_DOUBLE_MASK);
         DLog();
     }
 #endif
