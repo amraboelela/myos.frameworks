@@ -24,7 +24,6 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <Foundation/NSObject.h>
 #include "CoreFoundation/CFRuntime.h"
 #include "CoreFoundation/CFBase.h"
 #include "CoreFoundation/CFDictionary.h"
@@ -249,8 +248,8 @@ void CFDictionaryReplaceValue (CFMutableDictionaryRef dict, const void *key, con
 void CFDictionarySetValue (CFMutableDictionaryRef dict, const void *key, const void *value)
 {
     CF_OBJC_FUNCDISPATCH2(_kCFDictionaryTypeID, void, dict, "setObject:forKey:", value, key);
-    DLog();
+    printf("1");
     GSHashTableSetValue ((GSHashTableRef)dict, key, value);
-    DLog();
+    printf("2");
 }
 
