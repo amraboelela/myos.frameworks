@@ -121,15 +121,15 @@ CF_INLINE void GSHashTableAddKeyValuePair(GSHashTableRef table, GSHashTableBucke
 {
     printf("GSHashTableAddKeyValuePair 1\n");
     GSHashTableRetainCallBack keyRetain = table->_keyCallBacks.retain;
-    printf("GSHashTableAddKeyValuePair 2\n")
+    printf("GSHashTableAddKeyValuePair 2\n");
     GSHashTableRetainCallBack valueRetain = table->_valueCallBacks.retain;
-    printf("GSHashTableAddKeyValuePair 3\n")
+    printf("GSHashTableAddKeyValuePair 3\n");
     bucket->count++;
-    printf("GSHashTableAddKeyValuePair 4\n")
+    printf("GSHashTableAddKeyValuePair 4\n");
     bucket->key = keyRetain ? keyRetain(table->_allocator, key) : key;
-    printf("GSHashTableAddKeyValuePair 5\n")
+    printf("GSHashTableAddKeyValuePair 5\n");
     bucket->value = valueRetain ? valueRetain(table->_allocator, value) : value;
-    printf("GSHashTableAddKeyValuePair 6\n")
+    printf("GSHashTableAddKeyValuePair 6\n");
 }
 
 CF_INLINE void GSHashTableReplaceKeyValuePair (GSHashTableRef table, GSHashTableBucket *bucket, const void *key, const void *value)
