@@ -492,7 +492,7 @@ static int _UIApplicationHandleMessages()
     [_visibleWindows release];
     [_backgroundTasks release];
     [_backgroundTasksExpirationDate release];
-    [_blackScreen release];
+    //[_blackScreen release];
     IOWindowDestroySharedWindow();
     [_appImage release];
     [super dealloc];
@@ -589,13 +589,13 @@ static int _UIApplicationHandleMessages()
 }
 
 #pragma mark - Delegates
-
+/*
 - (void)turnOnScreen:(id)sender
 {
     [_blackScreen removeFromSuperview];
     _lastActivityTime = CACurrentMediaTime();
     _screenMode = _UIApplicationScreenModeActive;
-}
+}*/
 
 #pragma mark - Public methods
 
@@ -924,11 +924,10 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
-    _application->_blackScreen = [[UIView alloc] initWithFrame:cr];
-    _application->_blackScreen.backgroundColor = [UIColor blackColor];
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application
-                                                                                 action:@selector(turnOnScreen:)];
-    [_application->_blackScreen addGestureRecognizer:tapGesture];
+    //_application->_blackScreen = [[UIView alloc] initWithFrame:cr];
+    //_application->_blackScreen.backgroundColor = [UIColor blackColor];
+    //UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
+    //[_application->_blackScreen addGestureRecognizer:tapGesture];
     
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     
@@ -946,7 +945,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
             _application->_lastActivityTime = CACurrentMediaTime();
         }
         currentTime = CACurrentMediaTime();
-        if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
+        /*if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
             && _application->_screenMode == _UIApplicationScreenModeActive) {
             _application->_screenMode = _UIApplicationScreenModeSleeping;
             [_application->_keyWindow addSubview:_application->_blackScreen];
@@ -964,7 +963,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
             [UIView setAnimationDuration:1.0];
             _application->_blackScreen.alpha = 1.0;
             [UIView commitAnimations];
-        }
+        }*/
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
