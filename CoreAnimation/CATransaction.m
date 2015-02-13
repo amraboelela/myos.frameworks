@@ -239,12 +239,15 @@ void _CATransactionAddToRemoveLayers(CALayer *layer)
 void _CATransactionCreateImplicitTransactionIfNeeded()
 {
     if (CFArrayGetCount(_transactions)==0) {
-        //DLog();
+        DLog();
         CATransactionGroup *group = [[CATransactionGroup alloc] init];
+        DLog();
         CFArrayAppendValue(_transactions, group);
+        DLog();
         [group release];
+        DLog();
         _CATransactionCommitTransactionAfterDelay(0.01);
-        //DLog(@"_transactions: %@", _transactions);
+        DLog(@"_transactions: %@", _transactions);
         //[[CATransaction class] performSelector:@selector(_commitTransaction) withObject:nil afterDelay:0.01];
         //DLog(@"new commit after delay");
     }
