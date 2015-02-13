@@ -162,16 +162,16 @@ static void _EAGLCreateContext(EAGLContext *context)
         GLX_BLUE_SIZE, 1,
         None
     };
-    DLog(@"context: %@", context);
+    //DLog(@"context: %@", context);
     context->_window = [IOWindowGetSharedWindow() retain];
     DLog(@"context->_window: %@", context->_window);
-    context->_display = XOpenDisplay(NULL);
+    context->_display = context->_window->display;//XOpenDisplay(NULL);
     DLog(@"context->_display: %p", context->_display);
     //Display *display = context->_window->display;
     int screen = DefaultScreen(context->_display);
     DLog(@"screen: %d", screen);
     XVisualInfo *visualInfo = glXChooseVisual(context->_display, screen, attribList);
-    DLog(@"visualInfo: %@", visualInfo);
+    DLog(@"visualInfo: %p", visualInfo);
     if (!visualInfo) {
         NSLog(@"glXChooseVisual failed");
         return;
@@ -204,7 +204,7 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
     DLog(@"created GLX context: %p", context->_glXContext);
 }
 
-#endif /* ANDROID */
+#endif // ANDROID
 
 static bool checkGLXExtension(const char* extName)
 {
@@ -278,28 +278,6 @@ static bool checkGLXExtension(const char* extName)
     }
     return self;
 }
-/*
-- (id)initWithAPI:(EAGLRenderingAPI)api
-{
-    self = [super init];
-    if (self) {
-        API = api;
-        shareGroup = [[EAGLShareGroup alloc] init];
-        _EAGLContextCreateContext(self);
-    }
-    return self;
-}
-
-- (id)initWithAPI:(EAGLRenderingAPI)api sharegroup:(EAGLShareGroup *)aSharegroup
-{
-    self = [super init];
-    if (self) {
-        API = api;
-        shareGroup = [aSharegroup retain];
-        _EAGLContextCreateContext(self);
-    }
-    return self;
-}*/
 
 - (void)dealloc
 {

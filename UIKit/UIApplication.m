@@ -309,12 +309,13 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent *event)
     }
 }
 
-#else
+#else // not ANDROID
 
+#endif // ANDROID
 
-#endif
+#else // not NATIVE_APP
 
-#else
+#ifdef ANDROID
 
 static void _UIApplicationInitWindow()
 {
@@ -451,7 +452,9 @@ static int _UIApplicationHandleMessages()
     return 0;
 }
 
-#endif
+#else // not ANDROID
+
+#endif // NATIVE_APP
 
 #pragma mark -
 
@@ -772,7 +775,6 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
 
 int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
 {
-    
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
     IOWindow *window = IOWindowCreateSharedWindow();
@@ -809,8 +811,6 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     [_application->_blackScreen addGestureRecognizer:tapGesture];
     
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    
-    
     
     /*
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -913,9 +913,9 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     [pool release];
 }
 
-#endif
+#endif // ANDROID
 
-#else
+#else // not NATIVE_APP
 
 #ifdef ANDROID
 
@@ -954,7 +954,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     return 0;
 }
 
-#else
+#else // not ANDROID
 
 int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
 {

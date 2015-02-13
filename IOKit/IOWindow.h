@@ -31,7 +31,6 @@
     CGContextRef _context;
 #ifdef ANDROID
     ANativeWindow *_nWindow;
-
 #else
     Window xwindow;
     cairo_user_data_key_t cwindow;

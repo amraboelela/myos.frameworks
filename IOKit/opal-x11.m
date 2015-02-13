@@ -40,46 +40,46 @@ static cairo_user_data_key_t XWindow;
 
 CGContextRef opal_XWindowContextCreate(Display *d, Window w)
 {
-  CGContextRef ctx;
-  XWindowAttributes wa;
-  cairo_surface_t *target;
-  int ret;
-
-  ret = XGetWindowAttributes(d, w, &wa);
-  if (!ret) {
-    NSLog(@"XGetWindowAttributes returned %d", ret);
-    return NULL;
-  }
-
-  target = cairo_xlib_surface_create(d, w, wa.visual, wa.width, wa.height);
-
-  /* May not need this but left here for reference */
-  ret = cairo_surface_set_user_data(target, &XWindow, (void *)w, NULL);
-  if (ret) {
-    NSLog(@"cairo_surface_set_user_data %s", cairo_status_to_string(CAIRO_STATUS_NO_MEMORY));
+    CGContextRef ctx;
+    XWindowAttributes wa;
+    cairo_surface_t *target;
+    int ret;
+    
+    ret = XGetWindowAttributes(d, w, &wa);
+    if (!ret) {
+        NSLog(@"XGetWindowAttributes returned %d", ret);
+        return NULL;
+    }
+    
+    target = cairo_xlib_surface_create(d, w, wa.visual, wa.width, wa.height);
+    
+    /* May not need this but left here for reference */
+    ret = cairo_surface_set_user_data(target, &XWindow, (void *)w, NULL);
+    if (ret) {
+        NSLog(@"cairo_surface_set_user_data %s", cairo_status_to_string(CAIRO_STATUS_NO_MEMORY));
+        cairo_surface_destroy(target);
+        return NULL;
+    }
+    
+    /* Flip coordinate system */
+    //cairo_surface_set_device_offset(target, 0, wa.height);
+    /* FIXME: The scale part of device transform does not work correctly in
+     * cairo so for now we have to patch the CTM! This should really be fixed
+     * in cairo and then the ScaleCTM call below and the hacks in GetCTM in
+     * CGContext should be removed in favour of the following line: */
+    /* _cairo_surface_set_device_scale(target, 1.0, -1.0); */
+    
+    // NOTE: It doesn't looks like cairo will support using both device_scale and
+    //       device_offset any time soon, so I moved the translation part of the
+    //       flip to the transformation matrix, to be consistent.
+    //       - Eric
+    
+    ctx = opal_new_CGContext(target, CGSizeMake(wa.width, wa.height));
+    
+    
     cairo_surface_destroy(target);
-    return NULL;
-  }
-
-  /* Flip coordinate system */
-  //cairo_surface_set_device_offset(target, 0, wa.height);
-  /* FIXME: The scale part of device transform does not work correctly in
-   * cairo so for now we have to patch the CTM! This should really be fixed
-   * in cairo and then the ScaleCTM call below and the hacks in GetCTM in
-   * CGContext should be removed in favour of the following line: */
-  /* _cairo_surface_set_device_scale(target, 1.0, -1.0); */
-  
-  // NOTE: It doesn't looks like cairo will support using both device_scale and 
-  //       device_offset any time soon, so I moved the translation part of the
-  //       flip to the transformation matrix, to be consistent.
-  //       - Eric
-
-  ctx = opal_new_CGContext(target, CGSizeMake(wa.width, wa.height));
-
-
-  cairo_surface_destroy(target);
-
-  return ctx;
+    
+    return ctx;
 }
 
 void opal_XWindowContexSetSize(CGContextRef ctx, CGSize size)
