@@ -909,8 +909,11 @@ if (aValue >= -1 && aValue <= 12)\
     }
     DLog();
 #if OBJC_SMALL_OBJECT_SHIFT == 3
+    DLog();
     if (useSmallFloat) {
+        DLog();
         return boxDouble(aValue, SMALL_FLOAT_MASK);
+        DLog();
     }
 #endif
     DLog();
