@@ -181,10 +181,10 @@ static void _EAGLCreateContext(EAGLContext *context)
     
     context->_width = context->_window->_rect.size.width;
     context->_height = context->_window->_rect.size.height;
-    DLog(@"context->_width: %d, context->_height: %d", context->_width, context->_height);
+    DLog(@"context->_width: %0.1f, context->_height: %0.1f", context->_width, context->_height);
     context->_width = XDisplayWidth(context->_display, screen);
     context->_height = XDisplayHeight(context->_display, screen);
-    DLog(@"context->_width: %d, context->_height: %d", context->_width, context->_height);
+    DLog(@"context->_width: %0.1f, context->_height: %0.1f", context->_width, context->_height);
 }
 
 static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *otherContext)
