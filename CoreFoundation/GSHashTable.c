@@ -555,23 +555,23 @@ GSHashTableReplaceValue(GSHashTableRef table, const void *key,
 
 void GSHashTableSetValue(GSHashTableRef table, const void *key, const void *value)
 {
-    printf("Hello World1\n");
+    printf("GSHashTableSetValue1\n");
     fprintf(stderr, "0");
     GSHashTableBucket *bucket;
     GSHashTableGrowIfNeeded (table);
     bucket = GSHashTableFindBucket (table, key);
     fprintf(stderr, "1");
-    printf("Hello World2\n");
+    printf("GSHashTableSetValue2\n");
     if (bucket->count > 0) {
-        fprintf(stderr, "2");
-        printf("Hello World3\n");
+        //fprintf(stderr, "2");
+        printf("GSHashTableSetValue3\n");
         GSHashTableReplaceKeyValuePair (table, bucket, key, value);
-        fprintf(stderr, "3");
+        //fprintf(stderr, "3");
     } else {
-        fprintf(stderr, "4");
-        printf("Hello World4\n");
+        //fprintf(stderr, "4");
+        printf("GSHashTableSetValue4\n");
         GSHashTableAddKeyValuePair (table, bucket, key, value);
-        fprintf(stderr, "5");
+        printf("GSHashTableSetValue5\n");
         table->_count += 1;
     }
 }

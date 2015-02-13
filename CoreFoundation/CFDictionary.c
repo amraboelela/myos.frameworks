@@ -250,15 +250,12 @@ void CFDictionaryReplaceValue (CFMutableDictionaryRef dict, const void *key, con
     GSHashTableReplaceValue ((GSHashTableRef)dict, key, value);
 }
 
-void CFDictionarySetValue (CFMutableDictionaryRef dict, const void *key, const void *value)
+void CFDictionarySetValue(CFMutableDictionaryRef dict, const void *key, const void *value)
 {
-    printf("Hello World1\n");
-    fprintf(stderr, "0");
+    printf("CFDictionarySetValue1\n");
     CF_OBJC_FUNCDISPATCH2(_kCFDictionaryTypeID, void, dict, "setObject:forKey:", value, key);
-    fprintf(stderr, "1");
-    printf("Hello World2\n");
+    printf("CFDictionarySetValue2\n");
     GSHashTableSetValue ((GSHashTableRef)dict, key, value);
-    fprintf(stderr, "2");
-    printf("Hello World3\n");
+    printf("CFDictionarySetValue3\n");
 }
 

@@ -31,11 +31,11 @@
         NSNumber *number = [NSNumber numberWithFloat:0.25];
         DLog(@"_values: %p", _values);
         DLog(@"_values: %@", _values);
-        fprintf(stderr, "stderr\n");
-        printf("Hello World1\n");
+        //fprintf(stderr, "stderr\n");
+        //printf("Hello World1\n");
         //fprintf(stdout, "stdout");
-        GSHashTableSetValue (_values, kCATransactionAnimationDuration, number);
-        fprintf(stderr, "stderr 2\n");
+        GSHashTableSetValue(_values, kCATransactionAnimationDuration, number);
+        //printf("CATransactionGroup1\n");
         DLog();
         //CFDictionarySetValue(_values, kCATransactionAnimationDuration, number);
         //DLog();
