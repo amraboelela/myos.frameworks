@@ -465,13 +465,15 @@ isSmallRepeatingDouble(double d)
   return unboxSmallRepeatingDouble(b.bits) == d;
 }
 
-static id
-boxDouble(double d, uintptr_t mask)
+static id boxDouble(double d, uintptr_t mask)
 {
-  union BoxedDouble b = {.d=d};
-  b.bits &= ~OBJC_SMALL_OBJECT_MASK;
-  b.bits |= mask;
-  return b.obj;
+    union BoxedDouble b = {.d=d};
+    DLog();
+    b.bits &= ~OBJC_SMALL_OBJECT_MASK;
+    DLog();
+    b.bits |= mask;
+    DLog();
+    return b.obj;
 }
 
 #undef VALUE
@@ -912,7 +914,7 @@ if (aValue >= -1 && aValue <= 12)\
     DLog();
     if (useSmallFloat) {
         DLog();
-        return boxDouble(aValue, SMALL_REPEATING_DOUBLE_MASK);
+        return boxDouble(aValue, SMALL_FLOAT_MASK);
         DLog();
     }
 #endif
