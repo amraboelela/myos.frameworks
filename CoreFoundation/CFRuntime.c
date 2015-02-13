@@ -414,14 +414,13 @@ CFRetain (CFTypeRef cf)
   return cf;
 }
 
-const void *
-CFTypeRetainCallBack (CFAllocatorRef allocator, const void *value)
+const void *CFTypeRetainCallBack(CFAllocatorRef allocator, const void *value)
 {
-    return CFRetain (value);
+    printf("CFTypeRetainCallBack 1\n");
+    return CFRetain(value);
 }
 
-void
-CFTypeReleaseCallBack (CFAllocatorRef alloc, const void *value)
+void CFTypeReleaseCallBack (CFAllocatorRef alloc, const void *value)
 {
     CFRelease(value);
 }

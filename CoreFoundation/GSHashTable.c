@@ -128,8 +128,12 @@ CF_INLINE void GSHashTableAddKeyValuePair(GSHashTableRef table, GSHashTableBucke
     printf("GSHashTableAddKeyValuePair 4\n");
     bucket->key = keyRetain ? keyRetain(table->_allocator, key) : key;
     printf("GSHashTableAddKeyValuePair 5\n");
-    printf("GSHashTableAddKeyValuePair valueRetain: %d\n", valueRetain);
-    bucket->value = valueRetain ? valueRetain(table->_allocator, value) : value;
+    printf("GSHashTableAddKeyValuePair valueRetain: %p\n", valueRetain);
+    printf("table->_allocator: %p", table->_allocator);
+    printf("value: %p", value);
+    bucket->value = valueRetain(table->_allocator, value);
+    
+    //bucket->value = valueRetain ? valueRetain(table->_allocator, value) : value;
     printf("GSHashTableAddKeyValuePair 6\n");
 }
 
