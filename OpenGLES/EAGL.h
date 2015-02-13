@@ -53,7 +53,7 @@ extern void EAGLGetVersion(unsigned int *major, unsigned int *minor);
     EGLContext _eglContext;
 #else
     GLXContext _glXContext;
-//    Display *_display;
+    Display *_display;
 #endif
     BOOL _vSyncEnabled;
 }
