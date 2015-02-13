@@ -28,7 +28,10 @@
         DLog();
         _values = CFDictionaryCreateMutable(kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         DLog();
-        CFDictionarySetValue(_values, kCATransactionAnimationDuration, [NSNumber numberWithFloat:0.25]);
+        NSNumber *number = [NSNumber numberWithFloat:0.25];
+        DLog(@"_values: %p", _values);
+        DLog(@"_values: %@", _values);
+        CFDictionarySetValue(_values, kCATransactionAnimationDuration, number);
         DLog();
         CFDictionarySetValue(_values, kCATransactionDisableActions, [NSNumber numberWithBool:NO]);
         DLog(@"_values: %@", _values);

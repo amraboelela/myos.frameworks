@@ -904,18 +904,18 @@ if (aValue >= -1 && aValue <= 12)\
 + (NSNumber *)numberWithFloat:(float)aValue
 {
     NSFloatNumber *n;
-    DLog();
+    //DLog();
     if (self != NSNumberClass) {
         return [[[self alloc] initWithBytes: (const void *)&aValue
                                    objCType: @encode(float)] autorelease];
     }
-    DLog();
+    //DLog();
 #if OBJC_SMALL_OBJECT_SHIFT == 3
-    DLog();
+    //DLog();
     if (useSmallFloat) {
-        DLog();
+        //DLog();
         return boxDouble(aValue, SMALL_FLOAT_MASK);
-        DLog();
+        //DLog();
     }
 #endif
     DLog();
