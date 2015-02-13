@@ -117,20 +117,22 @@ GSHashTableSetShouldCount (GSHashTableRef table)
     ((CFRuntimeBase *)table)->_flags.info |= _kGSHashTableShouldCount;
 }
 
-CF_INLINE void
-GSHashTableAddKeyValuePair (GSHashTableRef table,
-  GSHashTableBucket *bucket, const void *key, const void *value)
+CF_INLINE void GSHashTableAddKeyValuePair(GSHashTableRef table, GSHashTableBucket *bucket, const void *key, const void *value)
 {
+    printf("GSHashTableAddKeyValuePair 1\n");
     GSHashTableRetainCallBack keyRetain = table->_keyCallBacks.retain;
+    printf("GSHashTableAddKeyValuePair 2\n")
     GSHashTableRetainCallBack valueRetain = table->_valueCallBacks.retain;
+    printf("GSHashTableAddKeyValuePair 3\n")
     bucket->count++;
+    printf("GSHashTableAddKeyValuePair 4\n")
     bucket->key = keyRetain ? keyRetain(table->_allocator, key) : key;
+    printf("GSHashTableAddKeyValuePair 5\n")
     bucket->value = valueRetain ? valueRetain(table->_allocator, value) : value;
+    printf("GSHashTableAddKeyValuePair 6\n")
 }
 
-CF_INLINE void
-GSHashTableReplaceKeyValuePair (GSHashTableRef table,
-  GSHashTableBucket *bucket, const void *key, const void *value)
+CF_INLINE void GSHashTableReplaceKeyValuePair (GSHashTableRef table, GSHashTableBucket *bucket, const void *key, const void *value)
 {
     GSHashTableReleaseCallBack release = table->_valueCallBacks.release;
     GSHashTableRetainCallBack retain = table->_valueCallBacks.retain;
@@ -558,7 +560,7 @@ void GSHashTableSetValue(GSHashTableRef table, const void *key, const void *valu
     printf("GSHashTableSetValue1\n");
     //fprintf(stderr, "0");
     GSHashTableBucket *bucket;
-    GSHashTableGrowIfNeeded (table);
+    GSHashTableGrowIfNeeded(table);
     bucket = GSHashTableFindBucket(table, key);
     //fprintf(stderr, "1");
     printf("GSHashTableSetValue2\n");
