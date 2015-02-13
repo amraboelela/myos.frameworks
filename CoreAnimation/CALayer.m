@@ -130,7 +130,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         _masksToBounds = NO;
         _oldContents = nil;
         _contents = nil;
-        DLog(@"_contentsWasSet: %d", _contentsWasSet);
+        DLog();
         //_contentsWasSet = NO;
         _displayContents = nil;
         _keyframesContents = nil;
