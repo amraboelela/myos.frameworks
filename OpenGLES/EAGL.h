@@ -44,8 +44,8 @@ extern void EAGLGetVersion(unsigned int *major, unsigned int *minor);
     EAGLRenderingAPI API;
     EAGLSharegroup *_sharegroup;
     IOWindow *_window;
-    int _width;
-    int _height;
+    float _width;
+    float _height;
 #ifdef ANDROID
     EGLDisplay _eglDisplay;
     EGLConfig _eglFBConfig[1];
