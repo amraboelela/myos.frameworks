@@ -218,12 +218,10 @@ CFDictionaryGetTypeID (void)
   return _kCFDictionaryTypeID;
 }
 
-
 //
 // CFMutableDictionary
 //
-CFMutableDictionaryRef
-CFDictionaryCreateMutable(CFAllocatorRef allocator, CFIndex capacity,
+CFMutableDictionaryRef CFDictionaryCreateMutable(CFAllocatorRef allocator, CFIndex capacity,
   const CFDictionaryKeyCallBacks *keyCallBacks,
   const CFDictionaryValueCallBacks *valueCallBacks)
 {
@@ -233,50 +231,40 @@ CFDictionaryCreateMutable(CFAllocatorRef allocator, CFIndex capacity,
     (const GSHashTableValueCallBacks*)valueCallBacks);
 }
 
-CFMutableDictionaryRef
-CFDictionaryCreateMutableCopy (CFAllocatorRef allocator, CFIndex capacity,
+CFMutableDictionaryRef CFDictionaryCreateMutableCopy (CFAllocatorRef allocator, CFIndex capacity,
   CFDictionaryRef dict)
 {
   return (CFMutableDictionaryRef)GSHashTableCreateMutableCopy (allocator,
     (GSHashTableRef)dict, capacity);
 }
 
-void
-CFDictionaryAddValue(CFMutableDictionaryRef dict, const void *key, const void *value)
+void CFDictionaryAddValue(CFMutableDictionaryRef dict, const void *key, const void *value)
 {
     GSHashTableAddValue((GSHashTableRef)dict, key, value);
 }
 
-void
-CFDictionaryRemoveAllValues (CFMutableDictionaryRef dict)
+void CFDictionaryRemoveAllValues (CFMutableDictionaryRef dict)
 {
     CF_OBJC_FUNCDISPATCH0(_kCFDictionaryTypeID, void, dict, "removeAllObjects");
     GSHashTableRemoveAll ((GSHashTableRef)dict);
 }
 
-void
-CFDictionaryRemoveValue (CFMutableDictionaryRef dict, const void *key)
+void CFDictionaryRemoveValue (CFMutableDictionaryRef dict, const void *key)
 {
-    CF_OBJC_FUNCDISPATCH1(_kCFDictionaryTypeID, void, dict,
-                          "removeObjectForKey:", key);
-    
+    CF_OBJC_FUNCDISPATCH1(_kCFDictionaryTypeID, void, dict, "removeObjectForKey:", key);
     GSHashTableRemoveValue ((GSHashTableRef)dict, key);
 }
 
-void
-CFDictionaryReplaceValue (CFMutableDictionaryRef dict, const void *key,
-  const void *value)
+void CFDictionaryReplaceValue (CFMutableDictionaryRef dict, const void *key, const void *value)
 {
-  GSHashTableReplaceValue ((GSHashTableRef)dict, key, value);
+    GSHashTableReplaceValue ((GSHashTableRef)dict, key, value);
 }
 
-void
-CFDictionarySetValue (CFMutableDictionaryRef dict, const void *key,
-  const void *value)
+void CFDictionarySetValue (CFMutableDictionaryRef dict, const void *key, const void *value)
 {
-  CF_OBJC_FUNCDISPATCH2(_kCFDictionaryTypeID, void, dict,
-    "setObject:forKey:", value, key);
-  
-  GSHashTableSetValue ((GSHashTableRef)dict, key, value);
+    CF_OBJC_FUNCDISPATCH2(_kCFDictionaryTypeID, void, dict, "setObject:forKey:", value, key);
+    DLog();
+    GSHashTableSetValue ((GSHashTableRef)dict, key, value);
+    DLog();
 }
 
