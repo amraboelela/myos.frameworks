@@ -95,14 +95,14 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 - (id)initWithFrame:(CGRect)theFrame
 {
     if ((self=[super init])) {
-        DLog();
+        //DLog();
         //_implementsDrawRect = _UIViewInstanceImplementsDrawRect([self class]);
         _clearsContextBeforeDrawing = YES;
         _autoresizesSubviews = YES;
         _userInteractionEnabled = YES;
-        DLog();
+        //DLog();
         _subviews = [[NSMutableArray alloc] init];
-        DLog();
+        //DLog();
         _gestureRecognizers = [[NSMutableSet alloc] init];
         DLog();
         _layer = [[[[self class] layerClass] alloc] initWithBounds:CGRectMake(0,0,theFrame.size.width,theFrame.size.height)];

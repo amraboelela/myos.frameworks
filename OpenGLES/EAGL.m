@@ -164,20 +164,20 @@ static void _EAGLCreateContext(EAGLContext *context)
     };
     //DLog(@"context: %@", context);
     context->_window = [IOWindowGetSharedWindow() retain];
-    DLog(@"context->_window: %@", context->_window);
+    //DLog(@"context->_window: %@", context->_window);
     context->_display = context->_window->display;//XOpenDisplay(NULL);
-    DLog(@"context->_display: %p", context->_display);
+    //DLog(@"context->_display: %p", context->_display);
     //Display *display = context->_window->display;
     int screen = DefaultScreen(context->_display);
-    DLog(@"screen: %d", screen);
+    //DLog(@"screen: %d", screen);
     XVisualInfo *visualInfo = glXChooseVisual(context->_display, screen, attribList);
-    DLog(@"visualInfo: %p", visualInfo);
+    //DLog(@"visualInfo: %p", visualInfo);
     if (!visualInfo) {
         NSLog(@"glXChooseVisual failed");
         return;
     }
     context->_glXContext = glXCreateContext(context->_display, visualInfo, NULL, GL_TRUE);
-    DLog(@"created GLX context: %p", context->_glXContext);
+    //DLog(@"created GLX context: %p", context->_glXContext);
     
     context->_width = context->_window->_rect.size.width;
     context->_height = context->_window->_rect.size.height;

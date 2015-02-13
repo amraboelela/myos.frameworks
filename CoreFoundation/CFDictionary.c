@@ -24,6 +24,9 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import <CoreFoundation/CoreFoundation-private.h>
+
+/*
 #include <stdio.h>
 #include "CoreFoundation/CFRuntime.h"
 #include "CoreFoundation/CFBase.h"
@@ -31,6 +34,7 @@
 #include "CoreFoundation/CFString.h"
 #include "GSHashTable.h"
 #include "GSPrivate.h"
+*/
 
 static CFTypeID _kCFDictionaryTypeID = 0;
 
@@ -248,10 +252,13 @@ void CFDictionaryReplaceValue (CFMutableDictionaryRef dict, const void *key, con
 
 void CFDictionarySetValue (CFMutableDictionaryRef dict, const void *key, const void *value)
 {
+    printf("Hello World1\n");
     fprintf(stderr, "0");
     CF_OBJC_FUNCDISPATCH2(_kCFDictionaryTypeID, void, dict, "setObject:forKey:", value, key);
     fprintf(stderr, "1");
+    printf("Hello World2\n");
     GSHashTableSetValue ((GSHashTableRef)dict, key, value);
     fprintf(stderr, "2");
+    printf("Hello World3\n");
 }
 
