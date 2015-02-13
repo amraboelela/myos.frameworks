@@ -24,6 +24,7 @@
    Boston, MA 02110-1301, USA.
 */
 
+#include <stdio.h>
 #include "CoreFoundation/CFRuntime.h"
 #include "CoreFoundation/CFBase.h"
 #include "CoreFoundation/CFDictionary.h"
