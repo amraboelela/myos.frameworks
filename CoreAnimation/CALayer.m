@@ -115,15 +115,18 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         _contentsScale = 1.0;
         DLog(@"_contentsScale: %0.2f", _contentsScale);
         _CALayerSetNeedsLayout(self);
+        DLog();
         //_needsLayout = YES;
         _needsDisplay = YES;
         _needsComposite = YES;
         _position = CGPointZero;
+        DLog();
         _zPosition = 0;
         _anchorPoint = CGPointMake(0.5, 0.5);
         _opacity = 1.0;
         _shadowOpacity = 0;
         _shadowOffset = CGSizeMake(0, 3);
+        DLog();
         _shadowRadius = 3;
         _shadowPath = NULL;
         _opaque = NO;

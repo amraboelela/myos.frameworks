@@ -109,10 +109,12 @@ static void _CALayerDrawBorder(CALayer *layer, CGContextRef ctx)
 
 void _CALayerSetNeedsLayout(CALayer *layer)
 {
-    //DLog(@"layer: %@", layer);
+    DLog(@"layer: %@", layer);
     layer->_needsLayout = YES;
     _layersNeedLayout = YES;
+    DLog();
     _CALayerSetNeedsComposite(layer);
+    DLog();
 }
 
 #pragma mark - Display
