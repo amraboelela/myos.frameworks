@@ -31,7 +31,9 @@
         NSNumber *number = [NSNumber numberWithFloat:0.25];
         DLog(@"_values: %p", _values);
         DLog(@"_values: %@", _values);
+        printf("1");
         GSHashTableSetValue (_values, kCATransactionAnimationDuration, number);
+        printf("2");
         DLog();
         //CFDictionarySetValue(_values, kCATransactionAnimationDuration, number);
         //DLog();
