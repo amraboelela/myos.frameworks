@@ -468,11 +468,11 @@ isSmallRepeatingDouble(double d)
 static id boxDouble(double d, uintptr_t mask)
 {
     union BoxedDouble b = {.d=d};
-    DLog();
+    //DLog();
     b.bits &= ~OBJC_SMALL_OBJECT_MASK;
-    DLog();
+    //DLog();
     b.bits |= mask;
-    DLog();
+    //DLog();
     return b.obj;
 }
 
