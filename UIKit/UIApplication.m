@@ -454,6 +454,8 @@ static int _UIApplicationHandleMessages()
 
 #else // not ANDROID
 
+#endif // ANDROID
+
 #endif // NATIVE_APP
 
 #pragma mark -
