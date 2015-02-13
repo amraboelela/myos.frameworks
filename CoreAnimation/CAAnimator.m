@@ -90,7 +90,7 @@ static void reportFPS(BOOL withCondition)
     [EAGLContext setCurrentContext:context];
     [context release];
     _EAGLSetup();
-    DLog();
+    //DLog();
     _EAGLClear();
     _EAGLSwapBuffers();
     DLog();

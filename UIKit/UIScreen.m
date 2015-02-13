@@ -59,13 +59,13 @@ NSMutableArray *_allScreens = nil;
     if ((self = [super init])) {
         _bounds = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
         [_allScreens addObject:self];
-        DLog();
+        //DLog();
         EAGLContext *context = _EAGLGetCurrentContext();
         DLog(@"context: %@", context);
         _hScale = context->_width * 1.0 / _kScreenWidth;
         _vScale = context->_height * 1.0 / _kScreenHeight;
         _scale = MAX(_hScale, _vScale);
-        DLog(@"_scale: %f", _scale);
+        //DLog(@"_scale: %f", _scale);
     }
     return self;
 }
