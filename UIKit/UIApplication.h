@@ -110,7 +110,7 @@ const NSTimeInterval UIMinimumKeepAliveTimeout;
     NSInteger _applicationIconBadgeNumber;
     NSDate *_backgroundTasksExpirationDate;
     NSMutableArray *_backgroundTasks;
-    UIView *_blackScreen;
+//    UIView *_blackScreen;
     NSTimeInterval _lastActivityTime;
     int _screenMode;
     UIImageView *_appImage;

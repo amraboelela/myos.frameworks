@@ -806,79 +806,18 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     DLog();
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
-    _application->_blackScreen = [[UIView alloc] initWithFrame:cr];
-    _application->_blackScreen.backgroundColor = [UIColor blackColor];
-    DLog();
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
-    DLog();
-    [_application->_blackScreen addGestureRecognizer:tapGesture];
+    //DLog();
+    //_application->_blackScreen = [[UIView alloc] initWithFrame:cr];
+    //DLog();
+    //_application->_blackScreen.backgroundColor = [UIColor blackColor];
+    //DLog();
+    //UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
+    //DLog();
+    //[_application->_blackScreen addGestureRecognizer:tapGesture];
     DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     DLog();
-    /*
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
-    NSTimeInterval currentTime = CACurrentMediaTime();
-    DLog();
-    _application = [[UIApplication alloc] init];
-    Class appDelegateClass = NSClassFromString(delegateClassName);
-    id appDelegate = [[appDelegateClass alloc] init];
-    _application->_delegate = appDelegate;
-    DLog();
-    IOWindow *window = IOWindowCreateSharedWindow();
-    _CAAnimatorInitialize();
-    DLog();
-    [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
-    DLog();
-    EAGLContext *context = _EAGLGetCurrentContext();
-    DLog();
-    UIScreen *screen = [[UIScreen alloc] init];
-    DLog();
-    
-    
-    //CGRect cr = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
-    //CGContextRef ctx = IOWindowCreateContextWithRect(cr);
-    //UIGraphicsPushContext(ctx);
-    
-    CGContextRef ctx = IOWindowCreateContextWithRect(screen->_bounds);
-    DLog();
-    UIGraphicsPushContext(ctx);
-    DLog();
-    [_CAAnimatorConditionLock unlock];
-    
-    BOOL canDraw = NO;
-    while (!canDraw) {
-        if (IOEventCanDrawWindow(window)) {
-            canDraw = YES;
-        }
-    }
-    
-    DLog();
-    _application->_lastActivityTime = CACurrentMediaTime();
-    DLog();
-    //_UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    //DLog();
-
-    
-    //_UIApplicationInitWindow();
-    //[[UIScreen alloc] init];
-    
-    // Setting up the screen sleeping ability
-    //_application->_lastActivityTime = CACurrentMediaTime();
-    //DLog();
-    _application->_blackScreen = [[UIView alloc] initWithFrame:screen->_bounds];
-    DLog();
-    _application->_blackScreen.backgroundColor = [UIColor blackColor];
-    DLog();
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application
-                                                                                 action:@selector(turnOnScreen:)];
-    [_application->_blackScreen addGestureRecognizer:tapGesture];
-    DLog();
-    _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    DLog();
-    //NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-    //DLog(@"currentRunLoop: %@", currentRunLoop);
-    */
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
         
@@ -890,25 +829,25 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
             _application->_lastActivityTime = CACurrentMediaTime();
         }
         currentTime = CACurrentMediaTime();
-        if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
+        /*if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
             && _application->_screenMode == _UIApplicationScreenModeActive) {
             _application->_screenMode = _UIApplicationScreenModeSleeping;
-            [_application->_keyWindow addSubview:_application->_blackScreen];
-            _application->_blackScreen.alpha = 0.0;
-            [UIView beginAnimations:@"gotoSleep" context:nil];
-            [UIView setAnimationDuration:0.5];
-            _application->_blackScreen.alpha = 0.8;
-            [UIView commitAnimations];
+            //[_application->_keyWindow addSubview:_application->_blackScreen];
+            //_application->_blackScreen.alpha = 0.0;
+            //[UIView beginAnimations:@"gotoSleep" context:nil];
+            //[UIView setAnimationDuration:0.5];
+            //_application->_blackScreen.alpha = 0.8;
+            //[UIView commitAnimations];
             //[NSTimer scheduledTimerWithTimeInterval:2 target:_application selector:@selector(turnONScreen) userInfo:nil repeats:NO];
         }
         if (currentTime - _application->_lastActivityTime > _kLongInactiveTimeLimit
             && _application->_screenMode == _UIApplicationScreenModeSleeping) {
             _application->_screenMode = _UIApplicationScreenModeOff;
             [UIView beginAnimations:@"gotoSleep" context:nil];
-            [UIView setAnimationDuration:1.0];
-            _application->_blackScreen.alpha = 1.0;
-            [UIView commitAnimations];
-        }
+            //[UIView setAnimationDuration:1.0];
+            //_application->_blackScreen.alpha = 1.0;
+            //[UIView commitAnimations];
+        }*/
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
