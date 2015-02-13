@@ -247,6 +247,7 @@ void CFDictionaryReplaceValue (CFMutableDictionaryRef dict, const void *key, con
 
 void CFDictionarySetValue (CFMutableDictionaryRef dict, const void *key, const void *value)
 {
+    printf("0");
     CF_OBJC_FUNCDISPATCH2(_kCFDictionaryTypeID, void, dict, "setObject:forKey:", value, key);
     printf("1");
     GSHashTableSetValue ((GSHashTableRef)dict, key, value);
