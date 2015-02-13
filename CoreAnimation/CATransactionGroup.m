@@ -28,7 +28,7 @@
         DLog();
         _values = CFDictionaryCreateMutable(kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         DLog();
-        NSNumber *number = [NSNumber numberWithFloat:0.25];
+        NSNumber *number = [NSNumber numberWithInt:25];
         DLog(@"number: %p", number);
         DLog(@"number: %@", number);
         DLog(@"_values: %@", _values);
