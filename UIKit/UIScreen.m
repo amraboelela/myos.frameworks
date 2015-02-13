@@ -61,11 +61,11 @@ NSMutableArray *_allScreens = nil;
         [_allScreens addObject:self];
         //DLog();
         EAGLContext *context = _EAGLGetCurrentContext();
-        DLog(@"context: %@", context);
+        //DLog(@"context: %@", context);
         _hScale = context->_width * 1.0 / _kScreenWidth;
         _vScale = context->_height * 1.0 / _kScreenHeight;
         _scale = MAX(_hScale, _vScale);
-        //DLog(@"_scale: %f", _scale);
+        DLog(@"_scale: %f", _scale);
     }
     return self;
 }

@@ -803,17 +803,18 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
     DLog();
     [[UIScreen alloc] init];
-    
+    DLog();
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
     _application->_blackScreen = [[UIView alloc] initWithFrame:cr];
     _application->_blackScreen.backgroundColor = [UIColor blackColor];
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application
-                                                                                 action:@selector(turnOnScreen:)];
+    DLog();
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
+    DLog();
     [_application->_blackScreen addGestureRecognizer:tapGesture];
-    
+    DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    
+    DLog();
     /*
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
