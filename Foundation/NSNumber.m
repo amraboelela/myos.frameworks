@@ -352,12 +352,10 @@ return NSOrderedSame;
 static BOOL useSmallInt;
 static BOOL useSmallExtendedDouble;
 static BOOL useSmallRepeatingDouble;
-static BOOL useSmallFloat;
 #define SMALL_INT_MASK 1
 #define SMALL_EXTENDED_DOUBLE_MASK 2
 #define SMALL_REPEATING_DOUBLE_MASK 3
-// 4 is GSTinyString
-#define SMALL_FLOAT_MASK 5
+
 
 @interface NSSmallInt : NSSignedIntegerNumber
 @end
@@ -365,7 +363,11 @@ static BOOL useSmallFloat;
 @implementation NSSmallInt
 #undef VALUE
 #define VALUE (((intptr_t)self) >> OBJC_SMALL_OBJECT_SHIFT)
-#define FORMAT @"%"PRIdPTR
+#if OBJC_SMALL_OBJECT_SHIFT == 1
+#define FORMAT @"%d"
+#else
+#define FORMAT @"%lld"
+#endif
 #include "NSNumberMethods.h"
 
 + (void) load
@@ -581,39 +583,6 @@ static id boxDouble(double d, uintptr_t mask)
   return;
 }
 @end
-
-
-/*
- * Technically, all floats are small on 64bit and fit into a NSRepeatingDouble,
- * but we want to get the description FORMAT right for floats (i.e. "%0.7g" and
- * not "%0.16g".
- */
-@interface NSSmallFloat : NSSmallRepeatingDouble
-@end
-@implementation NSSmallFloat
-#undef VALUE
-#define VALUE (unboxSmallRepeatingDouble((uintptr_t)self))
-#define FORMAT @"%0.7g"
-#include "NSNumberMethods.h"
-
-+ (void) load
-{
-  useSmallFloat = objc_registerSmallObjectClass_np
-    (self, SMALL_FLOAT_MASK);
-}
-
-+ (id) alloc
-{
-  return (id)SMALL_FLOAT_MASK;
-}
-
-+ (id) allocWithZone: (NSZone*)aZone
-{
-  return (id)SMALL_FLOAT_MASK;
-}
-@end
-
-
 #endif
 #endif
 
@@ -1055,7 +1024,8 @@ if (aValue >= -1 && aValue <= 12)\
 
 - (NSString *) description
 {
-  return [self stringValue];
+    return [NSString stringWithFormat:@"<%@: %p; value: %@>", [self class], self, [self stringValue]];
+    //return [self stringValue];
 }
 
 /* Return nil for an NSNumber that is allocated and initialized without
