@@ -31,7 +31,10 @@
         NSNumber *number = [NSNumber numberWithFloat:0.25];
         DLog(@"number: %p", number);
         DLog(@"number: %@", number);
+        DLog(@"[number retainCount]: %d", [number retainCount]);
         DLog(@"[number retain]: %@", [number retain]);
+        DLog(@"[number retainCount]: %d", [number retainCount]);
+        DLog(@"CFRetain(number): %@", CFRetain(number));
         DLog(@"[number retainCount]: %d", [number retainCount]);
         DLog(@"_values: %@", _values);
         //fprintf(stderr, "stderr\n");
