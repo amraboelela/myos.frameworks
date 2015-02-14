@@ -25,12 +25,14 @@
 {
     self = [super init];
     if (self) {
-        DLog();
+        //DLog();
         _values = CFDictionaryCreateMutable(kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        DLog();
-        NSNumber *number = [NSNumber numberWithInt:25];
+        //DLog();
+        NSNumber *number = [NSNumber numberWithFloat:0.25];
         DLog(@"number: %p", number);
         DLog(@"number: %@", number);
+        DLog(@"[number retain]: %@", [number retain]);
+        DLog(@"[number retainCount]: %d", [number retainCount]);
         DLog(@"_values: %@", _values);
         //fprintf(stderr, "stderr\n");
         //printf("Hello World1\n");
