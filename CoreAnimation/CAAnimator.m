@@ -84,19 +84,18 @@ static void reportFPS(BOOL withCondition)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockStartup];
-    DLog(@"Animation Thread: %@", [NSThread currentThread]);
+    //DLog(@"Animation Thread: %@", [NSThread currentThread]);
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-    DLog(@"context: %@", context);
+    //DLog(@"context: %@", context);
     [EAGLContext setCurrentContext:context];
     [context release];
     _EAGLSetup();
     //DLog();
     _EAGLClear();
     _EAGLSwapBuffers();
-    DLog();
+    //DLog();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
-    return;
-    DLog();
+    //DLog();
     _eaglContextIsReady = YES;
     BOOL vSyncEnabled = context->_vSyncEnabled;
     
