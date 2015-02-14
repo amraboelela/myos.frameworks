@@ -540,8 +540,7 @@ CFGetAllocator (CFTypeRef cf);
 CF_EXPORT CFIndex
 CFGetRetainCount (CFTypeRef cf);
 
-CF_EXPORT CFTypeID
-CFGetTypeID (CFTypeRef cf);
+CF_EXPORT CFTypeID CFGetTypeID(CFTypeRef cf);
 
 CF_EXPORT CFHashCode
 CFHash (CFTypeRef cf);
