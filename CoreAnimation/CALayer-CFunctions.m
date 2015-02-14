@@ -109,12 +109,10 @@ static void _CALayerDrawBorder(CALayer *layer, CGContextRef ctx)
 
 void _CALayerSetNeedsLayout(CALayer *layer)
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     layer->_needsLayout = YES;
     _layersNeedLayout = YES;
-    DLog();
     _CALayerSetNeedsComposite(layer);
-    DLog();
 }
 
 #pragma mark - Display
@@ -149,9 +147,7 @@ void _CALayerSetNeedsUnload(CALayer *layer)
 void _CALayerSetNeedsComposite(CALayer *layer)
 {
     layer->_needsComposite = YES;
-    DLog();
     _CATransactionCreateImplicitTransactionIfNeeded();
-    DLog();
 }
 
 void _CALayerSetNeedsDisplay(CALayer *layer)

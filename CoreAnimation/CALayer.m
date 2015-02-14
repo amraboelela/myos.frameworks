@@ -113,27 +113,24 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         _modelLayer = self;
         _bounds = theBounds;
         _contentsScale = 1.0;
-        DLog(@"_contentsScale: %0.2f", _contentsScale);
+        //DLog(@"_contentsScale: %0.2f", _contentsScale);
         _CALayerSetNeedsLayout(self);
-        //DLog();
         //_needsLayout = YES;
         _needsDisplay = YES;
         _needsComposite = YES;
         _position = CGPointZero;
-        //DLog();
         _zPosition = 0;
         _anchorPoint = CGPointMake(0.5, 0.5);
         _opacity = 1.0;
         _shadowOpacity = 0;
         _shadowOffset = CGSizeMake(0, 3);
-        //DLog();
         _shadowRadius = 3;
         _shadowPath = NULL;
         _opaque = NO;
         _masksToBounds = NO;
         _oldContents = nil;
         _contents = nil;
-        DLog();
+        //DLog();
         //_contentsWasSet = NO;
         _displayContents = nil;
         _keyframesContents = nil;
@@ -159,14 +156,12 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         _timeOffset = 0;
         _transform = CATransform3DIdentity;
         _sublayerTransform = CATransform3DIdentity;
-        DLog();
         if (![self isKindOfClass:[CARenderLayer class]]) {
             CALayerObserver *layerObserver = _CALayerObserverGetSharedObserver();
             for (NSString *key in _CALayerAnimatableKeys) {
                 [self addObserver:layerObserver forKeyPath:key options:NSKeyValueObservingOptionPrior context:nil];
             }
         }
-        DLog();
     }
     return self;
 }

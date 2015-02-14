@@ -100,16 +100,11 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
         _clearsContextBeforeDrawing = YES;
         _autoresizesSubviews = YES;
         _userInteractionEnabled = YES;
-        //DLog();
         _subviews = [[NSMutableArray alloc] init];
-        //DLog();
         _gestureRecognizers = [[NSMutableSet alloc] init];
-        DLog();
         _layer = [[[[self class] layerClass] alloc] initWithBounds:CGRectMake(0,0,theFrame.size.width,theFrame.size.height)];
-        DLog();
         _layer.delegate = self;
         _layer->_layoutManager = [[UIViewLayoutManager layoutManager] retain];
-        DLog();
         if ([self class] == [UIWindow class]) {
             NSMutableArray *rootLayers = _CALayerGetRootLayers();
             //DLog(@"rootLayers: %@", rootLayers);
@@ -117,7 +112,6 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
         }
         self.frame = theFrame;
         [self _updateContent];
-        DLog();
     }
     return self;
 }
