@@ -439,30 +439,27 @@ unboxSmallExtendedDouble(uintptr_t boxed)
   return ret.d;
 }
 
-static BOOL
-isSmallExtendedDouble(double d)
+static BOOL isSmallExtendedDouble(double d)
 {
-  union BoxedDouble b = {.d=d};
-  return unboxSmallExtendedDouble(b.bits) == d;
+    union BoxedDouble b = {.d=d};
+    return unboxSmallExtendedDouble(b.bits) == d;
 }
 
-static double
-unboxSmallRepeatingDouble(uintptr_t boxed)
+static double unboxSmallRepeatingDouble(uintptr_t boxed)
 {
-  // The low bit of the mantissa
-  uintptr_t mask = boxed & 56;
-  union BoxedDouble ret;
-  // Clear the class pointer
-  boxed &= ~7;
-  ret.bits = boxed | (mask >> 3);
-  return ret.d;
+    // The low bit of the mantissa
+    uintptr_t mask = boxed & 56;
+    union BoxedDouble ret;
+    // Clear the class pointer
+    boxed &= ~7;
+    ret.bits = boxed | (mask >> 3);
+    return ret.d;
 }
 
-static BOOL
-isSmallRepeatingDouble(double d)
+static BOOL isSmallRepeatingDouble(double d)
 {
-  union BoxedDouble b = {.d=d};
-  return unboxSmallRepeatingDouble(b.bits) == d;
+    union BoxedDouble b = {.d=d};
+    return unboxSmallRepeatingDouble(b.bits) == d;
 }
 
 static id boxDouble(double d, uintptr_t mask)
@@ -481,52 +478,52 @@ static id boxDouble(double d, uintptr_t mask)
 #define FORMAT @"%0.16g"
 #include "NSNumberMethods.h"
 
-+ (void)
-load
++ (void)load
 {
-  useSmallExtendedDouble = objc_registerSmallObjectClass_np
+    useSmallExtendedDouble = objc_registerSmallObjectClass_np
     (self, SMALL_EXTENDED_DOUBLE_MASK);
 }
 
-+ (id) alloc
++ (id)alloc
 {
-  return (id)SMALL_EXTENDED_DOUBLE_MASK;
+    return (id)SMALL_EXTENDED_DOUBLE_MASK;
 }
 
-+ (id) allocWithZone: (NSZone*)aZone
++ (id)allocWithZone:(NSZone*)aZone
 {
-  return (id)SMALL_EXTENDED_DOUBLE_MASK;
+    return (id)SMALL_EXTENDED_DOUBLE_MASK;
 }
 
-- (id) copy
+- (id)copy
+{
+    return self;
+}
+
+- (id)copyWithZone:(NSZone *)aZone
+{
+    return self;
+}
+
+- (id)retain
 {
   return self;
 }
 
-- (id) copyWithZone: (NSZone*)aZone
+- (NSUInteger)retainCount
 {
-  return self;
+    return UINT_MAX;
 }
 
-- (id) retain
+- (id)autorelease
 {
-  return self;
+    return self;
 }
 
-- (NSUInteger) retainCount
+- (oneway void)release
 {
-  return UINT_MAX;
+    return;
 }
 
-- (id) autorelease
-{
-  return self;
-}
-
-- (oneway void) release
-{
-  return;
-}
 @end
 
 @interface NSSmallRepeatingDouble : NSFloatingPointNumber
@@ -904,18 +901,16 @@ if (aValue >= -1 && aValue <= 12)\
 + (NSNumber *)numberWithFloat:(float)aValue
 {
     NSFloatNumber *n;
-    //DLog();
+    DLog();
     if (self != NSNumberClass) {
         return [[[self alloc] initWithBytes: (const void *)&aValue
                                    objCType: @encode(float)] autorelease];
     }
-    //DLog();
+    DLog();
 #if OBJC_SMALL_OBJECT_SHIFT == 3
-    //DLog();
-    if (useSmallFloat) {
-        //DLog();
-        return boxDouble(aValue, SMALL_FLOAT_MASK);
-        //DLog();
+    if (useSmallRepeatingDouble) {
+        DLog(@"useSmallRepeatingDouble");
+        return boxDouble(aValue, SMALL_REPEATING_DOUBLE_MASK);
     }
 #endif
     DLog();
