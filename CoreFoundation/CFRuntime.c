@@ -375,8 +375,7 @@ CFMakeCollectable (CFTypeRef cf)
   return cf;
 }
 
-void
-GSRuntimeDeallocateInstance (CFTypeRef cf)
+void GSRuntimeDeallocateInstance (CFTypeRef cf)
 {
     CFRuntimeClass *cls;
     cls = __CFRuntimeClassTable[CFGetTypeID(cf)];
@@ -387,8 +386,7 @@ GSRuntimeDeallocateInstance (CFTypeRef cf)
     CFAllocatorDeallocate(CFGetAllocator(cf), (void*)&((obj)cf)[-1]);
 }
 
-void
-CFRelease (CFTypeRef cf)
+void CFRelease (CFTypeRef cf)
 {
     CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), void, cf, "release");
     if (!((CFRuntimeBase*)cf)->_flags.ro) {
@@ -400,18 +398,20 @@ CFRelease (CFTypeRef cf)
     }
 }
 
-CFTypeRef
-CFRetain (CFTypeRef cf)
+CFTypeRef CFRetain(CFTypeRef cf)
 {
-  CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFTypeRef, cf, "retain");
-  
-  if (!((CFRuntimeBase*)cf)->_flags.ro)
-    {
-      CFIndex result = GSAtomicIncrementCFIndex (&(((obj)cf)[-1].retained));
-      assert (result < INT_MAX);
+    printf("CFRetain 1\n");
+    CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFTypeRef, cf, "retain");
+    printf("CFRetain 2\n");
+    if (!((CFRuntimeBase*)cf)->_flags.ro) {
+        printf("CFRetain 3\n");
+        CFIndex result = GSAtomicIncrementCFIndex (&(((obj)cf)[-1].retained));
+        printf("CFRetain 4\n");
+        assert (result < INT_MAX);
+        printf("CFRetain 5\n");
     }
-  
-  return cf;
+    printf("CFRetain 6\n");
+    return cf;
 }
 
 const void *CFTypeRetainCallBack(CFAllocatorRef allocator, const void *value)

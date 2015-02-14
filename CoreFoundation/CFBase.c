@@ -203,32 +203,26 @@ CFAllocatorGetDefault(void)
     return _kCFDefaultAllocator;
 }
 
-void
-CFAllocatorSetDefault(CFAllocatorRef allocator)
+void CFAllocatorSetDefault(CFAllocatorRef allocator)
 {
-  CFAllocatorRef current = _kCFDefaultAllocator;
-  
-  if (allocator == NULL)
-    return;
-  
-  CFRetain (allocator);
-  _kCFDefaultAllocator = allocator;
-  CFRelease (current);
+    CFAllocatorRef current = _kCFDefaultAllocator;
+    if (allocator == NULL) {
+        return;
+    }
+    CFRetain (allocator);
+    _kCFDefaultAllocator = allocator;
+    CFRelease (current);
 }
 
-void
-CFAllocatorGetContext(CFAllocatorRef allocator, CFAllocatorContext *context)
+void CFAllocatorGetContext(CFAllocatorRef allocator, CFAllocatorContext *context)
 {
-  context = (CFAllocatorContext*)&(allocator->_context);
+    context = (CFAllocatorContext*)&(allocator->_context);
 }
 
-CFTypeID
-CFAllocatorGetTypeID(void)
+CFTypeID CFAllocatorGetTypeID(void)
 {
-  return _kCFAllocatorTypeID;
+    return _kCFAllocatorTypeID;
 }
-
-
 
 //
 // CFNull
