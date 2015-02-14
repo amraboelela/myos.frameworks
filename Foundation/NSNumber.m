@@ -465,15 +465,13 @@ isSmallRepeatingDouble(double d)
   return unboxSmallRepeatingDouble(b.bits) == d;
 }
 
-static id boxDouble(double d, uintptr_t mask)
+static id
+boxDouble(double d, uintptr_t mask)
 {
-    union BoxedDouble b = {.d=d};
-    //DLog();
-    b.bits &= ~OBJC_SMALL_OBJECT_MASK;
-    //DLog();
-    b.bits |= mask;
-    //DLog();
-    return b.obj;
+  union BoxedDouble b = {.d=d};
+  b.bits &= ~OBJC_SMALL_OBJECT_MASK;
+  b.bits |= mask;
+  return b.obj;
 }
 
 #undef VALUE
@@ -901,28 +899,24 @@ if (aValue >= -1 && aValue <= 12)\
   return AUTORELEASE(n);
 }
 
-+ (NSNumber *)numberWithFloat:(float)aValue
++ (NSNumber *) numberWithFloat: (float)aValue
 {
-    NSFloatNumber *n;
-    //DLog();
-    if (self != NSNumberClass) {
-        return [[[self alloc] initWithBytes: (const void *)&aValue
-                                   objCType: @encode(float)] autorelease];
+  NSFloatNumber *n;
+
+  if (self != NSNumberClass)
+    {
+      return [[[self alloc] initWithBytes: (const void *)&aValue
+        objCType: @encode(float)] autorelease];
     }
-    //DLog();
 #if OBJC_SMALL_OBJECT_SHIFT == 3
-    //DLog();
-    if (useSmallFloat) {
-        //DLog();
-        return boxDouble(aValue, SMALL_FLOAT_MASK);
-        //DLog();
+  if (useSmallFloat)
+    {
+      return boxDouble(aValue, SMALL_FLOAT_MASK);
     }
 #endif
-    DLog();
-    n = NSAllocateObject (NSFloatNumberClass, 0, 0);
-    n->value = aValue;
-    DLog();
-    return AUTORELEASE(n);
+  n = NSAllocateObject (NSFloatNumberClass, 0, 0);
+  n->value = aValue;
+  return AUTORELEASE(n);
 }
 
 + (NSNumber *) numberWithDouble: (double)aValue
