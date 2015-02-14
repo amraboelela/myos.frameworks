@@ -401,7 +401,7 @@ void CFRelease (CFTypeRef cf)
 CFTypeRef CFRetain(CFTypeRef cf)
 {
     printf("CFGetTypeID(cf): %d\n", CFGetTypeID(cf));
-    printf("CFTypeRef: %d\n", CFTypeRef);
+    printf("CF_IS_OBJC(CFGetTypeID(cf), cf): %d\n", CF_IS_OBJC(CFGetTypeID(cf), cf));
     printf("cf: %p\n", cf);
     CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFTypeRef, cf, "retain");
     printf("CFRetain 2\n");
