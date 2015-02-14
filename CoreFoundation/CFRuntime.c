@@ -400,7 +400,9 @@ void CFRelease (CFTypeRef cf)
 
 CFTypeRef CFRetain(CFTypeRef cf)
 {
-    printf("CFRetain 1\n");
+    printf("CFGetTypeID(cf): %d\n", CFGetTypeID(cf));
+    printf("CFTypeRef: %d\n", CFTypeRef);
+    printf("cf: %p\n", cf);
     CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFTypeRef, cf, "retain");
     printf("CFRetain 2\n");
     if (!((CFRuntimeBase*)cf)->_flags.ro) {
