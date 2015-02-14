@@ -42,7 +42,7 @@
 #endif
 
 
-#import "common.h"
+//#import "common.h"
 #import "Foundation/NSCoder.h"
 #import "Foundation/NSDecimalNumber.h"
 #import "Foundation/NSException.h"
@@ -334,6 +334,13 @@ return NSOrderedSame;
 @implementation NSFloatNumber
 #define FORMAT @"%0.7g"
 #include "NSNumberMethods.h"
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p; value:%@>", [self class], self, [self stringValue]];
+    //return [self stringValue];
+}
+
 @end
 
 @interface NSDoubleNumber : NSFloatingPointNumber
@@ -621,11 +628,9 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
   NSDoubleNumberClass = [NSDoubleNumber class];
 
   boolY = NSAllocateObject (NSBoolNumberClass, 0, 0);
-  [[NSObject leakAt: &boolY] release];
   boolY->value = 1;
   boolN = NSAllocateObject (NSBoolNumberClass, 0, 0);
   boolN->value = 0;
-  [[NSObject leakAt: &boolN] release];
 
   for (i = 0; i < 14; i++)
     {
@@ -633,7 +638,6 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
 
       n->value = i - 1;
       ReusedInstances[i] = n;
-      [[NSObject leakAt: &ReusedInstances[i]] release];
     }
 }
 
@@ -872,6 +876,7 @@ if (aValue >= -1 && aValue <= 12)\
     NSFloatNumber *n;
     DLog();
     if (self != NSNumberClass) {
+        DLog(@"self != NSNumberClass");
         return [[[self alloc] initWithBytes: (const void *)&aValue
                                    objCType: @encode(float)] autorelease];
     }
