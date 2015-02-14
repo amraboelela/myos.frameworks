@@ -187,8 +187,7 @@ _CFRuntimeRegisterClass (const CFRuntimeClass * const cls);
     @param typeID A CFTypeID to look up.
     @return The CFRuntimeClass for the @typeID
  */
-const CFRuntimeClass *
-_CFRuntimeGetClassWithTypeID (CFTypeID typeID);
+const CFRuntimeClass *_CFRuntimeGetClassWithTypeID (CFTypeID typeID);
 
 /** Unregisters a class.
     @warning This function is not thread-safe.
@@ -196,9 +195,7 @@ _CFRuntimeGetClassWithTypeID (CFTypeID typeID);
     @param typeID The CFTypeID to unregister.
     @see _CFRuntimeRegisterClass()
  */
-void
-_CFRuntimeUnregisterClassWithTypeID (CFTypeID typeID);
-
+void _CFRuntimeUnregisterClassWithTypeID (CFTypeID typeID);
 
 /* All CF "instances" start with this structure.  Never refer to
  * these fields directly -- they are for CF's use and may be added
@@ -217,16 +214,14 @@ typedef struct __CFRuntimeBase CFRuntimeBase;
 */
 struct __CFRuntimeBase
 {
-  void *_isa; // pointer to CFRunTimeClass
-  SInt16 _typeID;
-  struct
-    {
-      SInt16 ro:       1; // 0 = read-only object
-      SInt16 reserved: 7; // For internal CFRuntime use
-      SInt16 info:     8; // Can be used by CF type
+    void *_isa; // pointer to CFRunTimeClass
+    SInt16 _typeID;
+    struct {
+        SInt16 ro:       1; // 0 = read-only object
+        SInt16 reserved: 7; // For internal CFRuntime use
+        SInt16 info:     8; // Can be used by CF type
     } _flags;
 };
-
 
 #define INIT_CFRUNTIME_BASE(...) { 0, 0, { 1, 0, 0 } }
 
@@ -258,8 +253,7 @@ struct __CFRuntimeBase
    * directly, even in the initialization or creation functions
    * of a class.  Pass NULL for the category parameter.
    */
-CFTypeRef
-_CFRuntimeCreateInstance (CFAllocatorRef allocator, CFTypeID typeID,
+CFTypeRef _CFRuntimeCreateInstance(CFAllocatorRef allocator, CFTypeID typeID,
                           CFIndex extraBytes, unsigned char *category);
 
 /** Sets the CFTypeID for an instance.
@@ -275,8 +269,7 @@ _CFRuntimeCreateInstance (CFAllocatorRef allocator, CFTypeID typeID,
    * of a _kCFRuntimeCustomRefCount class, or to a 
          * _kCFRuntimeCustomRefCount class.
    */
-void
-_CFRuntimeSetInstanceTypeID (CFTypeRef cf, CFTypeID typeID);
+void _CFRuntimeSetInstanceTypeID(CFTypeRef cf, CFTypeID typeID);
 
 /** Initializes a static CF object instance.
     
@@ -294,8 +287,7 @@ _CFRuntimeSetInstanceTypeID (CFTypeRef cf, CFTypeID typeID);
  * class has one. Static instances cannot be initialized to
  * _kCFRuntimeCustomRefCount classes.
  */
-void
-_CFRuntimeInitStaticInstance (void *memory, CFTypeID typeID);
+void _CFRuntimeInitStaticInstance (void *memory, CFTypeID typeID);
 
 #define CF_HAS_INIT_STATIC_INSTANCE 1
 

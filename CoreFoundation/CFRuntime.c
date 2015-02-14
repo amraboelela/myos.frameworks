@@ -249,130 +249,114 @@ _CFRuntimeInitStaticInstance (void *memory, CFTypeID typeID)
 - ...........................Polymorphic CF functions  and CFType Functions ........................
 */
 
-CFStringRef
-CFCopyDescription (CFTypeRef cf)
+CFStringRef CFCopyDescription(CFTypeRef cf)
 {
-  CFRuntimeClass *cfclass;
-  CFTypeID typeID = CFGetTypeID(cf);
-  
-  if (NULL == cf)
-    return NULL;
-  
-  CF_OBJC_FUNCDISPATCH0(typeID, CFStringRef, cf, "description");
-  
-  if (_kCFRuntimeNotATypeID == typeID)
-    return NULL;
-  
-  cfclass = __CFRuntimeClassTable[typeID];
-  if (NULL != cfclass->copyFormattingDesc)
-    {
-      return cfclass->copyFormattingDesc(cf, NULL);
+    CFRuntimeClass *cfclass;
+    CFTypeID typeID = CFGetTypeID(cf);
+    
+    if (NULL == cf) {
+        return NULL;
     }
-  else
-    {
-      return CFStringCreateWithFormat (NULL, NULL, CFSTR("<%s: %p>"),
-        cfclass->className, cf);
+    CF_OBJC_FUNCDISPATCH0(typeID, CFStringRef, cf, "description");
+    
+    if (_kCFRuntimeNotATypeID == typeID) {
+        return NULL;
     }
-  
-  return NULL;
+    cfclass = __CFRuntimeClassTable[typeID];
+    if (NULL != cfclass->copyFormattingDesc) {
+        return cfclass->copyFormattingDesc(cf, NULL);
+    } else {
+        return CFStringCreateWithFormat(NULL, NULL, CFSTR("<%s: %p>"), cfclass->className, cf);
+    }
+    return NULL;
 }
 
-CFStringRef
-CFCopyTypeIDDescription (CFTypeID typeID)
+CFStringRef CFCopyTypeIDDescription(CFTypeID typeID)
 {
-  CFRuntimeClass *cfclass;
-  
-  if (_kCFRuntimeNotATypeID == typeID
-      || typeID >= __CFRuntimeClassTableCount)
-    return NULL;
-  
-  cfclass = __CFRuntimeClassTable[typeID];
-  return __CFStringMakeConstantString(cfclass->className);
+    CFRuntimeClass *cfclass;
+    if (_kCFRuntimeNotATypeID == typeID || typeID >= __CFRuntimeClassTableCount) {
+        return NULL;
+    }
+    cfclass = __CFRuntimeClassTable[typeID];
+    return __CFStringMakeConstantString(cfclass->className);
 }
 
 /*
 /Polymorphic CF Equal function
 */
-Boolean
-CFEqual (CFTypeRef cf1, CFTypeRef cf2)
+Boolean CFEqual(CFTypeRef cf1, CFTypeRef cf2)
 {
-  CFRuntimeClass *cls;
-  CFTypeID tID1, tID2;
-  
-  if (cf1 == cf2)
-    return true;
-  
-  if (cf1 == NULL || cf2 == NULL)
+    CFRuntimeClass *cls;
+    CFTypeID tID1, tID2;
+    if (cf1 == cf2) {
+        return true;
+    }
+    if (cf1 == NULL || cf2 == NULL) {
+        return false;
+    }
+    /* Can't compare here if either objects are ObjC objects. */
+    CF_OBJC_FUNCDISPATCH1(CFGetTypeID(cf1), Boolean, cf1, "isEqual:", cf2);
+    CF_OBJC_FUNCDISPATCH1(CFGetTypeID(cf2), Boolean, cf2, "isEqual:", cf1);
+    
+    tID1 = CFGetTypeID(cf1);
+    tID2 = CFGetTypeID(cf2);
+    if (tID1 != tID2) {
+        return false;
+    }
+    cls = __CFRuntimeClassTable[tID1];
+    if (NULL != cls->equal) {
+        return cls->equal(cf1, cf2);
+    }
     return false;
-  
-  /* Can't compare here if either objects are ObjC objects. */
-  CF_OBJC_FUNCDISPATCH1(CFGetTypeID(cf1), Boolean, cf1, "isEqual:", cf2);
-  CF_OBJC_FUNCDISPATCH1(CFGetTypeID(cf2), Boolean, cf2, "isEqual:", cf1);
-  
-  tID1 = CFGetTypeID(cf1);
-  tID2 = CFGetTypeID(cf2);
-  if (tID1 != tID2)
-    return false;
-  
-  cls = __CFRuntimeClassTable[tID1];
-  if (NULL != cls->equal)
-    return cls->equal(cf1, cf2);
-  
-  return false;
 }
 
-CFAllocatorRef
-CFGetAllocator (CFTypeRef cf)
+CFAllocatorRef CFGetAllocator(CFTypeRef cf)
 {
-  if (CF_IS_OBJC(CFGetTypeID(cf), cf) || ((CFRuntimeBase*)cf)->_flags.ro)
-    return kCFAllocatorSystemDefault;
-  
-  return ((obj)cf)[-1].allocator;
+    if (CF_IS_OBJC(CFGetTypeID(cf), cf) || ((CFRuntimeBase *)cf)->_flags.ro) {
+        return kCFAllocatorSystemDefault;
+    }
+    return ((obj)cf)[-1].allocator;
 }
 
-CFIndex
-CFGetRetainCount (CFTypeRef cf)
+CFIndex CFGetRetainCount (CFTypeRef cf)
 {
-  CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFIndex, cf, "retainCount");
-  
-  if (!((CFRuntimeBase*)cf)->_flags.ro)
-    return ((obj)cf)[-1].retained + 1;
-  
-  return 1;
+    CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFIndex, cf, "retainCount");
+    if (!((CFRuntimeBase*)cf)->_flags.ro) {
+        return ((obj)cf)[-1].retained + 1;
+    }
+    return 1;
 }
 
-CFTypeID
-CFGetTypeID (CFTypeRef cf)
+CFTypeID CFGetTypeID(CFTypeRef cf)
 {
-  /* This is unsafe, but I don't see any other way of getting the typeID
+    /* This is unsafe, but I don't see any other way of getting the typeID
      for this call. */
-  CF_OBJC_FUNCDISPATCH0(((CFRuntimeBase*)cf)->_typeID, CFTypeID, cf, "_cfTypeID");
-  
-  return ((CFRuntimeBase*)cf)->_typeID;
+    printf("CFGetTypeID 1");
+    printf("((CFRuntimeBase *)cf)->_typeID: %d", ((CFRuntimeBase *)cf)->_typeID);
+    CF_OBJC_FUNCDISPATCH0(((CFRuntimeBase *)cf)->_typeID, CFTypeID, cf, "_cfTypeID");
+    printf("CFGetTypeID 2");
+    return ((CFRuntimeBase *)cf)->_typeID;
 }
 
-CFHashCode
-CFHash (CFTypeRef cf)
+CFHashCode CFHash(CFTypeRef cf)
 {
-  CFRuntimeClass *cls;
-  
-  if (cf == NULL)
-    return 0;
-
-  CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFHashCode, cf, "hash");
-  
-  cls = __CFRuntimeClassTable[CFGetTypeID(cf)];
-  if (cls->hash)
-    return cls->hash (cf);
-  
-  return (CFHashCode)((uintptr_t)cf >> 3);
+    CFRuntimeClass *cls;
+    if (cf == NULL) {
+        return 0;
+    }
+    CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFHashCode, cf, "hash");
+    
+    cls = __CFRuntimeClassTable[CFGetTypeID(cf)];
+    if (cls->hash) {
+        return cls->hash (cf);
+    }
+    return (CFHashCode)((uintptr_t)cf >> 3);
 }
 
-CFTypeRef
-CFMakeCollectable (CFTypeRef cf)
+CFTypeRef CFMakeCollectable (CFTypeRef cf)
 {
-/* FIXME */
-  return cf;
+    /* FIXME */
+    return cf;
 }
 
 void GSRuntimeDeallocateInstance (CFTypeRef cf)
