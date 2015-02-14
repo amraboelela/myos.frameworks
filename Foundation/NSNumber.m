@@ -334,13 +334,6 @@ return NSOrderedSame;
 @implementation NSFloatNumber
 #define FORMAT @"%0.7g"
 #include "NSNumberMethods.h"
-
-- (NSString *)description
-{
-    return [NSString stringWithFormat:@"<%@: %p; value:%@>", [self class], self, [self stringValue]];
-    //return [self stringValue];
-}
-
 @end
 
 @interface NSDoubleNumber : NSFloatingPointNumber
@@ -359,10 +352,12 @@ return NSOrderedSame;
 static BOOL useSmallInt;
 static BOOL useSmallExtendedDouble;
 static BOOL useSmallRepeatingDouble;
+static BOOL useSmallFloat;
 #define SMALL_INT_MASK 1
 #define SMALL_EXTENDED_DOUBLE_MASK 2
 #define SMALL_REPEATING_DOUBLE_MASK 3
-
+// 4 is GSTinyString
+#define SMALL_FLOAT_MASK 5
 
 @interface NSSmallInt : NSSignedIntegerNumber
 @end
@@ -370,11 +365,7 @@ static BOOL useSmallRepeatingDouble;
 @implementation NSSmallInt
 #undef VALUE
 #define VALUE (((intptr_t)self) >> OBJC_SMALL_OBJECT_SHIFT)
-#if OBJC_SMALL_OBJECT_SHIFT == 1
-#define FORMAT @"%d"
-#else
-#define FORMAT @"%lld"
-#endif
+#define FORMAT @"%"PRIdPTR
 #include "NSNumberMethods.h"
 
 + (void) load
@@ -448,27 +439,30 @@ unboxSmallExtendedDouble(uintptr_t boxed)
   return ret.d;
 }
 
-static BOOL isSmallExtendedDouble(double d)
+static BOOL
+isSmallExtendedDouble(double d)
 {
-    union BoxedDouble b = {.d=d};
-    return unboxSmallExtendedDouble(b.bits) == d;
+  union BoxedDouble b = {.d=d};
+  return unboxSmallExtendedDouble(b.bits) == d;
 }
 
-static double unboxSmallRepeatingDouble(uintptr_t boxed)
+static double
+unboxSmallRepeatingDouble(uintptr_t boxed)
 {
-    // The low bit of the mantissa
-    uintptr_t mask = boxed & 56;
-    union BoxedDouble ret;
-    // Clear the class pointer
-    boxed &= ~7;
-    ret.bits = boxed | (mask >> 3);
-    return ret.d;
+  // The low bit of the mantissa
+  uintptr_t mask = boxed & 56;
+  union BoxedDouble ret;
+  // Clear the class pointer
+  boxed &= ~7;
+  ret.bits = boxed | (mask >> 3);
+  return ret.d;
 }
 
-static BOOL isSmallRepeatingDouble(double d)
+static BOOL
+isSmallRepeatingDouble(double d)
 {
-    union BoxedDouble b = {.d=d};
-    return unboxSmallRepeatingDouble(b.bits) == d;
+  union BoxedDouble b = {.d=d};
+  return unboxSmallRepeatingDouble(b.bits) == d;
 }
 
 static id boxDouble(double d, uintptr_t mask)
@@ -487,52 +481,52 @@ static id boxDouble(double d, uintptr_t mask)
 #define FORMAT @"%0.16g"
 #include "NSNumberMethods.h"
 
-+ (void)load
++ (void)
+load
 {
-    useSmallExtendedDouble = objc_registerSmallObjectClass_np
+  useSmallExtendedDouble = objc_registerSmallObjectClass_np
     (self, SMALL_EXTENDED_DOUBLE_MASK);
 }
 
-+ (id)alloc
++ (id) alloc
 {
-    return (id)SMALL_EXTENDED_DOUBLE_MASK;
+  return (id)SMALL_EXTENDED_DOUBLE_MASK;
 }
 
-+ (id)allocWithZone:(NSZone*)aZone
++ (id) allocWithZone: (NSZone*)aZone
 {
-    return (id)SMALL_EXTENDED_DOUBLE_MASK;
+  return (id)SMALL_EXTENDED_DOUBLE_MASK;
 }
 
-- (id)copy
-{
-    return self;
-}
-
-- (id)copyWithZone:(NSZone *)aZone
-{
-    return self;
-}
-
-- (id)retain
+- (id) copy
 {
   return self;
 }
 
-- (NSUInteger)retainCount
+- (id) copyWithZone: (NSZone*)aZone
 {
-    return UINT_MAX;
+  return self;
 }
 
-- (id)autorelease
+- (id) retain
 {
-    return self;
+  return self;
 }
 
-- (oneway void)release
+- (NSUInteger) retainCount
 {
-    return;
+  return UINT_MAX;
 }
 
+- (id) autorelease
+{
+  return self;
+}
+
+- (oneway void) release
+{
+  return;
+}
 @end
 
 @interface NSSmallRepeatingDouble : NSFloatingPointNumber
@@ -590,6 +584,39 @@ static id boxDouble(double d, uintptr_t mask)
   return;
 }
 @end
+
+
+/*
+ * Technically, all floats are small on 64bit and fit into a NSRepeatingDouble,
+ * but we want to get the description FORMAT right for floats (i.e. "%0.7g" and
+ * not "%0.16g".
+ */
+@interface NSSmallFloat : NSSmallRepeatingDouble
+@end
+@implementation NSSmallFloat
+#undef VALUE
+#define VALUE (unboxSmallRepeatingDouble((uintptr_t)self))
+#define FORMAT @"%0.7g"
+#include "NSNumberMethods.h"
+
++ (void) load
+{
+  useSmallFloat = objc_registerSmallObjectClass_np
+    (self, SMALL_FLOAT_MASK);
+}
+
++ (id) alloc
+{
+  return (id)SMALL_FLOAT_MASK;
+}
+
++ (id) allocWithZone: (NSZone*)aZone
+{
+  return (id)SMALL_FLOAT_MASK;
+}
+@end
+
+
 #endif
 #endif
 
@@ -628,9 +655,11 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
   NSDoubleNumberClass = [NSDoubleNumber class];
 
   boolY = NSAllocateObject (NSBoolNumberClass, 0, 0);
+  [[NSObject leakAt: &boolY] release];
   boolY->value = 1;
   boolN = NSAllocateObject (NSBoolNumberClass, 0, 0);
   boolN->value = 0;
+  [[NSObject leakAt: &boolN] release];
 
   for (i = 0; i < 14; i++)
     {
@@ -638,6 +667,7 @@ static NSBoolNumber *boolN;		// Boolean NO (integer 0)
 
       n->value = i - 1;
       ReusedInstances[i] = n;
+      [[NSObject leakAt: &ReusedInstances[i]] release];
     }
 }
 
@@ -874,17 +904,18 @@ if (aValue >= -1 && aValue <= 12)\
 + (NSNumber *)numberWithFloat:(float)aValue
 {
     NSFloatNumber *n;
-    DLog();
+    //DLog();
     if (self != NSNumberClass) {
-        DLog(@"self != NSNumberClass");
         return [[[self alloc] initWithBytes: (const void *)&aValue
                                    objCType: @encode(float)] autorelease];
     }
-    DLog();
+    //DLog();
 #if OBJC_SMALL_OBJECT_SHIFT == 3
-    if (useSmallRepeatingDouble) {
-        DLog(@"useSmallRepeatingDouble");
-        return boxDouble(aValue, SMALL_REPEATING_DOUBLE_MASK);
+    //DLog();
+    if (useSmallFloat) {
+        //DLog();
+        return boxDouble(aValue, SMALL_FLOAT_MASK);
+        //DLog();
     }
 #endif
     DLog();
@@ -1029,8 +1060,7 @@ if (aValue >= -1 && aValue <= 12)\
 
 - (NSString *) description
 {
-    return [NSString stringWithFormat:@"<%@: %p; value: %@>", [self class], self, [self stringValue]];
-    //return [self stringValue];
+  return [self stringValue];
 }
 
 /* Return nil for an NSNumber that is allocated and initialized without

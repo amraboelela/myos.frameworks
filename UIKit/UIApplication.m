@@ -801,9 +801,9 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     _CAAnimatorInitialize();
     //DLog();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
-    DLog();
+    //DLog();
     [[UIScreen alloc] init];
-    DLog();
+    //DLog();
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
     //DLog();
@@ -814,7 +814,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
     //DLog();
     //[_application->_blackScreen addGestureRecognizer:tapGesture];
-    DLog();
+    //DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     DLog();
     
