@@ -119,18 +119,18 @@ GSHashTableSetShouldCount (GSHashTableRef table)
 
 CF_INLINE void GSHashTableAddKeyValuePair(GSHashTableRef table, GSHashTableBucket *bucket, const void *key, const void *value)
 {
-    printf("GSHashTableAddKeyValuePair 1\n");
+    //printf("GSHashTableAddKeyValuePair 1\n");
     GSHashTableRetainCallBack keyRetain = table->_keyCallBacks.retain;
-    printf("GSHashTableAddKeyValuePair 2\n");
+    //printf("GSHashTableAddKeyValuePair 2\n");
     GSHashTableRetainCallBack valueRetain = table->_valueCallBacks.retain;
-    printf("GSHashTableAddKeyValuePair 3\n");
+    //printf("GSHashTableAddKeyValuePair 3\n");
     bucket->count++;
-    printf("GSHashTableAddKeyValuePair 4\n");
+    //printf("GSHashTableAddKeyValuePair 4\n");
     bucket->key = keyRetain ? keyRetain(table->_allocator, key) : key;
     printf("GSHashTableAddKeyValuePair 5\n");
     printf("GSHashTableAddKeyValuePair valueRetain: %p\n", valueRetain);
-    printf("table->_allocator: %p", table->_allocator);
-    printf("value: %p", value);
+    printf("table->_allocator: %p\n", table->_allocator);
+    printf("value: %@\n", value);
     bucket->value = valueRetain(table->_allocator, value);
     
     //bucket->value = valueRetain ? valueRetain(table->_allocator, value) : value;
@@ -566,12 +566,18 @@ void
 GSHashTableSetValue(GSHashTableRef table, const void *key, const void *value)
 {
     GSHashTableBucket *bucket;
-    GSHashTableGrowIfNeeded (table);
-    bucket = GSHashTableFindBucket (table, key);
+    GSHashTableGrowIfNeeded(table);
+    bucket = GSHashTableFindBucket(table, key);
+    //printf("GSHashTableSetValue2\n");
     if (bucket->count > 0) {
-        GSHashTableReplaceKeyValuePair (table, bucket, key, value);
+        printf("GSHashTableSetValue3\n");
+        GSHashTableReplaceKeyValuePair(table, bucket, key, value);
+        //fprintf(stderr, "3");
     } else {
-        GSHashTableAddKeyValuePair (table, bucket, key, value);
+        //fprintf(stderr, "4");
+        printf("GSHashTableSetValue4\n");
+        GSHashTableAddKeyValuePair(table, bucket, key, value);
+        printf("GSHashTableSetValue5\n");
         table->_count += 1;
     }
 }

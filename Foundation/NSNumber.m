@@ -1059,7 +1059,8 @@ if (aValue >= -1 && aValue <= 12)\
 
 - (NSString *) description
 {
-  return [self stringValue];
+    return [NSString stringWithFormat:@"<%@: %p; value: %@>", [self class], self, [self stringValue]];
+    //return [self stringValue];
 }
 
 /* Return nil for an NSNumber that is allocated and initialized without
