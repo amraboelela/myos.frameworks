@@ -901,22 +901,27 @@ if (aValue >= -1 && aValue <= 12)\
 
 + (NSNumber *) numberWithFloat: (float)aValue
 {
-  NSFloatNumber *n;
-
-  if (self != NSNumberClass)
+    NSFloatNumber *n;
+    
+    DLog();
+    if (self != NSNumberClass)
     {
-      return [[[self alloc] initWithBytes: (const void *)&aValue
-        objCType: @encode(float)] autorelease];
+        DLog(@"self != NSNumberClass");
+        return [[[self alloc] initWithBytes: (const void *)&aValue
+                                   objCType: @encode(float)] autorelease];
     }
+    DLog();
 #if OBJC_SMALL_OBJECT_SHIFT == 3
-  if (useSmallFloat)
+    if (useSmallFloat)
     {
-      return boxDouble(aValue, SMALL_FLOAT_MASK);
+        DLog(@"useSmallRepeatingDouble");
+        return boxDouble(aValue, SMALL_FLOAT_MASK);
     }
 #endif
-  n = NSAllocateObject (NSFloatNumberClass, 0, 0);
-  n->value = aValue;
-  return AUTORELEASE(n);
+    DLog();
+    n = NSAllocateObject (NSFloatNumberClass, 0, 0);
+    n->value = aValue;
+    return AUTORELEASE(n);
 }
 
 + (NSNumber *) numberWithDouble: (double)aValue

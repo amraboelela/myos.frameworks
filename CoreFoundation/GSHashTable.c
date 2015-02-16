@@ -117,15 +117,24 @@ GSHashTableSetShouldCount (GSHashTableRef table)
     ((CFRuntimeBase *)table)->_flags.info |= _kGSHashTableShouldCount;
 }
 
-CF_INLINE void
-GSHashTableAddKeyValuePair (GSHashTableRef table,
-  GSHashTableBucket *bucket, const void *key, const void *value)
+CF_INLINE void GSHashTableAddKeyValuePair(GSHashTableRef table, GSHashTableBucket *bucket, const void *key, const void *value)
 {
+    printf("GSHashTableAddKeyValuePair 1\n");
     GSHashTableRetainCallBack keyRetain = table->_keyCallBacks.retain;
+    printf("GSHashTableAddKeyValuePair 2\n");
     GSHashTableRetainCallBack valueRetain = table->_valueCallBacks.retain;
+    printf("GSHashTableAddKeyValuePair 3\n");
     bucket->count++;
+    printf("GSHashTableAddKeyValuePair 4\n");
     bucket->key = keyRetain ? keyRetain(table->_allocator, key) : key;
-    bucket->value = valueRetain ? valueRetain(table->_allocator, value) : value;
+    printf("GSHashTableAddKeyValuePair 5\n");
+    printf("GSHashTableAddKeyValuePair valueRetain: %p\n", valueRetain);
+    printf("table->_allocator: %p", table->_allocator);
+    printf("value: %p", value);
+    bucket->value = valueRetain(table->_allocator, value);
+    
+    //bucket->value = valueRetain ? valueRetain(table->_allocator, value) : value;
+    printf("GSHashTableAddKeyValuePair 6\n");
 }
 
 CF_INLINE void
