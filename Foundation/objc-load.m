@@ -164,7 +164,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
     }
 
   _objc_load_load_callback = loadCallback;
-  //_objc_load_callback = objc_load_callback;
+  _objc_load_callback = objc_load_callback;
 
   /* Link in the object file */
   NSDebugFLLog(@"NSBundle", @"Debug (objc-load): Linking file %@\n", filename);
@@ -177,7 +177,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
 	  __objc_dynamic_error(errorStream, "Error (objc-load)");
 	}
       _objc_load_load_callback = 0;
-      //_objc_load_callback = 0;
+      _objc_load_callback = 0;
       return 1;
     }
 
@@ -186,7 +186,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
     {
       __objc_dynamic_unlink(handle);
       _objc_load_load_callback = 0;
-      //_objc_load_callback = 0;
+      _objc_load_callback = 0;
       return 1;
     }
 
@@ -201,7 +201,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
 	    "Error (objc-load): Cannot load objects (no CTOR list)\n");
 	}
       _objc_load_load_callback = 0;
-      //_objc_load_callback = 0;
+      _objc_load_callback = 0;
       return 1;
     }
 
@@ -218,7 +218,7 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
 #if !defined(__GNUSTEP_RUNTIME__) && !defined(__GNU_LIBOBJC__)
   __objc_resolve_class_links(); /* fill in subclass_list and sibling_class */
 #endif
-  //_objc_load_callback = 0;
+  _objc_load_callback = 0;
   _objc_load_load_callback = 0;
   return 0;
 #endif /* not NeXT_RUNTIME */
