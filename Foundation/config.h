@@ -235,7 +235,7 @@
 #define HAVE_FLOAT_H 1
 
 /* Define if libobjc has the __objc_msg_forward2 function */
-#define HAVE_FORWARD2 1
+//#define HAVE_FORWARD2 1
 
 /* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
 #define HAVE_FSEEKO 1
@@ -669,7 +669,7 @@
 #define HAVE_UINTMAX_T 1
 
 /* Define if libobjc has the _objc_unexpected_exception callback */
-#define HAVE_UNEXPECTED 1
+//#define HAVE_UNEXPECTED 1
 
 /* Define to 1 if you have the <unicode/ucal.h> header file. */
 #define HAVE_UNICODE_UCAL_H 1
