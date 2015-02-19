@@ -850,7 +850,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
             //[UIView commitAnimations];
         }*/
         [pool2 release];
-        DLog(@"Free memory: %ld KB", CFGetFreeMemory());
+        //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
     //[tapGesture release];
     [pool release];

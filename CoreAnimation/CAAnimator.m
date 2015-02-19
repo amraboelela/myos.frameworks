@@ -84,18 +84,18 @@ static void reportFPS(BOOL withCondition)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockStartup];
-    //DLog(@"Animation Thread: %@", [NSThread currentThread]);
+    DLog(@"Animation Thread: %@", [NSThread currentThread]);
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-    //DLog(@"context: %@", context);
+    DLog(@"context: %@", context);
     [EAGLContext setCurrentContext:context];
     [context release];
     _EAGLSetup();
-    //DLog();
+    DLog();
     _EAGLClear();
     _EAGLSwapBuffers();
-    //DLog();
+    DLog();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
-    //DLog();
+    DLog();
     _eaglContextIsReady = YES;
     BOOL vSyncEnabled = context->_vSyncEnabled;
     
@@ -103,14 +103,16 @@ static void reportFPS(BOOL withCondition)
     //_displayLink.frameInterval = 1;
     while (true) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        //DLog(@"run");
+        DLog(@"run");
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
 #ifdef NATIVE_APP
         if ([_CAAnimatorNAConditionLock tryLockWhenCondition:_CAAnimatorConditionLockHasWork]) {
+            DLog();
             EAGLParentHandleMessages();
             [_CAAnimatorNAConditionLock unlock];
+            DLog();
         }
 #endif
         [pool2 release];
