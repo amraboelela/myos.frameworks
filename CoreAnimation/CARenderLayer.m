@@ -197,7 +197,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     };
     
     EAGLContext *context = _EAGLGetCurrentContext();
-    DLog(@"context->_width: %d, context->_height: %d", context->_width, context->_height);
+    DLog(@"context->_width: %0.1f, context->_height: %0.1f", context->_width, context->_height);
     glViewport(0, 0, context->_width, context->_height);
     
     glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
