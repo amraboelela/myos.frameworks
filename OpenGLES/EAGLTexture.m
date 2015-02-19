@@ -62,8 +62,8 @@ void _EAGLTextureLoad(EAGLTexture *texture, NSArray *images)
     texture->_numberOfTextures = images.count;
     texture->_textureIDs = malloc(texture->_numberOfTextures * sizeof(GLuint));
     glGenTextures(texture->_numberOfTextures, texture->_textureIDs);
-    //DLog(@"glGetError: %d", glGetError());
-    //DLog(@"image: %@", image);
+    DLog(@"glGetError: %d", glGetError());
+    DLog(@"image: %@", image);
     for (int i=0; i<texture->_numberOfTextures; i++) {
         CGImageRef image = [images objectAtIndex:i];
         size_t width = CGImageGetWidth(image);
@@ -72,16 +72,16 @@ void _EAGLTextureLoad(EAGLTexture *texture, NSArray *images)
         CGDataProviderRef provider = CGImageGetDataProvider(image);
         glBindTexture(GL_TEXTURE_2D, texture->_textureIDs[i]);
         const uint8_t *pixels = (const uint8_t *)[provider bytePointer];
-        //DLog(@"glGetError: %d", glGetError());
-        //DLog(@"width:%d, height:%d, textureID:%d", width, height, texture->_textureIDs[i]);
+        DLog(@"glGetError: %d", glGetError());
+        DLog(@"width:%d, height:%d, textureID:%d", width, height, texture->_textureIDs[i]);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
-    //DLog();
-    //DLog(@"glGetError: %d", glGetError());
+    DLog();
+    DLog(@"glGetError: %d", glGetError());
     //DLog(@"glGetError: %d", glGetError());
 }
 
