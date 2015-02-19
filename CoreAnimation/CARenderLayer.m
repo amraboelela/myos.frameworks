@@ -97,8 +97,8 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
         return;
     }
     glBindTexture(GL_TEXTURE_2D, textureID);
-    //DLog(@"textureID: %d", textureID);
-    //DLog(@"layer: %@", layer);
+    DLog(@"textureID: %d", textureID);
+    DLog(@"layer: %@", layer);
     float xr = layer->_rectNeedsComposite.origin.x;
     float yr = layer->_rectNeedsComposite.origin.y;
     float wr = layer->_rectNeedsComposite.size.width;
@@ -106,7 +106,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     CGRect bounds = layer->_bounds;
     float wl = bounds.size.width; // width of layer bounds
     float hl = bounds.size.height; // height of layer bounds
-    //DLog(@"textureID: %d, wl: %0.1f, hl: %0.1f", textureID, wl, hl);
+    DLog(@"textureID: %d, wl: %0.1f, hl: %0.1f", textureID, wl, hl);
     CGPoint p1 = CGPointMake(xr/wl, 1.0-yr/hl);
     CGPoint p2 = CGPointMake((xr+wr)/wl, p1.y);
     CGPoint p3 = CGPointMake(p1.x, 1.0-(yr+hr)/hl);
@@ -119,14 +119,14 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
         p4.x, p4.y
     };
     
-    //DLog(@"texCoords: %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f", texCoords[0], texCoords[1], texCoords[2], texCoords[3],
+    DLog(@"texCoords: %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f", texCoords[0], texCoords[1], texCoords[2], texCoords[3],
     //     texCoords[4], texCoords[5], texCoords[6], texCoords[7]);
     IOWindow *screenWindow = IOWindowGetSharedWindow();
     float ws = screenWindow->_rect.size.width; // width of screen
     float hs = screenWindow->_rect.size.height; // height of screen
     
     CGPoint layerOrigin = _CARenderLayerGetOrigin(layer);
-    //DLog(@"ws: %f, hs: %f", ws, hs);
+    DLog(@"ws: %f, hs: %f", ws, hs);
 
     float xo = layerOrigin.x + xr;
     float yo = layerOrigin.y + yr;
@@ -197,7 +197,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     };
     
     EAGLContext *context = _EAGLGetCurrentContext();
-    //DLog(@"context->_width: %d, context->_height: %d", context->_width, context->_height);
+    DLog(@"context->_width: %d, context->_height: %d", context->_width, context->_height);
     glViewport(0, 0, context->_width, context->_height);
     
     glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
@@ -217,7 +217,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     //glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     
     //_EAGLSwapBuffers();
-    //DLog(@"glGetError: %d", glGetError());
+    DLog(@"glGetError: %d", glGetError());
 }
 
 static void _CARenderLayerComposite(CARenderLayer *layer)
