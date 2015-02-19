@@ -103,12 +103,12 @@ static void reportFPS(BOOL withCondition)
     //_displayLink.frameInterval = 1;
     while (true) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        DLog(@"run");
+        //DLog(@"run");
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
 #ifdef NATIVE_APP
-        DLog(@"NATIVE_APP");
+        //DLog(@"NATIVE_APP");
         if ([_CAAnimatorNAConditionLock tryLockWhenCondition:_CAAnimatorConditionLockHasWork]) {
             DLog();
             EAGLParentHandleMessages();
@@ -123,7 +123,7 @@ static void reportFPS(BOOL withCondition)
 
 + (void)display
 {
-    DLog();
+    //DLog();
 #ifdef NATIVE_APP
     if ([_CAAnimatorConditionLock condition] != _CAAnimatorConditionLockHasWork) {
         //beforeLockTime = CACurrentMediaTime();
@@ -142,7 +142,7 @@ static void reportFPS(BOOL withCondition)
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasWork];
     //DLog();
 #endif
-    //DLog();
+    DLog();
 #ifdef DEBUG
     //_CAAnimatorFrameCount++;
 #endif
@@ -150,12 +150,12 @@ static void reportFPS(BOOL withCondition)
     //reportFPS(YES);
     //DLog();
     _CAAnimatorApplyAnimations();
-    //DLog(@"_CARendererLoadRenderLayers");
+    DLog(@"_CARendererLoadRenderLayers");
     _CARendererLoadRenderLayers();
-    //DLog(@"_CACompositorPrepareComposite");
+    DLog(@"_CACompositorPrepareComposite");
     _CACompositorPrepareComposite();
     if (_treeHasPendingAnimations) {
-        //DLog(@"_treeHasPendingAnimations");
+        DLog(@"_treeHasPendingAnimations");
         if (!_treeHadPendingAnimations) {
             previousTimestamp = CACurrentMediaTime();
             _treeHadPendingAnimations = YES;
@@ -163,7 +163,7 @@ static void reportFPS(BOOL withCondition)
         [_CAAnimatorConditionLock unlock];
         //DLog();
     } else {
-        //DLog();
+        DLog();
         if (_treeHadPendingAnimations) {
 #ifdef DEBUG
             //reportFPS(NO);
@@ -172,7 +172,7 @@ static void reportFPS(BOOL withCondition)
         }
         [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }
-    //DLog();
+    DLog();
     _CACompositorComposite();
     //DLog();
     _EAGLSwapBuffers();

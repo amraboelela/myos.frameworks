@@ -171,7 +171,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
         //[[CATransaction class] performSelector:@selector(_commitTransaction) withObject:nil afterDelay:0.01];
         return;
     }
-    DLog();
+    //DLog();
     CALayer *rootLayer = _CALayerRootLayer();
     //DLog(@"LayoutLayers");
     if (_layersNeedLayout) {
@@ -181,9 +181,9 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
     }
     DLog(@"_CARendererDisplayLayers");
     _CARendererDisplayLayers(YES);
-    DLog(@"_CATransactionCopyTree");
+    //DLog(@"_CATransactionCopyTree");
     _CATransactionCopyTree(rootLayer);
-    DLog(@"_CATransactionUnloadIfNeeded");
+    //DLog(@"_CATransactionUnloadIfNeeded");
     _CATransactionUnloadIfNeeded(rootLayer);
     _CATransactionRemoveLayers();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
@@ -191,7 +191,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
     DLog(@"_transactions: %@", _transactions);
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
     //DLog(@"_transactions2: %@", _transactions);
-    DLog(@"Free memory: %ld KB", CFGetFreeMemory());
+    //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
 }
 
 + (void)commit
