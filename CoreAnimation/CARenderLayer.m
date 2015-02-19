@@ -234,13 +234,13 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     DLog(@"layer: %@", layer);
     glBindTexture(GL_TEXTURE_2D, textureID);
     
-    float xr = layer->rectNeedsComposite.origin.x;
-    float yr = layer->rectNeedsComposite.origin.y;
-    float wr = layer->rectNeedsComposite.size.width;
-    float hr = layer->rectNeedsComposite.size.height;
+    float xr = layer->_rectNeedsComposite.origin.x;
+    float yr = layer->_rectNeedsComposite.origin.y;
+    float wr = layer->_rectNeedsComposite.size.width;
+    float hr = layer->_rectNeedsComposite.size.height;
     
-    float wl = layer->bounds.size.width; // width of layer bounds
-    float hl = layer->bounds.size.height; // height of layer bounds
+    float wl = layer->_bounds.size.width; // width of layer bounds
+    float hl = layer->_bounds.size.height; // height of layer bounds
     
     CGPoint p1 = CGPointMake(xr/wl, 1.0-yr/hl);
     CGPoint p2 = CGPointMake((xr+wr)/wl, p1.y);
@@ -255,8 +255,8 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     };
     
     IOWindow *screenWindow = IOWindowGetSharedWindow();
-    float ws = screenWindow->rect.size.width; // width of screen
-    float hs = screenWindow->rect.size.height; // height of screen
+    float ws = screenWindow->_rect.size.width; // width of screen
+    float hs = screenWindow->_rect.size.height; // height of screen
     CGPoint layerOrigin = _CARenderLayerGetOrigin(layer);
     
     //layerOrigin = CGPointMake(layerOrigin.x + xr, layerOrigin.y + yr);
