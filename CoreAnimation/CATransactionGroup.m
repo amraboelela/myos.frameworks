@@ -30,14 +30,14 @@
         //DLog();
         float fNumber = 0.25;
         CFNumberRef number = CFNumberCreate(NULL, kCFNumberFloatType, &fNumber);//[NSNumber numberWithFloat:0.25];
-        DLog(@"number: %p", number);
-        DLog(@"number: %@", number);
-        DLog(@"[number retainCount]: %d", [number retainCount]);
-        DLog(@"[number retain]: %@", [number retain]);
-        DLog(@"[number retainCount]: %d", [number retainCount]);
-        DLog(@"CFRetain(number): %@", CFRetain(number));
-        DLog(@"[number retainCount]: %d", [number retainCount]);
-        DLog(@"_values: %@", _values);
+        //DLog(@"number: %p", number);
+        //DLog(@"number: %@", number);
+        //DLog(@"[number retainCount]: %d", [number retainCount]);
+        //DLog(@"[number retain]: %@", [number retain]);
+        //DLog(@"[number retainCount]: %d", [number retainCount]);
+        //DLog(@"CFRetain(number): %@", CFRetain(number));
+        //DLog(@"[number retainCount]: %d", [number retainCount]);
+        //DLog(@"_values: %@", _values);
         //fprintf(stderr, "stderr\n");
         //printf("Hello World1\n");
         //fprintf(stdout, "stdout");
@@ -47,7 +47,7 @@
         CFDictionarySetValue(_values, kCATransactionAnimationDuration, number);
         //DLog();
         CFDictionarySetValue(_values, kCATransactionDisableActions, [NSNumber numberWithBool:NO]);
-        DLog(@"_values: %@", _values);
+        //DLog(@"_values: %@", _values);
     }
     return self;
 }
