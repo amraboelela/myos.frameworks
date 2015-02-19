@@ -369,7 +369,7 @@ NSLogv(NSString* format, va_list args)
                       [[NSProcessInfo processInfo] processName],
                       pid];*/
             prefix = [NSString
-                      stringWithFormat: @"%@ %@[%d-%u] ",
+                      stringWithFormat: @"%@ %@[%d-%x] ",
                       [[NSCalendarDate calendarDate] descriptionWithCalendarFormat: @"%M:%S.%F"],
                       [[NSProcessInfo processInfo] processName],
                       pid, (unsigned int)pthread_self()];
