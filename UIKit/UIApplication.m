@@ -825,6 +825,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
         if (IOEventGetNextEvent(window, _application->_currentEvent)) {
+            DLog();
             _UIApplicationSetCurrentEventTouchedView();
             _application->_lastActivityTime = CACurrentMediaTime();
         }
@@ -849,7 +850,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
             //[UIView commitAnimations];
         }*/
         [pool2 release];
-        //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
+        DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
     //[tapGesture release];
     [pool release];
