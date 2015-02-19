@@ -28,7 +28,8 @@
         //DLog();
         _values = CFDictionaryCreateMutable(kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         //DLog();
-        NSNumber *number = [NSNumber numberWithFloat:0.25];
+        float fNumber = 0.25;
+        CFNumberRef number = CFNumberCreate(NULL, kCFNumberFloatType, &fNumber);//[NSNumber numberWithFloat:0.25];
         DLog(@"number: %p", number);
         DLog(@"number: %@", number);
         DLog(@"[number retainCount]: %d", [number retainCount]);
@@ -40,10 +41,10 @@
         //fprintf(stderr, "stderr\n");
         //printf("Hello World1\n");
         //fprintf(stdout, "stdout");
-        GSHashTableSetValue(_values, kCATransactionAnimationDuration, number);
-        DLog(@"_values: %@", _values);
+        //GSHashTableSetValue(_values, kCATransactionAnimationDuration, number);
+        //DLog(@"_values: %@", _values);
         //DLog();
-        //CFDictionarySetValue(_values, kCATransactionAnimationDuration, number);
+        CFDictionarySetValue(_values, kCATransactionAnimationDuration, number);
         //DLog();
         CFDictionarySetValue(_values, kCATransactionDisableActions, [NSNumber numberWithBool:NO]);
         DLog(@"_values: %@", _values);
