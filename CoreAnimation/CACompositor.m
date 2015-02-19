@@ -168,10 +168,10 @@ void _CACompositorPrepareComposite()
 
 void _CACompositorComposite()
 {
-    DLog();
+    //DLog();
     CARenderLayer *rootRenderLayer = (CARenderLayer *)_CALayerRootLayer()->_renderLayer;
     _CACompositorCompositeTree(rootRenderLayer);
-    DLog();
+    //DLog();
     _CACompositorCleanRenderTree(rootRenderLayer);
     //DLog();
 }

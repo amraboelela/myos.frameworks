@@ -179,7 +179,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
         _CATransactionLayoutLayers(rootLayer);
         _layersNeedLayout = NO;
     }
-    DLog(@"_CARendererDisplayLayers");
+    //DLog(@"_CARendererDisplayLayers");
     _CARendererDisplayLayers(YES);
     //DLog(@"_CATransactionCopyTree");
     _CATransactionCopyTree(rootLayer);

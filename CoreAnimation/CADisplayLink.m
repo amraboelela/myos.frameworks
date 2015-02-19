@@ -34,7 +34,7 @@ void CADisplayLinkStartTimer(CADisplayLink *displayLink)
 //#else
     float interval = (displayLink->_frameInterval * 1.0) / 15.0;
 //#endif
-    DLog(@"interval: %f", interval);
+    //DLog(@"interval: %f", interval);
     displayLink->_timer = [NSTimer scheduledTimerWithTimeInterval:interval
                                              target:displayLink
                                            selector:@selector(displayFrame)
