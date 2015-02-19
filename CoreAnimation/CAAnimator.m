@@ -108,6 +108,7 @@ static void reportFPS(BOOL withCondition)
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
 #ifdef NATIVE_APP
+        DLog(@"NATIVE_APP");
         if ([_CAAnimatorNAConditionLock tryLockWhenCondition:_CAAnimatorConditionLockHasWork]) {
             DLog();
             EAGLParentHandleMessages();
