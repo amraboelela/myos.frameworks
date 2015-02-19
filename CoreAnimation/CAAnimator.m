@@ -90,12 +90,12 @@ static void reportFPS(BOOL withCondition)
     [EAGLContext setCurrentContext:context];
     [context release];
     _EAGLSetup();
-    DLog();
+    //DLog();
     _EAGLClear();
     _EAGLSwapBuffers();
-    DLog();
+    //DLog();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
-    DLog();
+    //DLog();
     _eaglContextIsReady = YES;
     BOOL vSyncEnabled = context->_vSyncEnabled;
     
