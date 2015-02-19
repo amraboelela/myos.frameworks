@@ -142,7 +142,7 @@ static void reportFPS(BOOL withCondition)
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasWork];
     //DLog();
 #endif
-    DLog();
+    //DLog();
 #ifdef DEBUG
     //_CAAnimatorFrameCount++;
 #endif
@@ -150,9 +150,9 @@ static void reportFPS(BOOL withCondition)
     //reportFPS(YES);
     //DLog();
     _CAAnimatorApplyAnimations();
-    DLog(@"_CARendererLoadRenderLayers");
+    //DLog(@"_CARendererLoadRenderLayers");
     _CARendererLoadRenderLayers();
-    DLog(@"_CACompositorPrepareComposite");
+    //DLog(@"_CACompositorPrepareComposite");
     _CACompositorPrepareComposite();
     if (_treeHasPendingAnimations) {
         DLog(@"_treeHasPendingAnimations");
@@ -163,7 +163,7 @@ static void reportFPS(BOOL withCondition)
         [_CAAnimatorConditionLock unlock];
         //DLog();
     } else {
-        DLog();
+        //DLog();
         if (_treeHadPendingAnimations) {
 #ifdef DEBUG
             //reportFPS(NO);
@@ -172,7 +172,7 @@ static void reportFPS(BOOL withCondition)
         }
         [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }
-    DLog();
+    //DLog();
     _CACompositorComposite();
     //DLog();
     _EAGLSwapBuffers();

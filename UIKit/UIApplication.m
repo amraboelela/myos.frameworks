@@ -780,11 +780,11 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
     IOWindow *window = IOWindowCreateSharedWindow();
-    DLog();
+    //DLog();
     CGRect cr = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     UIGraphicsPushContext(ctx);
-    DLog();
+    //DLog();
     BOOL canDraw = NO;
     while (!canDraw) {
         if (IOEventCanDrawWindow(window)) {
@@ -800,7 +800,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //DLog();
     
     _CAAnimatorInitialize();
-    DLog();
+    //DLog();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
     //DLog();
     [[UIScreen alloc] init];
@@ -818,7 +818,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //[_application->_blackScreen addGestureRecognizer:tapGesture];
     //DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    DLog();
+    //DLog();
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
