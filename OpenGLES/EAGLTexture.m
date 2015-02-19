@@ -63,7 +63,7 @@ void _EAGLTextureLoad(EAGLTexture *texture, NSArray *images)
     texture->_textureIDs = malloc(texture->_numberOfTextures * sizeof(GLuint));
     glGenTextures(texture->_numberOfTextures, texture->_textureIDs);
     DLog(@"glGetError: %d", glGetError());
-    DLog(@"image: %@", image);
+    //DLog(@"image: %@", image);
     for (int i=0; i<texture->_numberOfTextures; i++) {
         CGImageRef image = [images objectAtIndex:i];
         size_t width = CGImageGetWidth(image);
