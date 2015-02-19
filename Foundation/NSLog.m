@@ -356,11 +356,24 @@ NSLogv(NSString* format, va_list args)
                       [[NSProcessInfo processInfo] processName],
                       pid, (NSUInteger)GSCurrentThread()];
         } else {
+#ifdef ANDROID
             prefix = [NSString
+                      stringWithFormat: @"%d %@ ",
+                      gettid(),
+                      [[NSCalendarDate calendarDate] descriptionWithCalendarFormat: @"%M:%S.%F"]];
+#else
+            /*prefix = [NSString
                       stringWithFormat: @"%@ %@[%d] ",
-                      [[NSCalendarDate calendarDate] descriptionWithCalendarFormat: fmt],
+                      [[NSCalendarDate calendarDate]
+                       descriptionWithCalendarFormat: @"%Y-%m-%d %H:%M:%S.%F"],
                       [[NSProcessInfo processInfo] processName],
-                      pid];
+                      pid];*/
+            prefix = [NSString
+                      stringWithFormat: @"%@ %@[%d-%u] ",
+                      [[NSCalendarDate calendarDate] descriptionWithCalendarFormat: @"%M:%S.%F"],
+                      [[NSProcessInfo processInfo] processName],
+                      pid, (unsigned int)pthread_self()];
+#endif
         }
     }
     
@@ -368,14 +381,18 @@ NSLogv(NSString* format, va_list args)
     if ([format hasSuffix: @"\n"] == NO) {
         format = [format stringByAppendingString: @"\n"];
     }
-    message = [NSString stringWithFormat: format arguments: args];
+    message = [NSString stringWithFormat:format arguments:args];
     prefix = [prefix stringByAppendingString: message];
+#ifdef ANDROID
+    printfWithProcess([[[NSProcessInfo processInfo] processName] cString], [prefix cString]);
+#else
     if (myLock == nil) {
         GSLogLock();
     }
     [myLock lock];
     _NSLog_printf_handler(prefix);
     [myLock unlock];
+#endif
     [arp drain];
 }
 
