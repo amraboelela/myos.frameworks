@@ -120,7 +120,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     };
     
     DLog(@"texCoords: %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f", texCoords[0], texCoords[1], texCoords[2], texCoords[3],
-    //     texCoords[4], texCoords[5], texCoords[6], texCoords[7]);
+         texCoords[4], texCoords[5], texCoords[6], texCoords[7]);
     IOWindow *screenWindow = IOWindowGetSharedWindow();
     float ws = screenWindow->_rect.size.width; // width of screen
     float hs = screenWindow->_rect.size.height; // height of screen
