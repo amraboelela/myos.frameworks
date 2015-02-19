@@ -783,13 +783,12 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     CGRect cr = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
     
     _CAAnimatorInitialize();
-    //DLog();
+    DLog();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
-    [[UIScreen alloc] init];
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     UIGraphicsPushContext(ctx);
     [_CAAnimatorConditionLock unlock];
-    //DLog();
+    DLog();
     BOOL canDraw = NO;
     while (!canDraw) {
         if (IOEventCanDrawWindow(window)) {
@@ -803,6 +802,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
 
+    [[UIScreen alloc] init];
     //DLog();
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
