@@ -123,12 +123,13 @@ static void reportFPS(BOOL withCondition)
 
 + (void)display
 {
-    //DLog();
+    DLog();
 #ifdef NATIVE_APP
     if ([_CAAnimatorConditionLock condition] != _CAAnimatorConditionLockHasWork) {
         //beforeLockTime = CACurrentMediaTime();
         return;
     }
+    DLog();
     if (![_CAAnimatorConditionLock tryLock]) {
         //DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
         // Instead of blocking the run loop or the animation thread, we will try to display later
