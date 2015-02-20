@@ -189,6 +189,9 @@ void _CAAnimatorInitialize()
     _CAAnimatorNAConditionLock = [[NSConditionLock alloc] initWithCondition:_CAAnimatorConditionLockStartup];
     [_CAAnimatorNAConditionLock lock];
 #endif
+#ifndef ANDROID
+    XInitThreads();
+#endif
     [NSThread detachNewThreadSelector:@selector(run)
                              toTarget:[CAAnimator class]
                            withObject:nil];

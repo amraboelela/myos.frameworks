@@ -118,8 +118,8 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
         p4.x, p4.y
     };
     
-    DLog(@"texCoords: %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f", texCoords[0], texCoords[1], texCoords[2], texCoords[3],
-         texCoords[4], texCoords[5], texCoords[6], texCoords[7]);
+    //DLog(@"texCoords: %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f", texCoords[0], texCoords[1], texCoords[2], texCoords[3],
+    //     texCoords[4], texCoords[5], texCoords[6], texCoords[7]);
     IOWindow *screenWindow = IOWindowGetSharedWindow();
     //CGRect screenBound = [UIScreen mainScreen].bounds;
     float ws = screenWindow->_rect.size.width; // width of screen // _kScreenWidth
@@ -151,10 +151,6 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
         po3 = CAPointTransform(CAPointSubtract(po3, anchorPoint), transform);
         CAPoint po4 = CAPointMake(xo+wr, yo+hr, 0);
         po4 = CAPointTransform(CAPointSubtract(po4, anchorPoint), transform);
-        //DLog(@"po1: %@", CAPointDescription(po1));
-        //DLog(@"po2: %@", CAPointDescription(po2));
-        //DLog(@"po3: %@", CAPointDescription(po3));
-        //DLog(@"po4: %@", CAPointDescription(po4));
         if (transform.m34 != 0) { // Apply Prespective
             CGFloat zPosition = layer->_zPosition;
             //DLog(@"zPosition: %0.1f", zPosition);
@@ -174,10 +170,6 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
             depth = (po4.z + zPlusEye) / viewingDistance;
             po4.x /= depth;
             po4.y /= depth;
-            //DLog(@"po1: %@", CAPointDescription(po1));
-            //DLog(@"po2: %@", CAPointDescription(po2));
-            //DLog(@"po3: %@", CAPointDescription(po3));
-            //DLog(@"po4: %@", CAPointDescription(po4));
         }
         po1 = CAPointAdd(po1, anchorPoint);
         p1 = CGPointMake(2.0*po1.x/ws-1, 1.0-2*po1.y/hs);
