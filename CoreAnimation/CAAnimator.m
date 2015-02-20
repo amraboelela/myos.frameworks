@@ -129,7 +129,7 @@ static void reportFPS(BOOL withCondition)
         //beforeLockTime = CACurrentMediaTime();
         return;
     }
-    DLog();
+    //DLog();
     if (![_CAAnimatorConditionLock tryLock]) {
         //DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
         // Instead of blocking the run loop or the animation thread, we will try to display later

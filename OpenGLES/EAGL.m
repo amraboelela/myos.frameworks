@@ -488,7 +488,7 @@ void _EAGLFlush()
 
 void _EAGLSwapBuffers()
 {
-    DLog();
+    //DLog();
     _EAGLSwappingBuffers = YES;
     glFlush();
     //DLog();
