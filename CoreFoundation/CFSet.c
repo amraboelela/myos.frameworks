@@ -180,7 +180,7 @@ const void *
 CFSetGetValue(CFSetRef set, const void *value)
 {
     CF_OBJC_FUNCDISPATCH1(_kCFSetTypeID, const void*, set, "member:", value);
-    printf("CFSetGetValue set: %p", set);
+    //printf("CFSetGetValue set: %p", set);
     return GSHashTableGetValue((GSHashTableRef)set, value);
 }
 
