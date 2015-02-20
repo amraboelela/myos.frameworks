@@ -96,8 +96,8 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
         return;
     }
     glBindTexture(GL_TEXTURE_2D, textureID);
-    DLog(@"textureID: %d", textureID);
-    DLog(@"layer: %@", layer);
+    //DLog(@"textureID: %d", textureID);
+    //DLog(@"layer: %@", layer);
     float xr = layer->_rectNeedsComposite.origin.x;
     float yr = layer->_rectNeedsComposite.origin.y;
     float wr = layer->_rectNeedsComposite.size.width;
@@ -126,7 +126,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     float hs = _kScreenHeight;//screenWindow->_rect.size.height; // height of screen // _kScreenHeight
     
     CGPoint layerOrigin = _CARenderLayerGetOrigin(layer);
-    DLog(@"ws: %0.1f, hs: %0.1f", ws, hs);
+    //DLog(@"ws: %0.1f, hs: %0.1f", ws, hs);
 
     float xo = layerOrigin.x + xr;
     float yo = layerOrigin.y + yr;
@@ -189,7 +189,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     };
     
     EAGLContext *context = _EAGLGetCurrentContext();
-    DLog(@"context->_width: %0.1f, context->_height: %0.1f", context->_width, context->_height);
+    //DLog(@"context->_width: %0.1f, context->_height: %0.1f", context->_width, context->_height);
     glViewport(0, 0, context->_width, context->_height);
     
     glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
