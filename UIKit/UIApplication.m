@@ -778,7 +778,8 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
 int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
+   
+    XInitThreads(); 
     IOWindow *window = IOWindowCreateSharedWindow();
     //DLog();
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
