@@ -31,8 +31,9 @@
 
 @class UIView, UIEvent;
 
-#define _kScreenWidth   320
-#define _kScreenHeight  568
+#define _kScreenWidth       320
+#define _kScreenHeight      568
+#define _kScreenScaleFactor 1.25
 
 UIScreen *_UIScreenMainScreen();
 UIView *_UIScreenHitTest(UIScreen *screen, CGPoint touchPoint, UIEvent *theEvent);

@@ -781,7 +781,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     
     IOWindow *window = IOWindowCreateSharedWindow();
     //DLog();
-    CGRect cr = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
+    CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     UIGraphicsPushContext(ctx);
     //DLog();

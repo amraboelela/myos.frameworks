@@ -88,8 +88,6 @@ static CATransform3D _CARenderLayerTransform(CARenderLayer *layer)
     return result;
 }
 
-#ifdef ANDROID
-
 static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opacity, int textureID)
 {
     int i;
@@ -221,68 +219,6 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     //_EAGLSwapBuffers();
     //DLog(@"glGetError: %d", glGetError());
 }
-
-#else // not ANDROID
-
-static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opacity, int textureID)
-{
-    DLog(@"not ANDROID");
-    if (textureID == 0) {
-        return;
-    }
-    DLog(@"textureID: %d", textureID);
-    DLog(@"layer: %@", layer);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    
-    float xr = layer->_rectNeedsComposite.origin.x;
-    float yr = layer->_rectNeedsComposite.origin.y;
-    float wr = layer->_rectNeedsComposite.size.width;
-    float hr = layer->_rectNeedsComposite.size.height;
-    
-    float wl = layer->_bounds.size.width; // width of layer bounds
-    float hl = layer->_bounds.size.height; // height of layer bounds
-    
-    CGPoint p1 = CGPointMake(xr/wl, 1.0-yr/hl);
-    CGPoint p2 = CGPointMake((xr+wr)/wl, p1.y);
-    CGPoint p3 = CGPointMake(p1.x, 1.0-(yr+hr)/hl);
-    CGPoint p4 = CGPointMake(p2.x, p3.y);
-    
-    GLfloat texCoords[] = {
-        p1.x, p1.y,
-        p2.x, p2.y,
-        p3.x, p3.y,
-        p4.x, p4.y
-    };
-    
-    IOWindow *screenWindow = IOWindowGetSharedWindow();
-    float ws = screenWindow->_rect.size.width; // width of screen
-    float hs = screenWindow->_rect.size.height; // height of screen
-    CGPoint layerOrigin = _CARenderLayerGetOrigin(layer);
-    
-    //layerOrigin = CGPointMake(layerOrigin.x + xr, layerOrigin.y + yr);
-    float xo = layerOrigin.x + xr;
-    float yo = layerOrigin.y + yr;
-    p1 = CGPointMake(2.0*xo/ws-1, 1.0-2*yo/hs);
-    p2 = CGPointMake(2.0*(xo+wr)/ws-1, p1.y);
-    p3 = CGPointMake(p1.x, 1.0-2*(yo+hr)/hs);
-    p4 = CGPointMake(p2.x, p3.y);
-    
-    GLfloat vertices[] = {
-        p1.x, p1.y,
-        p2.x, p2.y,
-        p3.x, p3.y,
-        p4.x, p4.y
-    };
-    
-    glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
-    glVertexPointer(2, GL_FLOAT, 0, vertices);
-    
-    glColor4f(opacity, opacity, opacity, opacity);
-    //glColor4f(1.0, 1.0, 1.0, 1.0);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-}
-
-#endif
 
 static void _CARenderLayerComposite(CARenderLayer *layer)
 {
