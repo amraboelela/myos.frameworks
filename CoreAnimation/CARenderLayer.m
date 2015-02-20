@@ -226,6 +226,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
 
 static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opacity, int textureID)
 {
+    //return;
     DLog(@"not ANDROID");
     if (textureID == 0) {
         return;
