@@ -18,8 +18,7 @@
 #import <CoreAnimation/CoreAnimation-private.h>
 #import <OpenGLES/EAGL-private.h>
 #import <IOKit/IOKit.h>
-
-//#define kViewingDistance    10
+#import <UIKit/UIScreen-private.h>
 
 static BOOL _foundOpaqueLayer = NO;
 
@@ -122,9 +121,9 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     DLog(@"texCoords: %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f", texCoords[0], texCoords[1], texCoords[2], texCoords[3],
          texCoords[4], texCoords[5], texCoords[6], texCoords[7]);
     //IOWindow *screenWindow = IOWindowGetSharedWindow();
-    CGRect screenBound = [UIScreen mainScreen].bounds;
-    float ws = screenBound.size.width;//screenWindow->_rect.size.width; // width of screen
-    float hs = screenBound.size.height;//screenWindow->_rect.size.height; // height of screen
+    //CGRect screenBound = [UIScreen mainScreen].bounds;
+    float ws = _kScreenWidth;//screenWindow->_rect.size.width; // width of screen
+    float hs = _kScreenHeight;//screenWindow->_rect.size.height; // height of screen
     
     CGPoint layerOrigin = _CARenderLayerGetOrigin(layer);
     DLog(@"ws: %f, hs: %f", ws, hs);
