@@ -594,12 +594,16 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
     void *info = fopen([path cString], "rb");
     if (NULL == info) {
         ALog(@"File at path: %@ not found", path);
-        path = [NSString stringWithFormat:@"%@/assets", path];
+#ifndef ANDROID
+        path = [NSString stringWithFormat:@"assets/%@", path];
         info = fopen([path cString], "rb");
         if (NULL == info) {
             ALog(@"File at path: %@ not found", path);
             return nil;
         }
+#else
+        return nil;
+#endif
     }
     return CGDataProviderCreateSequential(info, &opal_fileCallbacks);
 }
