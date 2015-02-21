@@ -310,7 +310,7 @@ NSString *const _CARootLayersModifiedNotification = @"CARootLayersModifiedNotifi
         }
         //DLog();
         for (UIGestureRecognizer *recognizer in gestureRecognizers) {
-            DLog(@"recognizer: %@", recognizer);
+            //DLog(@"recognizer: %@", recognizer);
             _UIGestureRecognizerRecognizeTouches(recognizer, touches, event);
         }
         for (UITouch *touch in touches) {
@@ -335,7 +335,7 @@ NSString *const _CARootLayersModifiedNotification = @"CARootLayersModifiedNotifi
             // aware that this is here for a reason and that the problem it prevents is very rare and somewhat contrived.
             UIView *view = [touch.view retain];
 
-            DLog(@"view: %@", view);
+            //DLog(@"view: %@", view);
             const UITouchPhase phase = touch.phase;
             
             if (phase == UITouchPhaseBegan) {

@@ -30,6 +30,7 @@
 #import <UIKit/UIKit-private.h>
 #import <CoreAnimation/CoreAnimation-private.h>
 #import <OpenGLES/EAGL-private.h>
+#import <IOKit/IOKit-private.h>
 
 NSString *const UIScreenDidConnectNotification = @"UIScreenDidConnectNotification";
 NSString *const UIScreenDidDisconnectNotification = @"UIScreenDidDisconnectNotification";
@@ -60,15 +61,16 @@ NSMutableArray *_allScreens = nil;
         _bounds = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
         [_allScreens addObject:self];
         //DLog();
-#ifdef ANDROID
+//#ifdef ANDROID
         EAGLContext *context = _EAGLGetCurrentContext();
         //DLog(@"context: %@", context);
         _hScale = context->_width * 1.0 / _kScreenWidth;
         _vScale = context->_height * 1.0 / _kScreenHeight;
         _scale = MAX(_hScale, _vScale);
-#else
-        _scale = _kScreenScaleFactor;
-#endif
+        _screenScaleFactor = _scale;
+//#else
+//        _scale = _kScreenScaleFactor;
+//#endif
         //DLog(@"_scale: %0.1f", _scale);
     }
     return self;
@@ -177,13 +179,13 @@ UIView *_UIScreenHitTest(UIScreen *screen, CGPoint touchPoint, UIEvent *theEvent
 {
     UIWindow *window = [UIApplication sharedApplication]->_keyWindow;
 
-    DLog();
+    //DLog();
     if (window->_screen == screen) {
         CGPoint windowPoint = [window convertPoint:touchPoint fromWindow:nil];
         UIView *touchedView = [window hitTest:windowPoint withEvent:theEvent];
         if (touchedView) {
-            DLog(@"touchedView: %@", touchedView);
-            DLog(@"touchPoint: %@", NSStringFromCGPoint(touchPoint));
+            //DLog(@"touchedView: %@", touchedView);
+            //DLog(@"touchPoint: %@", NSStringFromCGPoint(touchPoint));
             return touchedView;
         }
     }

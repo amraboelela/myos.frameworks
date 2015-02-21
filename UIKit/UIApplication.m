@@ -171,13 +171,13 @@ static void _UIApplicationSetCurrentEventTouchedView()
     CGPoint screenLocation = touch->_location;
     UIScreen *theScreen = _application->_keyWindow->_screen;
     UIView *hitView = _UIScreenHitTest(theScreen, screenLocation, currentEvent);
-    DLog(@"hitView: %@", hitView);
+    //DLog(@"hitView: %@", hitView);
     _UITouchSetTouchedView(touch, hitView);
     if (hitView != previousView) {
         UITouchPhase phase = touch.phase;
         //DLog(@"phase: %d", phase);
         if (phase == UITouchPhaseMoved) {
-            DLog(@"phase == UITouchPhaseMoved");
+            //DLog(@"phase == UITouchPhaseMoved");
             [previousView touchesMoved:touches withEvent:currentEvent];
         }
     }

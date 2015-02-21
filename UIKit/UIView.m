@@ -323,7 +323,6 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 - (NSString *)description
 {
-    //return [NSString stringWithFormat:@"<%@: %p; frame = %@; hidden = %@; layer = %p>", [self className], self, NSStringFromCGRect(self.frame), (self.hidden ? @"YES" : @"NO"), _layer];
     return [NSString stringWithFormat:@"<%@: %p; frame = %@; layer = %p>", [self className], self, NSStringFromCGRect(self.frame), _layer];
 }
 /*
@@ -434,7 +433,6 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 + (void)setAnimationDuration:(NSTimeInterval)duration
 {
-    //[CATransaction setAnimationDuration:duration];
     [UIViewAnimationGroupGetCurrent() setAnimationDuration:duration];
 }
 
@@ -445,26 +443,6 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 + (void)setAnimationRepeatCount:(float)repeatCount
 {
-    //char *repeat = &repeatCount;
-    //DLog(@"sizeof(repeat): %d", sizeof(repeat));
-    /*DLog(@"repeat[0]: %d", repeat[0]);
-    DLog(@"repeat[1]: %d", repeat[1]);
-    DLog(@"repeat[2]: %d", repeat[2]);
-    DLog(@"repeat[3]: %d", repeat[3]);*/
-    /*
-    int repeat = 255;
-    int intRepeat = (int)repeatCount;
-    DLog(@"sizeof(repeat): %d", sizeof(repeat));
-    DLog(@"intRepeat d: %d", intRepeat);
-    DLog(@"repeat & intRepeat: %d", (repeat & intRepeat));
-    DLog(@"(repeat << 8) & intRepeat: %d", ((repeat << 8) & intRepeat));
-    DLog(@"(repeat << 16) & intRepeat: %d", ((repeat << 16) & intRepeat));
-    DLog(@"(repeat << 24) & intRepeat: %d", ((repeat << 24) & intRepeat));
-    DLog(@"repeatCount d: %d", (int)repeatCount);*/
-    
-    /*DLog(@"sizeof(repeatCount): %d", sizeof(repeatCount));
-    DLog(@"repeatCount f: %f", repeatCount);
-    DLog(@"repeatCount g: %g", repeatCount);*/
     UIViewAnimationGroup *animationGroup = UIViewAnimationGroupGetCurrent();
     //DLog(@"animationGroup: %@", animationGroup);
     [animationGroup setAnimationRepeatCount:repeatCount];
@@ -570,15 +548,15 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-    DLog(@"!self.userInteractionEnabled: %d", !self.userInteractionEnabled);
-    DLog(@"self.alpha < 0.01: %d", self.alpha < 0.01);
-    DLog(@"![self pointInside:point withEvent:event]: %d", ![self pointInside:point withEvent:event]);
+    //DLog(@"!self.userInteractionEnabled: %d", !self.userInteractionEnabled);
+    //DLog(@"self.alpha < 0.01: %d", self.alpha < 0.01);
+    //DLog(@"![self pointInside:point withEvent:event]: %d", ![self pointInside:point withEvent:event]);
     if (self.hidden || !self.userInteractionEnabled || self.alpha < 0.01 || ![self pointInside:point withEvent:event]) {
-        DLog(@"return nil self: %@", self);
+        //DLog(@"return nil self: %@", self);
         return nil;
     } else {
         for (UIView *subview in [_subviews reverseObjectEnumerator]) {
-            DLog(@"subview: %@", subview);
+            //DLog(@"subview: %@", subview);
             UIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event];
             if (hitView) {
                 return hitView;
@@ -1121,8 +1099,8 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
 {
     //DLog(@"transform: %@", CGAffineTransformDescription(self.transform));
-    DLog(@"frame: %@", NSStringFromCGRect(self.frame));
-    DLog(@"point: %@", NSStringFromCGPoint(point));
+    //DLog(@"frame: %@", NSStringFromCGRect(self.frame));
+    //DLog(@"point: %@", NSStringFromCGPoint(point));
     CGSize size = self.frame.size;
     return point.x > 0 && point.y > 0 && point.x <= size.width && point.y <= size.height;
     //return CGRectContainsPoint(self.bounds, point);

@@ -7,5 +7,7 @@
 
 @class UIEvent;
 
+extern float _screenScaleFactor;
+
 BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent);
 BOOL IOEventCanDrawWindow(IOWindow * window);

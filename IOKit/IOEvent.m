@@ -8,6 +8,7 @@
 #import <UIKit/UIEvent.h>
 #import <UIKit/UITouch-private.h>
 
+extern float _screenScaleFactor;
 static XEvent _xevent;
 
 #define _KIOEventTimeDiffMax	0.27
@@ -31,7 +32,7 @@ BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
     
     if (XCheckWindowEvent(window->display, window->xwindow, ButtonPressMask | Button1MotionMask | ButtonReleaseMask, &_xevent)) {
         UITouch *touch = [[uievent allTouches] anyObject];
-        CGPoint screenLocation = CGPointMake(_xevent.xbutton.x, _xevent.xbutton.y);
+        CGPoint screenLocation = CGPointMake(_xevent.xbutton.x / _screenScaleFactor, _xevent.xbutton.y / _screenScaleFactor);
         NSTimeInterval timestamp = _xevent.xbutton.time / 1000.0;
         switch (_xevent.type) {
             case ButtonPress: {
