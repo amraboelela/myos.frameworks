@@ -8,7 +8,7 @@
 #import <UIKit/UIEvent.h>
 #import <UIKit/UITouch-private.h>
 
-extern float _screenScaleFactor;
+float _screenScaleFactor;
 static XEvent _xevent;
 
 #define _KIOEventTimeDiffMax	0.27

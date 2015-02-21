@@ -27,7 +27,6 @@ NSConditionLock *_CAAnimatorConditionLock = nil;
 NSConditionLock *_CAAnimatorNAConditionLock = nil;
 #endif
 
-//BOOL _CAAnimatorCaptureScreen = NO;
 CGImageRef _CAAnimatorScreenCapture = nil;
 
 static int _CAAnimatorFrameCount = 0;
