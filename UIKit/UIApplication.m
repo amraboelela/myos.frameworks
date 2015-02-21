@@ -162,22 +162,22 @@ static BOOL TouchIsActive(UITouch *touch)
 static void _UIApplicationSetCurrentEventTouchedView()
 {
     UIEvent *currentEvent = _application->_currentEvent;
-    //DLog(@"currentEvent: %@", currentEvent);
+    DLog(@"currentEvent: %@", currentEvent);
     NSSet *touches = [currentEvent allTouches];
     UITouch *touch = [touches anyObject];
-    //DLog(@"touch: %@", touch);
-    //DLog(@"touch.view: %@", touch.view);
+    DLog(@"touch: %@", touch);
+    DLog(@"touch.view: %@", touch.view);
     UIView *previousView = [touch.view retain];
     CGPoint screenLocation = touch->_location;
     UIScreen *theScreen = _application->_keyWindow->_screen;
     UIView *hitView = _UIScreenHitTest(theScreen, screenLocation, currentEvent);
-    //DLog(@"hitView: %@", hitView);
+    DLog(@"hitView: %@", hitView);
     _UITouchSetTouchedView(touch, hitView);
     if (hitView != previousView) {
         UITouchPhase phase = touch.phase;
-        //DLog(@"phase: %d", phase);
+        DLog(@"phase: %d", phase);
         if (phase == UITouchPhaseMoved) {
-            //DLog(@"phase == UITouchPhaseMoved");
+            DLog(@"phase == UITouchPhaseMoved");
             [previousView touchesMoved:touches withEvent:currentEvent];
         }
     }
@@ -828,7 +828,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
         if (IOEventGetNextEvent(window, _application->_currentEvent)) {
-            DLog();
+            //DLog();
             _UIApplicationSetCurrentEventTouchedView();
             _application->_lastActivityTime = CACurrentMediaTime();
         }

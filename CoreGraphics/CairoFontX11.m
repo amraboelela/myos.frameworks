@@ -131,9 +131,9 @@ static FcPattern *opal_FcPatternCreateFromName(const char *name)
         goto error;
     }
     FcDefaultSubstitute(pat);
-    DLog(@"FcDefaultSubstitute pat: %p", pat);
+    //DLog(@"FcDefaultSubstitute pat: %p", pat);
     pat = FcFontMatch(NULL, pat, &fcres);
-    DLog(@"FcFontMatch pat: %p", pat);
+    //DLog(@"FcFontMatch pat: %p", pat);
     if (!pat) {
         //DLog(@"!pat");
         goto error;
