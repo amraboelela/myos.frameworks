@@ -30,7 +30,7 @@
 #import <UIKit/UIKit-private.h>
 #import <CoreAnimation/CoreAnimation-private.h>
 #import <OpenGLES/EAGL-private.h>
-#import <IOKit/IOKit-private.h>
+#import <IOKit/IOKit.h>
 
 NSString *const UIScreenDidConnectNotification = @"UIScreenDidConnectNotification";
 NSString *const UIScreenDidDisconnectNotification = @"UIScreenDidDisconnectNotification";
