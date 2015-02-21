@@ -61,7 +61,7 @@ UIWindow* _UIResponderGetResponderWindow(UIResponder *responder);
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    //DLog(@"self: %@", self);
+    DLog(@"self: %@", self);
     [[self nextResponder] touchesBegan:touches withEvent:event];
 }
 
@@ -73,7 +73,7 @@ UIWindow* _UIResponderGetResponderWindow(UIResponder *responder);
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    //DLog(@"self: %@", self);
+    DLog(@"self: %@", self);
     [[self nextResponder] touchesEnded:touches withEvent:event];
 }
 

@@ -123,7 +123,7 @@
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    //DLog(@"self: %@", self);
+    DLog(@"self: %@", self);
     UITouch *touch = [touches anyObject];
     _touchInside = YES;
     _tracking = [self beginTrackingWithTouch:touch withEvent:event];
@@ -163,7 +163,7 @@
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    //DLog(@"self: %@", self);
+    DLog(@"self: %@", self);
     UITouch *touch = [touches anyObject];
     _touchInside = [self pointInside:[touch locationInView:self] withEvent:event];
     self.highlighted = NO;
@@ -197,10 +197,10 @@
 
 - (void)_sendActionsForControlEvents:(UIControlEvents)controlEvents withEvent:(UIEvent *)event
 {
-    //DLog();
+    DLog();
     for (UIControlAction *controlAction in _registeredActions) {
-        //DLog(@"controlAction: %@", controlAction);
-        //DLog(@"controlEvents: %d", controlEvents);
+        DLog(@"controlAction: %@", controlAction);
+        DLog(@"controlEvents: %d", controlEvents);
         //DLog(@"controlAction.controlEvents: %d", controlAction.controlEvents);
         if (controlAction.controlEvents & controlEvents) {
             //DLog(@"controlAction.controlEvents & controlEvents");

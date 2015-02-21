@@ -162,11 +162,11 @@ static BOOL TouchIsActive(UITouch *touch)
 static void _UIApplicationSetCurrentEventTouchedView()
 {
     UIEvent *currentEvent = _application->_currentEvent;
-    DLog(@"currentEvent: %@", currentEvent);
+    //DLog(@"currentEvent: %@", currentEvent);
     NSSet *touches = [currentEvent allTouches];
     UITouch *touch = [touches anyObject];
-    DLog(@"touch: %@", touch);
-    DLog(@"touch.view: %@", touch.view);
+    //DLog(@"touch: %@", touch);
+    //DLog(@"touch.view: %@", touch.view);
     UIView *previousView = [touch.view retain];
     CGPoint screenLocation = touch->_location;
     UIScreen *theScreen = _application->_keyWindow->_screen;
@@ -1035,7 +1035,7 @@ void _UIApplicationEnterForeground()
 void _UIApplicationSendEvent(UIEvent *event)
 {
     for (UITouch *touch in [event allTouches]) {
-        //DLog(@"touch: %@", touch);
+        DLog(@"touch: %@", touch);
         [touch.window sendEvent:event];
     }
 }
