@@ -18,3 +18,4 @@
 #import <IOKit/IOWindow.h>
 #import <IOKit/IOPipe.h>
 #import <IOKit/NSFileHandle+IOKit.h>
+#import <IOKit/IOEvent.h>
