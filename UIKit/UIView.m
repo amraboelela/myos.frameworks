@@ -570,9 +570,9 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-    //DLog(@"!self.userInteractionEnabled: %d", !self.userInteractionEnabled);
-    //DLog(@"self.alpha < 0.01: %d", self.alpha < 0.01);
-    //DLog(@"![self pointInside:point withEvent:event]: %d", ![self pointInside:point withEvent:event]);
+    DLog(@"!self.userInteractionEnabled: %d", !self.userInteractionEnabled);
+    DLog(@"self.alpha < 0.01: %d", self.alpha < 0.01);
+    DLog(@"![self pointInside:point withEvent:event]: %d", ![self pointInside:point withEvent:event]);
     if (self.hidden || !self.userInteractionEnabled || self.alpha < 0.01 || ![self pointInside:point withEvent:event]) {
         DLog(@"return nil self: %@", self);
         return nil;
