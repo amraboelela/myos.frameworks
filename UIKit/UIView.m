@@ -1121,7 +1121,8 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
 {
     //DLog(@"transform: %@", CGAffineTransformDescription(self.transform));
-    //DLog(@"frame: %@", CGRectDescription(self.frame));
+    DLog(@"frame: %@", NSStringFromCGRect(self.frame));
+    DLog(@"point: %@", NSStringFromCGPoint(point));
     CGSize size = self.frame.size;
     return point.x > 0 && point.y > 0 && point.x <= size.width && point.y <= size.height;
     //return CGRectContainsPoint(self.bounds, point);
