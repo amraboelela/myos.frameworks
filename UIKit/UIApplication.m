@@ -175,7 +175,7 @@ static void _UIApplicationSetCurrentEventTouchedView()
     _UITouchSetTouchedView(touch, hitView);
     if (hitView != previousView) {
         UITouchPhase phase = touch.phase;
-        DLog(@"phase: %d", phase);
+        //DLog(@"phase: %d", phase);
         if (phase == UITouchPhaseMoved) {
             DLog(@"phase == UITouchPhaseMoved");
             [previousView touchesMoved:touches withEvent:currentEvent];
@@ -1035,7 +1035,7 @@ void _UIApplicationEnterForeground()
 void _UIApplicationSendEvent(UIEvent *event)
 {
     for (UITouch *touch in [event allTouches]) {
-        DLog(@"touch: %@", touch);
+        //DLog(@"touch: %@", touch);
         [touch.window sendEvent:event];
     }
 }

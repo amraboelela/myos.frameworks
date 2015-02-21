@@ -574,11 +574,11 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
     //DLog(@"self.alpha < 0.01: %d", self.alpha < 0.01);
     //DLog(@"![self pointInside:point withEvent:event]: %d", ![self pointInside:point withEvent:event]);
     if (self.hidden || !self.userInteractionEnabled || self.alpha < 0.01 || ![self pointInside:point withEvent:event]) {
-        //DLog(@"return nil self: %@", self);
+        DLog(@"return nil self: %@", self);
         return nil;
     } else {
         for (UIView *subview in [_subviews reverseObjectEnumerator]) {
-            //DLog(@"subview: %@", subview);
+            DLog(@"subview: %@", subview);
             UIView *hitView = [subview hitTest:[subview convertPoint:point fromView:self] withEvent:event];
             if (hitView) {
                 return hitView;

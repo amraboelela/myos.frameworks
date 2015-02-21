@@ -177,13 +177,13 @@ UIView *_UIScreenHitTest(UIScreen *screen, CGPoint touchPoint, UIEvent *theEvent
 {
     UIWindow *window = [UIApplication sharedApplication]->_keyWindow;
 
-    //DLog();
+    DLog();
     if (window->_screen == screen) {
         CGPoint windowPoint = [window convertPoint:touchPoint fromWindow:nil];
         UIView *touchedView = [window hitTest:windowPoint withEvent:theEvent];
         if (touchedView) {
-            //DLog(@"touchedView: %@", touchedView);
-            //DLog(@"touchPoint: %@", NSStringFromCGPoint(touchPoint));
+            DLog(@"touchedView: %@", touchedView);
+            DLog(@"touchPoint: %@", NSStringFromCGPoint(touchPoint));
             return touchedView;
         }
     }

@@ -308,7 +308,7 @@ NSString *const _CARootLayersModifiedNotification = @"CARootLayersModifiedNotifi
             //DLog(@"touch->_gestureRecognizers: %@", touch->_gestureRecognizers);
             [gestureRecognizers addObjectsFromArray:touch->_gestureRecognizers];
         }
-        DLog();
+        //DLog();
         for (UIGestureRecognizer *recognizer in gestureRecognizers) {
             DLog(@"recognizer: %@", recognizer);
             _UIGestureRecognizerRecognizeTouches(recognizer, touches, event);
