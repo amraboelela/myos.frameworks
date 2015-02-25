@@ -206,6 +206,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 + (id)defaultValueForKey:(NSString *)key
 {
+    DLog(@"key: %@", key);
     if ([key isEqualToString:@"anchorPoint"]) {
         return [NSValue valueWithCGPoint:CGPointMake(0.5,0.5)];
     } else if ([key isEqualToString:@"shouldRasterize"]) {

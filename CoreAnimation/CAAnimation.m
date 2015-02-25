@@ -208,7 +208,9 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
     if (self) {
         _beginTime = 0;
         _startTime = 0;
+        DLog(@"1");
         _duration = (CFTimeInterval)[(NSNumber *)[CATransaction valueForKey:kCATransactionAnimationDuration] doubleValue];
+        DLog(@"2");
         _timingFunction = [CATransaction valueForKey:kCATransactionAnimationTimingFunction] ? :
                         [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionDefault];
         [_timingFunction retain];
