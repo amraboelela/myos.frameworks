@@ -593,7 +593,7 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
     
     void *info = fopen([path cString], "rb");
     if (NULL == info) {
-        ALog(@"File at path: %@ not found", path);
+        //ALog(@"File at path: %@ not found", path);
 #ifndef ANDROID
         path = [NSString stringWithFormat:@"assets/%@", path];
         info = fopen([path cString], "rb");

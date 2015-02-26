@@ -25,7 +25,7 @@ static CALayerObserver *_layerObserver = nil;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    DLog();
+    //DLog();
     NSNumber *isPrior = [change objectForKey:@"notificationIsPrior"];
     if (![isPrior boolValue]) {
         return;
@@ -40,7 +40,7 @@ static CALayerObserver *_layerObserver = nil;
         }
         return;
     }
-    DLog();
+    //DLog();
     CAAnimationGroup *animationGroup = _CAAnimationGroupGetCurrent();
     if ((!layer->delegate && layer->_superlayer) || animationGroup) {
         DLog(@"keyPath: %@", keyPath);
