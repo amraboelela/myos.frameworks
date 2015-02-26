@@ -605,7 +605,7 @@ CFAttributedStringSetAttribute (CFMutableAttributedStringRef aStr,CFRange range,
     for(; index < to ; ++index) {
         if (CFDictionaryContainsKey(dic,&index)) {
             attr = CFDictionaryGetValue(dic,&index);
-            CFDictionarySetValue(attr, [attrName cString], value);
+            CFDictionarySetValue(attr, attrName, value);
         }
     }
 }
