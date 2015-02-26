@@ -224,7 +224,7 @@ CFDateFormatterSetCalendarName (CFDateFormatterRef fmt, int prop,
                                                          CFLocaleGetIdentifier (fmt->_locale));
     mDict = CFDictionaryCreateMutableCopy (NULL, 0, dict);
     CFRelease (dict);
-    CFDictionarySetValue (mDict, [kCFLocaleCalendarIdentifier cString], value);
+    CFDictionarySetValue (mDict, kCFLocaleCalendarIdentifier, value);
     
     locale = CFLocaleCreateLocaleIdentifierFromComponents (NULL, mDict);
     CFRelease (fmt->_locale);
