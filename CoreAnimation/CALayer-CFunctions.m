@@ -128,7 +128,7 @@ void _CALayerDisplayIfNeeded(CALayer *layer)
 void _CALayerSetNeedsDisplayWithRoot(CALayer *layer)
 {
     if (!layer->_hidden) {
-        DLog(@"layer: %@", layer);
+        //DLog(@"layer: %@", layer);
         _CALayerSetNeedsDisplay(layer);
         for (CALayer *sublayer in layer->_sublayers) {
             _CALayerSetNeedsDisplayWithRoot(sublayer);
@@ -156,7 +156,7 @@ void _CALayerSetNeedsDisplay(CALayer *layer)
 {
     DLog(@"layer: %@", layer);
     layer->_needsDisplay = YES;
-    DLog(@"_needsDisplayLayers: %@", _needsDisplayLayers);
+    //DLog(@"_needsDisplayLayers: %@", _needsDisplayLayers);
     CFSetAddValue(_needsDisplayLayers, layer);
     _CALayerSetNeedsComposite(layer);
 }

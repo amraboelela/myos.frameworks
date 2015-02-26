@@ -210,7 +210,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
         _startTime = 0;
         //DLog(@"[CATransaction valueForKey:kCATransactionAnimationDuration]: %0.0f", [CATransaction valueForKey:kCATransactionAnimationDuration]);
         CFNumberGetValue([CATransaction valueForKey:kCATransactionAnimationDuration], kCFNumberDoubleType, &_duration);//(CFTimeInterval)[(NSNumber *)[CATransaction valueForKey:kCATransactionAnimationDuration] doubleValue];
-        DLog(@"_duration: %0.2f", _duration);
+        //DLog(@"_duration: %0.2f", _duration);
         _timingFunction = [CATransaction valueForKey:kCATransactionAnimationTimingFunction] ? :
                         [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionDefault];
         [_timingFunction retain];
@@ -223,7 +223,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
         _speed = 1;
         _timeOffset = 0;
         _beginFromCurrentState = NO;
-        DLog(@"self: %@", self);
+        //DLog(@"self: %@", self);
     }
     return self;
 }
@@ -528,10 +528,10 @@ CAAnimationGroup *_CAAnimationGroupNew()
 
 CAAnimationGroup *_CAAnimationGroupGetCurrent()
 {
-    //DLog(@"_animationGroups: %@", _animationGroups);
+    DLog(@"_animationGroups: %@", _animationGroups);
     for (CAAnimationGroup *animationGroup in [_animationGroups reverseObjectEnumerator]) {
         if (!animationGroup->_committed) {
-            //DLog(@"animationGroup: %@", animationGroup);
+            DLog(@"animationGroup: %@", animationGroup);
             return animationGroup;
         }
     }
