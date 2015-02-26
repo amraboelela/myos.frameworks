@@ -762,7 +762,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (id<CAAction>)actionForKey:(NSString *)key
 {
-    DLog();
+    DLog(@"key: %@", key);
     if ([CATransaction disableActions]) {
         return nil;
     }

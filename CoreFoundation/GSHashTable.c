@@ -425,9 +425,10 @@ GSHashTableGetKeysAndValues (GSHashTableRef table, const void **keys,
 const void *
 GSHashTableGetValue (GSHashTableRef table, const void *key)
 {
+    printf(@"1");
     GSHashTableBucket *bucket;
     bucket = GSHashTableFindBucket (table, key);
-    
+    printf(@"2");
     return bucket->value;
 }
 
