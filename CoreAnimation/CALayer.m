@@ -33,7 +33,7 @@ NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
 NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 NSString *const kCATransition = @"CATransition";
 
-static char *const _kCAStyle = "style";
+static NSString *const _kCAStyle = @"style";
 static NSArray *_CALayerAnimatableKeys = nil;
 static NSMutableDictionary *_needDisplayKeys;
 
@@ -762,8 +762,8 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (id<CAAction>)actionForKey:(NSString *)key
 {
-    char *cKey = [key cString];
-    DLog(@"cKey: %s", cKey);
+    //char *cKey = [key cString];
+    DLog(@"key: %@", key);
     if ([CATransaction disableActions]) {
         return nil;
     }
@@ -772,13 +772,13 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         return [delegate performSelector:@selector(actionForLayer:forKey:) withObject:self withObject:key];
     }
     DLog(@"_actions: %@", _actions);
-    id<CAAction> action = CFDictionaryGetValue(_actions, cKey);
+    id<CAAction> action = CFDictionaryGetValue(_actions, key);
     DLog();
     if (action == nil) {
         DLog();
         NSDictionary *tmpStyle = _style;
         while (tmpStyle != nil) {
-            action = CFDictionaryGetValue(tmpStyle, cKey);
+            action = CFDictionaryGetValue(tmpStyle, key);
             if (action != nil) {
                 return action;
             }

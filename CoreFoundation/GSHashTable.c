@@ -434,7 +434,7 @@ GSHashTableGetKeysAndValues (GSHashTableRef table, const void **keys,
 const void *
 GSHashTableGetValue (GSHashTableRef table, const void *key)
 {
-    printf("GSHashTableGetValue key: %s\n", key);
+    printf("GSHashTableGetValue key: %p\n", key);
     GSHashTableBucket *bucket;
     bucket = GSHashTableFindBucket(table, key);
     printf("GSHashTableGetValue 2\n");
