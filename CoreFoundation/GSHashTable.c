@@ -181,16 +181,16 @@ GSHashTableFindBucket (GSHashTableRef table, const void *key)
     CFIndex idx;
     CFHashCode hash;
     Boolean matched;
-    //printf("GSHashTableFindBucket 2\n");
+    printf("GSHashTableFindBucket 2\n");
     GSHashTableHashCallBack fHash = table->_keyCallBacks.hash;
     GSHashTableEqualCallBack fEqual = table->_keyCallBacks.equal;
-    //printf("GSHashTableFindBucket 3\n");
+    printf("GSHashTableFindBucket 3\n");
     buckets = table->_buckets;
     capacity = table->_capacity;
-    //printf("GSHashTableFindBucket 4\n");
+    printf("GSHashTableFindBucket 4\n");
     hash = fHash ? fHash(key) : GSHashPointer(key);
     idx = hash % capacity;
-    //printf("GSHashTableFindBucket 5\n");
+    printf("GSHashTableFindBucket 5\n");
     matched = buckets[idx].key == NULL || (fEqual ?
                                            fEqual (key, buckets[idx].key) : key == buckets[idx].key);
     printf("GSHashTableFindBucket 6\n");

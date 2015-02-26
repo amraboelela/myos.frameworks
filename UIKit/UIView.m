@@ -413,7 +413,7 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 + (void)setAnimationCurve:(UIViewAnimationCurve)curve
 {
-    DLog();
+    //DLog();
     [UIViewAnimationGroupGetCurrent() setAnimationCurve:curve];
 }
 
@@ -434,7 +434,7 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 + (void)setAnimationDuration:(NSTimeInterval)duration
 {
-    DLog();
+    //DLog();
     [UIViewAnimationGroupGetCurrent() setAnimationDuration:duration];
 }
 
