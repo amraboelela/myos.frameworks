@@ -770,8 +770,9 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
     if ([delegate respondsToSelector:@selector(actionForLayer:forKey:)]) {
         return [delegate performSelector:@selector(actionForLayer:forKey:) withObject:self withObject:key];
     }
-    DLog();
+    DLog(@"_actions: %@", _actions);
     id<CAAction> action = CFDictionaryGetValue(_actions, key);
+    DLog();
     if (action == nil) {
         DLog();
         NSDictionary *tmpStyle = _style;

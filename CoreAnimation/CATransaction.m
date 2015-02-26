@@ -221,7 +221,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 void _CATransactionInitialize()
 {
-    DLog();
+    //DLog();
     _transactions = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
     _removeLayers = CFSetCreateMutable(kCFAllocatorDefault, 10, &kCFTypeSetCallBacks);
     _CAAnimationInitialize();
