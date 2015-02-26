@@ -112,7 +112,9 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (CFTimeInterval)animationDuration
 {
-    return (CFTimeInterval)[(NSNumber *)[self valueForKey:kCATransactionAnimationDuration] doubleValue];
+    double result;
+    CFNumberGetValue([self valueForKey:kCATransactionAnimationDuration], kCFNumberDoubleType, &result);
+    return result;
 }
 
 + (void)setAnimationDuration:(CFTimeInterval)dur
