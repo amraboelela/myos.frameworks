@@ -175,7 +175,7 @@ GSHash2 (CFHashCode value)
 static GSHashTableBucket *
 GSHashTableFindBucket (GSHashTableRef table, const void *key)
 {
-    printf("GSHashTableFindBucket 1\n");
+    printf("GSHashTableFindBucket key: %p\n", key);
     GSHashTableBucket *buckets;
     CFIndex capacity;
     CFIndex idx;
@@ -187,7 +187,9 @@ GSHashTableFindBucket (GSHashTableRef table, const void *key)
     printf("GSHashTableFindBucket 3\n");
     buckets = table->_buckets;
     capacity = table->_capacity;
-    printf("GSHashTableFindBucket 4\n");
+    printf("GSHashTableFindBucket fHash: %p\n", fHash);
+    printf("GSHashTableFindBucket fHash(key): %p\n", fHash(key));
+    printf("GSHashTableFindBucket GSHashPointer(key): %p\n", GSHashPointer(key));
     hash = fHash ? fHash(key) : GSHashPointer(key);
     printf("GSHashTableFindBucket 4.1\n");
     idx = hash % capacity;
