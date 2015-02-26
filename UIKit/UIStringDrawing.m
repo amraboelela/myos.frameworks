@@ -37,8 +37,8 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
     CGSize drawSize = CGSizeZero;
     if (font) {
         CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(NULL, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        CFDictionarySetValue(attributes, kCTFontAttributeName, font->_font);
-        CFDictionarySetValue(attributes, kCTForegroundColorFromContextAttributeName, kCFBooleanTrue);
+        CFDictionarySetValue(attributes, [kCTFontAttributeName cString], font->_font);
+        CFDictionarySetValue(attributes, [kCTForegroundColorFromContextAttributeName cString], kCFBooleanTrue);
         
         //NSAttributedString * attributedString = CFAttributedStringCreate(NULL, (__bridge CFStringRef)string, attributes);
         //TODO uncomment the previous line when memory issue is done.

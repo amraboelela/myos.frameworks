@@ -595,22 +595,19 @@ CFAttributedStringRemoveAttribute ( CFMutableAttributedStringRef aStr, CFRange r
 void 
 CFAttributedStringSetAttribute (CFMutableAttributedStringRef aStr,CFRange range,CFStringRef attrName,CFTypeRef value)
 {
-
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, void, aStr, "addAttribute:value:range:");
-	CFIndex strSize = CFStringGetLength(aStr->str);
-	CFIndex index = range.location;
-	CFIndex to = index + range.length;
-	CFDictionaryRef dic =  aStr->attributes;
-	CFDictionaryRef attr ;
-	for(; index < to ; ++index)
-	{
-	
-		if(CFDictionaryContainsKey(dic,&index))
-		{
-			attr = CFDictionaryGetValue(dic,&index);
-			CFDictionarySetValue (attr,CFRetain(attrName),CFRetain(value));
-		}
-	}
+    
+    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, void, aStr, "addAttribute:value:range:");
+    CFIndex strSize = CFStringGetLength(aStr->str);
+    CFIndex index = range.location;
+    CFIndex to = index + range.length;
+    CFDictionaryRef dic =  aStr->attributes;
+    CFDictionaryRef attr ;
+    for(; index < to ; ++index) {
+        if (CFDictionaryContainsKey(dic,&index)) {
+            attr = CFDictionaryGetValue(dic,&index);
+            CFDictionarySetValue(attr, [attrName cString], value);
+        }
+    }
 }
 
 

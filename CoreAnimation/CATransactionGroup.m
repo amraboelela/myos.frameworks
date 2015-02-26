@@ -44,9 +44,9 @@
         //GSHashTableSetValue(_values, kCATransactionAnimationDuration, number);
         //DLog(@"_values: %@", _values);
         //DLog();
-        CFDictionarySetValue(_values, kCATransactionAnimationDuration, number);
+        CFDictionarySetValue(_values, [kCATransactionAnimationDuration cString], number);
         //DLog();
-        CFDictionarySetValue(_values, kCATransactionDisableActions, [NSNumber numberWithBool:NO]);
+        CFDictionarySetValue(_values, [kCATransactionDisableActions cString], [NSNumber numberWithBool:NO]);
         //DLog(@"_values: %@", _values);
     }
     return self;
