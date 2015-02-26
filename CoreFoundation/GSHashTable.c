@@ -175,34 +175,43 @@ GSHash2 (CFHashCode value)
 static GSHashTableBucket *
 GSHashTableFindBucket (GSHashTableRef table, const void *key)
 {
+    printf("GSHashTableFindBucket 1\n");
     GSHashTableBucket *buckets;
     CFIndex capacity;
     CFIndex idx;
     CFHashCode hash;
     Boolean matched;
+    printf("GSHashTableFindBucket 2\n");
     GSHashTableHashCallBack fHash = table->_keyCallBacks.hash;
     GSHashTableEqualCallBack fEqual = table->_keyCallBacks.equal;
+    printf("GSHashTableFindBucket 3\n");
     buckets = table->_buckets;
     capacity = table->_capacity;
+    printf("GSHashTableFindBucket 4\n");
     hash = fHash ? fHash(key) : GSHashPointer(key);
     idx = hash % capacity;
+    printf("GSHashTableFindBucket 5\n");
     matched = buckets[idx].key == NULL || (fEqual ?
                                            fEqual (key, buckets[idx].key) : key == buckets[idx].key);
+    printf("GSHashTableFindBucket 6\n");
     if (!matched) {
         CFHashCode hash2 = GSHash2 (hash);
         if (fEqual) {
+            printf("GSHashTableFindBucket 7\n");
             do {
                 hash += hash2;
                 idx = hash % capacity;
             } while (buckets[idx].key != NULL
                      && !fEqual (key, buckets[idx].key));
         } else {
+            printf("GSHashTableFindBucket 8\n");
             do {
                 hash += hash2;
                 idx = hash % capacity;
             } while (buckets[idx].key != NULL && key != buckets[idx].key);
         }
     }
+    printf("GSHashTableFindBucket 9\n");
     return &buckets[idx];
 }
 
@@ -425,9 +434,9 @@ GSHashTableGetKeysAndValues (GSHashTableRef table, const void **keys,
 const void *
 GSHashTableGetValue (GSHashTableRef table, const void *key)
 {
-    printf("GSHashTableGetValue 1\n");
+    printf("GSHashTableGetValue key: %s\n", key);
     GSHashTableBucket *bucket;
-    bucket = GSHashTableFindBucket (table, key);
+    bucket = GSHashTableFindBucket(table, key);
     printf("GSHashTableGetValue 2\n");
     return bucket->value;
 }
