@@ -549,12 +549,12 @@ void _CAAnimationGroupAddAnimation(CAAnimationGroup *animationGroup, CAAnimation
 
 void _CAAnimationGroupCommit()
 {
-    //DLog();
+    DLog();
     CAAnimationGroup *animationGroup = _CAAnimationGroupGetCurrent();
     if (animationGroup) {
         //[_animationGroups removeObject:animationGroup];
         animationGroup->_committed = YES;
-        //DLog(@"animationGroup: %@", animationGroup);
+        DLog(@"animationGroup: %@", animationGroup);
     }
 }
 

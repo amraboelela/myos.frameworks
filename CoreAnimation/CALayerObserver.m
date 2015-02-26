@@ -43,7 +43,7 @@ static CALayerObserver *_layerObserver = nil;
     //DLog();
     CAAnimationGroup *animationGroup = _CAAnimationGroupGetCurrent();
     if ((!layer->delegate && layer->_superlayer) || animationGroup) {
-        DLog(@"keyPath: %@", keyPath);
+        //DLog(@"keyPath: %@", keyPath);
         id<CAAction> action = [layer actionForKey:keyPath];
         [action runActionForKey:keyPath object:layer arguments:nil];
         CABasicAnimation *animation = (CABasicAnimation *)[layer animationForKey:keyPath];
