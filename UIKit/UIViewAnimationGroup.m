@@ -292,7 +292,7 @@ static CAMediaTimingFunction *CAMediaTimingFunctionFromUIViewAnimationCurve(UIVi
 
 UIViewAnimationGroup *UIViewAnimationGroupGetCurrent()
 {
-    DLog();
+    //DLog();
     for (UIViewAnimationGroup *viewAnimationGroup in [_animationGroups reverseObjectEnumerator]) {
         if (!viewAnimationGroup->_animationGroup->_committed) {
             return viewAnimationGroup;
