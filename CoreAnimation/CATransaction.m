@@ -145,7 +145,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 + (void)setValue:(id)value forKey:(NSString *)key
 {
     DLog(@"key: %@", key);
-    DLog(@"key: %s", key);
+    //DLog(@"key: %s", key);
     CATransactionGroup *group = _CATransactionGetCurrentTransaction();
     CFDictionarySetValue(group->_values, key, value);
 }
@@ -153,7 +153,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 + (id)valueForKey:(NSString *)key
 {
     DLog(@"key: %@", key);
-    DLog(@"key: %s", key);
+    //DLog(@"key: %s", key);
     CATransactionGroup *group = _CATransactionGetCurrentTransaction();
     return CFDictionaryGetValue(group->_values, key);
 }

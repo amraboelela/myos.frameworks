@@ -806,7 +806,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 {
     DLog();
     CAAnimation *animation = [anim copy];
-    CFDictionarySetValue(_animations, [key cString], animation);
+    CFDictionarySetValue(_animations, key, animation);
     [animation release];
     if (!animation->_duration) {
         animation.duration = [CATransaction animationDuration];
@@ -832,7 +832,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (CAAnimation *)animationForKey:(NSString *)key
 {
-    return CFDictionaryGetValue(_animations, [key cString]);
+    return CFDictionaryGetValue(_animations, key);
 }
 
 - (void)removeAllAnimations

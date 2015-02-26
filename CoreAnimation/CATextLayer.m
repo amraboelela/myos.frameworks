@@ -114,8 +114,8 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
     CFArrayRef lines;
     if (font) {
         CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(NULL, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        CFDictionarySetValue(attributes, [kCTFontAttributeName cString], font);
-        CFDictionarySetValue(attributes, [kCTForegroundColorAttributeName cString], textColor);
+        CFDictionarySetValue(attributes, kCTFontAttributeName, font);
+        CFDictionarySetValue(attributes, kCTForegroundColorAttributeName, textColor);
         attributedString = CFAttributedStringCreate(NULL, (__bridge CFStringRef)string, attributes);
         lines = CreateCTLinesForAttributedString(attributedString, constrainedToSize, lineBreakMode, renderSize);
         CFRelease(attributes);
