@@ -189,6 +189,7 @@ GSHashTableFindBucket (GSHashTableRef table, const void *key)
     capacity = table->_capacity;
     printf("GSHashTableFindBucket 4\n");
     hash = fHash ? fHash(key) : GSHashPointer(key);
+    printf("GSHashTableFindBucket 4.1\n");
     idx = hash % capacity;
     printf("GSHashTableFindBucket 5\n");
     matched = buckets[idx].key == NULL || (fEqual ?
