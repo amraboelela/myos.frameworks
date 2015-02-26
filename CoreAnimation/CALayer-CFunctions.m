@@ -154,7 +154,7 @@ void _CALayerSetNeedsComposite(CALayer *layer)
 
 void _CALayerSetNeedsDisplay(CALayer *layer)
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     layer->_needsDisplay = YES;
     //DLog(@"_needsDisplayLayers: %@", _needsDisplayLayers);
     CFSetAddValue(_needsDisplayLayers, layer);

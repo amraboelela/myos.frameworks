@@ -762,31 +762,40 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (id<CAAction>)actionForKey:(NSString *)key
 {
+    DLog();
     if ([CATransaction disableActions]) {
         return nil;
     }
+    DLog();
     if ([delegate respondsToSelector:@selector(actionForLayer:forKey:)]) {
         return [delegate performSelector:@selector(actionForLayer:forKey:) withObject:self withObject:key];
     }
+    DLog();
     id<CAAction> action = CFDictionaryGetValue(_actions, key);
     if (action == nil) {
+        DLog();
         NSDictionary *tmpStyle = _style;
         while (tmpStyle != nil) {
             action = CFDictionaryGetValue(tmpStyle, key);
             if (action != nil) {
                 return action;
             }
+            DLog();
             tmpStyle = CFDictionaryGetValue(tmpStyle, _kCAStyle);
         }
     }
+    DLog();
     return [CALayer defaultActionForKey:key];
 }
 
 + (id<CAAction>)defaultActionForKey:(NSString *)key
 {
+    DLog();
     if ([key isEqualToString:kCATransition]) {
+        DLog();
         return [[[CATransition alloc] init] autorelease];
     } else {
+        DLog();
         return [CABasicAnimation animationWithKeyPath:key];
     }
 }
