@@ -341,14 +341,14 @@ CFGetRetainCount (CFTypeRef cf)
   return 1;
 }
 
-CFTypeID
-CFGetTypeID (CFTypeRef cf)
+CFTypeID CFGetTypeID(CFTypeRef cf)
 {
-  /* This is unsafe, but I don't see any other way of getting the typeID
+    /* This is unsafe, but I don't see any other way of getting the typeID
      for this call. */
-  CF_OBJC_FUNCDISPATCH0(((CFRuntimeBase*)cf)->_typeID, CFTypeID, cf, "_cfTypeID");
-  
-  return ((CFRuntimeBase*)cf)->_typeID;
+    printf("((CFRuntimeBase *)cf)->_typeID: %d\n", ((CFRuntimeBase *)cf)->_typeID);
+    CF_OBJC_FUNCDISPATCH0(((CFRuntimeBase *)cf)->_typeID, CFTypeID, cf, "_cfTypeID");
+    
+    return ((CFRuntimeBase *)cf)->_typeID;
 }
 
 CFHashCode CFHash(CFTypeRef cf)
