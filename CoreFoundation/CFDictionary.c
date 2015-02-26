@@ -193,9 +193,9 @@ CFDictionaryGetKeysAndValues (CFDictionaryRef dict, const void **keys,
 const void *
 CFDictionaryGetValue(CFDictionaryRef dict, const void *key)
 {
-    printf("1\n");
+    printf("CFDictionaryGetValue 1\n");
     CF_OBJC_FUNCDISPATCH1(_kCFDictionaryTypeID, const void *, dict, "objectForKey:", key);
-    printf("2\n");
+    printf("CFDictionaryGetValue 2\n");
     return GSHashTableGetValue((GSHashTableRef)dict, key);
 }
 
