@@ -208,9 +208,9 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
     if (self) {
         _beginTime = 0;
         _startTime = 0;
-        DLog(@"[CATransaction valueForKey:kCATransactionAnimationDuration]: %@", [CATransaction valueForKey:kCATransactionAnimationDuration]);
+        //DLog(@"[CATransaction valueForKey:kCATransactionAnimationDuration]: %0.0f", [CATransaction valueForKey:kCATransactionAnimationDuration]);
         CFNumberGetValue([CATransaction valueForKey:kCATransactionAnimationDuration], kCFNumberDoubleType, &_duration);//(CFTimeInterval)[(NSNumber *)[CATransaction valueForKey:kCATransactionAnimationDuration] doubleValue];
-        DLog(@"2");
+        DLog(@"_duration: %0.2f", _duration);
         _timingFunction = [CATransaction valueForKey:kCATransactionAnimationTimingFunction] ? :
                         [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionDefault];
         [_timingFunction retain];
@@ -223,6 +223,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
         _speed = 1;
         _timeOffset = 0;
         _beginFromCurrentState = NO;
+        DLog(@"self: %@", self);
     }
     return self;
 }
@@ -282,6 +283,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (id)initWithKeyPath:(NSString *)aKeyPath
 {
+    DLog();
     self = [super init];
     if (self) {
         keyPath = [aKeyPath copy];
@@ -291,6 +293,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 + (id)animationWithKeyPath:(NSString *)path
 {
+    DLog();
     return [[[self alloc] initWithKeyPath:path] autorelease];
 }
 
@@ -422,6 +425,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 {
     self = [super init];
     if (self) {
+        DLog();
         _animations = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
         //_committed = NO;
     }
