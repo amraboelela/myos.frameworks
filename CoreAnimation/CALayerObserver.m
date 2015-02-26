@@ -25,7 +25,7 @@ static CALayerObserver *_layerObserver = nil;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    //DLog();
+    DLog();
     NSNumber *isPrior = [change objectForKey:@"notificationIsPrior"];
     if (![isPrior boolValue]) {
         return;
@@ -40,10 +40,10 @@ static CALayerObserver *_layerObserver = nil;
         }
         return;
     }
-    //DLog();
+    DLog();
     CAAnimationGroup *animationGroup = _CAAnimationGroupGetCurrent();
     if ((!layer->delegate && layer->_superlayer) || animationGroup) {
-        //DLog(@"keyPath: %@", keyPath);
+        DLog(@"keyPath: %@", keyPath);
         id<CAAction> action = [layer actionForKey:keyPath];
         [action runActionForKey:keyPath object:layer arguments:nil];
         CABasicAnimation *animation = (CABasicAnimation *)[layer animationForKey:keyPath];
@@ -66,10 +66,10 @@ static CALayerObserver *_layerObserver = nil;
         }
     }
     if (needsDisplay) {
-        //DLog(@"keyPath: %@", keyPath);
+        DLog(@"keyPath: %@", keyPath);
         _CALayerSetNeedsDisplay(layer);
     } else {
-        //DLog(@"keyPath: %@, needsComposite", keyPath);
+        DLog(@"keyPath: %@, needsComposite", keyPath);
         _CALayerSetNeedsComposite(layer);
     }
 }

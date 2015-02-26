@@ -793,6 +793,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)addAnimation:(CAAnimation *)anim forKey:(NSString *)key
 {
+    DLog();
     CAAnimation *animation = [anim copy];
     CFDictionarySetValue(_animations, key, animation);
     [animation release];
@@ -803,23 +804,17 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
     if ([animation isKindOfClass:[CABasicAnimation class]]) {
         CABasicAnimation *basicAnimation = (CABasicAnimation *)animation;
         if (!basicAnimation->fromValue) {
-            /*BOOL beginFromCurrentState = NO;
-            CAAnimationGroup *animationGroup = _CAAnimationGroupGetCurrent();
-            if (animationGroup) {
-                beginFromCurrentState = animationGroup->_beginFromCurrentState;
-            }
-            DLog(@"beginFromCurrentState: %d", beginFromCurrentState);*/
-            basicAnimation.fromValue = [self valueForKeyPath:basicAnimation->keyPath]; // beginFromCurrentState ? [self.presentationLayer valueForKey:basicAnimation->keyPath] :
+            basicAnimation.fromValue = [self valueForKeyPath:basicAnimation->keyPath];
         }
     } else if ([animation isKindOfClass:[CAKeyframeAnimation class]]) {
-        //DLog(@"[animation isKindOfClass:[CAKeyframeAnimation class]]");
+        DLog(@"[animation isKindOfClass:[CAKeyframeAnimation class]]");
         CAKeyframeAnimation *keyframeAnimation = (CAKeyframeAnimation *)animation;
         if ([keyframeAnimation->keyPath isEqualToString:@"contents"]) {
             if (_keyframesContents) {
                 [_keyframesContents release];
             }
             _keyframesContents = [keyframeAnimation->_values copy];
-            //DLog(@"_keyframesContents: %@", _keyframesContents);
+            DLog(@"_keyframesContents: %@", _keyframesContents);
         }
     }
 }
