@@ -351,21 +351,24 @@ CFGetTypeID (CFTypeRef cf)
   return ((CFRuntimeBase*)cf)->_typeID;
 }
 
-CFHashCode
-CFHash (CFTypeRef cf)
+CFHashCode CFHash(CFTypeRef cf)
 {
-  CFRuntimeClass *cls;
-  
-  if (cf == NULL)
-    return 0;
-
-  CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFHashCode, cf, "hash");
-  
-  cls = __CFRuntimeClassTable[CFGetTypeID(cf)];
-  if (cls->hash)
-    return cls->hash (cf);
-  
-  return (CFHashCode)((uintptr_t)cf >> 3);
+    CFRuntimeClass *cls;
+    printf("CFHash 1\n");
+    if (cf == NULL) {
+        return 0;
+    }
+    printf("CFHash 2\n");
+    CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFHashCode, cf, "hash");
+    printf("CFHash 3\n");
+    cls = __CFRuntimeClassTable[CFGetTypeID(cf)];
+    printf("CFHash 4\n");
+    if (cls->hash) {
+        printf("CFHash 5\n");
+        return cls->hash (cf);
+    }
+    printf("CFHash 6\n");
+    return (CFHashCode)((uintptr_t)cf >> 3);
 }
 
 CFTypeRef
