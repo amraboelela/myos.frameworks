@@ -31,7 +31,7 @@ static CFMutableSetRef _removeLayers = nil;
 
 static CATransactionGroup *_CATransactionGetCurrentTransaction()
 {
-    //DLog(@"_CATransactionGetCurrentTransaction");
+    DLog(@"_CATransactionGetCurrentTransaction");
     _CATransactionCreateImplicitTransactionIfNeeded();
     return CFArrayGetValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
 }
@@ -198,7 +198,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)commit
 {
-    //DLog(@"");
+    DLog(@"");
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
     _CATransactionCreateImplicitTransactionIfNeeded();
 }
@@ -221,7 +221,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 void _CATransactionInitialize()
 {
-    //DLog();
+    DLog();
     _transactions = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
     _removeLayers = CFSetCreateMutable(kCFAllocatorDefault, 10, &kCFTypeSetCallBacks);
     _CAAnimationInitialize();
@@ -234,14 +234,15 @@ void _CATransactionInitialize()
 
 void _CATransactionAddToRemoveLayers(CALayer *layer)
 {
-    //DLog();
+    DLog();
     CFSetAddValue(_removeLayers, layer);
 }
 
 void _CATransactionCreateImplicitTransactionIfNeeded()
 {
+    DLog();
     if (CFArrayGetCount(_transactions)==0) {
-        //DLog();
+        DLog();
         CATransactionGroup *group = [[CATransactionGroup alloc] init];
         CFArrayAppendValue(_transactions, group);
         [group release];
