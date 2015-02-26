@@ -528,10 +528,10 @@ CAAnimationGroup *_CAAnimationGroupNew()
 
 CAAnimationGroup *_CAAnimationGroupGetCurrent()
 {
-    DLog(@"_animationGroups: %@", _animationGroups);
+    //DLog(@"_animationGroups: %@", _animationGroups);
     for (CAAnimationGroup *animationGroup in [_animationGroups reverseObjectEnumerator]) {
         if (!animationGroup->_committed) {
-            DLog(@"animationGroup: %@", animationGroup);
+            //DLog(@"animationGroup: %@", animationGroup);
             return animationGroup;
         }
     }
