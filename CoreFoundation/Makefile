@@ -17,7 +17,15 @@
 
 LIB_NAME=CoreFoundation
 LDLIBS=-lobjc
-#CFLAGS=-D__has_builtin -DOS_API_VERSION(x,y)=1 -DGS_API_VERSION(x,y)=1 -DCF_INLINE= -DCF_EXPORT=
+
+ifeq ($(BASE_OS),android)
+else
+    CFLAGS=-MMD -MP -DGNUSTEP -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1 -pthread -Wall -DGSWARN -DGSDIAGNOSE -Wno-import \
+        -g -O2 -DBUILDING_SELF
+
+endif
+
+#    -I/home/amr/GNUstep/Library/Headers
 
 OBJECTS = \
     CFArray.o \
