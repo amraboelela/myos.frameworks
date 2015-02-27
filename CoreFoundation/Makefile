@@ -68,6 +68,7 @@ OBJECTS = \
     NSCFType.o \
     GSCArray.o \
     CFBundle.o \
-    CFStream.o
+    CFStream.o \
+    GSUnicode.o \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared
