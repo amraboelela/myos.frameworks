@@ -17,6 +17,7 @@
 
 LIB_NAME=CoreFoundation
 LDLIBS=-lobjc
+CFLAGS=__has_builtin OS_API_VERSION(x,y)=1 GS_API_VERSION(x,y)=1 CF_INLINE= CF_EXPORT=
 
 OBJECTS = \
     CFArray.o \
