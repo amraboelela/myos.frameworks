@@ -26,6 +26,9 @@
 #import <stdio.h>
 #import <CoreFoundation/GSPrivate.h>
 
+#import "GSCArray.h"
+#import "GSObjCRuntime.h"
+
 static CFTypeID _kCFArrayTypeID = 0;
 
 struct __CFArray
