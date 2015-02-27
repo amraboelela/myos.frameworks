@@ -764,6 +764,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 {
     //char *cKey = [key cString];
     DLog(@"key: %@", key);
+    DLog(@"[key retainCount]: %d", [key retainCount]);
     if ([CATransaction disableActions]) {
         return nil;
     }
@@ -772,6 +773,8 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         return [delegate performSelector:@selector(actionForLayer:forKey:) withObject:self withObject:key];
     }
     DLog(@"_actions: %@", _actions);
+    DLog(@"key: %@", key);
+    DLog(@"[key retainCount]: %d", [key retainCount]);
     id<CAAction> action = CFDictionaryGetValue(_actions, key);
     DLog();
     if (action == nil) {
