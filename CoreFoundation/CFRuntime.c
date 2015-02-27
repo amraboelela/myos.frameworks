@@ -345,8 +345,8 @@ CFTypeID CFGetTypeID(CFTypeRef cf)
 {
     /* This is unsafe, but I don't see any other way of getting the typeID
      for this call. */
-    printf("sizeof(cf): %d", sizeof(cf));
-    printf("((CFRuntimeBase *)cf)->_typeID: %d\n", ((CFRuntimeBase *)cf)->_typeID);
+    //printf("sizeof(cf): %d", sizeof(cf));
+    //printf("((CFRuntimeBase *)cf)->_typeID: %d\n", ((CFRuntimeBase *)cf)->_typeID);
     CF_OBJC_FUNCDISPATCH0(((CFRuntimeBase *)cf)->_typeID, CFTypeID, cf, "_cfTypeID");
     
     return ((CFRuntimeBase *)cf)->_typeID;
@@ -355,12 +355,12 @@ CFTypeID CFGetTypeID(CFTypeRef cf)
 CFHashCode CFHash(CFTypeRef cf)
 {
     CFRuntimeClass *cls;
-    printf("CFHash 1\n");
+    //printf("CFHash 1\n");
     if (cf == NULL) {
         return 0;
     }
     //printf("CFHash cf: %s\n", [[cf description] cString]);
-    printf("CFHash cf: %p\n", cf);
+    //printf("CFHash cf: %p\n", cf);
     printf("CFHash CFGetTypeID(cf): %d\n", CFGetTypeID(cf));
     CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFHashCode, cf, "hash");
     printf("CFHash 3\n");

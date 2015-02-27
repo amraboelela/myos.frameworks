@@ -25,7 +25,8 @@ static CALayerObserver *_layerObserver = nil;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    //DLog(@"keyPath: %@", keyPath);
+    DLog(@"keyPath: %@", keyPath);
+    DLog(@"[keyPath retainCount]: %d", [keyPath retainCount]);
     NSNumber *isPrior = [change objectForKey:@"notificationIsPrior"];
     if (![isPrior boolValue]) {
         return;
