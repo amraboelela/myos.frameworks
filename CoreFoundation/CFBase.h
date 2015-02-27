@@ -572,4 +572,10 @@ CF_EXPORT long CFGetFreeMemory(); // in KB
 
 CF_EXTERN_C_END
 
+#define __has_builtin 
+#define OS_API_VERSION(x,y)=1
+#define GS_API_VERSION(x,y)=1 
+#define CF_INLINE= 
+#define CF_EXPORT=
+
 #endif /* __COREFOUNDATION_CFBASE_H__ */
