@@ -20,11 +20,11 @@ echo "****************************** Building frameworks ***********************
 
 TARGET=Universal
 
-cd CoreFoundation
+cd Foundation
 source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 
-cd Foundation
+cd CoreFoundation
 source ${MYOS_PATH}/sdk/library-build.sh
 cd ..
 

@@ -3,7 +3,7 @@ LIB_NAME=Foundation
 
 CFLAGS=-MMD -MP -DGNUSTEP_TARGET_DIR=\".\" -DGNUSTEP_IS_FLATTENED=\"yes\" -DLIBRARY_COMBO=\"gnu-gnu-gnu\" -DGNUSTEP_BASE_INTERNAL=1 -Wall -Wdeclaration-after-statement -Wcast-align -DGNUSTEP -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1 -fno-strict-aliasing -fexceptions -fobjc-exceptions -D_NATIVE_OBJC_EXCEPTIONS -pthread -fPIC -Wall -DGSWARN -DGSDIAGNOSE -Wno-import -g -O2 -fgnu-runtime -fconstant-string-class=NSConstantString -I/usr/include/libxml2 -I${MYOS_PATH}/frameworks/Foundation
 
-LDLIBS=-lffi -lz -lCoreFoundation
+LDLIBS=-lffi -lz
 
 ifeq ($(BASE_OS),android)
     CFLAGS+=-DGNUSTEP_TARGET_CPU=\"arm\"
