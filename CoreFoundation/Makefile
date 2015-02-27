@@ -22,7 +22,7 @@ ifeq ($(BASE_OS),android)
 else
     CFLAGS=-MMD -MP -DGNUSTEP -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1 -pthread -Wall -DGSWARN -DGSDIAGNOSE -Wno-import \
         -g -O2 -DBUILDING_SELF
-    LDLIBS+=-licui18n -licuuc -licudata -fgnu-runtime -lgnustep-base
+    LDLIBS+=-licui18n -licuuc -licudata -fgnu-runtime -lFoundation
 endif
 
 OBJECTS = \
@@ -66,5 +66,6 @@ OBJECTS = \
     NSCFSet.o \
     NSCFString.o \
     NSCFType.o \
+    GSCArray.o
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

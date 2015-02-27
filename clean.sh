@@ -20,13 +20,11 @@ source ${MYOS_PATH}/sdk/config.sh
 echo
 echo "****************************** Cleaning frameworks ******************************"
 
-#rm ${MYOS_PATH}/frameworks/libs/*.so
+#cd Foundation
+#make clean
+#cd ..
 
 cd CoreFoundation
-make clean
-cd ..
-
-cd Foundation
 make clean
 cd ..
 
