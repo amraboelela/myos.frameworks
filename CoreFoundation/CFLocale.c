@@ -30,7 +30,9 @@
 #include "CoreFoundation/CFString.h"
 #include "CoreFoundation/CFRuntime.h"
 #include "CoreFoundation/CFLocale.h"
+
 #include "GSPrivate.h"
+#include "GSObjCRuntime.h"
 
 #include <string.h>
 #include <unicode/uloc.h>
@@ -382,6 +384,41 @@ CFLocaleReturnNull (CFLocaleRef loc, const void *context)
   return NULL;
 }
 
+#if HAVE_LIBOBJC || HAVE_LIBOBJC2
+static CFStringRef CFLocaleKeyToNSLocaleKey(CFStringRef key)
+{
+  CFStringRef nsKey = NULL;
+#define CASE(keyName) if(CFStringCompare(key, kCF##keyName, 0) == 0) nsKey = CFSTR("NS" #keyName); else
+  CASE(LocaleIdentifier)
+  CASE(LocaleLanguageCode)
+  CASE(LocaleCountryCode)
+  CASE(LocaleScriptCode)
+  CASE(LocaleVariantCode)
+  CASE(LocaleExemplarCharacterSet)
+  CASE(LocaleCalendar)
+  CASE(LocaleCollationIdentifier)
+  CASE(LocaleUsesMetricSystem)
+  CASE(LocaleMeasurementSystem)
+  CASE(LocaleDecimalSeparator)
+  CASE(LocaleGroupingSeparator)
+  CASE(LocaleCurrencySymbol)
+  CASE(LocaleCurrencyCode)
+  CASE(LocaleCollatorIdentifier)
+  CASE(LocaleQuotationBeginDelimiterKey)
+  CASE(LocaleQuotationEndDelimiterKey)
+  CASE(LocaleAlternateQuotationBeginDelimiterKey)
+  CASE(LocaleAlternateQuotationEndDelimiterKey);
+	
+#undef CASE
+  return nsKey;
+}
+#else
+static CFStringRef CFLocaleKeyToNSLocaleKey(CFStringRef key)
+{
+	return NULL;
+}
+#endif
+
 static struct _kCFLocaleValues
 {
   const CFStringRef *value;
@@ -626,6 +663,9 @@ CFLocaleCopyDisplayNameForPropertyValue (CFLocaleRef displayLocale,
                                          CFStringRef key,
                                          CFStringRef value)
 {
+  CF_OBJC_FUNCDISPATCHV(_kCFLocaleTypeID, CFTypeRef, displayLocale,
+    "displayNameForKey:value:", CFLocaleKeyToNSLocaleKey(key), value);
+
   CFStringRef ident;
   CFIndex cvaluelen;
   char displocale[ULOC_FULLNAME_CAPACITY];
@@ -710,6 +750,9 @@ CFTypeRef
 CFLocaleGetValue (CFLocaleRef locale,
                   CFStringRef key)
 {
+  CF_OBJC_FUNCDISPATCHV(_kCFLocaleTypeID, CFTypeRef, locale,
+    "objectForKey:", CFLocaleKeyToNSLocaleKey(key));
+
   CFTypeRef result = NULL;
   CFIndex idx;
   Boolean found = false;
@@ -760,6 +803,8 @@ CFLocaleGetValue (CFLocaleRef locale,
 CFStringRef
 CFLocaleGetIdentifier (CFLocaleRef locale)
 {
+  CF_OBJC_FUNCDISPATCHV(_kCFLocaleTypeID, CFStringRef, locale,
+    "localeIdentifier"); 
   return locale->_identifier;
 }
 
@@ -976,7 +1021,7 @@ CFLocaleGetTypeID (void)
 
 CFStringRef
 CFLocaleCreateLocaleIdentifierFromWindowsLocaleCode (CFAllocatorRef allocator,
-                                                     uint32_t lcid)
+                                                     UInt32 lcid)
 {
   CFStringRef result = NULL;
   char buffer[BUFFER_SIZE];
@@ -1028,7 +1073,7 @@ CFLocaleGetLanguageLineDirection (CFStringRef isoLangCode)
   return ICUToCFLocaleOrientation (result);
 }
 
-uint32_t
+UInt32
 CFLocaleGetWindowsLocaleCodeFromLocaleIdentifier (CFStringRef localeIdent)
 {
   char buffer[BUFFER_SIZE];

@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,11 +24,13 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include "CFRuntime.h"
-#include "CFBase.h"
-#include "CFError.h"
-#include "CFDictionary.h"
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFError.h"
+#include "CoreFoundation/CFDictionary.h"
+
 #include "GSPrivate.h"
+#include "GSObjCRuntime.h"
 
 
 
@@ -123,7 +125,11 @@ CFErrorCreate (CFAllocatorRef allocator, CFStringRef domain,
     {
       new->_domain = CFRetain (domain);
       new->_code = code;
-      new->_userInfo = (CFDictionaryRef)CFRetain (userInfo);
+      
+      if (userInfo != NULL)
+        new->_userInfo = (CFDictionaryRef)CFRetain (userInfo);
+      else
+        new->_userInfo = CFDictionaryCreate(allocator, NULL, NULL, 0, NULL, NULL);
     }
   
   return (CFErrorRef)new;
@@ -148,7 +154,7 @@ CFErrorCreateWithUserInfoKeysAndValues (CFAllocatorRef allocator,
 CFStringRef
 CFErrorCopyDescription (CFErrorRef err)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFErrorTypeID, CFStringRef, err,
+  CF_OBJC_FUNCDISPATCHV(_kCFErrorTypeID, CFStringRef, err,
     "localizedDescription");
   
   return CFRetain(CFDictionaryGetValue (err->_userInfo,
@@ -158,7 +164,7 @@ CFErrorCopyDescription (CFErrorRef err)
 CFStringRef
 CFErrorCopyFailureReason (CFErrorRef err)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFErrorTypeID, CFStringRef, err,
+  CF_OBJC_FUNCDISPATCHV(_kCFErrorTypeID, CFStringRef, err,
     "localizedFailureReason");
   
   return CFRetain(CFDictionaryGetValue (err->_userInfo,
@@ -168,7 +174,7 @@ CFErrorCopyFailureReason (CFErrorRef err)
 CFStringRef
 CFErrorCopyRecoverySuggestion (CFErrorRef err)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFErrorTypeID, CFStringRef, err,
+  CF_OBJC_FUNCDISPATCHV(_kCFErrorTypeID, CFStringRef, err,
     "localizedRecoverySuggestion");
   
   return CFRetain(CFDictionaryGetValue (err->_userInfo,
@@ -178,7 +184,7 @@ CFErrorCopyRecoverySuggestion (CFErrorRef err)
 CFDictionaryRef
 CFErrorCopyUserInfo (CFErrorRef err)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFErrorTypeID, CFDictionaryRef, err, "userInfo");
+  CF_OBJC_FUNCDISPATCHV(_kCFErrorTypeID, CFDictionaryRef, err, "userInfo");
   
   return CFRetain(err->_userInfo);
 }
@@ -186,7 +192,7 @@ CFErrorCopyUserInfo (CFErrorRef err)
 CFIndex
 CFErrorGetCode (CFErrorRef err)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFErrorTypeID, CFIndex, err, "code");
+  CF_OBJC_FUNCDISPATCHV(_kCFErrorTypeID, CFIndex, err, "code");
   
   return err->_code;
 }
@@ -194,7 +200,7 @@ CFErrorGetCode (CFErrorRef err)
 CFStringRef
 CFErrorGetDomain (CFErrorRef err)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFErrorTypeID, CFStringRef, err, "domain");
+  CF_OBJC_FUNCDISPATCHV(_kCFErrorTypeID, CFStringRef, err, "domain");
   
   return err->_domain;
 }
@@ -204,3 +210,4 @@ CFErrorGetTypeID (void)
 {
   return _kCFErrorTypeID;
 }
+

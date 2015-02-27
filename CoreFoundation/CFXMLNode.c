@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,11 +24,11 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include "CFRuntime.h"
-#include "CFBase.h"
-#include "CFString.h"
-#include "CFURL.h"
-#include "CFXMLNode.h"
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFString.h"
+#include "CoreFoundation/CFURL.h"
+#include "CoreFoundation/CFXMLNode.h"
 
 #include <stdlib.h>
 
@@ -37,8 +37,8 @@ struct __CFXMLNode
   CFRuntimeBase _parent;
   CFXMLNodeTypeCode _type;
   CFStringRef   _string;
-  void         *_info;
   CFIndex       _version;
+  void         *_info;
 };
 
 static CFTypeID _kCFXMLNodeTypeID = 0;
@@ -79,7 +79,7 @@ CFXMLNodeFinalize (CFTypeRef cf)
           CFRelease (info->notationName);
         }
         break;
-      case kCFXMLNodeTypeDocumentType: // These two have the same structure.
+      case kCFXMLNodeTypeDocumentType: /* These two have the same structure. */
       case kCFXMLNodeTypeNotation:
         {
           CFXMLDocumentTypeInfo *info =
@@ -111,7 +111,7 @@ CFXMLNodeFinalize (CFTypeRef cf)
           CFAllocatorDeallocate (CFGetAllocator (node), info->attributes);
         }
         break;
-      default: // Do nothing for everything else
+      default: /* Do nothing for everything else */
         break;
     }
   
@@ -169,7 +169,7 @@ CFXMLNodeEqual (CFTypeRef cf1, CFTypeRef cf2)
                 (CFXMLEntityReferenceInfo*)node2->_info;
               return entRef1->entityType == entRef2->entityType;
             }
-          case kCFXMLNodeTypeDocumentType: // These two have the same structure.
+          case kCFXMLNodeTypeDocumentType: /* These two have the same structure. */
           case kCFXMLNodeTypeNotation:
             {
               CFXMLDocumentTypeInfo *info1 =
@@ -304,7 +304,7 @@ CFXMLNodeCopyAdditionalInfo (CFAllocatorRef alloc, void *info,
           dest->entityType = src->entityType;
         }
         break;
-      case kCFXMLNodeTypeDocumentType: // These two have the same structure.
+      case kCFXMLNodeTypeDocumentType: /* These two have the same structure. */
       case kCFXMLNodeTypeNotation:
         {
           CFXMLDocumentTypeInfo *src =
@@ -350,7 +350,7 @@ CFXMLNodeCopyAdditionalInfo (CFAllocatorRef alloc, void *info,
             }
         }
         break;
-      default: // Do nothing for everything else
+      default: /* Do nothing for everything else */
         break;
     }
 }
@@ -454,3 +454,4 @@ CFXMLNodeGetVersion (CFXMLNodeRef node)
 {
   return node->_version;
 }
+

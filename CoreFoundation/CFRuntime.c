@@ -14,7 +14,7 @@
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    See the GNU
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
@@ -22,37 +22,34 @@
    If not, see <http://www.gnu.org/licenses/> or write to the 
    Free Software Foundation, 51 Franklin Street, Fifth Floor, 
    Boston, MA 02110-1301, USA.
-   
-   Edited By:- Mohamed Abd Elsalam
-
 */
 
-#import <CoreFoundation/CFRuntime.h>
-#import <CoreFoundation/CFString.h>
-#import <CoreFoundation/CFAttributedString.h>
-#import "GSPrivate.h"
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFString.h"
 
-#import <assert.h>
-#import <limits.h>
-#import <stdlib.h>
-#import <string.h>
+#include "GSPrivate.h"
+#include "GSObjCRuntime.h"
 
+#include <assert.h>
+#include <limits.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
+#if HAVE_LIBOBJC || HAVE_LIBOBJC2
+#include <objc/runtime.h>
+#endif
 
 
 /* GC stuff... */
 Boolean kCFUseCollectableAllocator = false;
-Boolean (*__CFObjCIsCollectable)(void *) = NULL;
+Boolean (*__CFObjCIsCollectable) (void *) = NULL;
 
-
-/* CFRuntimeClass Table 
-- Array of CFRuntime pointer like hashtable 
-- key:- TypeID which is index in array  for example if class whith typeID = 2 so it will be in index 2 in array
-- Value :- pointer to CFRuntimeClass 
-*/
+/* CFRuntimeClass Table */
 CFRuntimeClass **__CFRuntimeClassTable = NULL;
 void **__CFRuntimeObjCClassTable = NULL;
 UInt32 __CFRuntimeClassTableCount = 0;
-UInt32 __CFRuntimeClassTableSize = 1024;  /* Initial size */
+UInt32 __CFRuntimeClassTableSize = 1024;        /* Initial size */
 
 static GSMutex _kCFRuntimeTableLock;
 
@@ -65,38 +62,39 @@ void *NSCFTypeClass = NULL;
 #ifdef ALIGN
 #undef ALIGN
 #endif
-#define	ALIGN __alignof__(double)
+#define ALIGN __alignof__(double)
 
 /*
- *	Define a structure to hold information that is held locally
- *	(before the start) in each object.
+ *        Define a structure to hold information that is held locally
+ *        (before the start) in each object.
  */
-struct obj_layout_unpadded {
+struct obj_layout_unpadded
+{
   CFAllocatorRef allocator;
-  CFIndex        retained;
+  CFIndex retained;
 };
-#define	UNP sizeof(struct obj_layout_unpadded)
+#define UNP sizeof(struct obj_layout_unpadded)
 
 /*
- *	Now do the REAL version - using the other version to determine
- *	what padding (if any) is required to get the alignment of the
- *	structure correct.
+ *        Now do the REAL version - using the other version to determine
+ *        what padding (if any) is required to get the alignment of the
+ *        structure correct.
  */
-struct obj_layout {
+struct obj_layout
+{
 #if !defined(_MSC_VER)
-  char	padding[ALIGN - ((UNP % ALIGN) ? (UNP % ALIGN) : ALIGN)];
+  char padding[ALIGN - ((UNP % ALIGN) ? (UNP % ALIGN) : ALIGN)];
 #endif
   CFAllocatorRef allocator;
-  CFIndex        retained; // number of refrence to the object, when retain become zero , it deallocate from memory
+  CFIndex retained;
 };
-typedef	struct obj_layout *obj;
+typedef struct obj_layout *obj;
 /******************************/
 
 /* CFNotATypeClass declaration for index 0 of the class table. */
-static CFRuntimeClass CFNotATypeClass = 
-{
-  0, /* Version */
-  "CFNotATypeClass", /* Class name */
+static CFRuntimeClass CFNotATypeClass = {
+  0,                            /* Version */
+  "CFNotATypeClass",            /* Class name */
   NULL,
   NULL,
   NULL,
@@ -106,37 +104,27 @@ static CFRuntimeClass CFNotATypeClass =
   NULL
 };
 
-/*
-This function used for registering CFRuntimeClass in CF 
-@param :- CFRuntimeClass pointer 
-@return :- CFTypeID  which is index of array 
-*/
 CFTypeID
 _CFRuntimeRegisterClass (const CFRuntimeClass * const cls)
 {
-  CFTypeID ret;// index of CFRunTimeClass cls in array that will be current size 
-  
-  GSMutexLock (&_kCFRuntimeTableLock);// mutual execution for table for block editing on it by other thread
-  if(__CFRuntimeClassTableCount >= __CFRuntimeClassTableSize)
+  CFTypeID ret;
+
+  GSMutexLock (&_kCFRuntimeTableLock);
+  if (__CFRuntimeClassTableCount >= __CFRuntimeClassTableSize)
     {
-      GSMutexUnlock (&_kCFRuntimeTableLock); // unblock Table
+      GSMutexUnlock (&_kCFRuntimeTableLock);
       return _kCFRuntimeNotATypeID;
     }
-  
-  __CFRuntimeClassTable[__CFRuntimeClassTableCount] = (CFRuntimeClass *)cls;// register the CFRuntimeClass
+
+  __CFRuntimeClassTable[__CFRuntimeClassTableCount] = (CFRuntimeClass *) cls;
   if (__CFRuntimeObjCClassTable)
     __CFRuntimeObjCClassTable[__CFRuntimeClassTableCount] = NSCFTypeClass;
   ret = __CFRuntimeClassTableCount++;
   GSMutexUnlock (&_kCFRuntimeTableLock);
-  
+
   return ret;
 }
 
-/*
--Get CFRunTimeClass by TypeID
-@params CFTypeID
-@return CFRunTimeClass
-*/
 const CFRuntimeClass *
 _CFRuntimeGetClassWithTypeID (CFTypeID typeID)
 {
@@ -147,10 +135,6 @@ _CFRuntimeGetClassWithTypeID (CFTypeID typeID)
   return __CFRuntimeClassTable[typeID];
 }
 
-/*
-unregister CFRunTime Class from table by accessing to index of array and set it NULL
-table[TypeID]= NULL
-*/
 void
 _CFRuntimeUnregisterClassWithTypeID (CFTypeID typeID)
 {
@@ -159,79 +143,64 @@ _CFRuntimeUnregisterClassWithTypeID (CFTypeID typeID)
   GSMutexUnlock (&_kCFRuntimeTableLock);
 }
 
-/*
-- Create Instance from specific Class
-- @params allocator  to allocate memory for the instance 
-- @params CFTypeID typeID of CFRunTimeClass to get CFRutimeClass pointer from table 
- and set pointer isa in CFRunTimeBase by it.
- - @params extraBytes :- every CF Structure contain 
-   1- CFRunTimeBase
-   2-ObJ layout
-   3-  some attributes like length in CFString 
-   so when create CFString instance for example its size = sizeOf(CFRunTimeBase) + sizeOf(Obj) + sizeOf(length )attribute
-   - when allocate any CF instance , alloc (sizeOF(CfBase) + sizeOF(obj)+ extrabyte)
-   - and any CF Class containes cfBase so extraByte = sizeOf(CFClass) - sizeOF(CFRunTimeBase) 
-   
-*/
+
 
 CFTypeRef
 _CFRuntimeCreateInstance (CFAllocatorRef allocator, CFTypeID typeID,
                           CFIndex extraBytes, unsigned char *category)
-{ /* category is not used and should be NULL. */
+{                               /* category is not used and should be NULL. */
   CFIndex instSize;
   CFRuntimeClass *cls;
-  CFRuntimeBase *new; // LIKE parent , and CFRunTimeBase is parent for any CF classes 
-  
+  CFRuntimeBase *new;
+
   /* Return NULL if typeID is unknown. */
-  if (_kCFRuntimeNotATypeID == typeID
-      || typeID > __CFRuntimeClassTableCount)
+  if (_kCFRuntimeNotATypeID == typeID || typeID > __CFRuntimeClassTableCount)
     {
       return NULL;
     }
   if (NULL == allocator)
     allocator = CFAllocatorGetDefault ();
-  
-  instSize = sizeof(struct obj_layout) + sizeof(CFRuntimeBase) + extraBytes;
-  new = (CFRuntimeBase*)CFAllocatorAllocate (allocator, instSize, 0);
+
+  instSize = sizeof (struct obj_layout) + sizeof (CFRuntimeBase) + extraBytes;
+  new = (CFRuntimeBase *) CFAllocatorAllocate (allocator, instSize, 0);
   if (new)
     {
       new = memset (new, 0, instSize);
-      ((obj)new)->allocator = allocator;
-      new = (CFRuntimeBase*)&((obj)new)[1];
+      ((obj) new)->allocator = allocator;
+      new = (CFRuntimeBase *) & ((obj) new)[1];
       new->_isa =
         __CFRuntimeObjCClassTable ? __CFRuntimeObjCClassTable[typeID] : NULL;
       new->_typeID = typeID;
-      
+
       cls = __CFRuntimeClassTable[typeID];
       if (NULL != cls->init)
         {
           /* Init instance... */
-          cls->init(new);
+          cls->init (new);
         }
     }
-  
+
   return new;
 }
 
 void
 _CFRuntimeSetInstanceTypeID (CFTypeRef cf, CFTypeID typeID)
 {
-  ((CFRuntimeBase *)cf)->_typeID = typeID;
+  ((CFRuntimeBase *) cf)->_typeID = typeID;
 }
 
 void
 _CFRuntimeInitStaticInstance (void *memory, CFTypeID typeID)
 {
   CFRuntimeClass *cls;
-  CFRuntimeBase  *obj = (CFRuntimeBase *)memory;
-  
+  CFRuntimeBase *obj = (CFRuntimeBase *) memory;
+
   if (_kCFRuntimeNotATypeID == typeID
-      || typeID >= __CFRuntimeClassTableCount
-      || NULL == memory)
+      || typeID >= __CFRuntimeClassTableCount || NULL == memory)
     {
       return;
     }
-  
+
   cls = __CFRuntimeClassTable[typeID];
   obj->_isa = __CFISAForTypeID (typeID);
   obj->_flags.ro = 1;
@@ -241,39 +210,38 @@ _CFRuntimeInitStaticInstance (void *memory, CFTypeID typeID)
   if (cls->init != NULL)
     {
       /* Init instance... */
-      cls->init(memory);
+      cls->init (memory);
     }
 }
 
-/* 
-- ...........................Polymorphic CF functions  and CFType Functions ........................
-*/
+
 
 CFStringRef
 CFCopyDescription (CFTypeRef cf)
 {
   CFRuntimeClass *cfclass;
-  CFTypeID typeID = CFGetTypeID(cf);
-  
+  CFTypeID typeID;
+
   if (NULL == cf)
     return NULL;
-  
-  CF_OBJC_FUNCDISPATCH0(typeID, CFStringRef, cf, "description");
-  
+
+  typeID = CFGetTypeID (cf);
+  CF_OBJC_FUNCDISPATCHV (typeID, CFStringRef, cf, "description");
+
   if (_kCFRuntimeNotATypeID == typeID)
     return NULL;
-  
+
   cfclass = __CFRuntimeClassTable[typeID];
   if (NULL != cfclass->copyFormattingDesc)
     {
-      return cfclass->copyFormattingDesc(cf, NULL);
+      return cfclass->copyFormattingDesc (cf, NULL);
     }
   else
     {
-      return CFStringCreateWithFormat (NULL, NULL, CFSTR("<%s: %p>"),
-        cfclass->className, cf);
+      return CFStringCreateWithFormat (NULL, NULL, CFSTR ("<%s: %p>"),
+                                       cfclass->className, cf);
     }
-  
+
   return NULL;
 }
 
@@ -281,97 +249,93 @@ CFStringRef
 CFCopyTypeIDDescription (CFTypeID typeID)
 {
   CFRuntimeClass *cfclass;
-  
-  if (_kCFRuntimeNotATypeID == typeID
-      || typeID >= __CFRuntimeClassTableCount)
+
+  if (_kCFRuntimeNotATypeID == typeID || typeID >= __CFRuntimeClassTableCount)
     return NULL;
-  
+
   cfclass = __CFRuntimeClassTable[typeID];
-  return __CFStringMakeConstantString(cfclass->className);
+  return __CFStringMakeConstantString (cfclass->className);
 }
 
-/*
-/Polymorphic CF Equal function
-*/
 Boolean
 CFEqual (CFTypeRef cf1, CFTypeRef cf2)
 {
   CFRuntimeClass *cls;
   CFTypeID tID1, tID2;
-  
+
   if (cf1 == cf2)
     return true;
-  
+
   if (cf1 == NULL || cf2 == NULL)
     return false;
-  
+
   /* Can't compare here if either objects are ObjC objects. */
-  CF_OBJC_FUNCDISPATCH1(CFGetTypeID(cf1), Boolean, cf1, "isEqual:", cf2);
-  CF_OBJC_FUNCDISPATCH1(CFGetTypeID(cf2), Boolean, cf2, "isEqual:", cf1);
-  
-  tID1 = CFGetTypeID(cf1);
-  tID2 = CFGetTypeID(cf2);
+  CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf1), Boolean, cf1, "isEqual:", cf2);
+  CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf2), Boolean, cf2, "isEqual:", cf1);
+
+  tID1 = CFGetTypeID (cf1);
+  tID2 = CFGetTypeID (cf2);
   if (tID1 != tID2)
     return false;
-  
+
   cls = __CFRuntimeClassTable[tID1];
   if (NULL != cls->equal)
-    return cls->equal(cf1, cf2);
-  
+    return cls->equal (cf1, cf2);
+
   return false;
 }
 
 CFAllocatorRef
 CFGetAllocator (CFTypeRef cf)
 {
-  if (CF_IS_OBJC(CFGetTypeID(cf), cf) || ((CFRuntimeBase*)cf)->_flags.ro)
+  if (CF_IS_OBJC (CFGetTypeID (cf), cf) || ((CFRuntimeBase *) cf)->_flags.ro)
     return kCFAllocatorSystemDefault;
-  
-  return ((obj)cf)[-1].allocator;
+
+  return ((obj) cf)[-1].allocator;
 }
 
 CFIndex
 CFGetRetainCount (CFTypeRef cf)
 {
-  CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFIndex, cf, "retainCount");
-  
-  if (!((CFRuntimeBase*)cf)->_flags.ro)
-    return ((obj)cf)[-1].retained + 1;
-  
-  return 1;
+  CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf), CFIndex, cf, "retainCount");
+
+  if (!((CFRuntimeBase *) cf)->_flags.ro)
+    return ((obj) cf)[-1].retained + 1;
+
+  return UINT_MAX;
 }
 
-CFTypeID CFGetTypeID(CFTypeRef cf)
+CFTypeID
+CFGetTypeID (CFTypeRef cf)
 {
-    /* This is unsafe, but I don't see any other way of getting the typeID
-     for this call. */
-    //printf("sizeof(cf): %d", sizeof(cf));
-    //printf("((CFRuntimeBase *)cf)->_typeID: %d\n", ((CFRuntimeBase *)cf)->_typeID);
-    CF_OBJC_FUNCDISPATCH0(((CFRuntimeBase *)cf)->_typeID, CFTypeID, cf, "_cfTypeID");
-    
-    return ((CFRuntimeBase *)cf)->_typeID;
+  if (cf == NULL)
+    return _kCFRuntimeNotATypeID;
+
+#if defined(OBJC_SMALL_OBJECT_MASK) && (HAVE_LIBOBJC || HAVE_LIBOBJC2)
+  CFTypeID typeID = _kCFRuntimeNotATypeID;
+
+  /* Small objects in ObjC are not valid pointers,
+     hence we must avoid accessing them. */
+  if (((uintptr_t) cf & OBJC_SMALL_OBJECT_MASK) == 0)
+    typeID = ((CFRuntimeBase *) cf)->_typeID;
+
+  CF_OBJC_FUNCDISPATCHV (typeID, CFTypeID, cf, "_cfTypeID");
+#endif
+  return ((CFRuntimeBase *) cf)->_typeID;
 }
 
-CFHashCode CFHash(CFTypeRef cf)
+CFHashCode
+CFHash (CFTypeRef cf)
 {
-    CFRuntimeClass *cls;
-    //printf("CFHash 1\n");
-    if (cf == NULL) {
-        return 0;
-    }
-    //printf("CFHash cf: %s\n", [[cf description] cString]);
-    //printf("CFHash cf: %p\n", cf);
-    printf("CFHash CFGetTypeID(cf): %d\n", CFGetTypeID(cf));
-    CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFHashCode, cf, "hash");
-    printf("CFHash 3\n");
-    cls = __CFRuntimeClassTable[CFGetTypeID(cf)];
-    printf("CFHash 4\n");
-    if (cls->hash) {
-        printf("CFHash 5\n");
-        return cls->hash (cf);
-    }
-    printf("CFHash 6\n");
-    return (CFHashCode)((uintptr_t)cf >> 3);
+  CFRuntimeClass *cls;
+
+  CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf), CFHashCode, cf, "hash");
+
+  cls = __CFRuntimeClassTable[CFGetTypeID (cf)];
+  if (cls->hash)
+    return cls->hash (cf);
+
+  return (CFHashCode) ((uintptr_t) cf >> 3);
 }
 
 CFTypeRef
@@ -382,26 +346,22 @@ CFMakeCollectable (CFTypeRef cf)
 }
 
 void
-GSRuntimeDeallocateInstance (CFTypeRef cf)
-{
-    CFRuntimeClass *cls;
-    cls = __CFRuntimeClassTable[CFGetTypeID(cf)];
-    
-    if (cls->finalize) {
-        cls->finalize (cf);
-    }
-    CFAllocatorDeallocate(CFGetAllocator(cf), (void*)&((obj)cf)[-1]);
-}
-
-void
 CFRelease (CFTypeRef cf)
 {
-    CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), void, cf, "release");
-    if (!((CFRuntimeBase*)cf)->_flags.ro) {
-        CFIndex result = GSAtomicDecrementCFIndex (&(((obj)cf)[-1].retained));
-        if (result < 0) {
-            assert (result == -1);
-            GSRuntimeDeallocateInstance (cf);
+#if defined (OBJC_SMALL_OBJECT_MASK)
+  if (((unsigned long)cf & OBJC_SMALL_OBJECT_MASK) == 0)
+#endif
+    {
+      CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf), void, cf, "release");
+
+      if (!((CFRuntimeBase *) cf)->_flags.ro)
+        {
+          CFIndex result = GSAtomicDecrementCFIndex (&(((obj) cf)[-1].retained));
+          if (result < 0)
+            {
+              assert (result == -1);
+              GSRuntimeDeallocateInstance (cf);
+            }
         }
     }
 }
@@ -409,41 +369,44 @@ CFRelease (CFTypeRef cf)
 CFTypeRef
 CFRetain (CFTypeRef cf)
 {
-  CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFTypeRef, cf, "retain");
-  
-  if (!((CFRuntimeBase*)cf)->_flags.ro)
+#if defined (OBJC_SMALL_OBJECT_MASK)
+  if (((unsigned long)cf & OBJC_SMALL_OBJECT_MASK) == 0)
+#endif
     {
-      CFIndex result = GSAtomicIncrementCFIndex (&(((obj)cf)[-1].retained));
-      assert (result < INT_MAX);
+      CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf), CFTypeRef, cf, "retain");
+
+      if (!((CFRuntimeBase *) cf)->_flags.ro)
+        {
+          CFIndex result = GSAtomicIncrementCFIndex (&(((obj) cf)[-1].retained));
+          assert (result < INT_MAX);
+        }
     }
-  
   return cf;
 }
 
 const void *
 CFTypeRetainCallBack (CFAllocatorRef allocator, const void *value)
 {
-    return CFRetain (value);
+  return CFRetain (value);
 }
 
 void
 CFTypeReleaseCallBack (CFAllocatorRef alloc, const void *value)
 {
-    CFRelease(value);
+  CFRelease (value);
 }
 
-CFTypeRef
-GSTypeCreateCopy (CFAllocatorRef alloc, CFTypeRef cf, CFTypeID typeID)
+
+
+void
+GSRuntimeDeallocateInstance (CFTypeRef cf)
 {
   CFRuntimeClass *cls;
-  
-  CF_OBJC_FUNCDISPATCH0(typeID, CFTypeRef, cf, "copy");
-  
-  cls = __CFRuntimeClassTable[typeID];
-  if (cls->copy)
-    return cls->copy (alloc, cf);
-  
-  return CFRetain (cf);
+  cls = __CFRuntimeClassTable[CFGetTypeID (cf)];
+
+  if (cls->finalize)
+    cls->finalize (cf);
+  CFAllocatorDeallocate (CFGetAllocator (cf), (void *) &((obj) cf)[-1]);
 }
 
 static CFTypeRef GSRuntimeConstantTable[512];
@@ -452,9 +415,7 @@ static CFIndex GSRuntimeConstantTableSize = 0;
 void
 GSRuntimeConstantInit (CFTypeRef cf, CFTypeID typeID)
 {
-  if (cf == 0)
-    return;
-  ((CFRuntimeBase*)cf)->_typeID = typeID;
+  ((CFRuntimeBase *) cf)->_typeID = typeID;
   GSRuntimeConstantTable[GSRuntimeConstantTableSize++] = cf;
 }
 
@@ -463,65 +424,67 @@ GSRuntimeInitializeConstants (void)
 {
   CFIndex i;
   CFTypeID tid;
-  
-  for (i = 0 ; i < GSRuntimeConstantTableSize ; ++i)
+
+  for (i = 0; i < GSRuntimeConstantTableSize; ++i)
     {
-      tid = ((CFRuntimeBase*)GSRuntimeConstantTable[i])->_typeID;
-      ((CFRuntimeBase*)GSRuntimeConstantTable[i])->_isa =
+      tid = ((CFRuntimeBase *) GSRuntimeConstantTable[i])->_typeID;
+      ((CFRuntimeBase *) GSRuntimeConstantTable[i])->_isa =
         __CFRuntimeObjCClassTable[tid];
     }
 }
 
-/*
-extern void CFAllocatorInitialize (void);
-extern void CFArrayInitialize (void);
-//extern void CFAttributedStringInitialize (void);
-extern void CFBagInitialize (void);
-extern void CFBinaryHeapInitialize (void);
-extern void CFBitVectorInitialize (void);
-extern void CFBooleanInitialize (void);
-extern void CFCalendarInitialize (void);
-extern void CFCharacterSetInitialize (void);
-extern void CFDataInitialize (void);
-extern void CFDateInitialize (void);
-extern void CFDateFormatterInitialize (void);
-extern void CFDictionaryInitialize (void);
-extern void CFErrorInitialize (void);
-extern void CFLocaleInitialize (void);
-extern void CFNullInitialize (void);
-extern void CFNumberInitialize (void);
-extern void CFNumberFormatterInitialize (void);
-extern void CFRunLoopInitialize (void);
-extern void CFSetInitialize (void);
-extern void CFStringInitialize (void);
-extern void CFStringEncodingInitialize (void);
-extern void CFTimeZoneInitialize (void);
-extern void CFTreeInitialize (void);
-extern void CFURLInitialize (void);
-extern void CFUUIDInitialize (void);
-extern void CFXMLNodeInitialize (void);
-*/
+GS_PRIVATE void CFAllocatorInitialize (void);
+GS_PRIVATE void CFArrayInitialize (void);
+GS_PRIVATE void CFAttributedStringInitialize (void);
+GS_PRIVATE void CFBagInitialize (void);
+GS_PRIVATE void CFBinaryHeapInitialize (void);
+GS_PRIVATE void CFBitVectorInitialize (void);
+GS_PRIVATE void CFBooleanInitialize (void);
+GS_PRIVATE void CFCalendarInitialize (void);
+GS_PRIVATE void CFCharacterSetInitialize (void);
+GS_PRIVATE void CFDataInitialize (void);
+GS_PRIVATE void CFBundleInitialize (void);
+GS_PRIVATE void CFDateInitialize (void);
+GS_PRIVATE void CFDateFormatterInitialize (void);
+GS_PRIVATE void CFDictionaryInitialize (void);
+GS_PRIVATE void CFErrorInitialize (void);
+GS_PRIVATE void CFLocaleInitialize (void);
+GS_PRIVATE void CFNullInitialize (void);
+GS_PRIVATE void CFNumberInitialize (void);
+GS_PRIVATE void CFNumberFormatterInitialize (void);
+GS_PRIVATE void CFRunLoopInitialize (void);
+GS_PRIVATE void CFSetInitialize (void);
+GS_PRIVATE void CFStreamInitialize (void);
+GS_PRIVATE void CFStringInitialize (void);
+GS_PRIVATE void CFStringEncodingInitialize (void);
+GS_PRIVATE void CFTimeZoneInitialize (void);
+GS_PRIVATE void CFTreeInitialize (void);
+GS_PRIVATE void CFURLInitialize (void);
+GS_PRIVATE void CFUUIDInitialize (void);
+GS_PRIVATE void CFXMLNodeInitialize (void);
 
 #if !defined(_MSC_VER)
-void CFInitialize (void) __attribute__((constructor));
+void CFInitialize (void) __attribute__ ((constructor));
 #endif
 
 static CFIndex CFInitialized = 0;
-void CFInitialize (void)
+void
+CFInitialize (void)
 {
   /* Only initialize once. */
-  if (GSAtomicCompareAndSwapCFIndex(&CFInitialized, 0, 1) == 1)
+  if (GSAtomicCompareAndSwapCFIndex (&CFInitialized, 0, 1) == 1)
     return;
-  
+
   /* Initialize CFRuntimeClassTable */
   __CFRuntimeClassTable = (CFRuntimeClass **) calloc (__CFRuntimeClassTableSize,
-                            sizeof(CFRuntimeClass *));
-  
+                                                      sizeof (CFRuntimeClass
+                                                              *));
+
   GSMutexInitialize (&_kCFRuntimeTableLock);
-  
+
   /* CFNotATypeClass should be at index = 0 */
   _CFRuntimeRegisterClass (&CFNotATypeClass);
-  
+
   CFAllocatorInitialize ();
   CFArrayInitialize ();
   CFAttributedStringInitialize ();
@@ -532,6 +495,7 @@ void CFInitialize (void)
   CFCalendarInitialize ();
   CFCharacterSetInitialize ();
   CFDataInitialize ();
+  CFBundleInitialize ();
   CFDateInitialize ();
   CFDateFormatterInitialize ();
   CFDictionaryInitialize ();
@@ -540,8 +504,8 @@ void CFInitialize (void)
   CFNullInitialize ();
   CFNumberInitialize ();
   CFNumberFormatterInitialize ();
-  CFRunLoopInitialize ();
   CFSetInitialize ();
+  CFStreamInitialize ();
   CFStringInitialize ();
   CFStringEncodingInitialize ();
   CFTimeZoneInitialize ();
@@ -549,19 +513,20 @@ void CFInitialize (void)
   CFURLInitialize ();
   CFUUIDInitialize ();
   CFXMLNodeInitialize ();
+  CFRunLoopInitialize ();
 }
 
 #if defined(_MSC_VER)
 #include <windows.h>
 
-BOOL DllMain (HINSTANCE hinst, DWORD fdwReason, LPVOID ldvReserved)
+BOOL
+DllMain (HINSTANCE hinst, DWORD fdwReason, LPVOID ldvReserved)
 {
   if (fdwReason == DLL_PROCESS_ATTACH)
     {
       CFInitialize ();
     }
-  
+
   return TRUE;
 }
 #endif
-

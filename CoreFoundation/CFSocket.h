@@ -35,7 +35,12 @@ CF_EXTERN_C_BEGIN
 
 typedef struct __CFSocket * CFSocketRef;
 
+#if defined(_WIN32)
+#include <winsock2.h>
+typedef SOCKET CFSocketNativeHandle;
+#else
 typedef int CFSocketNativeHandle;
+#endif
 
 typedef struct CFSocketContext CFSocketContext;
 struct CFSocketContext
@@ -56,41 +61,39 @@ struct CFSocketSignature
   CFDataRef address;
 };
 
-typedef enum CFSocketCallBackType CFSocketCallBackType;
-enum CFSocketCallBackType
+typedef enum
 {
   kCFSocketNoCallBack =      0,
   kCFSocketReadCallBack =    1,
   kCFSocketAcceptCallBack =  2,
   kCFSocketDataCallBack =    3,
   kCFSocketConnectCallBack = 4
-#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
   ,
   kCFSocketWriteCallBack =   8
 #endif
-};
+} CFSocketCallBackType;
 
-#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
 enum
 {
   kCFSocketAutomaticallyReenableReadCallBack =   1,
   kCFSocketAutomaticallyReenableAcceptCallBack = 2,
   kCFSocketAutomaticallyReenableDataCallBack =   3,
   kCFSocketAutomaticallyReenableWriteCallBack =  8,
-#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6, GS_API_LATEST)
   kCFSocketLeaveErrors = 64,
 #endif
   kCFSocketCloseOnInvalidate = 128
 };
 #endif
 
-typedef enum CFSocketError CFSocketError;
-enum CFSocketError
+typedef enum
 {
   kCFSocketSuccess =  0,
   kCFSocketError =   -1,
   kCFSocketTimeout = -2
-};
+} CFSocketError;
 
 typedef void (*CFSocketCallBack) (CFSocketRef s,
                                   CFSocketCallBackType callbackType,
@@ -159,7 +162,7 @@ CFSocketGetNative (CFSocketRef s);
 CF_EXPORT CFSocketError
 CFSocketSetAddress (CFSocketRef s, CFDataRef address);
 
-#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
 CF_EXPORT void
 CFSocketDisableCallBacks (CFSocketRef s, CFOptionFlags callBackTypes);
 

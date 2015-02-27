@@ -10,11 +10,11 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.         See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
@@ -27,17 +27,12 @@
 #ifndef __COREFOUNDATION_CFDATE_H__
 #define __COREFOUNDATION_CFDATE_H__
 
-#include "CFBase.h"
+#include <CoreFoundation/CFBase.h>
 
-#ifdef __OBJC__
-@class NSDate;
-@class NSTimeZone;
-typedef NSDate* CFDateRef;
-typedef NSTimeZone* CFTimeZoneRef;
-#else
+CF_EXTERN_C_BEGIN
+
 typedef const struct __CFDate *CFDateRef;
 typedef const struct __CFTimeZone *CFTimeZoneRef;
-#endif
 
 typedef double CFTimeInterval;
 typedef CFTimeInterval CFAbsoluteTime;
@@ -64,7 +59,7 @@ struct CFGregorianUnits
   double seconds;
 };
 
-enum CFGregorianUnitFlags
+typedef enum
 {
   kCFGregorianUnitsYears = (1 << 0),
   kCFGregorianUnitsMonths = (1 << 1),
@@ -73,62 +68,64 @@ enum CFGregorianUnitFlags
   kCFGregorianUnitsMinutes = (1 << 4),
   kCFGregorianUnitsSeconds = (1 << 5),
   kCFGregorianAllUnits = 0x00FFFFFF
-};
-typedef enum CFGregorianUnitFlags CFGregorianUnitFlags;
+} CFGregorianUnitFlags;
 
 CF_EXPORT const CFTimeInterval kCFAbsoluteTimeIntervalSince1970;
 CF_EXPORT const CFTimeInterval kCFAbsoluteTimeIntervalSince1904;
 
 
 
-//
-// Time Utilities
-//
-CFAbsoluteTime
+/*
+ * Time Utilities
+ */
+CF_EXPORT CFAbsoluteTime
 CFAbsoluteTimeAddGregorianUnits (CFAbsoluteTime at, CFTimeZoneRef tz,
   CFGregorianUnits units);
 
-CFAbsoluteTime
+CF_EXPORT CFAbsoluteTime
 CFAbsoluteTimeGetCurrent (void);
 
-SInt32
+CF_EXPORT SInt32
 CFAbsoluteTimeGetDayOfWeek (CFAbsoluteTime at, CFTimeZoneRef tz);
 
-SInt32
+CF_EXPORT SInt32
 CFAbsoluteTimeGetDayOfYear (CFAbsoluteTime at, CFTimeZoneRef tz);
 
-CFGregorianUnits
+CF_EXPORT CFGregorianUnits
 CFAbsoluteTimeGetDifferenceAsGregorianUnits (CFAbsoluteTime at1,
   CFAbsoluteTime at2, CFTimeZoneRef tz, CFOptionFlags unitFlags);
 
-CFGregorianDate
+CF_EXPORT CFGregorianDate
 CFAbsoluteTimeGetGregorianDate (CFAbsoluteTime at, CFTimeZoneRef tz);
 
-SInt32
+CF_EXPORT SInt32
 CFAbsoluteTimeGetWeekOfYear (CFAbsoluteTime at, CFTimeZoneRef tz);
 
-CFAbsoluteTime
+CF_EXPORT CFAbsoluteTime
 CFGregorianDateGetAbsoluteTime (CFGregorianDate gdate, CFTimeZoneRef tz);
 
-Boolean
+CF_EXPORT Boolean
 CFGregorianDateIsValid (CFGregorianDate gdate, CFOptionFlags unitFlags);
 
-//
-// CFDate Functions
-//
-CFComparisonResult
+/*
+ * CFDate Functions
+ */
+CF_EXPORT CFComparisonResult
 CFDateCompare (CFDateRef theDate, CFDateRef otherDate, void *context);
 
-CFDateRef
+CF_EXPORT CFDateRef
 CFDateCreate (CFAllocatorRef allocator, CFAbsoluteTime at);
 
-CFAbsoluteTime
+CF_EXPORT CFAbsoluteTime
 CFDateGetAbsoluteTime (CFDateRef theDate);
 
-CFTimeInterval
+CF_EXPORT CFTimeInterval
 CFDateGetTimeIntervalSinceDate (CFDateRef theDate, CFDateRef otherDate);
 
-CFTypeID
+CF_EXPORT CFTypeID
 CFDateGetTypeID (void);
 
+CF_EXTERN_C_END
+
 #endif /* __COREFOUNDATION_CFDATE_H__ */
+

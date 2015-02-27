@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -27,22 +27,21 @@
 #ifndef __CFCOREFOUNDATION_CFXMLPARSER_H__
 #define __CFCOREFOUNDATION_CFXMLPARSER_H__
 
-#include "CFBase.h"
-#include "CFData.h"
-#include "CFDictionary.h"
-#include "CFTree.h"
-#include "CFURL.h"
-#include "CFXMLNode.h"
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFData.h>
+#include <CoreFoundation/CFDictionary.h>
+#include <CoreFoundation/CFTree.h>
+#include <CoreFoundation/CFURL.h>
+#include <CoreFoundation/CFXMLNode.h>
 
 CF_EXTERN_C_BEGIN
 
-//
-// CFXMLParser
-//
+/*
+ * CFXMLParser
+ */
 typedef struct __CFXMLParser *CFXMLParserRef;
 
-typedef enum CFXMLParserStatusCode CFXMLParserStatusCode;
-enum CFXMLParserStatusCode
+typedef enum
 {
   kCFXMLStatusParseNotBegun =                -2,
   kCFXMLStatusParseInProgress =              -1,
@@ -62,10 +61,9 @@ enum CFXMLParserStatusCode
   kCFXMLErrorMalformedCharacterReference =   13,
   kCFXMLErrorMalformedParsedCharacterData =  14,
   kCFXMLErrorNoData =                        15
-};
+} CFXMLParserStatusCode;
 
-typedef enum CFXMLParserOptions CFXMLParserOptions;
-enum CFXMLParserOptions
+typedef enum
 {
   kCFXMLParserValidateDocument =        (1<<0),
   kCFXMLParserSkipMetaData =            (1<<1),
@@ -75,7 +73,7 @@ enum CFXMLParserOptions
   kCFXMLParserAddImpliedAttributes =    (1<<5),
   kCFXMLParserAllOptions =          0x00FFFFFF,
   kCFXMLParserNoOptions =                    0
-};
+} CFXMLParserOptions;
 
 typedef void *(*CFXMLParserCreateXMLStructureCallBack) (CFXMLParserRef parser,
   CFXMLNodeRef nodeDesc, void *info);
@@ -162,9 +160,9 @@ CFXMLParserParse (CFXMLParserRef parser);
 
 
 
-//
-// CFXMLTree
-//
+/*
+ * CFXMLTree
+ */
 CF_EXPORT CFXMLTreeRef
 CFXMLTreeCreateFromData (CFAllocatorRef allocator, CFDataRef xmlData,
   CFURLRef dataSource, CFOptionFlags parseOptions, CFIndex versionOfNodes);
@@ -176,7 +174,7 @@ CFXMLTreeCreateWithDataFromURL (CFAllocatorRef allocator, CFURLRef dataSource,
 CF_EXPORT CFDataRef
 CFXMLTreeCreateXMLData (CFAllocatorRef allocator, CFXMLTreeRef xmlTree);
 
-#if MAC_OS_X_VERSION_10_3 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_3, GS_API_LATEST)
 CF_EXPORT const CFStringRef kCFXMLTreeErrorDescription;
 CF_EXPORT const CFStringRef kCFXMLTreeErrorLineNumber;
 CF_EXPORT const CFStringRef kCFXMLTreeErrorLocation;
@@ -199,3 +197,4 @@ CFXMLTreeCreateFromDataWithError (CFAllocatorRef allocator, CFDataRef xmlData,
 CF_EXTERN_C_END
 
 #endif /* __CFCOREFOUNDATION_CFXMLPARSER_H__ */
+

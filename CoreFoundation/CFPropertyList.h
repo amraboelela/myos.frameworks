@@ -10,11 +10,11 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.         See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
@@ -24,32 +24,33 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include <CoreFoundation/CFBase.h>
-#include <CoreFoundation/CFData.h>
-#include <CoreFoundation/CFStream.h>
-
 #ifndef __COREFOUNDATION_CFPROPERTYLIST_H__
 #define __COREFOUNDATION_CFPROPERTYLIST_H__
 
-typedef enum CFPropertyListFormat CFPropertyListFormat;
-enum CFPropertyListFormat
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFData.h>
+#include <CoreFoundation/CFError.h>
+#include <CoreFoundation/CFStream.h>
+
+CF_EXTERN_C_BEGIN
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
+typedef enum
 {
    kCFPropertyListOpenStepFormat = 1,
    kCFPropertyListXMLFormat_v1_0 = 100,
    kCFPropertyListBinaryFormat_v1_0 = 200
-};
+} CFPropertyListFormat;
+#endif
 
-#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
-typedef enum CFPropertyListMutabilityOptions CFPropertyListMutabilityOptions;
-enum CFPropertyListMutabilityOptions
+typedef enum
 {
    kCFPropertyListImmutable = 0,
    kCFPropertyListMutableContainers = 1,
    kCFPropertyListMutableContainersAndLeaves = 2
-};
-#endif
+} CFPropertyListMutabilityOptions;
 
-#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6, GS_API_LATEST)
 enum
 {
    kCFPropertyListReadCorruptError = 3840,
@@ -61,25 +62,54 @@ enum
 
 
 
-CFPropertyListRef
+CF_EXPORT CFPropertyListRef
 CFPropertyListCreateDeepCopy (CFAllocatorRef allocator,
                               CFPropertyListRef propertyList,
                               CFOptionFlags mutabilityOption);
 
-// Function marked as obsolete as of 10.6
-CFPropertyListRef
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6, GS_API_LATEST)
+CF_EXPORT CFDataRef
+CFPropertyListCreateData (CFAllocatorRef allocator,
+                          CFPropertyListRef propertyList,
+                          CFPropertyListFormat format, CFOptionFlags options,
+                          CFErrorRef *error);
+
+CF_EXPORT CFPropertyListRef
+CFPropertyListCreateWithData (CFAllocatorRef allocator, CFDataRef data,
+                              CFOptionFlags options,
+                              CFPropertyListFormat *format,
+                              CFErrorRef *error);
+
+CF_EXPORT CFPropertyListRef
+CFPropertyListCreateWithStream (CFAllocatorRef allocator,
+                                CFReadStreamRef stream,
+                                CFIndex streamLength, CFOptionFlags options,
+                                CFPropertyListFormat *format,
+                                CFErrorRef *error);
+
+CF_EXPORT CFIndex
+CFPropertyListWrite (CFPropertyListRef propertyList, CFWriteStreamRef stream,
+                     CFPropertyListFormat format, CFOptionFlags options,
+                     CFErrorRef *error);
+#endif
+
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
+CF_EXPORT Boolean
+CFPropertyListIsValid (CFPropertyListRef plist, CFPropertyListFormat format);
+#endif
+
+/* The following function are marked as obsolete as of 10.6 */
+CF_EXPORT CFPropertyListRef
 CFPropertyListCreateFromXMLData (CFAllocatorRef allocator, CFDataRef xmlData,
                                  CFOptionFlags mutabilityOption,
                                  CFStringRef *errorString);
 
-// Function marked as obsolete as of 10.6
-CFDataRef
+CF_EXPORT CFDataRef
 CFPropertyListCreateXMLData (CFAllocatorRef allocator,
                              CFPropertyListRef propertyList);
 
-#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
-// Function is marked as obsolete as of 10.6
-CFPropertyListRef
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
+CF_EXPORT CFPropertyListRef
 CFPropertyListCreateFromStream (CFAllocatorRef allocator,
                                 CFReadStreamRef stream,
                                 CFIndex streamLength,
@@ -87,41 +117,13 @@ CFPropertyListCreateFromStream (CFAllocatorRef allocator,
                                 CFPropertyListFormat *format,
                                 CFStringRef *errorString);
 
-Boolean
-CFPropertyListIsValid (CFPropertyListRef plist, CFPropertyListFormat format);
-
-// Function is marked as obsolete as of 10.6
-CFIndex
+CF_EXPORT CFIndex
 CFPropertyListWriteToStream (CFPropertyListRef propertyList,
                              CFWriteStreamRef stream,
                              CFPropertyListFormat format,
                              CFStringRef *errorString);
 #endif
 
-#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
-CFDataRef
-CFPropertyListCreateData (CFAllocatorRef allocator,
-                          CFPropertyListRef propertyList,
-                          CFPropertyListFormat format, CFOptionFlags options,
-                          CFErrorRef *error);
-
-CFPropertyListRef
-CFPropertyListCreateWithData (CFAllocatorRef allocator, CFDataRef data,
-                              CFOptionFlags options,
-                              CFPropertyListFormat *format,
-                              CFErrorRef *error);
-
-CFPropertyListRef
-CFPropertyListCreateWithStream (CFAllocatorRef allocator,
-                                CFReadStreamRef stream,
-                                CFIndex streamLength, CFOptionFlags options,
-                                CFPropertyListFormat *format,
-                                CFErrorRef *error);
-
-CFIndex
-CFPropertyListWrite (CFPropertyListRef propertyList, CFWriteStreamRef stream,
-                     CFPropertyListFormat format, CFOptionFlags options,
-                     CFErrorRef *error);
-#endif
+CF_EXTERN_C_END
 
 #endif /* __COREFOUNDATION_CFPROPERTYLIST_H__ */

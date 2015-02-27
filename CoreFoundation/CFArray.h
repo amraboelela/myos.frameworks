@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,19 +28,12 @@
 #ifndef __COREFOUNDATION_CFARRAY_H__
 #define __COREFOUNDATION_CFARRAY_H__
 
-#import <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFBase.h>
 
 CF_EXTERN_C_BEGIN
 
-#ifdef __OBJC__
-@class NSArray;
-@class NSMutableArray;
-typedef NSArray* CFArrayRef;
-typedef NSMutableArray* CFMutableArrayRef;
-#else
-typedef const struct __CFArray* CFArrayRef;
-typedef struct __CFArray* CFMutableArrayRef;
-#endif
+typedef const struct __CFArray * CFArrayRef;
+typedef struct __CFArray * CFMutableArrayRef;
 
 typedef void (*CFArrayApplierFunction) (const void *value, void *context);
 typedef CFStringRef (*CFArrayCopyDescriptionCallBack) (const void *value);
@@ -65,9 +58,9 @@ CF_EXPORT const CFArrayCallBacks kCFTypeArrayCallBacks;
 
 
 
-//
-// Creating an Array
-//
+/*
+ * Creating an Array
+ */
 CF_EXPORT CFArrayRef
 CFArrayCreate (CFAllocatorRef allocator, const void **values,
   CFIndex numValues, const CFArrayCallBacks *callBacks);
@@ -75,9 +68,9 @@ CFArrayCreate (CFAllocatorRef allocator, const void **values,
 CF_EXPORT CFArrayRef
 CFArrayCreateCopy (CFAllocatorRef allocator, CFArrayRef theArray);
 
-//
-// Examining an Array
-//
+/*
+ * Examining an Array
+ */
 CF_EXPORT CFIndex
 CFArrayBSearchValues (CFArrayRef theArray, CFRange range, const void *value,
   CFComparatorFunction comparator, void *context);
@@ -105,22 +98,22 @@ CFArrayGetValues (CFArrayRef theArray, CFRange range, const void **values);
 CF_EXPORT const void *
 CFArrayGetValueAtIndex (CFArrayRef theArray, CFIndex idx);
 
-//
-// Applying a Function to Elements
-//
+/*
+ * Applying a Function to Elements
+ */
 CF_EXPORT void
 CFArrayApplyFunction (CFArrayRef theArray, CFRange range,
   CFArrayApplierFunction applier, void *context);
 
-//
-// Getting the CFArray Type ID
-//
+/*
+ * Getting the CFArray Type ID
+ */
 CF_EXPORT CFTypeID
 CFArrayGetTypeID (void);
 
-//
-// CFMutableArray
-//
+/*
+ * CFMutableArray
+ */
 CF_EXPORT void
 CFArrayAppendArray (CFMutableArrayRef theArray, CFArrayRef otherArray,
   CFRange otherRange);
@@ -165,3 +158,4 @@ CFArraySortValues (CFMutableArrayRef theArray, CFRange range,
 CF_EXTERN_C_END
 
 #endif /* __COREFOUNDATION_CFARRAY_H__ */
+

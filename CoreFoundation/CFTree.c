@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,9 +24,9 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include "CFRuntime.h"
-#include "CFString.h"
-#include "CFTree.h"
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFString.h"
+#include "CoreFoundation/CFTree.h"
 
 #include <string.h>
 
@@ -67,7 +67,7 @@ CFTreeFinalize (CFTypeRef cf)
   while (child)
     {
       tmp = child->_nextSibling;
-      CFTreeFinalize (child); // No need to go through CFRelease().
+      CFTreeFinalize (child); /* No need to go through CFRelease(). */
       child = tmp;
     }
   
@@ -220,7 +220,7 @@ CFTreeSetContext (CFTreeRef tree, const CFTreeContext *context)
 void
 CFTreeSortChildren (CFTreeRef tree, CFComparatorFunction comp, void *context)
 {
-  // FIXME
+  /* FIXME */
 }
 
 CFTreeRef
@@ -315,3 +315,4 @@ CFTreeApplyFunctionToChildren (CFTreeRef tree, CFTreeApplierFunction applier,
       child = child->_nextSibling;
     }
 }
+

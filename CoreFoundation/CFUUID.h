@@ -10,11 +10,11 @@
    This library is free software; you can redisibute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is disibuted in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.         See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
@@ -25,9 +25,11 @@
 */
 
 #ifndef __COREFOUNDATION_CFUUID_H__
-#define __COREFOUNDATION_CFUUID_H__ 1
+#define __COREFOUNDATION_CFUUID_H__
 
-#include "CFBase.h"
+#include <CoreFoundation/CFBase.h>
+
+CF_EXTERN_C_BEGIN
 
 typedef const struct __CFUUID *CFUUIDRef;
 
@@ -53,44 +55,47 @@ typedef struct
 
 
 
-//
-// Creating CFUUID Objects
-//
-CFUUIDRef
+/*
+ * Creating CFUUID Objects
+ */
+CF_EXPORT CFUUIDRef
 CFUUIDCreate (CFAllocatorRef alloc);
 
-CFUUIDRef
+CF_EXPORT CFUUIDRef
 CFUUIDCreateFromString (CFAllocatorRef alloc, CFStringRef uuidStr);
 
-CFUUIDRef
+CF_EXPORT CFUUIDRef
 CFUUIDCreateFromUUIDBytes (CFAllocatorRef alloc, CFUUIDBytes bytes);
 
-CFUUIDRef
+CF_EXPORT CFUUIDRef
 CFUUIDCreateWithBytes (CFAllocatorRef alloc, UInt8 byte0, UInt8 byte1,
   UInt8 byte2, UInt8 byte3, UInt8 byte4, UInt8 byte5, UInt8 byte6, UInt8 byte7,
   UInt8 byte8, UInt8 byte9, UInt8 byte10, UInt8 byte11, UInt8 byte12,
   UInt8 byte13, UInt8 byte14, UInt8 byte15);
 
 
-//
-// Getting Information About CFUUID Objects
-//
-CFStringRef
+/*
+ * Getting Information About CFUUID Objects
+ */
+CF_EXPORT CFStringRef
 CFUUIDCreateString (CFAllocatorRef alloc, CFUUIDRef uuid);
 
-CFUUIDRef
+CF_EXPORT CFUUIDRef
 CFUUIDGetConstantUUIDWithBytes (CFAllocatorRef alloc, UInt8 byte0, UInt8 byte1,
   UInt8 byte2, UInt8 byte3, UInt8 byte4, UInt8 byte5, UInt8 byte6, UInt8 byte7,
   UInt8 byte8, UInt8 byte9, UInt8 byte10, UInt8 byte11, UInt8 byte12,
   UInt8 byte13, UInt8 byte14, UInt8 byte15);
 
-CFUUIDBytes
+CF_EXPORT CFUUIDBytes
 CFUUIDGetUUIDBytes (CFUUIDRef uuid);
 
-//
-// Getting the CFUUID Type Identifier
-//
-CFTypeID
+/*
+ * Getting the CFUUID Type Identifier
+ */
+CF_EXPORT CFTypeID
 CFUUIDGetTypeID (void);
 
+CF_EXTERN_C_END
+
 #endif /* __COREFOUNDATION_CFUUID_H__ */
+

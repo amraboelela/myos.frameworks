@@ -51,5 +51,13 @@ OBJECTS = \
     CFXMLNode.o \
     CFXMLParser.o \
     GSHashTable.o \
+    NSCFArray.o \
+    NSCFAttributedString.o \
+    NSCFData.o \
+    NSCFDictionary.o \
+    NSCFError.o \
+    NSCFSet.o \
+    NSCFString.o \
+    NSCFType.o \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

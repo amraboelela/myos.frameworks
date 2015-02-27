@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,12 +24,13 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include "CFBase.h"
-#include "CFDate.h"
-#include "CFLocale.h"
-#include "CFCalendar.h"
-#include "CFString.h"
-#include "CFRuntime.h"
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFDate.h"
+#include "CoreFoundation/CFLocale.h"
+#include "CoreFoundation/CFCalendar.h"
+#include "CoreFoundation/CFString.h"
+#include "CoreFoundation/CFTimeZone.h"
+#include "CoreFoundation/CFRuntime.h"
 #include "GSPrivate.h"
 
 #include <unicode/ucal.h>
@@ -47,33 +48,40 @@ static CFTypeID _kCFCalendarTypeID = 0;
 static CFCalendarRef _kCFCalendarCurrent = NULL;
 static GSMutex _kCFCalendarLock;
 
+#define BUFFER_SIZE 64
+
 static void
 CFCalendarOpenUCalendar (CFCalendarRef cal)
 {
   if (cal->_ucal == NULL)
     {
       char localeIdent[ULOC_FULLNAME_CAPACITY];
-      UniChar *tzIdent = NULL; // FIXME
+      char calIdent[ULOC_KEYWORDS_CAPACITY];
+      UniChar tzIdent[BUFFER_SIZE];
+      CFIndex tzLen;
       UCalendar *ucal;
       UErrorCode err = U_ZERO_ERROR;
       
-      if (cal->_localeIdent != NULL)
-        {
-          char calIdent[ULOC_KEYWORDS_CAPACITY];
-          CFStringGetCString (cal->_localeIdent, localeIdent,
-            ULOC_FULLNAME_CAPACITY, kCFStringEncodingASCII);
-          CFStringGetCString (cal->_ident, calIdent, ULOC_KEYWORDS_CAPACITY,
-            kCFStringEncodingASCII);
-          uloc_setKeywordValue ("calendar", (const char*)calIdent,
-            localeIdent, ULOC_FULLNAME_CAPACITY, &err);
-        }
+      CFStringGetCString (cal->_localeIdent, localeIdent,
+                          ULOC_FULLNAME_CAPACITY, kCFStringEncodingASCII);
+      CFStringGetCString (cal->_ident, calIdent, ULOC_KEYWORDS_CAPACITY,
+                          kCFStringEncodingASCII);
+      uloc_setKeywordValue ("calendar", (const char*)calIdent,
+        localeIdent, ULOC_FULLNAME_CAPACITY, &err);
       
-      ucal = ucal_open (tzIdent, 0, localeIdent, UCAL_TRADITIONAL, &err);
+      tzLen = CFStringGetLength (cal->_tzIdent);
+      if (tzLen > BUFFER_SIZE)
+        tzLen = BUFFER_SIZE;
+      CFStringGetCharacters (cal->_tzIdent, CFRangeMake(0, tzLen), tzIdent);
+      
+      ucal = ucal_open (tzIdent, tzLen, localeIdent, UCAL_TRADITIONAL, &err);
       
       cal->_ucal = ucal;
     }
-  
-  ucal_clear (cal->_ucal);
+  else
+    {
+      ucal_clear (cal->_ucal);
+    }
 }
 
 CF_INLINE void
@@ -173,7 +181,7 @@ CFCalendarUnitToUCalendarDateFields (CFCalendarUnit unit)
         ret = UCAL_DAY_OF_WEEK_IN_MONTH;
         break;
       case kCFCalendarUnitQuarter:
-        ret = UCAL_MONTH; // FIXME
+        ret = UCAL_MONTH; /* FIXME */
         break;
       default:
         ret = -1;
@@ -243,7 +251,6 @@ CFCalendarCopyCurrent (void)
           cal = CFCalendarCreateWithIdentifier (NULL, calIdent);
           CFCalendarSetLocale (cal, locale);
           
-          CFRelease (calIdent);
           CFRelease (locale);
           _kCFCalendarCurrent = cal;
         }
@@ -258,6 +265,7 @@ CFCalendarCreateWithIdentifier (CFAllocatorRef allocator, CFStringRef ident)
 {
   CFLocaleRef locale;
   CFCalendarRef new;
+  CFTimeZoneRef tz;
   
   if (!(ident == kCFGregorianCalendar
       || ident == kCFBuddhistCalendar
@@ -305,7 +313,9 @@ CFCalendarCreateWithIdentifier (CFAllocatorRef allocator, CFStringRef ident)
   new->_localeIdent = CFRetain (CFLocaleGetIdentifier(locale));
   CFRelease (locale);
   
-  new->_tzIdent = NULL; // FIXME
+  tz = CFTimeZoneCopyDefault ();
+  new->_tzIdent = CFRetain (CFTimeZoneGetName (tz));
+  CFRelease (tz);
   
   return new;
 }
@@ -313,13 +323,30 @@ CFCalendarCreateWithIdentifier (CFAllocatorRef allocator, CFStringRef ident)
 CFTimeZoneRef
 CFCalendarCopyTimeZone (CFCalendarRef cal)
 {
-  return NULL; // FIXME
+  return CFTimeZoneCreateWithName (CFGetAllocator(cal), cal->_tzIdent, true);
 }
 
 void
 CFCalendarSetTimeZone (CFCalendarRef cal, CFTimeZoneRef tz)
 {
-  // FIXME
+  CFStringRef tzIdent;
+  
+  tzIdent = CFTimeZoneGetName(tz);
+  if (CFStringCompare (cal->_tzIdent, tzIdent, 0) != 0)
+    {
+      CFIndex len;
+      UniChar buffer[BUFFER_SIZE];
+      UErrorCode err = U_ZERO_ERROR;
+      
+      CFCalendarOpenUCalendar (cal);
+      
+      len = CFStringGetLength (tzIdent);
+      if (len > BUFFER_SIZE)
+        len = BUFFER_SIZE;
+      CFStringGetCharacters (tzIdent, CFRangeMake(0, len), buffer);
+      
+      ucal_setTimeZone (cal->_ucal, buffer, len, &err);
+    }
 }
 
 CFStringRef
@@ -417,7 +444,7 @@ CFCalendarAddComponents (CFCalendarRef cal, CFAbsoluteTime *at,
             value = va_arg (arg, int) - 1;
             break;
           default:
-            va_arg (arg, int); // Skip
+            va_arg (arg, int); /* Skip */
             continue;
         }
       if (options & kCFCalendarComponentsWrap)
@@ -477,7 +504,7 @@ CFCalendarComposeAbsoluteTime (CFCalendarRef cal, CFAbsoluteTime *at,
             field = UCAL_SECOND;
             break;
           default:
-            va_arg (arg, int); // Skip
+            va_arg (arg, int); /* Skip */
             continue;
         }
       ucal_set (cal->_ucal, field, value);
@@ -538,7 +565,7 @@ CFCalendarDecomposeAbsoluteTime (CFCalendarRef cal, CFAbsoluteTime at,
             value = va_arg (arg, int*);
             break;
           default:
-            va_arg (arg, int*); // Skip
+            va_arg (arg, int*); /* Skip */
         }
       if (value)
         {
@@ -627,7 +654,7 @@ CFCalendarGetComponentDifference (CFCalendarRef cal, CFAbsoluteTime startAT,
             value = va_arg (arg, int*);
             break;
           default:
-            va_arg (arg, int*); // Skip
+            va_arg (arg, int*); /* Skip */
             continue;
         }
       
@@ -644,7 +671,7 @@ CFCalendarGetComponentDifference (CFCalendarRef cal, CFAbsoluteTime startAT,
           if (millis < end)
             {
               min = max;
-              max <<= 1; // multiply by 2...
+              max <<= 1; /* multiply by 2... */
               if (max < 0)
                 return false;
             }
@@ -704,8 +731,8 @@ Boolean
 CFCalendarGetTimeRangeOfUnit (CFCalendarRef cal, CFCalendarUnit unit,
   CFAbsoluteTime at, CFAbsoluteTime *startp, CFTimeInterval *tip)
 {
-  int32_t min, max;
-  double start, end;
+  double start;
+  double end;
   UCalendar *ucal;
   UErrorCode err = U_ZERO_ERROR;
   UCalendarDateFields field = CFCalendarUnitToUCalendarDateFields (unit);
@@ -718,40 +745,44 @@ CFCalendarGetTimeRangeOfUnit (CFCalendarRef cal, CFCalendarUnit unit,
   if (U_FAILURE(err))
     return false;
   
-  min = ucal_getLimit(ucal, field, UCAL_ACTUAL_MINIMUM, &err);
-  max = ucal_getLimit(ucal, field, UCAL_ACTUAL_MAXIMUM, &err);
-  
   /* Clear lower fields */
   switch (field)
     {
       case UCAL_ERA:
-        ucal_clearField (ucal, UCAL_YEAR);
+        ucal_set (ucal, UCAL_YEAR,
+                  ucal_getLimit(ucal, UCAL_YEAR, UCAL_ACTUAL_MINIMUM, &err));
       case UCAL_YEAR:
-        ucal_clearField (ucal, UCAL_MONTH);
+        ucal_set (ucal, UCAL_MONTH,
+                  ucal_getLimit(ucal, UCAL_MONTH, UCAL_ACTUAL_MINIMUM, &err));
       case UCAL_MONTH:
-        ucal_clearField (ucal, UCAL_DATE);
+        ucal_set (ucal, UCAL_DATE,
+                  ucal_getLimit(ucal, UCAL_DATE, UCAL_ACTUAL_MINIMUM, &err));
       case UCAL_DATE:
       case UCAL_DAY_OF_YEAR:
       case UCAL_DAY_OF_WEEK:
       case UCAL_DAY_OF_WEEK_IN_MONTH:
-        ucal_clearField (ucal, UCAL_HOUR_OF_DAY);
+        ucal_set (ucal, UCAL_HOUR_OF_DAY,
+                  ucal_getLimit(ucal, UCAL_HOUR_OF_DAY, UCAL_ACTUAL_MINIMUM, &err));
       case UCAL_HOUR_OF_DAY:
-        ucal_clearField (ucal, UCAL_MINUTE);
+        ucal_set (ucal, UCAL_MINUTE,
+                  ucal_getLimit(ucal, UCAL_MINUTE, UCAL_ACTUAL_MINIMUM, &err));
       case UCAL_MINUTE:
-        ucal_clearField (ucal, UCAL_SECOND);
+        ucal_set (ucal, UCAL_SECOND,
+                  ucal_getLimit(ucal, UCAL_SECOND, UCAL_ACTUAL_MINIMUM, &err));
       default:
         break;
     }
   
-  ucal_set (ucal, field, min);
   start = UDATE_TO_ABSOLUTETIME(ucal_getMillis (cal->_ucal, &err));
-  ucal_add (ucal, field, max, &err);
-  end = UDATE_TO_ABSOLUTETIME(ucal_getMillis (cal->_ucal, &err));
   
   if (startp)
     *startp = start;
   if (tip)
-    *tip = end - start;
+    {
+      ucal_add (ucal, field, 1, &err);
+      end = UDATE_TO_ABSOLUTETIME(ucal_getMillis (cal->_ucal, &err));
+      *tip = end - start;
+    }
   
   if (U_FAILURE(err))
     return false;
@@ -805,3 +836,4 @@ CFCalendarGetMinimumRangeOfUnit (CFCalendarRef cal, CFCalendarUnit unit)
   return CFCalendarGetMinMaxRangeOfUnit (cal, unit,
     UCAL_MINIMUM, UCAL_MAXIMUM);
 }
+

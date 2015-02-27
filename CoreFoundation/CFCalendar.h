@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -27,17 +27,15 @@
 #ifndef __COREFOUNDATION_CFCALENDAR__
 #define __COREFOUNDATION_CFCALENDAR__ 1
 
-#include "CFBase.h"
-#include "CFDate.h"
-#include "CFLocale.h"
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFDate.h>
+#include <CoreFoundation/CFLocale.h>
 
-#if MAC_OS_X_VERSION_10_4 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4, GS_API_LATEST)
 
 CF_EXTERN_C_BEGIN
 
-/** 
- *
- *  CFCalendar is "toll-free bridged" to NSCalendar.
+/** CFCalendar is "toll-free bridged" to NSCalendar.
  */
 typedef struct __CFCalendar *CFCalendarRef;
 
@@ -53,7 +51,7 @@ typedef enum
   kCFCalendarUnitWeek = (1UL << 8),
   kCFCalendarUnitWeekday = (1UL << 9),
   kCFCalendarUnitWeekdayOrdinal = (1UL << 10),
-#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_6, GS_API_LATEST)
   kCFCalendarUnitQuarter = (1UL << 11),
 #endif
 } CFCalendarUnit;
@@ -63,18 +61,18 @@ enum
   kCFCalendarComponentsWrap = (1UL << 0)
 };
 
-//
-// Creating a Calendar
-//
+/*
+ * Creating a Calendar
+ */
 CFCalendarRef
 CFCalendarCopyCurrent (void);
 
 CFCalendarRef
 CFCalendarCreateWithIdentifier (CFAllocatorRef allocator, CFStringRef ident);
 
-//
-// Calendrical Calculations
-//
+/*
+ * Calendrical Calculations
+ */
 Boolean
 CFCalendarAddComponents (CFCalendarRef cal, CFAbsoluteTime *at,
   CFOptionFlags options, const char *componentDesc, ...);
@@ -92,9 +90,9 @@ CFCalendarGetComponentDifference (CFCalendarRef cal, CFAbsoluteTime startinAT,
   CFAbsoluteTime resultAT, CFOptionFlags options,
   const char *componentDesc, ...);
 
-//
-// Getting Ranges of Units
-//
+/*
+ * Getting Ranges of Units
+ */
 CFRange
 CFCalendarGetRangeOfUnit (CFCalendarRef cal, CFCalendarUnit smallerUnit,
   CFCalendarUnit biggerUnit, CFAbsoluteTime at);
@@ -109,33 +107,33 @@ CFCalendarGetMaximumRangeOfUnit (CFCalendarRef cal, CFCalendarUnit unit);
 CFRange
 CFCalendarGetMinimumRangeOfUnit (CFCalendarRef cal, CFCalendarUnit unit);
 
-//
-// Getting and Setting the Time Zone
-//
+/*
+ * Getting and Setting the Time Zone
+ */
 CFTimeZoneRef
 CFCalendarCopyTimeZone (CFCalendarRef cal);
 
 void
 CFCalendarSetTimeZone (CFCalendarRef cal, CFTimeZoneRef tz);
 
-//
-// Getting the Identifier
-//
+/*
+ * Getting the Identifier
+ */
 CFStringRef
 CFCalendarGetIdentifier (CFCalendarRef cal);
 
-//
-// Getting and Setting the Locale
-//
+/*
+ * Getting and Setting the Locale
+ */
 CFLocaleRef
 CFCalendarCopyLocale (CFCalendarRef cal);
 
 void
 CFCalendarSetLocale (CFCalendarRef cal, CFLocaleRef locale);
 
-//
-// Getting and Setting Day Information
-//
+/*
+ * Getting and Setting Day Information
+ */
 CFIndex
 CFCalendarGetFirstWeekday (CFCalendarRef cal);
 
@@ -148,13 +146,13 @@ CFCalendarGetMinimumDaysInFirstWeek (CFCalendarRef cal);
 void
 CFCalendarSetMinimumDaysInFirstWeek (CFCalendarRef cal, CFIndex mwd);
 
-//
-// Getting the Type ID
-//
+/*
+ * Getting the Type ID
+ */
 CFTypeID
 CFCalendarGetTypeID (void);
 
-#if MAC_OS_X_VERSION_10_5 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5, GS_API_LATEST)
 Boolean
 CFCalendarGetTimeRangeOfUnit (CFCalendarRef cal, CFCalendarUnit unit,
   CFAbsoluteTime at, CFAbsoluteTime *startp, CFTimeInterval *tip);
@@ -165,3 +163,4 @@ CF_EXTERN_C_END
 #endif /* MAC_OS_X_VERSION_10_4 */
 
 #endif /* __COREFOUNDATION_CFCALENDAR__ */
+

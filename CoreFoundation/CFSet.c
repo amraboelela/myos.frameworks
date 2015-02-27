@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,272 +22,274 @@
    If not, see <http://www.gnu.org/licenses/> or write to the 
    Free Software Foundation, 51 Franklin Street, Fifth Floor, 
    Boston, MA 02110-1301, USA.
-
-   Edited by: Ahmed Elmorsy
-   Date: October, 2012
 */
 
-#import <stdlib.h>
-#import <CoreFoundation/CFRuntime.h>
-#import <CoreFoundation/CFBase.h>
-#import <CoreFoundation/CFSet.h>
-#import <CoreFoundation/CFString.h>
-#import <CoreFoundation/GSHashTable.h>
-#import <CoreFoundation/GSPrivate.h>
-//#import <CoreFoundation/CFBase-private.h>
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFSet.h"
+#include "CoreFoundation/CFString.h"
+
+#include "GSHashTable.h"
+#include "GSPrivate.h"
+#include "GSObjCRuntime.h"
+
+
 
 static CFTypeID _kCFSetTypeID = 0;
 
 static void
-CFSetFinalize(CFTypeRef cf)
+CFSetFinalize (CFTypeRef cf)
 {
-    GSHashTableFinalize ((GSHashTableRef)cf);
+  GSHashTableFinalize ((GSHashTableRef) cf);
 }
 
 static Boolean
-CFSetEqual(CFTypeRef cf1, CFTypeRef cf2)
+CFSetEqual (CFTypeRef cf1, CFTypeRef cf2)
 {
-    return GSHashTableEqual ((GSHashTableRef)cf1, (GSHashTableRef)cf2);
+  return GSHashTableEqual ((GSHashTableRef) cf1, (GSHashTableRef) cf2);
 }
 
 static CFHashCode
-CFSetHash(CFTypeRef cf)
+CFSetHash (CFTypeRef cf)
 {
-    return GSHashTableHash ((GSHashTableRef)cf);
+  return GSHashTableHash ((GSHashTableRef) cf);
 }
 
 static CFStringRef
-CFSetCopyFormattingDesc(CFTypeRef cf, CFDictionaryRef formatOptions)
+CFSetCopyFormattingDesc (CFTypeRef cf, CFDictionaryRef formatOptions)
 {
-    return CFSTR("");
+  return CFSTR ("");
 }
 
-static CFRuntimeClass CFSetClass =
-{
-    0,
-    "CFSet",
-    NULL,
-    (CFTypeRef(*)(CFAllocatorRef, CFTypeRef))CFSetCreateCopy,
-    CFSetFinalize,
-    CFSetEqual,
-    CFSetHash,
-    CFSetCopyFormattingDesc,
-    NULL
+static CFRuntimeClass CFSetClass = {
+  0,
+  "CFSet",
+  NULL,
+  (CFTypeRef (*)(CFAllocatorRef, CFTypeRef)) CFSetCreateCopy,
+  CFSetFinalize,
+  CFSetEqual,
+  CFSetHash,
+  CFSetCopyFormattingDesc,
+  NULL
 };
 
-void CFSetInitialize (void)
+void
+CFSetInitialize (void)
 {
-    _kCFSetTypeID = _CFRuntimeRegisterClass(&CFSetClass);
+  _kCFSetTypeID = _CFRuntimeRegisterClass (&CFSetClass);
 }
 
-const CFSetCallBacks kCFCopyStringSetCallBacks =
-{
-    0,
-    (CFTypeRef (*)(CFAllocatorRef, CFTypeRef))CFStringCreateCopy,
-    CFTypeReleaseCallBack,
-    CFCopyDescription,
-    CFEqual,
-    CFHash
+
+
+const CFSetCallBacks kCFCopyStringSetCallBacks = {
+  0,
+  (CFTypeRef (*)(CFAllocatorRef, CFTypeRef)) CFStringCreateCopy,
+  CFTypeReleaseCallBack,
+  CFCopyDescription,
+  CFEqual,
+  CFHash
 };
 
-const CFSetCallBacks kCFTypeSetCallBacks =
-{
-    0,
-    CFTypeRetainCallBack,
-    CFTypeReleaseCallBack,
-    CFCopyDescription,
-    CFEqual,
-    CFHash
+const CFSetCallBacks kCFTypeSetCallBacks = {
+  0,
+  CFTypeRetainCallBack,
+  CFTypeReleaseCallBack,
+  CFCopyDescription,
+  CFEqual,
+  CFHash
 };
+
+
 
 CFSetRef
-CFSetCreate(CFAllocatorRef allocator, const void **values, CFIndex numValues,
-  const CFSetCallBacks *callBacks)
+CFSetCreate (CFAllocatorRef allocator, const void **values, CFIndex numValues,
+             const CFSetCallBacks * callBacks)
 {
-    return (CFSetRef)GSHashTableCreate (allocator, _kCFSetTypeID,
-                                        values, values, numValues,
-                                        (const GSHashTableKeyCallBacks*)callBacks, NULL);
+  return (CFSetRef) GSHashTableCreate (allocator, _kCFSetTypeID,
+                                       values, values, numValues,
+                                       (const GSHashTableKeyCallBacks *)
+                                       callBacks, NULL);
 }
 
 CFSetRef
-CFSetCreateCopy(CFAllocatorRef allocator, CFSetRef set)
+CFSetCreateCopy (CFAllocatorRef allocator, CFSetRef set)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFSetTypeID, CFSetRef, set, "copy");
-    return (CFSetRef)GSHashTableCreateCopy (allocator, (GSHashTableRef)set);
-}
+  if (CF_IS_OBJC (_kCFSetTypeID, set))
+    {
+      CFSetRef result;
+      const CFIndex count = CFSetGetCount (set);
+      void **values =
+        (void **) CFAllocatorAllocate (allocator, sizeof (void *) * count, 0);
 
-void CFSetApplyFunction(CFSetRef set, CFSetApplierFunction applier, void *context)
-{
-    //printf("set: %p", set);
-    CFIndex i;
-    int count = CFSetGetCount(set);
-    const void **values = malloc(count * sizeof(void*));
-    CFSetGetValues(set, values);
-    for (i = 0; i < count; i++) {
-        applier(values[i], context);
+      CFSetGetValues (set, (const void **) values);
+      result =
+        CFSetCreate (allocator, (const void **) values, count,
+                     &kCFTypeSetCallBacks);
+
+      CFAllocatorDeallocate (allocator, (void *) values);
+      return result;
     }
-}
 
-Boolean
-CFSetContainsValue(CFSetRef set, const void *value)
-{
-    CF_OBJC_FUNCDISPATCH1(_kCFSetTypeID, Boolean, set, "containsObject:", value);
-    return GSHashTableContainsKey((GSHashTableRef)set, value);
-}
-
-CFIndex
-CFSetGetCount(CFSetRef set)
-{
-    CF_OBJC_FUNCDISPATCH0(_kCFSetTypeID, CFIndex, set, "count");
-    return GSHashTableGetCount ((GSHashTableRef)set);
-}
-
-CFIndex
-CFSetGetCountOfValue(CFSetRef set, const void *value)
-{
-    if (CF_IS_OBJC(_kCFSetTypeID, set)) {
-        Boolean (*imp)(id, SEL, ...);
-        static SEL s = NULL;
-        if (!s) {
-            s = sel_registerName("containsObject:");
-        }
-        imp = (Boolean (*)(id, SEL, ...))class_getMethodImplementation(object_getClass((id)set), s);
-        return imp((id)set, s, value)? 1: 0;
-    }
-    return GSHashTableGetCountOfKey((GSHashTableRef)set, value) > 0 ? 1 : 0;
+  return (CFSetRef) GSHashTableCreateCopy (allocator, (GSHashTableRef) set);
 }
 
 void
-CFSetGetValues(CFSetRef set, const void **values)
+CFSetApplyFunction (CFSetRef set, CFSetApplierFunction applier, void *context)
 {
-    if (CF_IS_OBJC(_kCFSetTypeID, set)) {
-        CFArrayRef (*imp)(id, SEL);
-        static SEL s = NULL;
-        if (!s) {
-            s = sel_registerName("allObjects");
-        }
-        imp = (CFArrayRef (*)(id, SEL))
-        class_getMethodImplementation (object_getClass((id)set), s);
-        CFArrayRef result = imp((id)set, s);
-        CFArrayGetValues(result, CFRangeMake(0, CFArrayGetCount(result)), values);
-        return;
-    }
-    //printf("CFSetGetValues set: %p", set);
-    GSHashTableGetKeysAndValues((GSHashTableRef)set, values, NULL);
-}
+  // TODO: could be made more efficient by providing a specialized
+  // implementation for the CF_IS_OBJC case
 
-const void *
-CFSetGetValue(CFSetRef set, const void *value)
-{
-    CF_OBJC_FUNCDISPATCH1(_kCFSetTypeID, const void*, set, "member:", value);
-    //printf("CFSetGetValue set: %p", set);
-    return GSHashTableGetValue((GSHashTableRef)set, value);
+  const CFIndex count = CFSetGetCount (set);
+  void **values =
+    (void **) CFAllocatorAllocate (NULL, sizeof (void *) * count, 0);
+  CFIndex i;
+
+  CFSetGetValues (set, (const void **) values);
+
+  for (i = 0; i < count; i++)
+    {
+      applier (values[i], context);
+    }
+
+  CFAllocatorDeallocate (NULL, (void *) values);
 }
 
 Boolean
-CFSetGetValueIfPresent(CFSetRef set,
-  const void *candidate, const void **value)
+CFSetContainsValue (CFSetRef set, const void *value)
 {
-    if (CF_IS_OBJC(_kCFSetTypeID, set)) {
-        const void* (*imp)(id, SEL, ...);
-        static SEL s = NULL;
-        if (!s) {
-            s = sel_registerName("member:");
-        }
-        imp = (const void* (*)(id, SEL, ...))
-        class_getMethodImplementation (object_getClass((id)set), s);
-        *value = imp((id)set, s, candidate);
-        return *value != NULL;
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, Boolean, set, "containsObject:", value);
+
+  return GSHashTableContainsKey ((GSHashTableRef) set, value);
+}
+
+CFIndex
+CFSetGetCount (CFSetRef set)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, CFIndex, set, "count");
+
+  return GSHashTableGetCount ((GSHashTableRef) set);
+}
+
+CFIndex
+CFSetGetCountOfValue (CFSetRef set, const void *value)
+{
+  return CFSetContainsValue (set, value) ? 1 : 0;
+}
+
+void
+CFSetGetValues (CFSetRef set, const void **values)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, void, set, "_cfGetValues:", values);
+
+  GSHashTableGetKeysAndValues ((GSHashTableRef) set, values, NULL);
+}
+
+const void *
+CFSetGetValue (CFSetRef set, const void *value)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, void *, set, "_cfGetValue:", value);
+
+  return GSHashTableGetValue ((GSHashTableRef) set, value);
+}
+
+Boolean
+CFSetGetValueIfPresent (CFSetRef set, const void *candidate, const void **value)
+{
+  const void *v;
+
+  v = CFSetGetValue (set, candidate);
+  if (v)
+    {
+      if (value)
+        *value = v;
+      return true;
     }
-    const void *v;
-    
-    v = CFSetGetValue (set, candidate);
-    if (v) {
-        if (value)
-            *value = v;
-        return true;
-    }
-    return false;
+
+  return false;
 }
 
 CFTypeID
-CFSetGetTypeID(void)
+CFSetGetTypeID (void)
 {
-    return _kCFSetTypeID;
+  return _kCFSetTypeID;
 }
 
-//
-// CFMutableSet
-//
+
+
 CFMutableSetRef
-CFSetCreateMutable(CFAllocatorRef allocator, CFIndex capacity,
-  const CFSetCallBacks *callBacks)
+CFSetCreateMutable (CFAllocatorRef allocator, CFIndex capacity,
+                    const CFSetCallBacks * callBacks)
 {
-    //printf("CFSetCreateMutable capacity: %d", capacity);
-    return (CFMutableSetRef)GSHashTableCreateMutable (allocator, _kCFSetTypeID,
-                                                      capacity, (const GSHashTableKeyCallBacks*)callBacks, NULL);
+  return (CFMutableSetRef) GSHashTableCreateMutable (allocator, _kCFSetTypeID,
+                                                     capacity,
+                                                     (const
+                                                      GSHashTableKeyCallBacks *)
+                                                     callBacks, NULL);
 }
 
 CFMutableSetRef
 CFSetCreateMutableCopy (CFAllocatorRef allocator, CFIndex capacity,
-  CFSetRef set)
+                        CFSetRef set)
 {
-    return (CFMutableSetRef)GSHashTableCreateMutableCopy (allocator,
-                                                          (GSHashTableRef)set, capacity);
-}
+  if (CF_IS_OBJC (_kCFSetTypeID, set))
+    {
+      CFMutableSetRef result;
+      const CFIndex count = CFSetGetCount (set);
+      void **values =
+        (void **) CFAllocatorAllocate (allocator, sizeof (void *) * count, 0);
+      CFIndex i;
 
-void
-CFSetAddValue(CFMutableSetRef set, const void *value)
-{
-    //printf("CFSetAddValue - value: %p", value);
-    CF_OBJC_FUNCDISPATCH1(_kCFSetTypeID, void, set, "addObject:", value);
-    GSHashTableAddValue ((GSHashTableRef)set, value, value);
-}
+      CFSetGetValues (set, (const void **) values);
+      result = CFSetCreateMutable (allocator, count, &kCFTypeSetCallBacks);
 
-void
-CFSetRemoveAllValues(CFMutableSetRef set)
-{
-    CF_OBJC_FUNCDISPATCH0(_kCFSetTypeID, void, set, "removeAllObjects");
-    GSHashTableRemoveAll ((GSHashTableRef)set);
-}
+      for (i = 0; i < count; i++)
+        GSHashTableAddValue ((GSHashTableRef) result, values[i], values[i]);
 
-void
-CFSetRemoveValue(CFMutableSetRef set, const void *value)
-{
-    CF_OBJC_FUNCDISPATCH1(_kCFSetTypeID, void, set, "removeObject:", value);
-    GSHashTableRemoveValue ((GSHashTableRef)set, value);
-}
-
-void
-CFSetReplaceValue(CFMutableSetRef set, const void *value)
-{
-    if (CFSetContainsValue(set, value)) {
-        if (CF_IS_OBJC(_kCFSetTypeID, set)) {
-            void (*imp1)(id, SEL, ...);
-            static SEL s = NULL;
-            if (!s)
-                s = sel_registerName("removeObject:");
-            imp1 = (void (*)(id, SEL, ...))
-            class_getMethodImplementation (object_getClass((id)set), s);
-            imp1((id)set, s, value);
-            void (*imp2)(id, SEL, ...);
-            s = NULL;
-            if (!s)
-                s = sel_registerName("addObject:");
-            imp2 = (void (*)(id, SEL, ...))
-            class_getMethodImplementation (object_getClass((id)set), s);
-            imp2((id)set, s, value);
-            return;
-        }
-        GSHashTableReplaceValue ((GSHashTableRef)set, value, value);
+      CFAllocatorDeallocate (allocator, (void *) values);
+      return result;
     }
+
+  return (CFMutableSetRef) GSHashTableCreateMutableCopy (allocator,
+                                                         (GSHashTableRef) set,
+                                                         capacity);
 }
 
 void
-CFSetSetValue(CFMutableSetRef set, const void *value)
+CFSetAddValue (CFMutableSetRef set, const void *value)
 {
-    if (CFSetContainsValue(set, value)) {
-        CFSetReplaceValue(set, value);
-    }
-    //GSHashTableSetValue ((GSHashTableRef)set, value, value);
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, void, set, "addObject:", value);
+
+  GSHashTableAddValue ((GSHashTableRef) set, value, value);
+}
+
+void
+CFSetRemoveAllValues (CFMutableSetRef set)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, void, set, "removeAllObjects");
+
+  GSHashTableRemoveAll ((GSHashTableRef) set);
+}
+
+void
+CFSetRemoveValue (CFMutableSetRef set, const void *value)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, void, set, "removeObject:", value);
+
+  GSHashTableRemoveValue ((GSHashTableRef) set, value);
+}
+
+void
+CFSetReplaceValue (CFMutableSetRef set, const void *value)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, void, set, "_cfReplaceValue:", value);
+
+  GSHashTableReplaceValue ((GSHashTableRef) set, value, value);
+}
+
+void
+CFSetSetValue (CFMutableSetRef set, const void *value)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, void, set, "_cfSetValue:", value);
+
+  GSHashTableSetValue ((GSHashTableRef) set, value, value);
 }

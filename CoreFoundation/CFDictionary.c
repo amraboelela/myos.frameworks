@@ -24,17 +24,14 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <CoreFoundation/CoreFoundation-private.h>
-
-/*
-#include <stdio.h>
 #include "CoreFoundation/CFRuntime.h"
 #include "CoreFoundation/CFBase.h"
 #include "CoreFoundation/CFDictionary.h"
 #include "CoreFoundation/CFString.h"
+
 #include "GSHashTable.h"
-#include "GSPrivate.h"
-*/
+#include "GSObjCRuntime.h"
+
 
 static CFTypeID _kCFDictionaryTypeID = 0;
 
@@ -80,6 +77,8 @@ void CFDictionaryInitialize (void)
   _kCFDictionaryTypeID = _CFRuntimeRegisterClass (&CFDictionaryClass);
 }
 
+
+
 const CFDictionaryKeyCallBacks kCFCopyStringDictionaryKeyCallBacks =
 {
   0,
@@ -109,6 +108,8 @@ const CFDictionaryValueCallBacks kCFTypeDictionaryValueCallBacks =
   CFEqual
 };
 
+
+
 CFDictionaryRef
 CFDictionaryCreate (CFAllocatorRef allocator, const void **keys,
   const void **values, CFIndex numValues,
@@ -124,6 +125,27 @@ CFDictionaryCreate (CFAllocatorRef allocator, const void **keys,
 CFDictionaryRef
 CFDictionaryCreateCopy (CFAllocatorRef allocator, CFDictionaryRef dict)
 {
+  if (CF_IS_OBJC(_kCFDictionaryTypeID, dict))
+    {
+      CFIndex count = CFDictionaryGetCount(dict);
+      const void **values, **keys;
+      CFDictionaryRef copy;
+
+      keys = (const void **) CFAllocatorAllocate(allocator,
+        sizeof(const void *) * count, 0);
+      values = (const void **) CFAllocatorAllocate(allocator,
+        sizeof(const void *) * count, 0);
+
+      CFDictionaryGetKeysAndValues(dict, keys, values);
+      copy = CFDictionaryCreate(allocator, keys, values, count,
+        &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+
+      CFAllocatorDeallocate(allocator, keys);
+      CFAllocatorDeallocate(allocator, values);
+
+      return copy;
+    }
+
   return (CFDictionaryRef)GSHashTableCreateCopy (allocator,
     (GSHashTableRef)dict);
 }
@@ -151,19 +173,29 @@ CFDictionaryApplyFunction (CFDictionaryRef dict,
 Boolean
 CFDictionaryContainsKey (CFDictionaryRef dict, const void *key)
 {
+  if (CF_IS_OBJC(_kCFDictionaryTypeID, dict))
+    {
+      void *object;
+      CF_OBJC_CALLV (void*, object, dict, "objectForKey:", key);
+      return object != NULL;
+    }
+  
   return GSHashTableContainsKey ((GSHashTableRef)dict, key);
 }
 
 Boolean
 CFDictionaryContainsValue (CFDictionaryRef dict, const void *value)
 {
+  if (CF_IS_OBJC(_kCFDictionaryTypeID, dict))
+    return CFDictionaryGetCountOfValue(dict, value) ? true : false;
+  
   return GSHashTableContainsValue ((GSHashTableRef)dict, value);
 }
 
 CFIndex
 CFDictionaryGetCount (CFDictionaryRef dict)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFDictionaryTypeID, CFIndex, dict, "count");
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, CFIndex, dict, "count");
   
   return GSHashTableGetCount ((GSHashTableRef)dict);
 }
@@ -171,12 +203,18 @@ CFDictionaryGetCount (CFDictionaryRef dict)
 CFIndex
 CFDictionaryGetCountOfKey (CFDictionaryRef dict, const void *key)
 {
+  if (CF_IS_OBJC(_kCFDictionaryTypeID, dict))
+    return CFDictionaryContainsKey(dict, key) ? 1 : 0;
+  
   return GSHashTableGetCountOfKey ((GSHashTableRef)dict, key);
 }
 
 CFIndex
 CFDictionaryGetCountOfValue (CFDictionaryRef dict, const void *value)
 {
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, Boolean, dict,
+    "_cfCountOfValue:", value);
+  
   return GSHashTableGetCountOfValue ((GSHashTableRef)dict, value);
 }
 
@@ -184,23 +222,23 @@ void
 CFDictionaryGetKeysAndValues (CFDictionaryRef dict, const void **keys,
   const void **values)
 {
-  CF_OBJC_FUNCDISPATCH2(_kCFDictionaryTypeID, void, dict,
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, void, dict,
     "getObjects:andKeys:", values, keys);
   
   GSHashTableGetKeysAndValues ((GSHashTableRef)dict, keys, values);
 }
 
 const void *
-CFDictionaryGetValue(CFDictionaryRef dict, const void *key)
+CFDictionaryGetValue (CFDictionaryRef dict, const void *key)
 {
-    printf("CFDictionaryGetValue 1\n");
-    CF_OBJC_FUNCDISPATCH1(_kCFDictionaryTypeID, const void *, dict, "objectForKey:", key);
-    printf("CFDictionaryGetValue 2\n");
-    return GSHashTableGetValue((GSHashTableRef)dict, key);
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, const void *, dict,
+    "objectForKey:", key);
+  
+  return GSHashTableGetValue ((GSHashTableRef)dict, key);
 }
 
 Boolean
-CFDictionaryGetValueIfPresent(CFDictionaryRef dict,
+CFDictionaryGetValueIfPresent (CFDictionaryRef dict,
   const void *key, const void **value)
 {
   const void *v;
@@ -223,11 +261,9 @@ CFDictionaryGetTypeID (void)
 }
 
 
-//
-// CFMutableDictionary
-//
+
 CFMutableDictionaryRef
-CFDictionaryCreateMutable(CFAllocatorRef allocator, CFIndex capacity,
+CFDictionaryCreateMutable (CFAllocatorRef allocator, CFIndex capacity,
   const CFDictionaryKeyCallBacks *keyCallBacks,
   const CFDictionaryValueCallBacks *valueCallBacks)
 {
@@ -241,36 +277,72 @@ CFMutableDictionaryRef
 CFDictionaryCreateMutableCopy (CFAllocatorRef allocator, CFIndex capacity,
   CFDictionaryRef dict)
 {
+  if (CF_IS_OBJC(_kCFDictionaryTypeID, dict))
+    {
+      CFIndex count = CFDictionaryGetCount(dict);
+      const void **values, **keys;
+      CFMutableDictionaryRef copy;
+      CFIndex i;
+
+      keys = (const void **) CFAllocatorAllocate(allocator,
+        sizeof(const void *) * count, 0);
+      values = (const void **) CFAllocatorAllocate(allocator,
+        sizeof(const void *) * count, 0);
+
+      if (count > capacity)
+        capacity = count;
+
+      CFDictionaryGetKeysAndValues(dict, keys, values);
+      copy = CFDictionaryCreateMutable(allocator, capacity,
+        &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+
+      for (i = 0; i < count; i++)
+        CFDictionaryAddValue(copy, keys[i], values[i]);
+
+      CFAllocatorDeallocate(allocator, keys);
+      CFAllocatorDeallocate(allocator, values);
+
+      return copy;
+    }
+
   return (CFMutableDictionaryRef)GSHashTableCreateMutableCopy (allocator,
     (GSHashTableRef)dict, capacity);
 }
 
 void
-CFDictionaryAddValue(CFMutableDictionaryRef dict, const void *key, const void *value)
+CFDictionaryAddValue (CFMutableDictionaryRef dict, const void *key,
+  const void *value)
 {
-    GSHashTableAddValue((GSHashTableRef)dict, key, value);
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, void, dict,
+    "setObject:forKey:", value, key);
+  
+  GSHashTableAddValue ((GSHashTableRef)dict, key, value);
 }
 
 void
 CFDictionaryRemoveAllValues (CFMutableDictionaryRef dict)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFDictionaryTypeID, void, dict, "removeAllObjects");
-    GSHashTableRemoveAll ((GSHashTableRef)dict);
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, void, dict, "removeAllObjects");
+  
+  GSHashTableRemoveAll ((GSHashTableRef)dict);
 }
 
 void
 CFDictionaryRemoveValue (CFMutableDictionaryRef dict, const void *key)
 {
-    CF_OBJC_FUNCDISPATCH1(_kCFDictionaryTypeID, void, dict,
-                          "removeObjectForKey:", key);
-    
-    GSHashTableRemoveValue ((GSHashTableRef)dict, key);
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, void, dict,
+    "removeObjectForKey:", key);
+  
+  GSHashTableRemoveValue ((GSHashTableRef)dict, key);
 }
 
 void
 CFDictionaryReplaceValue (CFMutableDictionaryRef dict, const void *key,
   const void *value)
 {
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, void, dict,
+    "_cfReplaceValue::", key, value);
+  
   GSHashTableReplaceValue ((GSHashTableRef)dict, key, value);
 }
 
@@ -278,10 +350,9 @@ void
 CFDictionarySetValue (CFMutableDictionaryRef dict, const void *key,
   const void *value)
 {
-    //fprintf(stderr, "0");
-    CF_OBJC_FUNCDISPATCH2(_kCFDictionaryTypeID, void, dict, "setObject:forKey:", value, key);
-    //fprintf(stderr, "1");
-    GSHashTableSetValue ((GSHashTableRef)dict, key, value);
-    //fprintf(stderr, "2");
+  CF_OBJC_FUNCDISPATCHV(_kCFDictionaryTypeID, void, dict,
+    "_cfSetValue::", key, value);
+  
+  GSHashTableSetValue ((GSHashTableRef)dict, key, value);
 }
 

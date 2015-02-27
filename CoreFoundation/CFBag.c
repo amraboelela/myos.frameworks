@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,12 +24,13 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include "CFRuntime.h"
-#include "CFBase.h"
-#include "CFBag.h"
-#include "CFString.h"
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFBag.h"
+#include "CoreFoundation/CFString.h"
+
 #include "GSHashTable.h"
-#include "GSPrivate.h"
+#include "GSObjCRuntime.h"
 
 
 
@@ -144,7 +145,7 @@ CFBagGetCountOfValue (CFBagRef bag, const void *value)
 void
 CFBagGetValues (CFBagRef bag, const void **values)
 {
-    GSHashTableGetKeysAndValues ((GSHashTableRef)bag, values, NULL);
+  GSHashTableGetKeysAndValues ((GSHashTableRef)bag, values, NULL);
 }
 
 const void *
@@ -178,9 +179,6 @@ CFBagGetTypeID (void)
 
 
 
-//
-// CFMutableBag
-//
 CFMutableBagRef
 CFBagCreateMutable (CFAllocatorRef allocator, CFIndex capacity,
   const CFBagCallBacks *callBacks)
@@ -226,3 +224,4 @@ CFBagSetValue (CFMutableBagRef bag, const void *value)
 {
   GSHashTableSetValue ((GSHashTableRef)bag, value, value);
 }
+

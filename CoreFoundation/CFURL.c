@@ -35,7 +35,10 @@
 #include "CoreFoundation/CFRuntime.h"
 #include "CoreFoundation/CFString.h"
 #include "CoreFoundation/CFURL.h"
+
 #include "GSPrivate.h"
+#include "GSObjCRuntime.h"
+#include "GSUnicode.h"
 
 #include <string.h>
 
@@ -1389,17 +1392,17 @@ CFURLAppendPercentEscapedForCharacter (char **dst, UniChar c,
   CFStringEncoding enc)
 {
   CFIndex len;
-  char buffer[MAX_BYTES];
+  UInt8 buffer[MAX_BYTES];
   const UniChar *source;
   
   source = &c;
   if ((len =
-      GSStringEncodingFromUnicode(enc, buffer, 8, &source, 1, 0, false, NULL)))
+      GSFromUnicode(source, 1, enc, 0, false, buffer, MAX_BYTES, NULL)))
     {
-      char hi;
-      char lo;
-      char *target;
-      const char *end;
+      UInt8 hi;
+      UInt8 lo;
+      UInt8 *target;
+      const UInt8 *end;
       
       target = buffer;
       end = target + len;
@@ -1564,10 +1567,12 @@ CFURLCharacterForPercentEscape (CFStringInlineBuffer *src, CFIndex *idx,
   
   c = 0;
   str = bytes;
-  num = GSStringEncodingToUnicode (enc, &c, 1, (const char**)&str, j,
-    false, NULL);
+  num = GSToUnicode ((const UInt8*)str, j, enc, 0, false, &c, 1, NULL);
   if (num)
-    (*idx) += (CFIndex)(str - bytes) + num;
+    {
+      // For the first percent 2 characters get used, for all later three
+      (*idx) += 2 + 3 * (num - 1);
+    }
   return c;
 }
 
@@ -1632,14 +1637,14 @@ CFURLCreateStringByReplacingPercentEscapesUsingEncoding (CFAllocatorRef alloc,
 CFStringRef
 CFURLGetString (CFURLRef url)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFURLTypeID, CFStringRef, url, "relativeString");
+  CF_OBJC_FUNCDISPATCHV(_kCFURLTypeID, CFStringRef, url, "relativeString");
   return url->_urlString;
 }
 
 CFURLRef
 CFURLGetBaseURL (CFURLRef url)
 {
-  CF_OBJC_FUNCDISPATCH0(_kCFURLTypeID, CFURLRef, url, "baseURL");
+  CF_OBJC_FUNCDISPATCHV(_kCFURLTypeID, CFURLRef, url, "baseURL");
   return url->_baseURL;
 }
 

@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,21 +25,14 @@
 */ 
 
 #ifndef __COREFOUNDATION_CFSET_H__
-#define __COREFOUNDATION_CFSET_H__
+#define __COREFOUNDATION_CFSET_H__ 1
 
-#include "CFBase.h"
+#include <CoreFoundation/CFBase.h>
 
 CF_EXTERN_C_BEGIN
 
-#ifdef __OBJC__
-@class NSSet;
-@class NSMutableSet;
-typedef NSSet* CFSetRef;
-typedef NSMutableSet* CFMutableSetRef;
-#else
 typedef const struct __CFSet *CFSetRef;
 typedef struct __CFSet *CFMutableSetRef;
-#endif
 
 typedef void (*CFSetApplierFunction) (const void *value, void *context);
 
@@ -67,9 +60,9 @@ CF_EXPORT const CFSetCallBacks kCFTypeSetCallBacks;
 
 
 
-//
-// Creating a set
-//
+/*
+ * Creating a set
+ */
 CFSetRef
 CFSetCreate (CFAllocatorRef alloc, const void **values, CFIndex numValues,
   const CFSetCallBacks *callBacks);
@@ -77,9 +70,9 @@ CFSetCreate (CFAllocatorRef alloc, const void **values, CFIndex numValues,
 CFSetRef
 CFSetCreateCopy (CFAllocatorRef alloc, CFSetRef set);
 
-//
-// Examining a dictionary
-//
+/*
+ * Examining a dictionary
+ */
 Boolean
 CFSetContainsValue (CFSetRef set, const void *value);
 
@@ -99,23 +92,23 @@ Boolean
 CFSetGetValueIfPresent (CFSetRef set, const void *candidate,
   const void **value);
 
-//
-// Applying a funcation to a dictionary
-//
+/*
+ * Applying a funcation to a dictionary
+ */
 void
 CFSetApplyFunction (CFSetRef set, CFSetApplierFunction applier, void *context);
 
-//
-// Getting the CFSet type ID
-//
+/*
+ * Getting the CFSet type ID
+ */
 CFTypeID
 CFSetGetTypeID (void);
 
 
 
-//
-// Creating a Mutable Dictionary
-//
+/*
+ * Creating a Mutable Dictionary
+ */
 CFMutableSetRef
 CFSetCreateMutable (CFAllocatorRef alloc, CFIndex capacity,
   const CFSetCallBacks *callBacks);
@@ -123,9 +116,9 @@ CFSetCreateMutable (CFAllocatorRef alloc, CFIndex capacity,
 CFMutableSetRef
 CFSetCreateMutableCopy (CFAllocatorRef alloc, CFIndex capacity, CFSetRef set);
 
-//
-// Modifying a Dictionary
-//
+/*
+ * Modifying a Dictionary
+ */
 void
 CFSetAddValue (CFMutableSetRef set, const void *value);
 
@@ -144,3 +137,4 @@ CFSetSetValue (CFMutableSetRef set, const void *value);
 CF_EXTERN_C_END
 
 #endif /* __COREFOUNDATION_CFSET_H__ */
+

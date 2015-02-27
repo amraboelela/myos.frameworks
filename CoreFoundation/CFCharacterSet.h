@@ -10,11 +10,11 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.         See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
@@ -27,16 +27,15 @@
 #ifndef __COREFOUNDATION_CFCHARACTERSET_H__
 #define __COREFOUNDATION_CFCHARACTERSET_H__
 
-#include "CFBase.h"
-#include "CFData.h"
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFData.h>
 
 CF_EXTERN_C_BEGIN
 
 typedef const struct __CFCharacterSet * CFCharacterSetRef;
 typedef struct __CFCharacterSet * CFMutableCharacterSetRef;
 
-typedef CFIndex CFCharacterSetPredefinedSet;
-enum
+typedef enum
 {
   kCFCharacterSetControl = 1,
   kCFCharacterSetWhitespace,
@@ -49,35 +48,35 @@ enum
   kCFCharacterSetDecomposable,
   kCFCharacterSetAlphaNumeric,
   kCFCharacterSetPunctuation,
-#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
   kCFCharacterSetCapitalizedLetter = 13,
 #endif
-#if MAC_OS_X_VERSION_10_3 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_3, GS_API_LATEST)
   kCFCharacterSetSymbol = 14,
 #endif
-#if MAC_OS_X_VERSION_10_5 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5, GS_API_LATEST)
   kCFCharacterSetNewline = 15,
 #endif
   kCFCharacterSetIllegal = 12
-};
+} CFCharacterSetPredefinedSet;
 
 
 
-//
-// Getting the Character Set Type Identifier
-//
+/*
+ * Getting the Character Set Type Identifier
+ */
 CF_EXPORT CFTypeID
 CFCharacterSetGetTypeID (void);
 
-//
-// Creating Character Sets
-//
-#if MAC_OS_X_VERSION_10_3 <= MAC_OS_X_VERSION_MAX_ALLOWED
+/*
+ * Creating Character Sets
+ */
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_3, GS_API_LATEST)
 CF_EXPORT CFCharacterSetRef
 CFCharacterSetCreateCopy (CFAllocatorRef alloc, CFCharacterSetRef set);
 #endif
 
-#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
 CF_EXPORT CFCharacterSetRef
 CFCharacterSetCreateInvertedSet (CFAllocatorRef alloc, CFCharacterSetRef set);
 #endif
@@ -94,15 +93,15 @@ CF_EXPORT CFCharacterSetRef
 CFCharacterSetCreateWithBitmapRepresentation (CFAllocatorRef alloc,
   CFDataRef data);
 
-//
-// Getting Predefined Character Sets
-//
+/*
+ * Getting Predefined Character Sets
+ */
 CF_EXPORT CFCharacterSetRef
 CFCharacterSetGetPredefined (CFCharacterSetPredefinedSet setIdentifier);
 
-//
-// Querying Character Sets
-//
+/*
+ * Querying Character Sets
+ */
 CF_EXPORT CFDataRef
 CFCharacterSetCreateBitmapRepresentation (CFAllocatorRef alloc,
   CFCharacterSetRef set);
@@ -110,7 +109,7 @@ CFCharacterSetCreateBitmapRepresentation (CFAllocatorRef alloc,
 CF_EXPORT Boolean
 CFCharacterSetIsCharacterMember (CFCharacterSetRef set, UniChar c);
 
-#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_2, GS_API_LATEST)
 CF_EXPORT Boolean
 CFCharacterSetHasMemberInPlane (CFCharacterSetRef set, CFIndex plane);
 
@@ -124,9 +123,9 @@ CFCharacterSetIsSupersetOfSet (CFCharacterSetRef set,
 
 
 
-//
-// CFMutableCharacterSet
-//
+/*
+ * CFMutableCharacterSet
+ */
 CF_EXPORT CFMutableCharacterSetRef
 CFCharacterSetCreateMutable (CFAllocatorRef alloc);
 
@@ -162,3 +161,4 @@ CFCharacterSetUnion (CFMutableCharacterSetRef set, CFCharacterSetRef otherSet);
 CF_EXTERN_C_END
 
 #endif /* __COREFOUNDATION_CFCHARACTERSET_H__ */
+

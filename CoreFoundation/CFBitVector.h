@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -27,7 +27,7 @@
 #ifndef __COREFOUNDATION_CFBITVECTOR_H__
 #define __COREFOUNDATION_CFBITVECTOR_H__
 
-#include "CFBase.h"
+#include <CoreFoundation/CFBase.h>
 
 CF_EXTERN_C_BEGIN
 
@@ -36,9 +36,9 @@ typedef struct __CFBitVector *CFMutableBitVectorRef;
 
 typedef UInt32 CFBit;
 
-//
-// Creating a Bit Vector
-//
+/*
+ * Creating a Bit Vector
+ */
 CF_EXPORT CFBitVectorRef
 CFBitVectorCreate (CFAllocatorRef allocator, const UInt8 *bytes,
   CFIndex numBits);
@@ -46,9 +46,9 @@ CFBitVectorCreate (CFAllocatorRef allocator, const UInt8 *bytes,
 CF_EXPORT CFBitVectorRef
 CFBitVectorCreateCopy (CFAllocatorRef allocator, CFBitVectorRef bv);
 
-//
-// Getting Information About a Bit Vector
-//
+/*
+ * Getting Information About a Bit Vector
+ */
 CF_EXPORT Boolean
 CFBitVectorContainsBit (CFBitVectorRef bv, CFRange range, CFBit value);
 
@@ -70,17 +70,17 @@ CFBitVectorGetFirstIndexOfBit (CFBitVectorRef bv, CFRange range, CFBit value);
 CF_EXPORT CFIndex
 CFBitVectorGetLastIndexOfBit (CFBitVectorRef bv, CFRange range, CFBit value);
 
-//
-// Getting the CFBitVector Type ID
-//
+/*
+ * Getting the CFBitVector Type ID
+ */
 CF_EXPORT CFTypeID
 CFBitVectorGetTypeID (void);
 
 
 
-//
-// CFMutableBitVector
-//
+/*
+ * CFMutableBitVector
+ */
 CF_EXPORT CFMutableBitVectorRef
 CFBitVectorCreateMutable (CFAllocatorRef allocator, CFIndex capacity);
 
@@ -109,3 +109,4 @@ CFBitVectorSetCount (CFMutableBitVectorRef bv, CFIndex count);
 CF_EXTERN_C_END
 
 #endif /* __COREFOUNDATION_CFBITVECTOR_H__ */
+

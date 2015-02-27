@@ -1,160 +1,261 @@
-/*
- * Copyright 2014 myOS Group. All rights reserved.
- *
- */
-
-#import <stdio.h>
-#import <stdlib.h>
-
-#import "CFAttributedString.h"
-#import "CFRuntime.h"
-#import "CFBase.h"
-#import "CFString.h"
-#import "CFDictionary.h"
-#import "GSPrivate.h"
-
-#import <string.h>
-#import <assert.h>
-
-
-
-enum
-{
-  _kCFAttributedStringIsMutable = (1<<0),
-  _kCFAttributedStringIsImmutable = (1<<1)
-};
-
-/*
-static struct __CFAttr
-{
-
-  const CFDictionaryRef    _attr;
-  CFIndex	_index;
-};
+/* CFAttributedString.c
+   
+   Copyright (C) 2012 Free Software Foundation, Inc.
+   
+   Written by: Stefan Bidigaray
+   Date: April, 2012
+   
+   This file is part of the GNUstep CoreBase Library.
+   
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+   
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+   
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; see the file COPYING.LIB.
+   If not, see <http://www.gnu.org/licenses/> or write to the 
+   Free Software Foundation, 51 Franklin Street, Fifth Floor, 
+   Boston, MA 02110-1301, USA.
 */
+
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFAttributedString.h"
+#include "CoreFoundation/CFBag.h"
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFArray.h"
+#include "CoreFoundation/CFDictionary.h"
+#include "CoreFoundation/CFString.h"
+
+#include "GSPrivate.h"
+#include "GSObjCRuntime.h"
+
+#include <string.h>
+
+static CFTypeID _kCFAttributedStringTypeID = 0;
+static CFDictionaryRef _kCFAttributedStringBlankAttribute = NULL;
+static CFMutableBagRef _kCFAttributedStringCache = NULL;
+static GSMutex _kCFAttributedStringCacheLock;
+static GSMutex _kCFAttributedStringBlankAttributeLock;
+
+typedef struct
+{
+  CFIndex         index;
+  CFDictionaryRef attrib;
+} Attr;
 
 struct __CFAttributedString
 {
-  CFRuntimeBase           _parent;
-  CFStringRef            str;
-  CFDictionaryRef	 attributes;// key is an index in string array and value is CFDictionaryRef <strName, Object>
+  CFRuntimeBase parent;
+  CFStringRef   _string;
+  Attr         *_attribs;
+  CFIndex       _attribCount;
 };
-
-
 
 struct __CFMutableAttributedString
 {
-  CFRuntimeBase           _parent;
-  CFMutableStringRef            str;
-  CFDictionaryRef 	attributes;
-  
-
+  CFRuntimeBase parent;
+  CFMutableStringRef _string;
+  Attr         *_attribs;
+  CFIndex       _attribCount;
+  CFIndex       _attribCap;
+  CFIndex       _isEditing;
 };
 
-static CFTypeID _kCFAttributedStringTypeID = 0;
+enum
+{
+  _kCFAttributedStringIsInline =  (1<<0),
+  _kCFAttributedStringIsMutable = (1<<1)
+};
 
-
-
- void *CFIndexRetain(CFAllocatorRef allocator, const void *ptr) {
-    CFIndex *newPtr = (CFIndex*)CFAllocatorAllocate(allocator, sizeof(CFIndex), 0);
-    *newPtr = *((CFIndex*)ptr);    
-    return newPtr;
-}
- 
-void CFIndexRelease(CFAllocatorRef allocator, const void *ptr) {
-    CFAllocatorDeallocate(allocator, (CFIndex *)ptr);
-}
- 
-
-
-Boolean CFIndexEqual(const void *ptr1, const void *ptr2) {
-    CFIndex *p1 = (CFIndex *)ptr1;
-    CFIndex *p2 = (CFIndex *)ptr2;
-    return  (*p1 == *p2);
- 
+CF_INLINE Boolean
+CFAttributedStringIsInline (CFAttributedStringRef str)
+{
+  return ((CFRuntimeBase *)str)->_flags.info & _kCFAttributedStringIsInline ?
+    true : false;
 }
 
-CFHashCode CFIndexHash(const void *ptr) {
-    return (CFHashCode)*((CFIndex*)ptr);
+CF_INLINE Boolean
+CFAttributedStringIsMutable (CFAttributedStringRef str)
+{
+  return ((CFRuntimeBase *)str)->_flags.info & _kCFAttributedStringIsMutable ?
+    true : false;
 }
 
+CF_INLINE void
+CFAttributedStringSetInline (CFAttributedStringRef str)
+{
+  ((CFRuntimeBase *)str)->_flags.info |= _kCFAttributedStringIsInline;
+}
 
-static CFDictionaryKeyCallBacks CFIndexDictionaryKeyCallbacks = {0, CFIndexRetain, CFIndexRelease, NULL, CFIndexEqual, CFIndexHash};
+CF_INLINE void
+CFAttributedStringSetMutable (CFAttributedStringRef str)
+{
+  ((CFRuntimeBase *)str)->_flags.info |= _kCFAttributedStringIsMutable;
+}
 
+static CFDictionaryRef
+CFAttributedStringCacheAttribute (CFDictionaryRef attribs)
+{
+  CFDictionaryRef cachedAttr = NULL;
+  
+  GSMutexLock (&_kCFAttributedStringCacheLock);
+  
+  if (_kCFAttributedStringCache == NULL)
+    {
+      _kCFAttributedStringCache =
+        CFBagCreateMutable (kCFAllocatorSystemDefault, 0, &kCFTypeBagCallBacks);
+    }
+  else
+    {
+      cachedAttr = CFBagGetValue (_kCFAttributedStringCache, attribs);
+    }
+  
+  if (cachedAttr == NULL)
+    {
+      CFDictionaryRef insert;
+      
+      insert = CFDictionaryCreateCopy (NULL, attribs);
+      CFBagAddValue (_kCFAttributedStringCache, insert);
+      cachedAttr = insert;
+      CFRelease (insert);
+    }
+  
+  GSMutexUnlock (&_kCFAttributedStringCacheLock);
+  
+  return cachedAttr;
+}
 
+static void
+CFAttributedStringUncacheAttribute (CFDictionaryRef attribs)
+{
+  GSMutexLock (&_kCFAttributedStringCacheLock);
+  
+  CFBagRemoveValue (_kCFAttributedStringCache, attribs);
+  
+  GSMutexUnlock (&_kCFAttributedStringCacheLock);
+}
 
+static CFDictionaryRef
+CFAttributedStringGetBlankAttribute (void)
+{
+  if (_kCFAttributedStringBlankAttribute == NULL)
+    {
+      GSMutexLock (&_kCFAttributedStringBlankAttributeLock);
+      if (_kCFAttributedStringBlankAttribute == NULL)
+        {
+          _kCFAttributedStringBlankAttribute = CFDictionaryCreate (NULL,
+            NULL, NULL, 0,
+            &kCFCopyStringDictionaryKeyCallBacks,
+            &kCFTypeDictionaryValueCallBacks);
+          /* Cache the blank attribute in case anyone wants to use it. */
+          CFAttributedStringCacheAttribute (_kCFAttributedStringBlankAttribute);
+          CFRelease (_kCFAttributedStringBlankAttribute);
+        }
+      GSMutexUnlock (&_kCFAttributedStringBlankAttributeLock);
+    }
+  
+  return CFAttributedStringCacheAttribute (_kCFAttributedStringBlankAttribute);
+}
+
+static CFComparisonResult
+CFAttributedStringCompareAttribute (const void *v1, const void *v2, void *ctxt)
+{
+  Attr *attr1 = (Attr*)v1;
+  Attr *attr2 = (Attr*)v2;
+  
+  return attr1->index < attr2->index ? kCFCompareLessThan :
+    (attr1->index == attr2->index ? kCFCompareEqualTo : kCFCompareGreaterThan);
+}
+
+static CFIndex
+CFAttributedStringArrayGetIndex (CFAttributedStringRef str, CFIndex loc,
+                                 CFRange *effRange)
+{
+  /* This function does exactly the same things as
+   * CFAttributedStringGetAttributes() but does not check if str is
+   * an ObjC object and returns an index instead of a CFDictionaryRef.
+   */
+  CFIndex idx;
+  Attr attr;
+  
+  attr.index = loc;
+  idx = GSBSearch (str->_attribs, &attr, CFRangeMake(0, str->_attribCount),
+                   sizeof(Attr), CFAttributedStringCompareAttribute, NULL);
+  
+  if (effRange)
+    {
+      CFIndex start;
+      CFIndex end;
+      
+      start = str->_attribs[idx].index;
+      effRange->location = start;
+      
+      if (idx < str->_attribCount - 1)
+        end = str->_attribs[idx + 1].index;
+      else
+        end = CFStringGetLength(str->_string);
+      
+      effRange->length = end - start;
+    }
+  
+  return idx;
+}
+
+static void
+CFAttributedStringFinalize (CFTypeRef cf)
+{
+  CFIndex idx;
+  CFAttributedStringRef str = (CFAttributedStringRef)cf;
+  
+  CFRelease (str->_string);
+  
+  for (idx = 0 ; idx < str->_attribCount ; ++idx)
+    CFAttributedStringUncacheAttribute (str->_attribs[idx].attrib);
+  
+  if (!CFAttributedStringIsInline(str))
+    CFAllocatorDeallocate (CFGetAllocator(str), str->_attribs);
+}
 
 static Boolean
 CFAttributedStringEqual (CFTypeRef cf1, CFTypeRef cf2)
 {
-  if(cf1 == NULL || cf2 == NULL)
-	return false;
-  CFAttributedStringRef aStr1 = (CFAttributedStringRef)cf1;
-  CFAttributedStringRef aStr2 = (CFAttributedStringRef)cf2;
+  CFAttributedStringRef str1 = (CFAttributedStringRef)cf1;
+  CFAttributedStringRef str2 = (CFAttributedStringRef)cf2;
   
-  if (!CFEqual(aStr1->str,aStr2->str))
-    return false;
-
-if(aStr2->attributes == NULL)
-	return false;
-  CFIndex count1 = CFDictionaryGetCount(aStr1->attributes);	
-  CFIndex count2 = CFDictionaryGetCount(aStr2->attributes);	  
-	
-  if(count1 != count2) 
-	return false;  
- 
-   
-  void** keys1 = malloc(sizeof(void*)*count1);
-  void** keys2 = malloc(sizeof(void*)*count2);
-  CFDictionaryGetKeysAndValues (aStr1->attributes,keys1,NULL);
-  CFDictionaryGetKeysAndValues (aStr2->attributes,keys2,NULL);
-  CFIndex i = 0;
+  if (CFEqual (str1->_string, str2->_string)
+      && str1->_attribCount == str2->_attribCount)
+    {
+      CFIndex idx;
+      
+      for (idx = 0 ; idx < str1->_attribCount ; ++idx)
+        if (!CFEqual (str1->_attribs[idx].attrib, str2->_attribs[idx].attrib))
+          return false;
+      
+      return true;
+    }
   
-  for(; i < count1 ; ++i)
-  {
-	
-  	CFTypeRef t1 = CFDictionaryGetValue (aStr1->attributes,keys1[i]);	
-	CFTypeRef t2 = CFDictionaryGetValue (aStr2->attributes,keys2[i]);
-	if(CFEqual(t1,t2) == false)
-	{
-		free(keys1);
-		free(keys2);
-		return false;
-	}
-  }
-free(keys1);
-free(keys2);
-
-  return true;
+  return false;
 }
-
-
 
 static CFHashCode
-CFAttributedStringHash(CFTypeRef cf)
+CFAttributedStringHash (CFTypeRef cf)
 {
-	CFHashCode hash;
-	CFAttributedStringRef aStr = (CFAttributedStringRef)cf;
-	hash = CFHash(aStr->str);
-	hash+= CFDictionaryGetCount(aStr->attributes);
-	return hash;
+  CFHashCode hash;
+  CFAttributedStringRef str = (CFAttributedStringRef)cf;
+  
+  hash = CFHash (str->_string);
+  hash += str->_attribCount;
+  
+  return hash;
 }
 
-
-static void 
-CFAttributedStringFinalize(CFTypeRef cf)
-{
-	CFAttributedStringRef aStr = (CFAttributedStringRef)cf;
-	CFRelease(aStr->str);	
-	CFDictionaryRemoveAllValues (aStr->attributes);
-	CFRelease(aStr->attributes);
-}
-
-
-
-
-
-static CFRuntimeClass CFAttriburedStringClass =
+CFRuntimeClass CFAttributedStringClass =
 {
   0,
   "CFAttributedString",
@@ -167,493 +268,551 @@ static CFRuntimeClass CFAttriburedStringClass =
   NULL
 };
 
-
-
-
-#define CFATTRIBUTEDSTRING_SIZE sizeof(struct __CFAttributedString) - sizeof(CFRuntimeBase)
-
-
-static CFIndex
-CFAttributedStringLastIndexWithAttributed(CFAttributedStringRef aAstr, CFStringRef aAttrName,CFIndex aLoc)
+void CFAttributedStringInitialize (void)
 {
-	CFIndex index = aLoc ;
-	CFIndex size = CFStringGetLength(aAstr->str);
-	CFDictionaryRef attributes = aAstr->attributes;
-	while ((++index < size) &&  CFDictionaryContainsKey(attributes,&index));
-	return index;
+  _kCFAttributedStringTypeID =
+    _CFRuntimeRegisterClass (&CFAttributedStringClass);
+  GSMutexInitialize (&_kCFAttributedStringCacheLock);
+  GSMutexInitialize (&_kCFAttributedStringBlankAttributeLock);
 }
 
 
-void CFAttributedStringInitialize(void)
+
+CFTypeID
+CFAttributedStringGetTypeID (void)
 {
-  _kCFAttributedStringTypeID = _CFRuntimeRegisterClass (&CFAttriburedStringClass);
+  return _kCFAttributedStringTypeID;
 }
 
+#define CFATTRIBUTESTRING_SIZE sizeof(CFRuntimeClass) \
+  - sizeof(struct __CFAttributedString)
 
-static CFAttributedStringRef 
-CFAttributedStringInit(CFAllocatorRef allocator, CFStringRef aStr,CFDictionaryRef aAttributes)
-{ 		
-	struct __CFAttributedString *new; 
-  	CFStringRef strCopy;
-  	CFDictionaryRef attrCopy;
-  	new = (struct __CFAttributedString*) _CFRuntimeCreateInstance (allocator,_kCFAttributedStringTypeID,
-  		CFATTRIBUTEDSTRING_SIZE, 0);  	
-	if(new)
- 	{
-		//&CFIndexDictionaryKeyCallbacks
-	
-	  	if(aStr)
-	  	{
-	  		strCopy =  CFStringCreateCopy (allocator,aStr);
-	  		new->str = strCopy;
-	  	}
-	  	if(aAttributes)
-	  	{
-			CFIndex count = CFDictionaryGetCount(aAttributes);
-			const void ** attributesKeys = (void**)malloc(sizeof(void*)*count);
-			const void ** attributesValues = (void**)malloc(sizeof(void*)*count);
-			CFDictionaryGetKeysAndValues(aAttributes,attributesKeys,attributesValues);
-			attrCopy = CFDictionaryCreate (allocator,attributesKeys,attributesValues,count,&kCFCopyStringDictionaryKeyCallBacks,NULL);
-	  		free(attributesKeys);
-			free(attributesValues);		  		
-			CFIndex i;
-	  		CFIndex *indexPtr;
-	  		CFIndex size = CFStringGetLength(aStr);
-			const void ** keys = (void**)malloc(sizeof(void*)*size);
-			const void ** values = (void**)malloc(sizeof(void*)*size);
-	  		for(i = 0 ; i < size; i++)
-	  		{
-				indexPtr = (CFIndex*)CFAllocatorAllocate(allocator, sizeof(CFIndex), 0);
-	  			*indexPtr = i;
-				keys[i] = indexPtr;
-				values[i] = CFRetain(attrCopy);
-	  		}			
-
-			new->attributes =  CFDictionaryCreate (allocator,keys,values,size,&CFIndexDictionaryKeyCallbacks,NULL);
-			for(i = 0 ; i < size; i++)
-				CFAllocatorDeallocate(allocator, (CFIndex *)keys[i]);			
-			free(keys);
-			free(values);
-	  	 	CFRelease(attrCopy);
-	  	} 	 
-	}
-
-	return new; 
-}
-
-
-CFAttributedStringRef 
-CFAttributedStringCreate(CFAllocatorRef allocator, CFStringRef str, CFDictionaryRef attributes)
+static CFAttributedStringRef
+CFAttributedStringCreateInlined (CFAllocatorRef alloc, CFStringRef str,
+                                 CFIndex count, Attr *attribs)
 {
-	return CFAttributedStringInit(allocator,str,attributes);
+  struct __CFAttributedString *new;
+  
+  new = (struct __CFAttributedString *)_CFRuntimeCreateInstance (alloc,
+    _kCFAttributedStringTypeID,
+    CFATTRIBUTESTRING_SIZE + (sizeof(Attr) * count), 0);
+  if (new)
+    {
+      CFIndex idx;
+      
+      new->_string = CFStringCreateCopy (alloc, str);
+      new->_attribCount = 1;
+      new->_attribs = (Attr*)&new[1];
+      
+      for (idx = 0 ; idx < count ; ++idx)
+        {
+          new->_attribs[idx].index = idx;
+          new->_attribs[idx].attrib =
+            CFAttributedStringCacheAttribute (attribs[idx].attrib);
+        }
+      
+      CFAttributedStringSetInline (new);
+    }
+  
+  return new;
 }
 
-CFAttributedStringRef 
-CFAttributedStringCreateCopy (CFAllocatorRef allocator,CFAttributedStringRef aStr)
+CFAttributedStringRef
+CFAttributedStringCreate (CFAllocatorRef alloc, CFStringRef str,
+                          CFDictionaryRef attribs)
 {
- 	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "copy");
-	struct __CFAttributedString *new; 
-  	new = (struct __CFAttributedString*) _CFRuntimeCreateInstance (allocator,_kCFAttributedStringTypeID,
-  		CFATTRIBUTEDSTRING_SIZE, 0);  	
-	if(new)
- 	{
-	  	new->str =  CFStringCreateCopy (allocator,aStr->str);
-
-		new->attributes =  CFDictionaryCreateCopy (allocator,aStr->attributes);
-	}
-	return new;
+  Attr attrib;
+  
+  attrib.index = 0;
+  attrib.attrib = attribs;
+  return CFAttributedStringCreateInlined (alloc, str, 1, &attrib);
 }
 
-
-CFAttributedStringRef 
-CFAttributedStringCreateWithSubstring (CFAllocatorRef allocator,CFAttributedStringRef aStr,CFRange aRange)
+CFAttributedStringRef
+CFAttributedStringCreateCopy (CFAllocatorRef alloc, CFAttributedStringRef str)
 {
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "initWithString:attributes:");
-	
-	CFStringRef strCopy =  CFStringCreateWithSubstring(allocator,aStr->str,aRange);
-	
-
-	struct __CFAttributedString *new; 
-  	CFDictionaryRef attrCopy;
-  	new = (struct __CFAttributedString*) _CFRuntimeCreateInstance (allocator,_kCFAttributedStringTypeID,
-  		CFATTRIBUTEDSTRING_SIZE, 0);
-  	if(new)
-  	{	
-	
-  		new->str = strCopy;
-		if(aStr->attributes){
-	  		CFIndex i;
-	  		CFIndex *indexPtr;
-	  		CFIndex length = aRange.location + aRange.length;
-		  	
-			CFIndex size =0;
-			for(i = aRange.location ; i < length; i++)
-	  		{
-	  			if(CFDictionaryContainsKey(aStr->attributes,&i)){
-					size++;
-	  			}
-	  			
-	  		}
-
-			
-			const void ** keys = (void**)malloc(sizeof(void*)*size);
-			const void ** values = (void**)malloc(sizeof(void*)*size);
-			 CFIndex effectedInex =0;  		
-			for(i = aRange.location ; i < length; i++)
-	  		{
-	  			if(CFDictionaryContainsKey(aStr->attributes,&i)){
-					attrCopy =  CFDictionaryCreateCopy(allocator,CFDictionaryGetValue(aStr->attributes,&i));
-					CFIndex *indexPtr = (CFIndex*)CFAllocatorAllocate(allocator, sizeof(CFIndex), 0);
-		  			*indexPtr = i;
-		  			keys[effectedInex] = indexPtr;
-					values[effectedInex] = attrCopy;
-					CFRelease(attrCopy);
-					effectedInex++;	
-	  			}
-	  			
-	  		}
-			new->attributes =  CFDictionaryCreate (allocator,keys,values,size,&CFIndexDictionaryKeyCallbacks,NULL);
-			for(i = 0 ; i < size; i++)
-				CFAllocatorDeallocate(allocator, (CFIndex *)keys[i]);
-			free(keys);
-			free(values);
-
-	  	 	
-		  }	 
-  	}
-  	
-	return (CFAttributedStringRef)new; 	
+  if (CF_IS_OBJC(_kCFAttributedStringTypeID, str))
+    {
+      CFIndex len = CFAttributedStringGetLength (str);
+      return CFAttributedStringCreateWithSubstring (alloc, str,
+                                                    CFRangeMake (0, len));
+    }
+  return CFAttributedStringCreateInlined (alloc, str->_string,
+                                          str->_attribCount, str->_attribs);
 }
 
-
-static CFTypeRef 
-CFAttributedStringGetAttributeDependParameted (CFAttributedStringRef aAStr,CFIndex aLoc,CFStringRef aAttrName,CFRange inRange,CFRange *aEffectiveRange)
+CFAttributedStringRef
+CFAttributedStringCreateWithSubstring (CFAllocatorRef alloc,
+                                       CFAttributedStringRef str,
+                                       CFRange range)
 {
-	if(aEffectiveRange != NULL)
-	{
-		aEffectiveRange->location = inRange.location;
-		aEffectiveRange->length = 0;
-	}	
-	CFIndex strSize = CFStringGetLength(aAStr->str);
-	
-
-	if(aLoc >= strSize)
-		return NULL;
-		
-	CFDictionaryRef attributes = CFDictionaryGetValue( aAStr->attributes,&aLoc);
-	if(attributes == NULL )
-		return NULL;
-	if(!CFDictionaryContainsKey(attributes,aAttrName))
-		return NULL;
-	CFTypeRef returnedType = (CFTypeRef)CFDictionaryGetValue(attributes,aAttrName);	
-	
-	CFIndex i ; 
-	CFIndex len = aLoc + inRange.length; 
-	for(i = inRange.location ; i < len; ++i)
-	{
-		attributes   =  CFDictionaryGetValue(aAStr->attributes,&i)  ;
-		if(attributes == NULL || !CFDictionaryContainsKey(attributes,aAttrName))
-			break;	
-	}
-
-	aEffectiveRange->length = i - inRange.location;
-	return (CFTypeRef)returnedType;
-	
+  CFAttributedStringRef new;
+  CFMutableAttributedStringRef tmp;
+  CFRange r;
+  CFIndex cur;
+  
+  tmp = CFAttributedStringCreateMutable (alloc, range.length);
+  
+  /* We do not need to protect this with beging and end editing because
+   * we will be adding attributes in the order they appear.  Using
+   * the being/end editing functions would actually slow things down.
+   */
+  CFAttributedStringReplaceString (tmp, range,
+                                   CFAttributedStringGetString (str));
+  
+  cur = range.location;
+  do
+    {
+      CFDictionaryRef attribs;
+      
+      attribs = CFAttributedStringGetAttributes (str, cur, &r);
+      CFAttributedStringSetAttributes (tmp, r, attribs, true);
+      
+      cur = r.location + r.length;
+    } while (cur < range.length);
+  
+  new = CFAttributedStringCreateCopy (alloc, tmp);
+  CFRelease (tmp);
+  
+  return new;
 }
 
-
-CFDictionaryRef CFAttributedStringGetAttributes (CFAttributedStringRef aStr,CFIndex loc,CFRange *effectiveRange)
+CFIndex
+CFAttributedStringGetLength (CFAttributedStringRef str)
 {
-
-	CFDictionaryRef dic = NULL;
-	if(CFDictionaryContainsKey(aStr->attributes,&loc))
-	{
-		dic  = CFDictionaryGetValue(aStr->attributes,&loc);
-		if(effectiveRange != NULL)
-		{
-			effectiveRange->location = loc;
-			CFIndex i = 0;
-			CFIndex length = CFStringGetLength(aStr->str);	
-			for(; i < length; ++i )			
-			{
-				CFDictionaryRef jthDec =CFDictionaryGetValue(aStr->attributes,&i);
-				if(!CFEqual(jthDec,dic))
-					break;
-			}
-		effectiveRange->length =  i;				
-		}
-		
-	}
-	return dic;
-	
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, CFIndex, str, "length");
+  
+  return CFStringGetLength (str->_string);
 }
 
-CFTypeRef 
-CFAttributedStringGetAttribute (CFAttributedStringRef aAStr,CFIndex aLoc,CFStringRef aAttrName,CFRange *aEffectiveRange)
-{ 
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aAStr, "attribute:atIndex:effectiveRange:");
-	CFIndex len = CFStringGetLength(aAStr->str);
-	return CFAttributedStringGetAttributeDependParameted ( aAStr, aLoc, aAttrName,CFRangeMake(aLoc,len - aLoc), aEffectiveRange);
-}
-
-CFTypeRef 
-CFAttributedStringGetAttributeAndLongestEffectiveRange (CFAttributedStringRef aStr,CFIndex loc,CFStringRef attrName,CFRange  inRange,CFRange *longestEffectiveRange)
+CFStringRef
+CFAttributedStringGetString (CFAttributedStringRef str)
 {
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attribute:atIndex:longestEffectiveRange:inRange:");
-
-	return CFAttributedStringGetAttributeDependParameted ( aStr,loc, attrName,inRange, longestEffectiveRange);
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, CFStringRef, str,
+                         "string");
+  
+  return str->_string;
 }
 
-CFDictionaryRef CFAttributedStringGetAttributesAndLongestEffectiveRange (CFAttributedStringRef aStr,CFIndex loc,CFRange inRange,CFRange *longestEffectiveRange)
+CFTypeRef
+CFAttributedStringGetAttribute (CFAttributedStringRef str, CFIndex loc,
+                                CFStringRef attrName, CFRange *effRange)
 {
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attributesAtIndex:longestEffectiveRange:inRange");
-
-	if(longestEffectiveRange != NULL)
-	{
-		longestEffectiveRange->location = inRange.location;
-		longestEffectiveRange->length = 0;
-	}	
-	CFIndex strSize = CFStringGetLength(aStr->str);
-	
-
-	if(loc >= strSize)
-		return NULL;
-		
-	CFDictionaryRef attributes = CFDictionaryGetValue( aStr->attributes,&loc);
-	if(attributes == NULL )
-		return NULL;
-	if(longestEffectiveRange != NULL)
-	{
-		CFIndex i ; 
-		CFIndex len = loc + inRange.length;
-		for(i = loc + 1 ; i < len; ++i)
-		{
-			CFDictionaryRef temp   =  CFDictionaryGetValue(aStr->attributes,&i)  ;
-			if(temp == NULL)
-				break;
-			else if(!CFEqual(attributes,temp))
-				break;
-	
-		}
-
-		longestEffectiveRange->length = i - loc;
-	}
-	return attributes;
-
+  CFDictionaryRef attribs;
+  
+  attribs = CFAttributedStringGetAttributes (str, loc, effRange);
+  return CFDictionaryGetValue (attribs, attrName);
 }
 
-
-CFIndex CFAttributedStringGetLength(CFAttributedStringRef aStr)
+CFDictionaryRef
+CFAttributedStringGetAttributes (CFAttributedStringRef str, CFIndex loc,
+                                 CFRange *effRange)
 {
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "length");
-	if(aStr->str == NULL)
-		return -1;
-	return CFStringGetLength(aStr->str);
+  CFIndex idx;
+  
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, CFDictionaryRef, str,
+                         "attributesAtIndex:effectiveRange:", loc, effRange);
+  
+  idx = CFAttributedStringArrayGetIndex (str, loc, effRange);
+  
+  return str->_attribs[idx].attrib;
 }
 
-CFStringRef CFAttributedStringGetString(CFAttributedStringRef aStr)
+CFTypeRef
+CFAttributedStringGetAttributeAndLongestEffectiveRange (
+  CFAttributedStringRef str, CFIndex loc, CFStringRef attrName,
+  CFRange inRange, CFRange *longestEffRange)
 {
-
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "string");
-	if(aStr->str == NULL)
-		return NULL;
-	return (CFStringRef)CFRetain(aStr->str);
+  return NULL; /* FIXME */
 }
 
-
-CFTypeID 
-CFAttributedStringGetTypeID ()
+CFDictionaryRef
+CFAttributedStringGetAttributesAndLongestEffectiveRange (
+  CFAttributedStringRef str, CFIndex loc, CFRange inRange,
+  CFRange *longestEffRange)
 {
-	return 	_kCFAttributedStringTypeID;
+  return NULL; /* FIXME */
 }
 
 
 
-//------------------------------------------------- MUtable AttributedString ----------------------------------//
-#define DEFAULT_ARRAY_CAPACITY 16
-#define CFMUTABLEATTRIBUTEDSTRING_SIZE sizeof(struct __CFMutableAttributedString) - sizeof(CFRuntimeBase)
-
-CF_INLINE void
-CFAttributedStringSetMutable (CFAttributedStringRef aStr)
+static void
+InsertAttributesAtIndex (CFMutableAttributedStringRef str, CFIndex idx,
+                         CFIndex strIdx, CFDictionaryRef attrib)
 {
-  ((CFRuntimeBase *)aStr)->_flags.info |= _kCFAttributedStringIsMutable;
+  struct __CFMutableAttributedString *working;
+  CFAllocatorRef alloc;
+  const Attr *stop;
+  Attr *prev;
+  Attr *cur;
+  
+  working = (struct __CFMutableAttributedString *)str;
+  alloc = CFGetAllocator (working);
+  if (working->_attribCount == working->_attribCap)
+    {
+      /* Grow */
+      working->_attribs = CFAllocatorReallocate (alloc,
+                                                 working->_attribs,
+                                                 (working->_attribCap << 1),
+                                                 0);
+    }
+  
+  /* Move things to the right */
+  stop = &working->_attribs[idx];
+  cur = &working->_attribs[working->_attribCount];
+  prev = cur - 1;
+  while (cur > stop)
+    *cur-- = *prev--;
+  working->_attribCount += 1;
+  
+  /* Insert the new attribute */
+  cur->index = strIdx;
+  cur->attrib = CFAttributedStringCacheAttribute (attrib);
 }
 
-CF_INLINE Boolean
-CFAttributedStringIsMutable (CFAttributedStringRef array)
+static void
+ReplaceAttributesAtIndex (CFMutableAttributedStringRef str, CFIndex idx,
+                          CFDictionaryRef repl)
 {
-  return ((CFRuntimeBase *)array)->_flags.info & _kCFAttributedStringIsMutable ?
-    true : false;
+  CFAttributedStringUncacheAttribute (str->_attribs[idx].attrib);
+  str->_attribs[idx].attrib =
+    CFAttributedStringCacheAttribute (str->_attribs[idx].attrib);
 }
 
-
-CFMutableAttributedStringRef 
-CFAttributedStringCreateMutable (CFAllocatorRef allocator,CFIndex maxLength)
+static void
+SetAttributesAtIndex (CFMutableAttributedStringRef str, CFIndex idx,
+                      CFDictionaryRef repl)
 {
-	assert(maxLength >= 0);
-	struct __CFMutableAttributedString *new; 
-  	new = (struct __CFMutableAttributedString*) _CFRuntimeCreateInstance (allocator,_kCFAttributedStringTypeID,
-  		CFMUTABLEATTRIBUTEDSTRING_SIZE, 0);
-  	if(new)
-  	{
-   
-	      new->attributes =  CFDictionaryCreateMutable ( allocator,16,&CFIndexDictionaryKeyCallbacks,NULL);
-		  new->str = CFStringCreateMutable (allocator,maxLength);
-
-	      CFAttributedStringSetMutable(new); 	 
-  	}
-  	
-	return (CFMutableAttributedStringRef)new; 
+  CFMutableDictionaryRef dict;
+  CFIndex count;
+  CFIndex i;
+  const void **keys;
+  const void ** values;
+  
+  dict = CFDictionaryCreateMutableCopy (NULL, 0, str->_attribs[idx].attrib);
+  count = CFDictionaryGetCount (repl);
+  keys = CFAllocatorAllocate (NULL, count * sizeof(void*) * 2, 0);
+  values = keys + count;
+  CFDictionaryGetKeysAndValues (repl, keys, values);
+  for (i = 0 ; i < count ; ++i)
+    CFDictionarySetValue (dict, keys[i], values[i]);
+  
+  CFAttributedStringUncacheAttribute (str->_attribs[idx].attrib);
+  str->_attribs[idx].attrib = CFAttributedStringCacheAttribute (dict);
+  
+  CFAllocatorDeallocate (NULL, keys);
+  CFRelease (dict);
 }
 
-
-CFMutableAttributedStringRef 
-CFAttributedStringCreateMutableCopy (CFAllocatorRef allocator,CFIndex maxLength,CFAttributedStringRef aStr)
+static void
+RemoveAttributesAtIndex (CFMutableAttributedStringRef str, CFRange range)
 {
-	
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFMutableAttributedStringRef, aStr, "copy");
-	if(!aStr)
-		return NULL;
-	CFMutableAttributedStringRef new = CFAttributedStringCreateMutable(allocator,maxLength);
-	if(new){	
-		new->str =  CFStringCreateCopy (allocator,aStr->str);	
-		new->attributes =  CFDictionaryCreateMutableCopy (allocator,16,aStr->attributes);
-	}
-	return (CFMutableAttributedStringRef)new; 
-}
-
-CFMutableStringRef
-CFAttributedStringGetMutableString (CFMutableAttributedStringRef aStr)
-{
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "mutableString");
-	if(aStr->str == NULL)
-		return NULL;
-	return aStr->str; 
-}
-
-void CFAttributedStringReplaceAttributedString (
-   CFMutableAttributedStringRef aStr,
-   CFRange range,
-   CFAttributedStringRef replacement)
-{
-
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, void, aStr, "replaceCharactersInRange:withAttributedString:");
-	CFIndex stringSize = CFStringGetLength(aStr->str);
-	
-		
-	CFIndex size = range.location + range.length;
-	assert(range.location < stringSize &&  size <= stringSize);
-	
-	CFIndex i = range.location;	
-	
-	CFStringReplace (aStr->str, range,replacement->str);
-
-	CFIndex to = CFStringGetLength(replacement->str)+i;	
-
-
-	CFDictionaryRef attributes = NULL;
-	for(; i < to ; ++i)
-	{
-		CFIndex idx = (i-range.location);		
-		if(CFDictionaryContainsKey(replacement->attributes,&idx))
-		{
-			attributes = CFDictionaryGetValue(replacement->attributes,&idx);
-			CFAttributedStringSetAttributes ( aStr, CFRangeMake(i,1), CFDictionaryCreateCopy(NULL,attributes), true);
-		}
-	}
-}
-
-
-void 
-CFAttributedStringReplaceString (CFMutableAttributedStringRef aStr,
-   CFRange range,
-   CFStringRef replacement)
-{
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, void, aStr, "replaceCharactersInRange:withString:");
-	
-	 CFStringReplace (aStr->str, range,replacement);
-}
-
-
-
-void 
-CFAttributedStringRemoveAttribute ( CFMutableAttributedStringRef aStr, CFRange range,CFStringRef attrName)
-{
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, void, aStr, "removeAttribute:range:");
-	CFIndex strSize = CFStringGetLength(aStr->str);
-	CFIndex index = range.location;
-	CFIndex to = index + range.length;
-	CFDictionaryRef  dic;
-	for(; index < to ; ++index)
-	{
-		dic = aStr->attributes;
-		if(CFDictionaryContainsKey(dic,&index))
-			CFDictionaryRemoveValue ((CFMutableDictionaryRef)CFDictionaryGetValue(dic,&index) ,attrName);
-	}
-}
-
-void 
-CFAttributedStringSetAttribute (CFMutableAttributedStringRef aStr,CFRange range,CFStringRef attrName,CFTypeRef value)
-{
-    
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, void, aStr, "addAttribute:value:range:");
-    CFIndex strSize = CFStringGetLength(aStr->str);
-    CFIndex index = range.location;
-    CFIndex to = index + range.length;
-    CFDictionaryRef dic =  aStr->attributes;
-    CFDictionaryRef attr ;
-    for(; index < to ; ++index) {
-        if (CFDictionaryContainsKey(dic,&index)) {
-            attr = CFDictionaryGetValue(dic,&index);
-            CFDictionarySetValue(attr, attrName, value);
+  if (range.length > 0)
+    {
+      struct __CFMutableAttributedString *working;
+      CFAllocatorRef alloc;
+      const Attr *stop;
+      Attr *next;
+      Attr *cur;
+      
+      working = (struct __CFMutableAttributedString *)str;
+      alloc = CFGetAllocator (working);
+      /* Move things to the left */
+      cur = &working->_attribs[range.location];
+      stop = cur + range.length;
+      while (cur < stop)
+        {
+          CFAttributedStringUncacheAttribute (cur->attrib);
+          cur++;
+        }
+      
+      cur = &working->_attribs[range.location];
+      next = cur + range.length;
+      stop = cur + (working->_attribCount - (range.location + range.length) - 1);
+      while (cur < stop)
+        *cur++ = *next++;
+      working->_attribCount -= range.length;
+      
+      if (working->_attribCount < (working->_attribCap >> 2)
+          && working->_attribCount > 9)
+        {
+          /* Shrink */
+          working->_attribs = CFAllocatorReallocate (alloc,
+                                                     working->_attribs,
+                                                     (working->_attribCap >> 1),
+                                                     0);
         }
     }
 }
 
-
-void 
-CFAttributedStringSetAttributes ( CFMutableAttributedStringRef aStr,
-	CFRange range,CFDictionaryRef replacement
-	,Boolean clearOtherAttributes)
+static void
+CFAttributedStringCoalesce (CFMutableAttributedStringRef str, CFRange range)
 {
-
-	CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, void, aStr, "setAttributes:range:");
-	
-	CFIndex strSize = CFStringGetLength(aStr->str);
-	CFIndex index = range.location;
-	CFIndex to = index + range.length;
-
-	CFDictionaryRef attributes =  aStr->attributes;
-	CFDictionaryRef attr ;
-	
-	CFIndex count = CFDictionaryGetCount (replacement);
-	void** keys = malloc(sizeof(void*)*count);
-	void** values = malloc(sizeof(void*)*count);
-	CFDictionaryGetKeysAndValues (replacement,keys,values);
-	for(; index < to ; ++index)
-	{
-		if(CFDictionaryContainsKey(attributes,&index)){
-			attr = CFDictionaryGetValue(attributes,&index);
-		}
-		else{
-			attr =  CFDictionaryCreateMutable (NULL,16,&kCFCopyStringDictionaryKeyCallBacks ,NULL);	
-			CFDictionarySetValue(attributes,&index,attr);
-		}
-		if(clearOtherAttributes)
-			CFDictionaryRemoveAllValues (attr);
-		
-		CFIndex i = 0;
-		for(; i < count ; ++i)// this for loop for retain every values
-		{
-			//__CFAssertIsString(keys[i]);
-			if(keys[i]!= NULL&&values[i] != NULL)  
-				CFDictionarySetValue (attr,keys[i],CFRetain(values[i]));
-			
-		}
-	}
-	free(keys);
-	free(values);
-	
+  struct __CFMutableAttributedString *working;
+  
+  working = (struct __CFMutableAttributedString *)str;
+  
+  if (working->_isEditing == 0)
+    {
+      CFIndex cur;
+      CFIndex end;
+      Attr *array;
+      
+      array = working->_attribs;
+      if (range.location > 0)
+        {
+          if (array[range.location - 1].attrib == array[range.location].attrib)
+            {
+              RemoveAttributesAtIndex (str, CFRangeMake (range.location, 1));
+              range.length -= 1;
+            }
+        }
+      
+      cur = range.location;
+      end = range.location + range.length;
+      
+      while (cur < end)
+        {
+          if (array[cur - 1].attrib == array[cur].attrib)
+            {
+              RemoveAttributesAtIndex (str, CFRangeMake (cur, 1));
+              end -= 1;
+            }
+          cur++;
+        }
+    }
 }
 
+#define CFMUTABLEATTRIBUTESTRING_SIZE sizeof(CFRuntimeClass) \
+  - sizeof(struct __CFMutableAttributedString)
+
+CFMutableAttributedStringRef
+CFAttributedStringCreateMutable (CFAllocatorRef alloc, CFIndex maxLength)
+{
+  struct __CFMutableAttributedString *new;
+  
+  new = (struct __CFMutableAttributedString*)_CFRuntimeCreateInstance (alloc,
+    _kCFAttributedStringTypeID, CFMUTABLEATTRIBUTESTRING_SIZE, 0);
+  if (new)
+    {
+      new->_string = CFStringCreateMutable (alloc, maxLength);
+      /* Minimum size is 8 */
+      new->_attribCap = 8;
+      new->_attribs = (Attr*)CFAllocatorAllocate (alloc, sizeof(Attr) * 8, 0);
+      new->_attribCount = 1;
+      new->_attribs[0].index = 0;
+      new->_attribs[0].attrib = CFAttributedStringGetBlankAttribute ();
+      
+      CFAttributedStringSetMutable ((CFAttributedStringRef)new);
+    }
+  
+  return (CFMutableAttributedStringRef)new;
+}
+
+CFMutableAttributedStringRef
+CFAttributedStringCreateMutableCopy (CFAllocatorRef alloc, CFIndex maxLength,
+                                     CFAttributedStringRef str)
+{
+  CFMutableAttributedStringRef new;
+  CFRange r;
+  CFIndex idx;
+  CFIndex cur;
+  CFIndex strLen;
+  
+  new = CFAttributedStringCreateMutable (alloc, maxLength);
+  
+  strLen = CFAttributedStringGetLength (str);
+  CFAttributedStringReplaceString (new, CFRangeMake (0, 0),
+                                   CFAttributedStringGetString (str));
+  RemoveAttributesAtIndex (new, CFRangeMake (0, 1));
+  
+  cur = 0;
+  idx = 0;
+  do
+    {
+      CFDictionaryRef attribs;
+      
+      attribs = CFAttributedStringGetAttributes (str, cur, &r);
+      InsertAttributesAtIndex (new, idx, cur, attribs);
+      
+      cur = r.location + r.length;
+      idx++;
+    } while (cur < strLen);
+  
+  return new;
+}
+
+void
+CFAttributedStringBeginEditing (CFMutableAttributedStringRef str)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                         "beginEditing");
+  
+  ((struct __CFMutableAttributedString *)str)->_isEditing += 1;
+}
+
+void
+CFAttributedStringEndEditing (CFMutableAttributedStringRef str)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                         "endEditing");
+  
+  if ((((struct __CFMutableAttributedString *)str)->_isEditing -= 1) == 0)
+    CFAttributedStringCoalesce (str, CFRangeMake (0, str->_attribCount));
+}
+
+CFMutableStringRef
+CFAttributedStringGetMutableString (CFMutableAttributedStringRef str)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, CFMutableStringRef, str,
+                         "mutableString");
+  
+  return NULL; /* FIXME */
+}
+
+void
+CFAttributedStringRemoveAttribute (CFMutableAttributedStringRef str,
+                                   CFRange range, CFStringRef attrName)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                         "removeAttribute:range:", attrName, range);
+  
+  if (!CFAttributedStringIsMutable(str))
+    return;
+  /* FIXME */
+}
+
+void
+CFAttributedStringReplaceString (CFMutableAttributedStringRef str,
+                                 CFRange range, CFStringRef repl)
+{
+  CFIndex idxS;
+  CFIndex idxE;
+  CFIndex cur;
+  CFIndex moveAmount;
+  
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                         "replaceCharactersInRange:withString:", range, repl);
+  
+  if (!CFAttributedStringIsMutable(str))
+    return;
+  
+  CFStringReplace ((CFMutableStringRef)str->_string, range, repl);
+  idxS = CFAttributedStringArrayGetIndex (str, range.location, NULL);
+  idxE = CFAttributedStringArrayGetIndex (str,
+                                          range.location + range.length,
+                                          NULL);
+  RemoveAttributesAtIndex (str, CFRangeMake (idxS, idxE - idxS));
+  
+  /* Need to move the attributes */
+  moveAmount = CFStringGetLength (repl) - range.length;
+  cur = idxS + 1;
+  while (cur < str->_attribCount)
+    str->_attribs[cur++].index += moveAmount;
+  
+  CFAttributedStringCoalesce (str, CFRangeMake (idxS, idxE - idxS));
+}
+
+void
+CFAttributedStringReplaceAttributedString (CFMutableAttributedStringRef str,
+                                           CFRange range,
+                                           CFAttributedStringRef repl)
+{
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                         "replaceCharactersInRange:withAttributeString:",
+                         range, repl);
+  
+  if (!CFAttributedStringIsMutable(str))
+    return;
+}
+
+void
+CFAttributedStringSetAttribute (CFMutableAttributedStringRef str,
+  CFRange range, CFStringRef attrName, CFTypeRef value)
+{
+  CFDictionaryRef attrib;
+  
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                         "setAttribute:value:range:", attrName, value, range);
+  
+  if (!CFAttributedStringIsMutable(str))
+    return;
+  
+  attrib = CFDictionaryCreate (NULL, (const void **)&attrName,
+                               (const void **)&value, 1,
+                               &kCFCopyStringDictionaryKeyCallBacks,
+                               &kCFTypeDictionaryValueCallBacks);
+  CFAttributedStringSetAttributes (str, range, attrib, false);
+  CFRelease (attrib);
+}
+
+void
+CFAttributedStringSetAttributes (CFMutableAttributedStringRef str,
+                                 CFRange range, CFDictionaryRef repl,
+                                 Boolean clearOtherAttribs)
+{
+  CFIndex idxS;
+  CFIndex idxE;
+  CFIndex cur;
+  CFRange rS;
+  CFRange rE;
+  CFIndex rangeMax;
+  Attr *array;
+  
+  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                         "setAttributes:range:", repl, range);
+  
+  if (!CFAttributedStringIsMutable(str))
+    return;
+  
+  array = str->_attribs;
+  rangeMax = range.location + range.length;
+  idxS = CFAttributedStringArrayGetIndex (str, range.location, &rS);
+  idxE = CFAttributedStringArrayGetIndex (str, rangeMax - 1, &rE);
+  cur = idxS;
+  
+  /* Split the last attribute in 2 if new attribute does not fall in a
+   * boundary and the new attributes are different from what's already there.
+   */
+  if (rE.location + rE.length > rangeMax
+      && !CFEqual (array[idxE].attrib, repl))
+    InsertAttributesAtIndex (str, idxE + 1, rangeMax, array[idxE].attrib);
+  
+  if (range.location == rS.location)
+    {
+      if (clearOtherAttribs)
+        ReplaceAttributesAtIndex (str, cur, repl);
+      else
+        SetAttributesAtIndex (str, cur, repl);
+    }
+  else if (!CFEqual (array[idxS].attrib, repl))
+    {
+      /* Only insert a new attribute if the new attribute is different from
+       * the existing attribute
+       */
+      cur += 1;
+      idxE += 1;
+      InsertAttributesAtIndex (str, cur, range.location, repl);
+      if (!clearOtherAttribs)
+        SetAttributesAtIndex (str, cur, array[idxS].attrib);
+    }
+  cur += 1;
+  
+  if (cur <= idxE)
+    {
+      if (clearOtherAttribs)
+        {
+          RemoveAttributesAtIndex (str, CFRangeMake (cur, idxE - cur + 1));
+        }
+      else
+        {
+          do
+            {
+              SetAttributesAtIndex (str, cur++, repl);
+            } while (cur <= idxE);
+        }
+    }
+  
+  CFAttributedStringCoalesce (str, CFRangeMake (idxS, cur));
+}
 

@@ -10,11 +10,11 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.         See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
@@ -27,26 +27,25 @@
 #ifndef __COREFOUNDATION_CFTIMEZONE__
 #define __COREFOUNDATION_CFTIMEZONE__ 1
 
-#include "CFBase.h"
-#include "CFArray.h"
-#include "CFData.h"
-#include "CFDate.h"
-#include "CFDictionary.h"
-#include "CFLocale.h"
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFArray.h>
+#include <CoreFoundation/CFData.h>
+#include <CoreFoundation/CFDate.h>
+#include <CoreFoundation/CFDictionary.h>
+#include <CoreFoundation/CFLocale.h>
 
 CF_EXTERN_C_BEGIN
 
 CF_EXPORT const CFStringRef kCFTimeZoneSystemTimeZoneDidChangeNotification;
 
-#if MAC_OS_X_VERSION_10_5 <= MAC_OS_X_VERSION_MAX_ALLOWED
-typedef CFIndex CFTimeZoneNameStyle;
-enum
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5, GS_API_LATEST)
+typedef enum
 {
   kCFTimeZoneNameStyleStandard,
   kCFTimeZoneNameStyleShortStandard,
   kCFTimeZoneNameStyleDaylightSaving,
   kCFTimeZoneNameStyleShortDaylightSaving
-};
+} CFTimeZoneNameStyle;
 #endif
 
 
@@ -59,7 +58,7 @@ CFTimeZoneCreateWithTimeIntervalFromGMT (CFAllocatorRef alloc,
   CFTimeInterval ti);
 
 CF_EXPORT CFTimeZoneRef
-CFTimeZoneCreate (CFAllocatorRef alloc, CFStringRef name, CFDateRef data);
+CFTimeZoneCreate (CFAllocatorRef alloc, CFStringRef name, CFDataRef data);
 
 CF_EXPORT CFDictionaryRef
 CFTimeZoneCopyAbbreviationDictionary (void);
@@ -100,7 +99,7 @@ CFTimeZoneIsDaylightSavingTime (CFTimeZoneRef tz, CFAbsoluteTime at);
 CF_EXPORT CFTypeID
 CFTimeZoneGetTypeID (void);
 
-#if MAC_OS_X_VERSION_10_5 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_5, GS_API_LATEST)
 CF_EXPORT CFStringRef
 CFTimeZoneCopyLocalizedName (CFTimeZoneRef tz, CFTimeZoneNameStyle style,
   CFLocaleRef locale);
@@ -113,4 +112,7 @@ CFTimeZoneGetNextDaylightSavingTimeTransition (CFTimeZoneRef tz,
   CFAbsoluteTime at);
 #endif
 
+CF_EXTERN_C_END
+
 #endif /* __COREFOUNDATION_CFTIMEZONE__ */
+

@@ -10,7 +10,7 @@
    This library is free software; you can redisibute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is disibuted in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,25 +24,23 @@
    Boston, MA 02110-1301, USA.
 */
 
-//#import "CFUUID.h"
-#import <CoreFoundation/CoreFoundation-private.h>
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include "CFRuntime.h"
-#include "CFBase.h"
-#include "CFSet.h"
-#include "CFString.h"
-#include "CFUUID.h"
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFSet.h"
+#include "CoreFoundation/CFString.h"
+#include "CoreFoundation/CFUUID.h"
 #include "GSPrivate.h"
-*/
 
 /* Some of the code in CFUUID is based on Etoile's ETUUID class.
    Copyright (C) 2007 Yen-Ju Check <yjchenx AT gmail DOT com> */
-// On *BSD and Linux we have a srandomdev() function which seeds the random 
-// number generator with entropy collected from a variety of sources. On other
-// platforms we don't, so we use some less random data based on the current 
-// time and pid to seed the random number generator.
+
+#include <stdio.h>
+#include <stdlib.h>
+/* On *BSD and Linux we have a srandomdev() function which seeds the random 
+ * number generator with entropy collected from a variety of sources. On other
+ * platforms we don't, so we use some less random data based on the current 
+ * time and pid to seed the random number generator.
+ */
 #if defined(__FreeBSD__) \
     || defined(__OpenBSD__) \
     || defined(__DragonFly__) \
@@ -180,13 +178,13 @@ const CFRuntimeClass CFUUIDClass =
 {
   0,
   "CFUUID",
-  NULL, // init
-  NULL, // copy
-  NULL, // dealloc
-  CFUUIDEqual, // equal
-  CFUUIDHash, // hash
-  CFUUIDCopyFormattingDescription, // copyFormattingDesc
-  NULL  // copyDebugDesc
+  NULL, /* init */
+  NULL, /* copy */
+  NULL, /* dealloc */
+  CFUUIDEqual, /* equal */
+  CFUUIDHash, /* hash */
+  CFUUIDCopyFormattingDescription, /* copyFormattingDesc */
+  NULL  /* copyDebugDesc */
 };
 
 void CFUUIDInitialize (void)
@@ -213,10 +211,10 @@ CFUUIDCreate (CFAllocatorRef alloc)
       ((UInt8*)&bytes)[i] = (UInt8)r;
     }
 #endif
-  // Set version
+  /* Set version */
   bytes.byte6 &= 0x0F;
   bytes.byte6 |= 0x40;
-  // Bit 6 must be 0 and 7 must be 1
+  /* Bit 6 must be 0 and 7 must be 1 */
   bytes.byte8 &= 0xBF;
   
   return CFUUIDCreateFromUUIDBytes (alloc, bytes);
@@ -226,7 +224,7 @@ CFUUIDRef
 CFUUIDCreateFromString (CFAllocatorRef alloc, CFStringRef uuidStr)
 {
   CFUUIDBytes bytes;
-  char data[36]; // 36 chars
+  char data[36]; /* 36 chars */
   if (!CFStringGetCString (uuidStr, data, 36, kCFStringEncodingASCII))
     return NULL;
   
@@ -348,3 +346,4 @@ CFUUIDGetTypeID (void)
 {
   return _kCFUUIDTypeID;
 }
+

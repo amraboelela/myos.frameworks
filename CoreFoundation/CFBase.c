@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,17 +24,12 @@
    Boston, MA 02110-1301, USA.
 */ 
 
-#import <stdlib.h>
-#import <string.h>
-#import <stdio.h>
-#import <unistd.h>
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFRuntime.h"
+#include "GSPrivate.h"
 
-#import "CFBase.h"
-#import "CFRuntime.h"
-
-//#include <proc/readproc.h>
-
-#import "GSPrivate.h"
+#include <stdlib.h>
+#include <string.h>
 
 const double kCFCoreFoundationVersionNumber = 550.13;
 
@@ -42,11 +37,11 @@ const double kCFCoreFoundationVersionNumber = 550.13;
 
 struct __CFAllocator
 {
-    CFRuntimeBase _parent;
-    CFAllocatorContext _context;
+  CFRuntimeBase _parent;
+  CFAllocatorContext _context;
 };
 
-// this will hold the default zone if set with CFAllocatorSetDefault ()
+/* this will hold the default zone if set with CFAllocatorSetDefault () */
 static CFTypeID _kCFAllocatorTypeID = 0;
 static CFAllocatorRef _kCFDefaultAllocator = NULL;
 
@@ -65,32 +60,32 @@ static CFRuntimeClass CFAllocatorClass =
 
 void CFAllocatorInitialize (void)
 {
-    _kCFAllocatorTypeID = _CFRuntimeRegisterClass (&CFAllocatorClass);
-    _kCFDefaultAllocator = kCFAllocatorSystemDefault;
-    
-    /* These are already semi-initialized by INIT_CFRUNTIME_BASE() */
-    GSRuntimeConstantInit (kCFAllocatorSystemDefault, _kCFAllocatorTypeID);
-    GSRuntimeConstantInit (kCFAllocatorMalloc, _kCFAllocatorTypeID);
-    GSRuntimeConstantInit (kCFAllocatorMallocZone, _kCFAllocatorTypeID);
-    GSRuntimeConstantInit (kCFAllocatorNull, _kCFAllocatorTypeID);
+  _kCFAllocatorTypeID = _CFRuntimeRegisterClass (&CFAllocatorClass);
+  _kCFDefaultAllocator = kCFAllocatorSystemDefault;
+  
+  /* These are already semi-initialized by INIT_CFRUNTIME_BASE() */
+  GSRuntimeConstantInit (kCFAllocatorSystemDefault, _kCFAllocatorTypeID);
+  GSRuntimeConstantInit (kCFAllocatorMalloc, _kCFAllocatorTypeID);
+  GSRuntimeConstantInit (kCFAllocatorMallocZone, _kCFAllocatorTypeID);
+  GSRuntimeConstantInit (kCFAllocatorNull, _kCFAllocatorTypeID);
 }
 
 static void *
 malloc_alloc (CFIndex allocSize, CFOptionFlags hint, void *info)
 {
-    return malloc (allocSize);
+  return malloc (allocSize);
 }
 
 static void *
 malloc_realloc (void *ptr, CFIndex newsize, CFOptionFlags hint, void *info)
 {
-    return realloc(ptr, newsize);
+  return realloc (ptr, newsize);
 }
 
 static void
 malloc_dealloc (void *ptr, void *info)
 {
-    free (ptr);
+  free (ptr);
 }
 
 static void *
@@ -102,7 +97,7 @@ null_alloc (CFIndex allocSize, CFOptionFlags hint, void *info)
 static void *
 null_realloc (void *ptr, CFIndex newsize, CFOptionFlags hint, void *info)
 {
-    return NULL;
+  return NULL;
 }
 
 static void
@@ -113,14 +108,14 @@ null_dealloc (void *ptr, void *info)
 
 static struct __CFAllocator _kCFAllocatorSystemDefault =
 {
-    INIT_CFRUNTIME_BASE(),
-    { 0, NULL, NULL, NULL, NULL, malloc_alloc, malloc_realloc, malloc_dealloc, NULL }
+  INIT_CFRUNTIME_BASE(),
+  { 0, NULL, NULL, NULL, NULL, malloc_alloc, malloc_realloc, malloc_dealloc, NULL }
 };
 
 static struct __CFAllocator _kCFAllocatorNull =
 {
-    INIT_CFRUNTIME_BASE(),
-    { 0, NULL, NULL, NULL, NULL, null_alloc, null_realloc, null_dealloc, NULL }
+  INIT_CFRUNTIME_BASE(),
+  { 0, NULL, NULL, NULL, NULL, null_alloc, null_realloc, null_dealloc, NULL }
 };
 
 CFAllocatorRef kCFAllocatorDefault = NULL;
@@ -141,7 +136,7 @@ CFAllocatorCreate(CFAllocatorRef allocator, CFAllocatorContext *context)
   if (allocator == kCFAllocatorUseContext)
     {
       /* Chicken and egg problem... */
-      return NULL; // FIXME
+      return NULL; /* FIXME */
     }
   else
     {
@@ -167,10 +162,10 @@ CFAllocatorAllocate(CFAllocatorRef allocator, CFIndex size, CFOptionFlags hint)
 void
 CFAllocatorDeallocate(CFAllocatorRef allocator, void *ptr)
 {
-    if (NULL == allocator) {
-        allocator = _kCFDefaultAllocator;
-    }
-    allocator->_context.deallocate(ptr, allocator->_context.info);
+  if (NULL == allocator)
+    allocator = _kCFDefaultAllocator;
+  
+  allocator->_context.deallocate(ptr, allocator->_context.info);
 }
 
 CFIndex
@@ -190,43 +185,46 @@ CFAllocatorGetPreferredSizeForSize(CFAllocatorRef allocator, CFIndex size,
 void *
 CFAllocatorReallocate(CFAllocatorRef allocator, void *ptr, CFIndex newsize, CFOptionFlags hint)
 {
-    if (NULL == allocator) {
-        allocator = _kCFDefaultAllocator;
-    }
-    return allocator->_context.reallocate(ptr, newsize, hint,
-                                          allocator->_context.info);
+  if (NULL == allocator)
+    allocator = _kCFDefaultAllocator;
+  
+  return allocator->_context.reallocate(ptr, newsize, hint,
+    allocator->_context.info);
 }
 
 CFAllocatorRef
 CFAllocatorGetDefault(void)
 {
-    return _kCFDefaultAllocator;
+  return _kCFDefaultAllocator;
 }
 
-void CFAllocatorSetDefault(CFAllocatorRef allocator)
+void
+CFAllocatorSetDefault(CFAllocatorRef allocator)
 {
-    CFAllocatorRef current = _kCFDefaultAllocator;
-    if (allocator == NULL) {
-        return;
-    }
-    CFRetain (allocator);
-    _kCFDefaultAllocator = allocator;
-    CFRelease (current);
+  CFAllocatorRef current = _kCFDefaultAllocator;
+  
+  if (allocator == NULL)
+    return;
+  
+  CFRetain (allocator);
+  _kCFDefaultAllocator = allocator;
+  CFRelease (current);
 }
 
-void CFAllocatorGetContext(CFAllocatorRef allocator, CFAllocatorContext *context)
+void
+CFAllocatorGetContext(CFAllocatorRef allocator, CFAllocatorContext *context)
 {
-    context = (CFAllocatorContext*)&(allocator->_context);
+  memcpy (context, &(allocator->_context), sizeof(CFAllocatorContext));
 }
 
-CFTypeID CFAllocatorGetTypeID(void)
+CFTypeID
+CFAllocatorGetTypeID(void)
 {
-    return _kCFAllocatorTypeID;
+  return _kCFAllocatorTypeID;
 }
 
-//
-// CFNull
-//
+
+
 static CFTypeID _kCFNullTypeID;
 
 static const CFRuntimeClass CFNullClass =
@@ -265,57 +263,5 @@ CFTypeID
 CFNullGetTypeID (void)
 {
   return _kCFNullTypeID;
-}
-/*
-natural_t CFGetFreeMemory()
-{
-    mach_port_t host_port;
-    mach_msg_type_number_t host_size;
-    vm_size_t pagesize;
-    host_port = mach_host_self();
-    host_size = sizeof(vm_statistics_data_t) / sizeof(integer_t);
-    host_page_size(host_port, &pagesize);
-    vm_statistics_data_t vm_stat;
-    if (host_statistics(host_port, HOST_VM_INFO, (host_info_t)&vm_stat, &host_size) != KERN_SUCCESS) {
-        NSLog(@"Failed to fetch vm statistics");
-        return 0;
-    }
-     Stats in bytes 
-    natural_t mem_free = vm_stat.free_count * pagesize;
-    return mem_free;
-}*/
-/*
-unsigned long CFGetMemoryUsage()
-{
-    struct proc_t usage;
-    look_up_our_self(&usage);
-    //printf("usage.vsize: %lu\n", usage.vsize);
-    //printf("usage.size: %lu\n", usage.size);
-    unsigned long pageSize = sysconf(_SC_PAGESIZE);
-    //printf("page size: %lu\n", pageSize);
-    return usage.vsize;
-}*/
-
-long CFGetFreeMemory()
-{
-    FILE *fp = fopen("/proc/meminfo", "r");
-    if (fp!=NULL) {
-        size_t bufsize = 1024 * sizeof(char);
-        char *buf = (char *)malloc(bufsize);
-        long value = -1L;
-//#ifdef NATIVE_APP
-        while (getline(&buf, &bufsize, fp) >= 0) {
-            if (strncmp(buf, "MemFree", 7) != 0) {
-                continue;
-            }
-            sscanf(buf, "MemFree: %ld", &value);
-            break;
-        }
-        fclose(fp);
-        free((void *)buf);
-//#endif
-        return value;
-    }
-    return 0;
 }
 

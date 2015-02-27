@@ -110,14 +110,6 @@ OBJECTS = \
     NSAttributedString+GNUstepBase.o \
     NSAttributedString.o \
     NSBundle+GNUstepBase.o \
-    NSCFArray.o \
-    NSCFAttributedString.o \
-    NSCFData.o \
-    NSCFDictionary.o \
-    NSCFError.o \
-    NSCFSet.o \
-    NSCFString.o \
-    NSCFType.o \
     NSCache.o \
     NSCachedURLResponse.o \
     NSCalendar.o \

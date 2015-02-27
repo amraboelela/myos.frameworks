@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,35 +25,33 @@
 */
 
 #ifndef __CFCOREFOUNDATION_CFXMLNODE_H__
-#define __CFCOREFOUNDATION_CFXMLNODE_H__
+#define __CFCOREFOUNDATION_CFXMLNODE_H__ 1
 
-#include "CFBase.h"
-#include "CFArray.h"
-#include "CFString.h"
-#include "CFTree.h"
-#include "CFURL.h"
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFArray.h>
+#include <CoreFoundation/CFString.h>
+#include <CoreFoundation/CFTree.h>
+#include <CoreFoundation/CFURL.h>
 
 CF_EXTERN_C_BEGIN
 
 typedef const struct __CFXMLNode *CFXMLNodeRef;
 
-typedef enum CFXMLEntityTypeCode CFXMLEntityTypeCode;
-enum CFXMLEntityTypeCode
+typedef enum
 {
   kCFXMLEntityTypeParameter =      0,
   kCFXMLEntityTypeParsedInternal = 1,
   kCFXMLEntityTypeParsedExternal = 2,
   kCFXMLEntityTypeUnparsed =       3,
   kCFXMLEntityTypeCharacter =      4
-};
+} CFXMLEntityTypeCode;
 
 enum
 {
   kCFXMLNodeCurrentVersion = 1
 };
 
-typedef enum CFXMLNodeTypeCode CFXMLNodeTypeCode;
-enum CFXMLNodeTypeCode
+typedef enum
 {
   kCFXMLNodeTypeDocument =                  1,
   kCFXMLNodeTypeElement =                   2,
@@ -70,7 +68,7 @@ enum CFXMLNodeTypeCode
   kCFXMLNodeTypeNotation =                 13,
   kCFXMLNodeTypeElementTypeDeclaration =   14,
   kCFXMLNodeTypeAttributeListDeclaration = 15
-};
+} CFXMLNodeTypeCode;
 
 typedef struct CFXMLExternalID CFXMLExternalID;
 struct CFXMLExternalID
@@ -174,9 +172,9 @@ CFXMLNodeGetVersion (CFXMLNodeRef node);
 
 
 
-//
-// CFXMLTree
-//
+/*
+ * CFXMLTree
+ */
 typedef CFTreeRef CFXMLTreeRef;
 
 CF_EXPORT CFXMLTreeRef
@@ -188,3 +186,4 @@ CFXMLTreeGetNode (CFXMLTreeRef xmlTree);
 CF_EXTERN_C_END
 
 #endif /* __CFCOREFOUNDATION_CFXMLNODE_H__ */
+

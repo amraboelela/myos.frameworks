@@ -31,6 +31,7 @@
 #include <CoreFoundation/CFArray.h>
 #include <CoreFoundation/CFDate.h>
 #include <CoreFoundation/CFError.h>
+#include <GNUstepBase/GSBlocks.h>
 
 CF_EXTERN_C_BEGIN
 
@@ -39,8 +40,7 @@ typedef struct __CFRunLoopSource * CFRunLoopSourceRef;
 typedef struct __CFRunLoopObserver * CFRunLoopObserverRef;
 typedef struct __CFRunLoopTimer * CFRunLoopTimerRef;
 
-typedef enum CFRunLoopActivity CFRunLoopActivity;
-enum CFRunLoopActivity
+typedef enum
 {
   kCFRunLoopEntry =         (1 << 0),
   kCFRunLoopBeforeTimers =  (1 << 1),
@@ -49,7 +49,7 @@ enum CFRunLoopActivity
   kCFRunLoopAfterWaiting =  (1 << 6),
   kCFRunLoopExit =          (1 << 7),
   kCFRunLoopAllActivities = 0x0FFFFFFFU
-};
+} CFRunLoopActivity;
 
 enum
 {
@@ -63,6 +63,13 @@ enum
 CF_EXPORT const CFStringRef kCFRunLoopCommonModes;
 CF_EXPORT const CFStringRef kCFRunLoopDefaultMode;
 
+#ifndef __APPLE__ 
+/* On non-Darwin platforms, we assume ports to be ordinary pollable
+ * file descriptors
+ */
+typedef int mach_port_t;
+#endif
+
 /*
  * Callbacks
  */
@@ -71,12 +78,12 @@ typedef void (*CFRunLoopCancelCallBack) (void *info, CFRunLoopRef rl,
 typedef Boolean (*CFRunLoopEqualCallBack) (const void *info1,
                                            const void *info2);
 typedef CFHashCode (*CFRunLoopHashCallBack) (const void *info);
-#if 0 /* No mach_port_t support */
+
 typedef mach_port_t (*CFRunLoopGetPortCallBack) (void *info);
 typedef void *(*CFRunLoopMachPerformCallBack) (void *msg, CFIndex size,
                                                CFAllocatorRef  alloc,
                                                void *info);
-#endif
+
 typedef void (*CFRunLoopPerformCallBack) (void *info);
 typedef void (*CFRunLoopScheduleCallBack) (void *info, CFRunLoopRef rl,
                                            CFStringRef mode);
@@ -102,7 +109,6 @@ struct CFRunLoopSourceContext
   CFRunLoopPerformCallBack perform;
 };
 
-#if 0 /* No mach_port_t support */
 typedef struct CFRunLoopSourceContext1 CFRunLoopSourceContext1;
 struct CFRunLoopSourceContext1
 {
@@ -116,7 +122,6 @@ struct CFRunLoopSourceContext1
   CFRunLoopGetPortCallBack getPort;
   CFRunLoopMachPerformCallBack perform;
 };
-#endif
 
 typedef struct CFRunLoopObserverContext CFRunLoopObserverContext;
 struct CFRunLoopObserverContext
@@ -198,11 +203,11 @@ CFRunLoopCopyCurrentMode (CFRunLoopRef rl);
 /*
  * Scheduling Blocks
  */
-#if __BLOCKS__
-#if MAC_OS_X_VERSION_10_4 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#if OS_API_VERSION(MAC_OS_X_VERSION_10_4, GS_API_LATEST)
+DEFINE_BLOCK_TYPE_NO_ARGS(PerformBlockType, void);
+
 CF_EXPORT void
-CFRunLoopPerformBlock (CFRunLoopRef rl, CFTypeRef mode, void (^block)(void));
-#endif
+CFRunLoopPerformBlock (CFRunLoopRef rl, CFTypeRef mode, PerformBlockType block);
 #endif
 
 /*
@@ -330,6 +335,12 @@ CFRunLoopTimerIsValid (CFRunLoopTimerRef timer);
 CF_EXPORT void
 CFRunLoopTimerSetNextFireDate (CFRunLoopTimerRef timer,
                                 CFAbsoluteTime fireDate);
+
+/*
+ * Extensions for NSRunLoop
+ */
+CF_EXPORT Boolean
+_CFRunLoopHasAnyValidSources (CFRunLoopRef rl, CFStringRef mode);
 
 CF_EXTERN_C_END
 

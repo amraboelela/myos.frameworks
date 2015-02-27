@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,10 +24,10 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include "CFRuntime.h"
-#include "CFCharacterSet.h"
-#include "CFDictionary.h"
-#include "CFString.h"
+#include "CoreFoundation/CFRuntime.h"
+#include "CoreFoundation/CFCharacterSet.h"
+#include "CoreFoundation/CFDictionary.h"
+#include "CoreFoundation/CFString.h"
 #include "GSPrivate.h"
 
 #include <unicode/uset.h>
@@ -195,14 +195,14 @@ static const UniChar uppercase_letter[] =
   { '[', ':', 'L', 'u', ':', ']'  };
 static const UniChar non_base[] =
   { '[', ':', 'M', ':', ']'  };
-static const UniChar decomposable[] = // FIXME
+static const UniChar decomposable[] = /* FIXME */
   { ' '  };
 static const UniChar alpha_numeric[] =
   { '[', '[', ':', 'L', ':', ']', '[', ':', 'M', ':', ']',
     '[', ':', 'N', ':', ']', ']' };
 static const UniChar punctuation[] =
   { '[', ':', 'P', ':', ']'  };
-static const UniChar illegal[] = // FIXME: Is this right?
+static const UniChar illegal[] = /* FIXME: Is this right? */
   { '[', '[', ':', '^', 'C', ':', ']', '[', ':', '^', 'L', ':', ']',
     '[', ':', '^', 'M', ':', ']', '[', ':', '^', 'N', ':', ']',
     '[', ':', '^', 'P', ':', ']', '[', ':', '^', 'S', ':', ']',
@@ -237,6 +237,25 @@ static const UniChar *predefinedSets[] =
   newline
 };
 
+static const CFIndex predefinedSetsSize[] =
+{
+  sizeof(control) / sizeof(UniChar),
+  sizeof(whitespace) / sizeof(UniChar),
+  sizeof(whitespace_newline) / sizeof(UniChar),
+  sizeof(decimal_digit) / sizeof(UniChar),
+  sizeof(letter) / sizeof(UniChar),
+  sizeof(lowercase_letter) / sizeof(UniChar),
+  sizeof(uppercase_letter) / sizeof(UniChar),
+  sizeof(non_base) / sizeof(UniChar),
+  sizeof(decomposable) / sizeof(UniChar),
+  sizeof(alpha_numeric) / sizeof(UniChar),
+  sizeof(punctuation) / sizeof(UniChar),
+  sizeof(illegal) / sizeof(UniChar),
+  sizeof(capitalized_letter) / sizeof(UniChar),
+  sizeof(symbol) / sizeof(UniChar),
+  sizeof(newline) / sizeof(UniChar)
+};
+
 CFCharacterSetRef
 CFCharacterSetGetPredefined (CFCharacterSetPredefinedSet setIdentifier)
 {
@@ -247,9 +266,9 @@ CFCharacterSetGetPredefined (CFCharacterSetPredefinedSet setIdentifier)
       GSMutexLock (&_kCFPredefinedCharacterSetLock);
       if (_kCFPredefinedCharacterSets == NULL)
         {
-          // No need to set callbacks.
-          _kCFPredefinedCharacterSets =
-            CFDictionaryCreateMutable (NULL, 15, NULL, NULL);
+          /* No need to set callbacks. */
+          _kCFPredefinedCharacterSets = CFDictionaryCreateMutable (NULL, 15,
+            NULL, &kCFTypeDictionaryValueCallBacks);
         }
       GSMutexUnlock (&_kCFPredefinedCharacterSetLock);
     }
@@ -266,8 +285,12 @@ CFCharacterSetGetPredefined (CFCharacterSetPredefinedSet setIdentifier)
         {
           UErrorCode err = U_ZERO_ERROR;
           ret->_uset = uset_openPattern (predefinedSets[setIdentifier - 1],
-            sizeof(predefinedSets[setIdentifier - 1]) / sizeof(UniChar), &err);
+                                         predefinedSetsSize[setIdentifier - 1],
+                                         &err);
           uset_freeze (ret->_uset);
+          CFDictionaryAddValue (_kCFPredefinedCharacterSets,
+                                (const void*)setIdentifier, ret);
+          CFRelease (ret);
         }
       GSMutexUnlock (&_kCFPredefinedCharacterSetLock);
     }
@@ -403,3 +426,4 @@ CFCharacterSetUnion (CFMutableCharacterSetRef set, CFCharacterSetRef otherSet)
 {
   uset_addAll (set->_uset, otherSet->_uset);
 }
+

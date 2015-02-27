@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -27,19 +27,12 @@
 #ifndef __COREFOUNDATION_CFBAG_H__
 #define __COREFOUNDATION_CFBAG_H__
 
-#include "CFBase.h"
+#include <CoreFoundation/CFBase.h>
 
 CF_EXTERN_C_BEGIN
 
-#ifdef __OBJC__
-@class NSBag;
-@class NSMutableBag;
-typedef NSBag* CFBagRef;
-typedef NSMutableBag* CFMutableBagRef;
-#else
 typedef const struct __CFBag *CFBagRef;
 typedef struct __CFBag *CFMutableBagRef;
-#endif
 
 typedef void (*CFBagApplierFunction) (const void *value, void *context);
 
@@ -67,9 +60,9 @@ CF_EXPORT const CFBagCallBacks kCFTypeBagCallBacks;
 
 
 
-//
-// Creating a bag
-//
+/*
+ * Creating a bag
+ */
 CFBagRef
 CFBagCreate (CFAllocatorRef alloc, const void **values, CFIndex numValues,
   const CFBagCallBacks *callBacks);
@@ -77,9 +70,9 @@ CFBagCreate (CFAllocatorRef alloc, const void **values, CFIndex numValues,
 CFBagRef
 CFBagCreateCopy (CFAllocatorRef alloc, CFBagRef bag);
 
-//
-// Examining a dictionary
-//
+/*
+ * Examining a dictionary
+ */
 Boolean
 CFBagContainsValue (CFBagRef bag, const void *value);
 
@@ -99,23 +92,23 @@ Boolean
 CFBagGetValueIfPresent (CFBagRef bag, const void *candidate,
   const void **value);
 
-//
-// Applying a funcation to a dictionary
-//
+/*
+ * Applying a funcation to a dictionary
+ */
 void
 CFBagApplyFunction (CFBagRef bag, CFBagApplierFunction applier, void *context);
 
-//
-// Getting the CFBag type ID
-//
+/*
+ * Getting the CFBag type ID
+ */
 CFTypeID
 CFBagGetTypeID (void);
 
 
 
-//
-// Creating a Mutable Dictionary
-//
+/*
+ * Creating a Mutable Dictionary
+ */
 CFMutableBagRef
 CFBagCreateMutable (CFAllocatorRef alloc, CFIndex capacity,
   const CFBagCallBacks *callBacks);
@@ -123,9 +116,9 @@ CFBagCreateMutable (CFAllocatorRef alloc, CFIndex capacity,
 CFMutableBagRef
 CFBagCreateMutableCopy (CFAllocatorRef alloc, CFIndex capacity, CFBagRef bag);
 
-//
-// Modifying a Dictionary
-//
+/*
+ * Modifying a Dictionary
+ */
 void
 CFBagAddValue (CFMutableBagRef bag, const void *value);
 
@@ -144,3 +137,4 @@ CFBagSetValue (CFMutableBagRef bag, const void *value);
 CF_EXTERN_C_END
 
 #endif /* __COREFOUNDATION_CFBAG_H__ */
+

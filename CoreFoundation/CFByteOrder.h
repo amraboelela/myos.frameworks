@@ -13,7 +13,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,9 +28,9 @@
 */ 
 
 #ifndef __COREFOUNDATION_CFBYTEORDER_H__
-#define __COREFOUNDATION_CFBYTEORDER_H__
+#define __COREFOUNDATION_CFBYTEORDER_H__ 1
 
-#include "CFBase.h"
+#include <CoreFoundation/CFBase.h>
 
 typedef enum
 {
@@ -333,3 +333,4 @@ CFConvertFloatSwappedToHost(CFSwappedFloat32 in)
 }
 
 #endif /* __COREFOUNDATION_CFBYTEORDER_H__ */
+

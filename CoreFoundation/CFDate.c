@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,11 +24,13 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include "CFDate.h"
-#include "CFCalendar.h"
-#include "CFTimeZone.h"
-#include "CFRuntime.h"
+#include "CoreFoundation/CFDate.h"
+#include "CoreFoundation/CFCalendar.h"
+#include "CoreFoundation/CFTimeZone.h"
+#include "CoreFoundation/CFRuntime.h"
+
 #include "GSPrivate.h"
+#include "GSObjCRuntime.h"
 
 #include <math.h>
 #include <unicode/ucal.h>
@@ -44,15 +46,35 @@ struct __CFDate
 const CFTimeInterval kCFAbsoluteTimeIntervalSince1970 = 978307200.0;
 const CFTimeInterval kCFAbsoluteTimeIntervalSince1904 = 3061152000.0;
 
+static CFTypeRef
+CFDateCreateCopy (CFAllocatorRef alloc, CFTypeRef cf)
+{
+  CFDateRef date = (CFDateRef)cf;
+  return CFDateCreate (alloc, date->_absTime);
+}
+
+static Boolean
+CFDateEqual (CFTypeRef cf1, CFTypeRef cf2)
+{
+  return CFDateCompare ((CFDateRef)cf1, (CFDateRef)cf2, NULL)
+    == kCFCompareEqualTo;
+}
+
+static CFHashCode
+CFDateHash (CFTypeRef cf)
+{
+  return (CFHashCode)((CFDateRef)cf)->_absTime;
+}
+
 static const CFRuntimeClass CFDateClass =
 {
   0,
   "CFDate",
   NULL,
+  CFDateCreateCopy,
   NULL,
-  NULL,
-  NULL,
-  NULL,
+  CFDateEqual,
+  CFDateHash,
   NULL,
   NULL
 };
@@ -70,7 +92,7 @@ void CFDateInitialize (void)
 CFComparisonResult
 CFDateCompare (CFDateRef theDate, CFDateRef otherDate, void *context)
 {
-// context is unused!
+/* context is unused! */
   CFAbsoluteTime diff = CFDateGetTimeIntervalSinceDate (theDate, otherDate);
   
   if (diff < 0.0)
@@ -98,13 +120,16 @@ CFDateCreate (CFAllocatorRef allocator, CFAbsoluteTime at)
 CFAbsoluteTime
 CFDateGetAbsoluteTime (CFDateRef theDate)
 {
+  CF_OBJC_FUNCDISPATCHV(_kCFDateTypeID, CFAbsoluteTime, theDate,
+    "timeIntervalSinceReferenceDate");
+  
   return theDate->_absTime;
 }
 
 CFTimeInterval
 CFDateGetTimeIntervalSinceDate (CFDateRef theDate, CFDateRef otherDate)
 {
-  CF_OBJC_FUNCDISPATCH1(_kCFDateTypeID, CFTimeInterval, theDate,
+  CF_OBJC_FUNCDISPATCHV(_kCFDateTypeID, CFTimeInterval, theDate,
     "timeIntervalSinceDate:", otherDate);
   
   return CFDateGetAbsoluteTime (theDate) - CFDateGetAbsoluteTime (otherDate);
@@ -139,13 +164,13 @@ CFAbsoluteTimeToFields (CFAbsoluteTime at, SInt32 *year, SInt8 *month,
   double days, ret = modf (at / 86400.0, &days) * 86400.0;
   
   d = days;
-  y400 = d / 146097; // 400 years
+  y400 = d / 146097; /* 400 years */
   d %= 146097;
-  y100 = d / 36524; // 100 years
+  y100 = d / 36524; /* 100 years */
   d %= 36524;
-  y4 = d / 1461; // 4 years
+  y4 = d / 1461; /* 4 years */
   d %= 1461;
-  y1 = d / 365; // 1 year
+  y1 = d / 365; /* 1 year */
   d %= 365;
   *year = y400 * 400 + y100 * 100 + y4 * 4 + y1 + 2001;
   isLeap = isleap (*year);
@@ -158,7 +183,7 @@ CFAbsoluteTimeToFields (CFAbsoluteTime at, SInt32 *year, SInt8 *month,
     }
   
   if (weekOfYear)
-    *weekOfYear = d / 7 % 52; // FIXME: I don't think this is correct.
+    *weekOfYear = d / 7 % 52; /* FIXME: I don't think this is correct. */
   if (dayOfWeek)
     {
       *dayOfWeek = (int)days % 7;
@@ -327,11 +352,11 @@ CFGregorianDateIsValid (CFGregorianDate gdate, CFOptionFlags unitFlags)
   Boolean isValid = FALSE;
   
   if (unitFlags | kCFGregorianUnitsYears)
-    isValid = TRUE; // FIXME: What's the test here?
+    isValid = TRUE; /* FIXME: What's the test here? */
   if (unitFlags | kCFGregorianUnitsMonths)
     isValid = ((gdate.month >= 1) && (gdate.month <= 12));
   if (unitFlags | kCFGregorianUnitsDays)
-    isValid = TRUE; // FIXME
+    isValid = TRUE; /* FIXME */
   if (unitFlags | kCFGregorianUnitsHours)
     isValid = ((gdate.hour >= 0) && (gdate.hour < 24));
   if (unitFlags | kCFGregorianUnitsMinutes)
@@ -341,3 +366,4 @@ CFGregorianDateIsValid (CFGregorianDate gdate, CFOptionFlags unitFlags)
   
   return isValid;
 }
+
