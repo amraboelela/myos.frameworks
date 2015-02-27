@@ -359,8 +359,8 @@ CFHashCode CFHash(CFTypeRef cf)
     if (cf == NULL) {
         return 0;
     }
-    printf("CFHash cf: %s\n", [[cf description] cString]);
-    printf("CFHash cf: %@\n", cf);
+    //printf("CFHash cf: %s\n", [[cf description] cString]);
+    printf("CFHash cf: %p\n", cf);
     printf("CFHash CFGetTypeID(cf): %d\n", CFGetTypeID(cf));
     CF_OBJC_FUNCDISPATCH0(CFGetTypeID(cf), CFHashCode, cf, "hash");
     printf("CFHash 3\n");
