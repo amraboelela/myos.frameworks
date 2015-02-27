@@ -25,8 +25,6 @@ else
 
 endif
 
-#    -I/home/amr/GNUstep/Library/Headers
-
 OBJECTS = \
     CFArray.o \
     CFAttributedString.o \

@@ -12,7 +12,7 @@
 #import <Foundation/NSString.h>
 
 #import <Foundation/NSAttributedString.h>
-#import <Foundation/NSCFType.h>
+#import "NSCFType.h"
 
 #import <Foundation/NSException.h>
 #import <CoreFoundation/CFAttributedString.h>
