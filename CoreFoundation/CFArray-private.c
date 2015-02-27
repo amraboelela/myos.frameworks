@@ -26,6 +26,9 @@
 #import <stdio.h>
 #import <CoreFoundation/GSPrivate.h>
 
+#import "GSCArray.h"
+#import "GSObjCRuntime.h"
+
 static CFTypeID _kCFArrayTypeID = 0;
 
 struct __CFArray
@@ -44,7 +47,7 @@ CFIndex _CFArrayGetIndexOfValue(CFArrayRef array, const void *value)
 
 void _CFArrayRemoveValue(CFMutableArrayRef array, const void *value)
 {
-    CF_OBJC_FUNCDISPATCH1(_kCFArrayTypeID, void, array, "removeObject:", value);
+    CF_OBJC_FUNCDISPATCHV(_kCFArrayTypeID, void, array, "removeObject:", value);
     //loop on the array to delete values equal to the element
     CFIndex idx;
     const void **contents;
