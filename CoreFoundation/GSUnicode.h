@@ -1,12 +1,12 @@
 /* GSUnicode.h
-
-   Copyright (C) 2014 Free Software Foundation, Inc.
-
+   
+   Copyright (C) 2013 Free Software Foundation, Inc.
+   
    Written by: Stefan Bidigaray
-   Date: November, 2014
-
+   Date: July, 2013
+   
    This file is part of GNUstep CoreBase library.
-
+   
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
@@ -25,113 +25,259 @@
 */
 
 #ifndef __GSUNICODE_H__
-#define __GSUNICODE_H__ 1
+#define __GSUNICODE_H__
 
-#include <CoreFoundation/CFBase.h>
-#include <stdarg.h>
+#include "config.h"
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFString.h"
 
-/** \defgroup UnicodeUtils Unicode String Utilities
-    \{
- */
-/** \name Converter to/from a Unicode String
-    \{
- */
-/** \brief Convert a buffer with bytes from the specified encoding to an
-      array of UTF-16 characters.
-    \details The intended use of this function is to convert a continuous
-      stream of data to a fixed-size buffer.  Because it updates the
-      position of the source buffer, it can be called repeatedly with a
-      small, fixed-size buffer and the updated source buffer.
-    \param[in] enc Encoding of the source buffer.
-    \param[in,out] d A UTF-16 buffer to which converted characters are written.
-    \param[in] d_end Pointer to memory just after the end of the destination
-      buffer such that the buffer capacity is <code>d_end - d</code>.
-    \param[in,out] s A pointer to a source byte buffer.  After a
-      successful return, points to the location immediately after the
-      last byte consumed.
-    \param[in] s_end Pointer to memory just after the end of the source buffer.
-    \param[in] loss A substitute character for invalid input.  For example,
-      if a UTF-8 input string encodes a surrogate without a pair.  A typical
-      character would be U+FFFD (replacement character).  Specify a value
-      of 0 if you do not want lossy conversion.
-    \param[in] bom If <code>true</code>, assumes the source includes a
-      byte order mark.
-    \return Returns <code>true</code> if:
-      -# The source buffer was completely consumed.
-      -# The destination buffer is full.
- */
-CF_EXPORT Boolean
-GSUnicodeFromEncoding (CFStringEncoding enc, UniChar ** d,
-                       const UniChar * d_end, const UInt8 ** s,
-                       const UInt8 * s_end, const UTF16Char loss, Boolean bom);
+CF_EXTERN_C_BEGIN
 
-/** \brief Convert a UTF-16 character buffer to the specified encoding.
-    \details The intended use of this function is to convert a continuous
-      stream of data to a fixed-size buffer.  Because it updates the
-      position of the source buffer, it can be called repeatedly with a
-      small, fixed-size buffer and the updated source buffer.
-    \param[in] enc Encoding of the destination buffer.
-    \param[in,out] d A byte buffer to which converted characters are written.
-    \param[in] d_end Pointer to memory just after the end of the destination
-      buffer such that the buffer capacity is <code>d_end - d</code>.
-    \param[in,out] s A pointer to a UTF-16 source buffer.  After a
-      successful return, points to the location immediately after the last
-      character consumed.
-    \param[in] s_end Pointer to memory just after the end of the source buffer.
-    \param[in] loss A substitute characters that cannot be converted to
-      the specified encoding.
-    \param[in] bom If <code>true</code>, will try to add a byter order mark
-      to the output.
-    \return Returns <code>true</code> if:
-      -# The source buffer was completely consumed.
-      -# The destination buffer is full.
+/*
+ * Printf style functions that output to a UniChar buffer.
  */
-CF_EXPORT Boolean
-GSUnicodeToEncoding (CFStringEncoding enc, UInt8 ** d, const UInt8 * d_end,
-                     const UniChar ** s, const UniChar * s_end,
-                     const char loss, Boolean bom);
-/** \} */
+/** @internal
+ * Creates an output according to a format per the printf family of functions.
+ * @return On success, return the number of characters printed, excluding
+ *         NULL byte.  If buffer is not long enough, returns how many
+ *         characters would be required.
+ *
+ * @param buffer Output buffer.  If NULL, this function returns the number
+ *               of characters needed.
+ * @param size Maximum size of buffer.
+ * @param locale This may be a CFDictionaryRef containing locale information
+ *               or a CFLocaleRef object.  Pass NULL for POSIX locale.
+ * @param format The formatted string with printf-style specifiers.
+ *
+ * @see GSUnicodeFormatWithArguments ()
+ */ 
+GS_PRIVATE CFIndex
+GSUnicodeFormat (UniChar *__restrict__ s, CFIndex n, CFTypeRef locale,
+                 const UniChar *__restrict__ format, CFIndex fmtlen, ...);
 
-/** \name Unicode Formatting
-    \{
- */
-/** \brief Creates an output according to a format per the printf family
-      of functions.
-    \param[in] buffer Output buffer.  If NULL, this function returns the number
-      of characters needed.
-    \param[in] size Maximum size of buffer.
-    \param[in] locale This may be a CFDictionaryRef containing locale
-      information or a CFLocaleRef object.  Pass NULL for POSIX locale.
-    \param[in] format The formatted string with printf-style specifiers.
-    \return On success, return the number of characters printed, excluding
-      NULL byte.  If buffer is not long enough, returns how many
-      characters would be required.
-    \see GSUnicodeFormatWithArguments ()
- */
-CF_EXPORT Boolean
-GSUnicodeFormat (UniChar ** d, const UniChar * d_end, CFTypeRef locale,
-                 const UniChar ** f, const UniChar * f_end, ...);
+/** @internal
+ * Creates an output according to a format per the printf family of functions.
+ * @return On success, return the number of characters printed, excluding
+ *         NULL byte.  If buffer is not long enough, returns how many
+ *         characters would be required.
+ *
+ * @param buffer Output buffer.  If NULL, this function returns the number
+ *               of characters needed.
+ * @param size Maximum size of buffer.
+ * @param locale This may be a CFDictionaryRef containing locale information
+ *               or a CFLocaleRef object.  Pass NULL for POSIX locale.
+ * @param format The formatted string with printf-style directives.
+ * @param arguments The variable argument list of values to be formatted. 
+ *
+ * @see GSUnicodeFormat()
+ */ 
+GS_PRIVATE CFIndex
+GSUnicodeFormatWithArguments (UniChar *__restrict__ s, CFIndex n,
+                              CFTypeRef locale,
+                              const UniChar *__restrict__ format,
+                              CFIndex fmtlen,
+                              va_list ap);
 
-/** \brief Creates an output according to a format per the printf family
-      of functions.
-    \param[in] buffer Output buffer.  If NULL, this function returns the number
-      of characters needed.
-    \param[in] size Maximum size of buffer.
-    \param[in] locale This may be a CFDictionaryRef containing locale
-      information or a CFLocaleRef object.  Pass NULL for POSIX locale.
-    \param[in] format The formatted string with printf-style directives.
-    \param[in] arguments The variable argument list of values to be formatted.
-    \return On success, return the number of characters printed, excluding
-      NULL byte.  If buffer is not long enough, returns how many
-      characters would be required.
-    \see GSUnicodeFormat()
+/*
+ * General Unicode Conversion Macros and Functions
  */
-CF_EXPORT Boolean
-GSUnicodeFormatWithArguments (UniChar ** d, const UniChar * d_end,
-                              CFTypeRef locale, const UniChar ** f,
-                              const UniChar * f_end, va_list ap);
+/** @internal
+ * Convert from Unicode to a specified encoding.
+ * @return Number of characters converted.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param encoding Convert to encoding.
+ * @param lossChar Character to be used if a character cannot be converted.
+ *                 This is a Unicode character that can be converted to the
+ *                 specified encoding.
+ * @param isExternalRepresentation Specify if a BOM should be added.
+ * @param dst The destination buffer which characters are converted to.
+ *            If NULL, conversion is attempted, usedBufLen will be set to the
+ *            number of bytes required, and returns the number of characters
+ *            consumed from src.
+ * @param dstLen Length of buffer (disregarded if buffer is NULL).
+ * @param usedDstLen If non-NULL, the number of bytes used in destination buffer.
+ */
+GS_PRIVATE CFIndex
+GSFromUnicode (const UniChar * src, CFIndex srcLen, CFStringEncoding encoding,
+               UniChar lossChar, Boolean isExternalRepresentation,
+               UInt8 * buffer, CFIndex bufLen, CFIndex * usedDstLen);
 
-/** \} */
-/** \} */
+/** @internal
+ * Convert from a specified encoding to Unicode.
+ * @return Number of bytes read.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param encoding Encoding to convert from.
+ * @param lossChar Character to be used if a character cannot be converted.
+ * @param isExternalRepresentation Specify if a BOM should be added.
+ * @param dst The destination buffer which characters are converted to.
+ *            If NULL, conversion is attempted, usedBufLen will be set to the
+ *            number of bytes required, and returns the number of bytes
+ *            consumed from source buffer.
+ * @param dstLen Length of dst (disregarded if dst is NULL).
+ * @param usedDstLen If non-NULL, the number of bytes used in destination buffer.
+ */
+GS_PRIVATE CFIndex
+GSToUnicode (const UInt8 * src, CFIndex srcLen, CFStringEncoding encoding,
+             UniChar lossChar, Boolean isExternalRepresentation, UniChar * dst,
+             CFIndex dstLen, CFIndex * usedDstLen);
+
+
+
+/*
+ * UTF-8 Conversion Macros and Functions
+ */
+/** @internal
+ * Convert from UTF-8 to Unicode
+ * @return Number of bytes read.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param lossChar Character to be used if a character cannot be converted.
+ * @param dst The destination buffer.  If NULL, conversion is attempted,
+ *            usedLen will be est to the number of bytes required, and returns
+ *            the number of bytes actually consumed form source buffer.
+ * @param dstLen Destination buffer length.
+ * @param usedLen If non-NULL, contains the number of characters written to dst.
+ */
+GS_PRIVATE CFIndex
+GSUnicodeFromUTF8 (const UInt8 * src, CFIndex srcLen, UniChar lossChar,
+                   UniChar * dst, CFIndex dstLen, CFIndex * usedLen);
+
+/** @internal
+ * Convert from Unicode to UTF-8
+ * @return Number of characters converted.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param lossChar Character to be used if a character cannot be converted.
+ *                 This is a Unicode character that can be converted to the
+ *                 specified encoding.
+ * @param dst The destination buffer which characters are converted to.
+ *            If NULL, conversion is attempted, usedBufLen will be set to the
+ *            number of bytes required, and returns the number of characters
+ *            consumed from src.
+ * @param dstLen Length of buffer (disregarded if buffer is NULL).
+ * @param usedLen If non-NULL, the number of bytes used in destination buffer.
+ */
+GS_PRIVATE CFIndex
+GSUnicodeToUTF8 (const UniChar * src, CFIndex srcLen, UniChar lossChar,
+                 UInt8 * dst, CFIndex dstLen, CFIndex * usedLen);
+
+
+
+/*
+ * UTF-32 Conversion Macros and Functions
+ */
+/** @internal
+ * Convert from UTF-32 to Unicode
+ * @return Number of bytes read.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param lossChar Character to be used if a character cannot be converted.
+ * @param dst The destination buffer.  If NULL, conversion is attempted,
+ *            usedLen will be est to the number of bytes required, and returns
+ *            the number of bytes actually consumed form source buffer.
+ * @param dstLen Destination buffer length.
+ * @param usedLen If non-NULL, contains the number of characters written to dst.
+ */
+GS_PRIVATE CFIndex
+GSUnicodeFromUTF32 (const UTF32Char * src, CFIndex srcLen, UniChar lossChar,
+                    UniChar * dst, CFIndex dstLen, CFIndex * usedLen);
+
+/** @internal
+ * Convert from Unicode to UTF-32
+ * @return Number of characters converted.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param lossChar Character to be used if a character cannot be converted.
+ *                 This is a Unicode character that can be converted to the
+ *                 specified encoding.
+ * @param dst The destination buffer which characters are converted to.
+ *            If NULL, conversion is attempted, usedBufLen will be set to the
+ *            number of bytes required, and returns the number of characters
+ *            consumed from src.
+ * @param dstLen Length of buffer (disregarded if buffer is NULL).
+ * @param usedLen If non-NULL, the number of bytes used in destination buffer.
+ */
+GS_PRIVATE CFIndex
+GSUnicodeToUTF32 (const UniChar * src, CFIndex srcLen, UniChar lossChar,
+                  UTF32Char * dst, CFIndex dstLen, CFIndex * usedLen);
+
+
+/*
+ * Macros and Functions for conversion of other Encodings
+ */
+/** @internal
+ * Convert from Non-Lossy ASCII to Unicode
+ * @return Number of bytes read.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param lossChar Character to be used if a character cannot be converted.
+ * @param dst The destination buffer.  If NULL, conversion is attempted,
+ *            usedLen will be est to the number of bytes required, and returns
+ *            the number of bytes actually consumed form source buffer.
+ * @param dstLen Destination buffer length.
+ * @param usedLen If non-NULL, contains the number of characters written to dst.
+ */
+GS_PRIVATE CFIndex
+GSUnicodeFromNonLossyASCII (const char *src, CFIndex srcLen,
+                            UniChar lossChar, UniChar * dst, CFIndex dstLen,
+                            CFIndex * usedLen);
+
+/** @internal
+ * Convert from ISO-8859-1 (Latin1) to Unicode
+ * @return Number of bytes read.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param lossChar Character to be used if a character cannot be converted.
+ * @param dst The destination buffer.  If NULL, conversion is attempted,
+ *            usedLen will be est to the number of bytes required, and returns
+ *            the number of bytes actually consumed form source buffer.
+ * @param dstLen Destination buffer length.
+ * @param usedLen If non-NULL, contains the number of characters written to dst.
+ */
+GS_PRIVATE CFIndex
+GSUnicodeFromLatin1 (const UInt8 * src, CFIndex srcLen, UniChar lossChar,
+                     UniChar * dst, CFIndex dstLen, CFIndex * usedLen);
+
+/** @internal
+ * Convert from Unicode to Non-Lossy ASCII
+ * @return Number of characters converted.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param lossChar Character to be used if a character cannot be converted.
+ *                 This is a Unicode character that can be converted to the
+ *                 specified encoding.
+ * @param dst The destination buffer which characters are converted to.
+ *            If NULL, conversion is attempted, usedBufLen will be set to the
+ *            number of bytes required, and returns the number of characters
+ *            consumed from src.
+ * @param dstLen Length of buffer (disregarded if buffer is NULL).
+ * @param usedLen If non-NULL, the number of bytes used in destination buffer.
+ */
+GS_PRIVATE CFIndex
+GSUnicodeToNonLossyASCII (const UniChar * src, CFIndex srcLen, UniChar lossChar,
+                          char *dst, CFIndex dstLen, CFIndex * usedLen);
+
+/** @internal
+ * Convert from Unicode to ISO-8859-1 (Latin1)
+ * @return Number of characters converted.
+ * @param src Source buffer.
+ * @param srcLen Source buffer length.
+ * @param lossChar Character to be used if a character cannot be converted.
+ *                 This is a Unicode character that can be converted to the
+ *                 specified encoding.
+ * @param dst The destination buffer which characters are converted to.
+ *            If NULL, conversion is attempted, usedBufLen will be set to the
+ *            number of bytes required, and returns the number of characters
+ *            consumed from src.
+ * @param dstLen Length of buffer (disregarded if buffer is NULL).
+ * @param usedLen If non-NULL, the number of bytes used in destination buffer.
+ */
+GS_PRIVATE CFIndex
+GSUnicodeToLatin1 (const UniChar * src, CFIndex srcLen, UniChar lossChar,
+                   UInt8 * dst, CFIndex dstLen, CFIndex * usedLen);
+
+CF_EXTERN_C_END
 
 #endif /* __GSUNICODE_H__ */
