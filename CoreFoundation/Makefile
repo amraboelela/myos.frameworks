@@ -72,5 +72,6 @@ OBJECTS = \
     GSUnicode.o \
     GSFunctions.o \
     CFArray-private.o \
+    CFBase-private.o \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared
