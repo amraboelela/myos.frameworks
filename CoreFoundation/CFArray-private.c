@@ -15,15 +15,15 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#include "CFRuntime.h"
+#import "CFRuntime.h"
 //#include "CFArray.h"
-#include "CFArray-private.h"
-#include "CFBase.h"
-#include "CFString.h"
+#import "CFArray-private.h"
+#import "CFBase.h"
+#import "CFString.h"
 
-#include <string.h>
+#import <string.h>
 //#include <assert.h>
-#include <stdio.h>
+#import <stdio.h>
 #import <CoreFoundation/GSPrivate.h>
 
 CFIndex _CFArrayGetIndexOfValue(CFArrayRef array, const void *value)
