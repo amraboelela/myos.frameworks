@@ -20,9 +20,9 @@ source ${MYOS_PATH}/sdk/config.sh
 echo
 echo "****************************** Cleaning frameworks ******************************"
 
-#cd Foundation
-#make clean
-#cd ..
+cd Foundation
+make clean
+cd ..
 
 cd CoreFoundation
 make clean
