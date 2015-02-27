@@ -47,7 +47,7 @@ CFIndex _CFArrayGetIndexOfValue(CFArrayRef array, const void *value)
 
 void _CFArrayRemoveValue(CFMutableArrayRef array, const void *value)
 {
-    CF_OBJC_FUNCDISPATCH1(_kCFArrayTypeID, void, array, "removeObject:", value);
+    CF_OBJC_FUNCDISPATCHV(_kCFArrayTypeID, void, array, "removeObject:", value);
     //loop on the array to delete values equal to the element
     CFIndex idx;
     const void **contents;
