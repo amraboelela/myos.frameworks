@@ -10,7 +10,7 @@
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,232 +25,96 @@
 */
 
 #import <Foundation/NSArray.h>
+#include <stdarg.h>
 
-#import <Foundation/NSCFType.h>
-#import <Foundation/NSEnumerator.h>
-#import <CoreFoundation/CFArray.h>
+#include "NSCFType.h"
+#include "CoreFoundation/CFArray.h"
 
 @interface NSCFArray : NSMutableArray
+NSCFTYPE_VARS
 @end
 
-@interface NSCFArrayEnumerator : NSEnumerator {
-    NSCFArray *array;
-    long pos;
-}
-
-- (id)initWithArray:(NSCFArray *)anArray;
-
-@end
-
-@interface NSCFArrayEnumeratorReverse : NSCFArrayEnumerator
-
+@interface NSArray (CoreBaseAdditions)
+- (CFTypeID) _cfTypeID;
 @end
 
 @implementation NSCFArray
-
-+ (void)load
++ (void) load
 {
-    NSCFInitialize();
+  NSCFInitialize ();
+}
+
++ (void) initialize
+{
+  GSObjCAddClassBehavior (self, [NSCFType class]);
+}
+
+- (id) initWithObjects:(id)firstObj, ...
+{
+  RELEASE(self);
+
+  if (firstObj == nil)
+    {
+      return (NSCFArray*) CFArrayCreate(NULL, NULL, 0, &kCFTypeArrayCallBacks);
+    }
+
+  /* copy all arguments into a temporary mutable array */
+  CFMutableArrayRef temp = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+  va_list ap;
+  id obj;
+
+  va_start(ap, firstObj);
+
+  CFArrayAppendValue(temp, firstObj);
+
+  while ((obj = va_arg(ap, id)) != nil)
+	CFArrayAppendValue(temp, obj);
+
+  va_end(ap);
+
+  self = (NSCFArray*) CFArrayCreateCopy(NULL, temp);
+  RELEASE((id)temp);
+
+  return self;
 }
 
 - (NSUInteger) count
 {
-  return (NSUInteger)CFArrayGetCount (self);
+  return (NSUInteger)CFArrayGetCount ((CFArrayRef)self);
 }
 
 - (id) objectAtIndex: (NSUInteger) index
 {
-  return (id)CFArrayGetValueAtIndex (self, (CFIndex)index);
-}
-
-- (id)objectAtIndexedSubscript:(NSUInteger)idx
-{
-  return (id)CFArrayGetValueAtIndex (self, (CFIndex)idx);
+  return (id)CFArrayGetValueAtIndex ((CFArrayRef)self, (CFIndex)index);
 }
 
 -(void) addObject: (id) anObject
 {
-  CFArrayAppendValue (self, (const void*)anObject);
+  CFArrayAppendValue ((CFMutableArrayRef)self, (const void*)anObject);
 }
 
 - (void) replaceObjectAtIndex: (NSUInteger) index withObject: (id) anObject
 {
-  CFArraySetValueAtIndex (self, (CFIndex)index, (const void*)anObject);
+  CFArraySetValueAtIndex ((CFMutableArrayRef)self, (CFIndex)index,
+                          (const void*)anObject);
 }
 
 - (void) insertObject: (id) anObject atIndex: (NSUInteger) index
 {
-  CFArrayInsertValueAtIndex (self, (CFIndex)index, (const void*)anObject);
-}
-
-- (void) removeLastObject
-{
-  CFArrayRemoveValueAtIndex(self, CFArrayGetCount(self)-1);
-}
-
-- (void)removeObject:(id)anObject
-{
-    if (anObject == nil) {
-        NSLog(@"attempt to remove nil object");
-        return;
-    }
-    CFIndex i;
-    for (i = 0; i < CFArrayGetCount(self);) {
-        if (CFEqual(CFArrayGetValueAtIndex(self, i), anObject)) {
-            CFArrayRemoveValueAtIndex(self, i);
-        } else {
-            i++;
-        }
-    }
+  CFArrayInsertValueAtIndex ((CFMutableArrayRef)self, (CFIndex)index,
+                             (const void*)anObject);
 }
 
 - (void) removeObjectAtIndex: (NSUInteger) index
 {
-  CFArrayRemoveValueAtIndex (self, (CFIndex)index);
+  CFArrayRemoveValueAtIndex ((CFMutableArrayRef)self, (CFIndex)index);
 }
-
-- (NSUInteger)countByEnumeratingWithState: (NSFastEnumerationState*)state
-           objects:(__unsafe_unretained id[])stackbuf
-             count:(NSUInteger)len
-{
-    //DLog(@"state: %p", state);
-    //DLog(@"len: %d", len);
-    NSUInteger size = [self count];
-    NSInteger count;
-
-    /* This is cached in the caller at the start and compared at each
-     * iteration.   If it changes during the iteration then
-     * objc_enumerationMutation() will be called, throwing an exception.
-     */
-    state->mutationsPtr = (unsigned long *)self;
-    count = MIN(len, size - state->state);
-    /* If a mutation has occurred then it's possible that we are being asked to
-     * get objects from after the end of the array.  Don't pass negative values
-     * to memcpy.
-     */
-    if (count > 0) {
-        //DLog(@"size: %d", size);
-        int p = state->state;
-        int i;
-        for (i = 0; i < count; i++, p++) {
-            stackbuf[i] = CFArrayGetValueAtIndex(self, p);// [self objectAtIndex: p];
-            //DLog(@"stackbuf[i]: %@", stackbuf[i]);
-            //DLog(@"stackbuf[i]: %p", stackbuf[i]);
-        }
-        state->state += count;
-    } else {
-        count = 0;
-    }
-    state->itemsPtr = stackbuf;
-    return count;
-}
-
-/**
- * Returns an enumerator describing the array sequentially
- * from the first to the last element.<br/>
- * If you use a mutable subclass of NSArray,
- * you should not modify the array during enumeration.
- */
-- (NSEnumerator *)objectEnumerator
-{
-    id e;
-    
-    e = [NSCFArrayEnumerator allocWithZone:NSDefaultMallocZone()];
-    e = [e initWithArray:self];
-    return AUTORELEASE(e);
-}
-
-/**
- * Returns an enumerator describing the array sequentially
- * from the last to the first element.<br/>
- * If you use a mutable subclass of NSArray,
- * you should not modify the array during enumeration.
- */
-- (NSEnumerator *)reverseObjectEnumerator
-{
-    id e;
-    //DLog();
-    e = [NSCFArrayEnumeratorReverse allocWithZone:NSDefaultMallocZone()];
-    e = [e initWithArray:self];
-    return AUTORELEASE(e);
-}
-
-- (void)dealloc
-{
-    //CFRelease(self);
-    [super dealloc];
-}
-
 @end
 
-@implementation NSCFArrayEnumerator
-
-- (id)initWithArray:(NSCFArray *)anArray
+@implementation NSArray (CoreBaseAdditions)
+- (CFTypeID) _cfTypeID
 {
-    self = [super init];
-    if (self != nil) {
-        array = anArray;
-        IF_NO_GC(RETAIN(array));
-        pos = 0;
-    }
-    return self;
+  return CFArrayGetTypeID();
 }
-
-/**
- * Returns the next object in the enumeration or nil if there are no more
- * objects.<br />
- * NB. modifying a mutable array during an enumeration can break things ...
- * don't do it.
- */
-- (id)nextObject
-{
-    if (pos >= CFArrayGetCount(array)) {
-        return nil;
-    }
-    return CFArrayGetValueAtIndex(array, pos++);
-}
-
-- (void)dealloc
-{
-    RELEASE(array);
-    [super dealloc];
-}
-
 @end
 
-@implementation NSCFArrayEnumeratorReverse
-
-- (id)initWithArray:(NSCFArray *)anArray
-{
-    self = [super initWithArray:anArray];
-    if (self != nil) {
-        pos = CFArrayGetCount(array) - 1;
-        //DLog(@"pos: %d", pos);
-    }
-    return self;
-}
-
-/**
- * Returns the next object in the enumeration or nil if there are no more
- * objects.<br />
- * NB. modifying a mutable array during an enumeration can break things ...
- * don't do it.
- */
-- (id)nextObject
-{
-    //DLog(@"pos: %d", pos);
-    if (pos < 0) {
-        //DLog(@"pos < 0");
-        return nil;
-    }
-    //DLog();
-    return CFArrayGetValueAtIndex(array, pos--);
-}
-
-- (void)dealloc
-{
-    //RELEASE(array);
-    [super dealloc];
-}
-
-@end

@@ -14,7 +14,7 @@
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
@@ -25,8 +25,10 @@
 */
 
 #import <Foundation/NSObject.h>
-#import <Foundation/NSCFType.h>
-#import <CoreFoundation/CoreFoundation.h>
+
+#include "CoreFoundation/CoreFoundation.h"
+#include "NSCFType.h"
+#include "GSPrivate.h"
 
 extern void CFInitialize (void);
 extern UInt32 __CFRuntimeClassTableSize;
@@ -38,7 +40,7 @@ GSRuntimeInitializeConstants (void);
 
 void NSCFInitialize (void)
 {
-  static int requiredClasses = 8;
+  static int requiredClasses = 12;
   --requiredClasses;
   
   if (requiredClasses == 0)
@@ -58,9 +60,13 @@ void NSCFInitialize (void)
       CFRuntimeBridgeClass (CFDataGetTypeID(), "NSCFData");
       CFRuntimeBridgeClass (CFErrorGetTypeID(), "NSCFError");
       CFRuntimeBridgeClass (CFStringGetTypeID(), "NSCFString");
-      CFRuntimeBridgeClass (CFDictionaryGetTypeID(), "NSCFDictionary");
       CFRuntimeBridgeClass (CFSetGetTypeID(), "NSCFSet");
-      CFRuntimeBridgeClass (CFAttributedStringGetTypeID(), "NSCFAttributedString");
+      CFRuntimeBridgeClass (CFLocaleGetTypeID(), "NSCFLocale");
+      CFRuntimeBridgeClass (CFDictionaryGetTypeID(), "NSCFDictionary");
+      CFRuntimeBridgeClass (CFTimeZoneGetTypeID(), "NSCFTimeZone");
+      CFRuntimeBridgeClass (CFReadStreamGetTypeID(), "NSCFInputStream");
+      CFRuntimeBridgeClass (CFWriteStreamGetTypeID(), "NSCFOutputStream");
+      CFRuntimeBridgeClass (CFDateGetTypeID(), "NSCFDate");
       
       GSRuntimeInitializeConstants ();
     }
@@ -100,9 +106,9 @@ void NSCFInitialize (void)
   CFRelease(self);
 }
 
-- (NSUInteger) hash
+- (NSUInteger) retainCount
 {
-  return (NSUInteger)CFHash (self);
+  return CFGetRetainCount (self);
 }
 
 - (BOOL) isEqual: (id) anObject

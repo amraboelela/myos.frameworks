@@ -14,7 +14,7 @@
 
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
@@ -27,10 +27,14 @@
 #import <Foundation/NSObject.h>
 #import <Foundation/NSException.h>
 #import <Foundation/NSString.h>
+#import <Foundation/NSData.h>
 #import <Foundation/NSDictionary.h>
 #import <Foundation/NSLocale.h>
-#import <Foundation/NSCFType.h>
-#import <CoreFoundation/CFString.h>
+#import <Foundation/NSCharacterSet.h>
+
+#include "NSCFType.h"
+#include "CoreFoundation/CFString.h"
+#include "GSPrivate.h"
 
 /* NSCFString inherits from NSMutableString and doesn't have any ivars
    because it is only an ObjC wrapper around CFString. */
@@ -38,7 +42,19 @@
 NSCFTYPE_VARS
 @end
 
+@interface NSString (CoreBaseAdditions)
+- (CFTypeID) _cfTypeID;
+@end
+
+@interface NSMutableString (CoreBaseAdditions)
+- (void) _cfTrimWhitespace;
+@end
+
 @implementation NSCFString
+
+/* Class variables */
+static NSStringEncoding *nsencodings = NULL;
+
 + (void) load
 {
   NSCFInitialize ();
@@ -53,9 +69,11 @@ NSCFTYPE_VARS
               length: (NSUInteger) length
             encoding: (NSStringEncoding) encoding
 {
-  CFAllocatorRef alloc = (CFAllocatorRef)[self zone];
+  CFAllocatorRef alloc = kCFAllocatorDefault;
   CFStringEncoding enc = CFStringConvertNSStringEncodingToEncoding (encoding);
+  
   RELEASE(self);
+  
   self = (NSCFString*)CFStringCreateWithBytes (alloc, bytes, length, enc,
     false);
   return self;
@@ -66,10 +84,12 @@ NSCFTYPE_VARS
                   encoding: (NSStringEncoding) encoding 
               freeWhenDone: (BOOL) flag
 {
-  CFAllocatorRef alloc = (CFAllocatorRef)[self zone];
+  CFAllocatorRef alloc = kCFAllocatorDefault;
   CFAllocatorRef deallocator = flag ? kCFAllocatorDefault : kCFAllocatorNull;
   CFStringEncoding enc = CFStringConvertNSStringEncodingToEncoding (encoding);
+  
   RELEASE(self);
+  
   self = (NSCFString*)CFStringCreateWithBytesNoCopy (alloc, bytes, length, enc,
     false, deallocator);
   return self;
@@ -78,8 +98,10 @@ NSCFTYPE_VARS
 - (id) initWithCharacters: (const unichar*) chars
                    length: (NSUInteger) length
 {
-  CFAllocatorRef alloc = (CFAllocatorRef)[self zone];
+  CFAllocatorRef alloc = kCFAllocatorDefault;
+  
   RELEASE(self);
+  
   self = (NSCFString*)CFStringCreateWithCharacters (alloc, chars, length);
   return self;
 }
@@ -88,9 +110,11 @@ NSCFTYPE_VARS
                          length: (NSUInteger) length
                    freeWhenDone: (BOOL) flag
 {
-  CFAllocatorRef alloc = (CFAllocatorRef)[self zone];
+  CFAllocatorRef alloc = kCFAllocatorDefault;
   CFAllocatorRef deallocator = flag ? kCFAllocatorDefault : kCFAllocatorNull;
+  
   RELEASE(self);
+  
   self = (NSCFString*)CFStringCreateWithCharactersNoCopy (alloc, chars, length,
     deallocator);
   return self;
@@ -98,18 +122,23 @@ NSCFTYPE_VARS
 
 - (id) initWithString: (NSString*) string
 {
-  CFAllocatorRef alloc = (CFAllocatorRef)[self zone];
+  CFAllocatorRef alloc = kCFAllocatorDefault;
+  
   RELEASE(self);
+  
   self = (NSCFString*)CFStringCreateWithSubstring (alloc, string,
     CFRangeMake(0, CFStringGetLength(string)));
   return self;
 }
 
+/*
 - (id) initWithFormat: (NSString*) format
             arguments: (va_list) argList
 {
-  CFAllocatorRef alloc = (CFAllocatorRef)[self zone];
+  CFAllocatorRef alloc = kCFAllocatorDefault;
+  
   RELEASE(self);
+  
   self = (NSCFString*)CFStringCreateWithFormatAndArguments (alloc, NULL,
     format, argList);
   return self;
@@ -121,17 +150,23 @@ NSCFTYPE_VARS
 {
   if ([locale isKindOfClass: [NSLocale class]])
     return nil; // FIXME
+    
+  RELEASE(self);
+    
   return (NSCFString*)
     CFStringCreateWithFormatAndArguments (CFAllocatorGetDefault(),
     (CFDictionaryRef)locale, format, argList);
 }
+*/
 
 - (id) initWithData: (NSData*)data
            encoding: (NSStringEncoding)encoding
 {
   CFStringEncoding enc = CFStringConvertNSStringEncodingToEncoding (encoding);
-  CFAllocatorRef alloc = (CFAllocatorRef)[self zone];
+  CFAllocatorRef alloc = kCFAllocatorDefault;
+  
   RELEASE(self);
+  
   self = (NSCFString*)
     CFStringCreateFromExternalRepresentation (alloc, (CFDataRef)data, enc);
   return self;
@@ -142,12 +177,16 @@ NSCFTYPE_VARS
                                           options: (NSStringCompareOptions)opts
                                             range: (NSRange)searchRange
 {
+  // GNUstep's NSString uses GSMutableStringClass here
+  // so we cannot use the base implementation (it would break the bridging)
   return nil; // FIXME
 }
 
 - (NSString*) stringByReplacingCharactersInRange: (NSRange)aRange 
                                       withString: (NSString*)by;
 {
+  // GNUstep's NSString uses GSMutableStringClass here
+  // so we cannot use the base implementation (it would break the bridging)
   return nil; // FIXME
 }
 
@@ -190,17 +229,6 @@ NSCFTYPE_VARS
   return NSMakeRange (ret.location, ret.length);
 }
 
-- (NSRange) rangeOfString: (NSString*) aString
-                  options: (NSUInteger) mask
-                    range: (NSRange) aRange
-{
-  // FIXME: Override this method because NSString doesn't do it right.
-  return [self rangeOfString: aString
-                     options: mask
-                       range: aRange
-                      locale: nil];
-}
-
 - (NSRange) rangeOfString: (NSString *) aString
                   options: (NSStringCompareOptions) mask
                     range: (NSRange) searchRange
@@ -217,11 +245,15 @@ NSCFTYPE_VARS
   return NSMakeRange (ret.location, ret.length);
 }
 
-- (NSRange) rangeOfComposedCharacterSequenceAtIndex: (NSUInteger) anIndex
+/*
+- (NSArray *) componentsSeparatedByCharactersInSet: (NSCharacterSet *)separator
 {
-  CFRange cfRange =
-    CFStringGetRangeOfComposedCharactersAtIndex (self, anIndex);
-  return NSMakeRange (cfRange.location, cfRange.length);
+  return nil; // FIXME
+}
+
+- (NSRange) rangeOfComposedCharacterSequencesForRange: (NSRange)range
+{
+  return NSMakeRange (NSNotFound, 0); // FIXME, even NSString doesn't implement this
 }
 
 - (NSDictionary*) propertyListFromStringsFileFormat
@@ -229,14 +261,7 @@ NSCFTYPE_VARS
   // FIXME ???
   return nil;
 }
-
-- (NSComparisonResult) compare: (NSString*) aString
-                       options: (NSUInteger) mask
-                         range: (NSRange) aRange
-{
-  // FIXME: Another instance of NSString doing it wrong....
-  return [self compare: aString options: mask range: aRange locale: nil];
-}
+*/
 
 - (NSComparisonResult) compare: (NSString*) string 
                        options: (NSUInteger) mask 
@@ -244,12 +269,12 @@ NSCFTYPE_VARS
                         locale: (id) locale
 {
   CFRange cfRange = CFRangeMake (compareRange.location, compareRange.length);
-  if ([locale isKindOfClass: [NSDictionary class]])
+  if (nil != locale
+      && ![locale isKindOfClass: [NSLocale class]])
     {
-      return [super compare: string options: mask range: compareRange
-        locale: locale];
+      locale = [NSLocale currentLocale];
     }
-  return CFStringCompareWithOptionsAndLocale (self,
+  return (NSComparisonResult)CFStringCompareWithOptionsAndLocale (self,
      string, cfRange, (CFStringCompareFlags)mask,
     (CFLocaleRef)locale);
 }
@@ -264,55 +289,28 @@ NSCFTYPE_VARS
   return CFStringHasSuffix (self, aString);
 }
 
-- (BOOL) isEqual: (id) anObject
-{
-  return CFStringCompare (self, anObject, 0);
-}
-
-- (BOOL) isEqualToString: (NSString*) aString
-{
-  return CFStringCompare (self, aString, 0) == 0 ? true : false;
-}
-
-- (NSUInteger) hash
-{
-  return CFHash ((CFTypeRef)self);
-}
-
-- (NSString*) commonPrefixWithString: (NSString*) aString
-                             options: (NSUInteger) mask
-{
-  return nil; // FIXME
-}
-
 - (NSString*) capitalizedString
 {
-  return nil;// FIXME
+  CFMutableStringRef copy;
+  copy = CFStringCreateMutableCopy (NULL, 0, self);
+  CFStringCapitalize (copy, NULL);
+  return (NSString*) AUTORELEASE(copy);
 }
 
 - (NSString*) lowercaseString
 {
-  return nil; // FIXME
+  CFMutableStringRef copy;
+  copy = CFStringCreateMutableCopy (NULL, 0, self);
+  CFStringLowercase (copy, NULL);
+  return (NSString*)AUTORELEASE(copy);
 }
 
 - (NSString*) uppercaseString
 {
-  return nil; // FIXME
-}
-
-- (const char*) cString
-{
-  return [self cStringUsingEncoding: NSASCIIStringEncoding];
-}
-
-- (const char*) cStringUsingEncoding: (NSStringEncoding) encoding
-{
-  CFStringEncoding enc = CFStringConvertNSStringEncodingToEncoding (encoding);
-  const char *cstr =
-    CFStringGetCStringPtr (self, enc);
-  if (!cstr)
-    return NULL; // FIXME
-  return cstr;
+  CFMutableStringRef copy;
+  copy = CFStringCreateMutableCopy (NULL, 0, self);
+  CFStringUppercase (copy, NULL);
+  return (NSString*)AUTORELEASE(copy);
 }
 
 - (BOOL) getCString: (char*) buffer
@@ -325,7 +323,7 @@ NSCFTYPE_VARS
 
 - (NSUInteger) lengthOfBytesUsingEncoding: (NSStringEncoding) encoding
 {
-  return 0; // FIXME
+  return [self lengthOfBytesUsingEncoding: encoding];
 }
 
 - (NSUInteger) maximumLengthOfBytesUsingEncoding: (NSStringEncoding) encoding
@@ -334,46 +332,6 @@ NSCFTYPE_VARS
   return CFStringGetMaximumSizeForEncoding ([self length], enc);
 }
 
-- (NSUInteger) cStringLength
-{
-  return 0; // FIXME
-}
-
-- (float) floatValue
-{
-  return (float)CFStringGetDoubleValue (self);
-}
-
-- (int) intValue
-{
-  return (int)CFStringGetIntValue (self);
-}
-
-- (double) doubleValue
-{
-  return CFStringGetDoubleValue (self);
-}
-
-- (BOOL) boolValue
-{
-  return (BOOL)CFStringGetIntValue (self); //FIXME
-}
-
-- (NSInteger) integerValue
-{
-  return (NSInteger)CFStringGetIntValue (self);
-}
-
-- (long long) longLongValue
-{
-  return (long long)CFStringGetIntValue (self); // FIXME
-}
-
-- (BOOL) canBeConvertedToEncoding: (NSStringEncoding) encoding
-{
-  // FIXME
-  return NO;
-}
 
 - (NSData*) dataUsingEncoding: (NSStringEncoding) encoding
          allowLossyConversion: (BOOL) flag
@@ -383,11 +341,6 @@ NSCFTYPE_VARS
     self, enc, flag ? '?' : 0);
 }
 
-+ (NSStringEncoding) defaultCStringEncoding
-{
-  // FIXME ???
-  return 0;
-}
 
 - (NSStringEncoding) fastestEncoding
 {
@@ -401,36 +354,44 @@ NSCFTYPE_VARS
   return CFStringConvertEncodingToNSStringEncoding (enc);
 }
 
-- (const char*) fileSystemRepresentation
-{
-  // FIXME
-  return NULL;
-}
-
 - (BOOL) getFileSystemRepresentation: (char*) buffer
                            maxLength: (NSUInteger) size
 {
-  return (BOOL)CFStringGetFileSystemRepresentation (self,
-    buffer, size);
+  return (BOOL)CFStringGetFileSystemRepresentation (self, buffer, size);
 }
 
 - (NSString*) substringWithRange: (NSRange) aRange
 {
   CFRange cfRange = CFRangeMake (aRange.location, aRange.length);
-  return (NSString*)CFStringCreateWithSubstring (NULL, self,
-    cfRange);
+  return (NSString*)CFStringCreateWithSubstring (NULL, self, cfRange);
 }
 
 + (NSStringEncoding*) availableStringEncodings
 {
-  // FIXME ???
-  return NULL;
-}
+  if (!nsencodings)
+  {
+    int count = 0, i;
+    
+    const CFStringEncoding* encodings;
+    NSStringEncoding* converted;
+    
+    encodings = CFStringGetListOfAvailableEncodings();
 
-+ (NSString*) localizedNameOfStringEncoding: (NSStringEncoding) encoding
-{
-  // FIXME
-  return nil;
+    for (i = 0; encodings[i] != 0; i++)
+      count++;
+    
+    converted = (NSStringEncoding*)
+      CFAllocatorAllocate (kCFAllocatorSystemDefault,
+                           (count+1) * sizeof(NSStringEncoding), 0);
+    
+    for (i = 0; i < count; i++)
+      converted[i] = CFStringConvertEncodingToNSStringEncoding(encodings[i]);
+    
+    if (GSAtomicCompareAndSwapPointer (&nsencodings, NULL, converted) != NULL)
+      CFAllocatorDeallocate (kCFAllocatorSystemDefault, converted);
+  }
+  
+  return nsencodings;
 }
 
 - (void) getLineStart: (NSUInteger *) startIndex
@@ -443,42 +404,16 @@ NSCFTYPE_VARS
     (CFIndex*)lineEndIndex, (CFIndex*)contentsEndIndex);
 }
 
-- (const char*) lossyCString
-{
-  // FIXME
-  return NULL;
-}
-
-- (NSString*) stringByAddingPercentEscapesUsingEncoding: (NSStringEncoding)e
-{
-  return nil; // FIXME
-}
-
 - (NSString*) stringByPaddingToLength: (NSUInteger)newLength
                            withString: (NSString*)padString
                       startingAtIndex: (NSUInteger)padIndex
 {
-  return nil; // FIXME: Use CFStringPad()
+  CFMutableStringRef copy;
+  copy = CFStringCreateMutableCopy(NULL, 0, self);
+  CFStringPad(copy, padString, newLength, padIndex);
+  return copy;
 }
 
-- (NSString*) stringByReplacingPercentEscapesUsingEncoding: (NSStringEncoding)e
-{
-  return nil; // FIXME
-}
-
-- (NSString*) stringByTrimmingCharactersInSet: (NSCharacterSet*)aSet
-{
-  return nil; // FIXME
-}
-
-- (const char *)UTF8String
-{
-  const char *cstr =
-    CFStringGetCStringPtr (self, kCFStringEncodingUTF8);
-  if (!cstr)
-    return NULL; // FIXME
-  return cstr;
-}
 
 - (void) getParagraphStart: (NSUInteger *) startPtr
                        end: (NSUInteger *) parEndPtr
@@ -490,14 +425,9 @@ NSCFTYPE_VARS
     (CFIndex*)parEndPtr, (CFIndex*)contentsEndPtr);
 }
 
-- (NSArray *) componentsSeparatedByCharactersInSet: (NSCharacterSet *)separator
-{
-  return nil; // FIXME
-}
-
 - (NSRange) rangeOfComposedCharacterSequencesForRange: (NSRange)range
 {
-  return NSMakeRange (NSNotFound, 0); // FIXME
+  return NSMakeRange (NSNotFound, 0); // FIXME, even NSString doesn't implement this
 }
 
 
@@ -507,8 +437,10 @@ NSCFTYPE_VARS
 //
 - (id) initWithCapacity: (NSUInteger)capacity
 {
-  CFAllocatorRef alloc = (CFAllocatorRef)[self zone];
+  CFAllocatorRef alloc = kCFAllocatorDefault;
+  
   RELEASE(self);
+    
   self = (NSCFString*)CFStringCreateMutable (alloc, capacity);
   return self;
 }
@@ -573,4 +505,26 @@ NSCFTYPE_VARS
 }
 
 @end
+
+@implementation NSString (CoreBaseAdditions)
+- (CFTypeID) _cfTypeID
+{
+  return CFStringGetTypeID();
+}
+@end
+
+@implementation NSMutableString (CoreBaseAdditions)
+- (void) _cfTrimWhitespace
+{
+  NSString* trimmed;
+
+  trimmed = [self stringByTrimmingCharactersInSet:
+                  [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+  [self setString: trimmed];
+  [trimmed release];
+}
+
+@end
+
 

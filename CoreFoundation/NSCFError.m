@@ -26,11 +26,17 @@
 
 #import <Foundation/NSObject.h>
 #import <Foundation/NSError.h>
-#import <Foundation/NSCFType.h>
-#import <CoreFoundation/CFError.h>
+#import <Foundation/NSString.h>
+
+#include "NSCFType.h"
+#include "CoreFoundation/CFError.h"
 
 @interface NSCFError : NSError
 NSCFTYPE_VARS
+@end
+
+@interface NSError (CoreBaseAdditions)
+- (CFTypeID) _cfTypeID;
 @end
 
 @implementation NSCFError
@@ -50,7 +56,8 @@ NSCFTYPE_VARS
 {
   RELEASE(self);
   
-  return (NSCFError*)CFErrorCreate (NULL, domain, code, userInfo);
+  return (NSCFError*)CFErrorCreate (NULL, (CFStringRef)domain, (CFIndex)code,
+                                    (CFDictionaryRef)userInfo);
 }
 
 - (NSString *) localizedDescription
@@ -90,8 +97,15 @@ NSCFTYPE_VARS
 
 - (NSDictionary*) userInfo
 {
-  return CFErrorCopyUserInfo (self);
+  return (NSDictionary*)CFErrorCopyUserInfo ((CFErrorRef)self);
 }
 
+@end
+
+@implementation NSError (CoreBaseAdditions)
+- (CFTypeID) _cfTypeID
+{
+  return CFErrorGetTypeID();
+}
 @end
 

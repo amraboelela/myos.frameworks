@@ -30,8 +30,8 @@
 #import <Foundation/NSObject.h>
 #import <GNUstepBase/GSObjCRuntime.h>
 
-#include <CoreFoundation/CFBase.h>
-#include <CoreFoundation/CFRuntime.h>
+#include "CoreFoundation/CFBase.h"
+#include "CoreFoundation/CFRuntime.h"
 
 extern void **__CFRuntimeObjCClassTable;
 
