@@ -26,6 +26,16 @@
 #import <stdio.h>
 #import <CoreFoundation/GSPrivate.h>
 
+static CFTypeID _kCFArrayTypeID = 0;
+
+struct __CFArray
+{
+    CFRuntimeBase _parent;
+    const CFArrayCallBacks *_callBacks;
+    const void **_contents;
+    CFIndex _count;
+};
+
 CFIndex _CFArrayGetIndexOfValue(CFArrayRef array, const void *value)
 {
     CFRange range = {0, CFArrayGetCount(array)};
