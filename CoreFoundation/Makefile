@@ -66,6 +66,7 @@ OBJECTS = \
     NSCFSet.o \
     NSCFString.o \
     NSCFType.o \
-    GSCArray.o
+    GSCArray.o \
+    CFBundle.o
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared
