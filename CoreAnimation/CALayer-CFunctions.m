@@ -147,7 +147,7 @@ void _CALayerSetNeedsUnload(CALayer *layer)
 
 void _CALayerSetNeedsComposite(CALayer *layer)
 {
-    //DLog();
+    DLog();
     layer->_needsComposite = YES;
     _CATransactionCreateImplicitTransactionIfNeeded();
 }
