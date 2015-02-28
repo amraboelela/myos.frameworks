@@ -863,7 +863,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)addSublayer:(CALayer *)layer
 {
-    //DLog(@"layer: %@", layer);
+    DLog(@"layer: %@", layer);
     if (layer && layer->_superlayer != self) {
         [layer removeFromSuperlayer];
         //DLog(@"_sublayers: %@", _sublayers);
@@ -895,7 +895,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)insertSublayer:(CALayer *)layer atIndex:(unsigned)index
 {
-    //DLog(@"layer: %@", layer);
+    DLog(@"layer: %@", layer);
     if (!layer) {
         return;
     }
@@ -921,7 +921,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)moveLayerToTop:(CALayer *)layer
 {
-    //DLog(@"layer: %@", layer);
+    DLog(@"layer: %@", layer);
     if (!layer) {
         return;
     }
@@ -935,7 +935,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)insertSublayer:(CALayer *)layer below:(CALayer *)sibling
 {
-    //DLog(@"layer: %@", layer);
+    DLog(@"layer: %@", layer);
     if (!layer || !sibling) {
         return;
     }
@@ -960,7 +960,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)insertSublayer:(CALayer *)layer above:(CALayer *)sibling
 {
-    //DLog(@"layer: %@", layer);
+    DLog(@"layer: %@", layer);
     if (!layer || !sibling) {
         return;
     }
@@ -986,7 +986,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)replaceSublayer:(CALayer *)oldLayer with:(CALayer *)newLayer
 {
-    //DLog(@"newLayer: %@", newLayer);
+    DLog(@"newLayer: %@", newLayer);
     if (oldLayer && newLayer && newLayer->_superlayer != self) {
         [newLayer removeFromSuperlayer];
         CFIndex oldLayerIndex = [self indexOfLayer:oldLayer];

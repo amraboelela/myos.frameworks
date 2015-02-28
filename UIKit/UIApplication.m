@@ -1017,7 +1017,7 @@ BOOL _UIApplicationEnterBackground()
 
 void _UIApplicationEnterForeground()
 {
-    //DLog();
+    DLog();
     if (_application->_applicationState == UIApplicationStateBackground) {
         //DLog();
         if ([_application->_delegate respondsToSelector:@selector(applicationWillEnterForeground:)]) {
