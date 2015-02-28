@@ -937,7 +937,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     
     //NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-    DLog(@"currentRunLoop: %@", currentRunLoop);
+    DLog();
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
