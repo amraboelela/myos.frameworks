@@ -111,10 +111,12 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
         DLog();
         if ([self class] == [UIWindow class]) {
             NSMutableArray *rootLayers = _CALayerGetRootLayers();
-            //DLog(@"rootLayers: %@", rootLayers);
+            DLog(@"rootLayers: %@", rootLayers);
             [rootLayers addObject:_layer];
         }
+        DLog();
         self.frame = theFrame;
+        DLog();
         [self _updateContent];
         DLog();
     }
