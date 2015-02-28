@@ -126,20 +126,23 @@ static void _UIApplicationInitialize()
 
 static void _UIApplicationLaunchApplicationWithDefaultWindow(UIWindow *window)
 {
+    DLog();
     //UIApplication *app = [UIApplication sharedApplication];
     id<UIApplicationDelegate> appDelegate = _application->_delegate;
     
     if ([appDelegate respondsToSelector:@selector(application:didFinishLaunchingWithOptions:)]) {
         [appDelegate application:_application didFinishLaunchingWithOptions:nil];
-    }
-    else if ([appDelegate respondsToSelector:@selector(applicationDidFinishLaunching:)]) {
+    } else if ([appDelegate respondsToSelector:@selector(applicationDidFinishLaunching:)]) {
         [appDelegate applicationDidFinishLaunching:_application];
     }
+    DLog();
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification
                                                         object:_application];
+    DLog();
     if ([appDelegate respondsToSelector:@selector(applicationDidBecomeActive:)]) {
         [appDelegate applicationDidBecomeActive:_application];
     }
+    DLog();
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification
                                                         object:_application];
 }
