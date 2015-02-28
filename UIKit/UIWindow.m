@@ -68,6 +68,7 @@ NSString *const _CARootLayersModifiedNotification = @"CARootLayersModifiedNotifi
 
 - (id)initWithFrame:(CGRect)theFrame
 {
+    DLog();
     if ((self=[super initWithFrame:theFrame])) {
         DLog();
         _undoManager = [[NSUndoManager alloc] init];
@@ -80,6 +81,7 @@ NSString *const _CARootLayersModifiedNotification = @"CARootLayersModifiedNotifi
         [[NSNotificationCenter defaultCenter] postNotificationName:_CARootLayersModifiedNotification object:self];
         DLog();
     }
+    DLog();
     return self;
 }
 
