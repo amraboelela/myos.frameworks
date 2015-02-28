@@ -905,7 +905,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
 int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
+    DLog();
     IOWindow *window = IOWindowCreateSharedWindow();
     CGRect cr = CGRectMake(0,0,640,480);
     DLog();
