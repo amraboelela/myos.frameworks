@@ -781,11 +781,11 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
    
     XInitThreads(); 
     IOWindow *window = IOWindowCreateSharedWindow();
-    //DLog();
+    DLog();
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     UIGraphicsPushContext(ctx);
-    //DLog();
+    DLog();
     BOOL canDraw = NO;
     while (!canDraw) {
         if (IOEventCanDrawWindow(window)) {
@@ -798,10 +798,10 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
-    //DLog();
+    DLog();
     
     _CAAnimatorInitialize();
-    //DLog();
+    DLog();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
     //DLog();
     [[UIScreen alloc] init];
@@ -809,7 +809,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //DLog();
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
-    //DLog();
+    DLog();
     //_application->_blackScreen = [[UIView alloc] initWithFrame:cr];
     //DLog();
     //_application->_blackScreen.backgroundColor = [UIColor blackColor];
@@ -819,11 +819,11 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //[_application->_blackScreen addGestureRecognizer:tapGesture];
     //DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    //DLog();
+    DLog();
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        
+        DLog();
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
