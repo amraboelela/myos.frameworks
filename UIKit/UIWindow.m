@@ -74,15 +74,11 @@ NSString *const _CARootLayersModifiedNotification = @"CARootLayersModifiedNotifi
         self.screen = [UIScreen mainScreen];
         self.opaque = NO;
         _firstResponder = nil;
-//        NSMutableArray *rootLayers = _CALayerGetRootLayers();
-//        [rootLayers addObject:_layer];
-//        DLog(@"rootLayers: %@", rootLayers);
+        //        NSMutableArray *rootLayers = _CALayerGetRootLayers();
+        //        [rootLayers addObject:_layer];
+        //        DLog(@"rootLayers: %@", rootLayers);
         [[NSNotificationCenter defaultCenter] postNotificationName:_CARootLayersModifiedNotification object:self];
-         /*
-         addObserver:self
-                                                 selector:@selector(keyboardWillShow:)
-                                                     name:UIKeyboardWillShowNotification
-                                                   object:nil];*/
+        DLog();
     }
     return self;
 }

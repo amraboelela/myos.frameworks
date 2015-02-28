@@ -85,14 +85,14 @@ static void reportFPS(BOOL withCondition)
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockStartup];
     DLog(@"Animation Thread: %@", [NSThread currentThread]);
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-    DLog(@"context: %@", context);
+    //DLog(@"context: %@", context);
     [EAGLContext setCurrentContext:context];
     [context release];
     _EAGLSetup();
-    DLog();
+    //DLog();
     _EAGLClear();
     _EAGLSwapBuffers();
-    DLog();
+    //DLog();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
     DLog();
     _eaglContextIsReady = YES;

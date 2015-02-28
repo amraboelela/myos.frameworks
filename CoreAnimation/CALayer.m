@@ -130,7 +130,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         _masksToBounds = NO;
         _oldContents = nil;
         _contents = nil;
-        //DLog();
+        DLog();
         //_contentsWasSet = NO;
         _displayContents = nil;
         _keyframesContents = nil;
@@ -153,15 +153,18 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         _autoreverses = NO;
         _fillMode = nil;
         _speed = 1;
+        DLog();
         _timeOffset = 0;
         _transform = CATransform3DIdentity;
         _sublayerTransform = CATransform3DIdentity;
+        DLog();
         if (![self isKindOfClass:[CARenderLayer class]]) {
             CALayerObserver *layerObserver = _CALayerObserverGetSharedObserver();
             for (NSString *key in _CALayerAnimatableKeys) {
                 [self addObserver:layerObserver forKeyPath:key options:NSKeyValueObservingOptionPrior context:nil];
             }
         }
+        DLog();
     }
     return self;
 }

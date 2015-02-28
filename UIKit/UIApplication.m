@@ -784,11 +784,11 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
    
     XInitThreads(); 
     IOWindow *window = IOWindowCreateSharedWindow();
-    DLog();
+    //DLog();
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     UIGraphicsPushContext(ctx);
-    DLog();
+    //DLog();
     BOOL canDraw = NO;
     while (!canDraw) {
         if (IOEventCanDrawWindow(window)) {
@@ -801,10 +801,10 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
-    DLog();
+    //DLog();
     
     _CAAnimatorInitialize();
-    DLog();
+    //DLog();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
     //DLog();
     [[UIScreen alloc] init];
