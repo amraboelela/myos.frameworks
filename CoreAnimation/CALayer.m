@@ -113,7 +113,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
         _modelLayer = self;
         _bounds = theBounds;
         _contentsScale = 1.0;
-        //DLog(@"_contentsScale: %0.2f", _contentsScale);
+        DLog(@"_contentsScale: %0.2f", _contentsScale);
         _CALayerSetNeedsLayout(self);
         //_needsLayout = YES;
         _needsDisplay = YES;
@@ -389,7 +389,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 {
     [self willChangeValueForKey:@"position"];
     _position = newPosition;
-    //DLog(@"self: %@, newPosition: %@", self, _NSStringFromCGPoint(newPosition));
+    DLog(@"self: %@, newPosition: %@", self, _NSStringFromCGPoint(newPosition));
     if (_superlayer) {
         //DLog(@"self: %@", self);
         if (_modelLayer == self) {
@@ -419,7 +419,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)setBounds:(CGRect)newBounds
 {
-    //DLog(@"self: %@", self);
+    DLog(@"self: %@", self);
     [self willChangeValueForKey:@"bounds"];
     _bounds = newBounds;
     [self didChangeValueForKey:@"bounds"];
@@ -611,7 +611,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)setNeedsLayout
 {
-    //DLog(@"self: %@", self);
+    DLog(@"self: %@", self);
     if (_modelLayer == self) {
         _CALayerSetNeedsLayout(self);
     }
