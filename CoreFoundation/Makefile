@@ -73,5 +73,11 @@ OBJECTS = \
     GSFunctions.o \
     CFArray-private.o \
     CFBase-private.o \
+    CFPropertyList.o \
+    NSCFDate.o \
+    NSCFLocale.o \
+    NSCFTimeZone.o \
+    NSCFInputStream.o \
+    NSCFOutputStream.o \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared
