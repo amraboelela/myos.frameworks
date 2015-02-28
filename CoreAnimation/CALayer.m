@@ -63,7 +63,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 {
     if (self == [CALayer class]) {
         _rootLayers = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
-        //DLog(@"_rootLayers: %@", _rootLayers);
+        DLog(@"_rootLayers: %@", _rootLayers);
         _CALayerAnimatableKeys = [[NSArray alloc] initWithObjects:@"position", @"zPosition", @"opacity", @"bounds", @"transform", @"sublayerTransform", @"anchorPoint", @"contentsRect", @"contents", @"contentsScale", @"contentCenter", @"backgroundColor", @"cornerRadius", @"borderWidth", @"borderColor", @"shadowColor", @"shadowOpacity", @"shadowOffset", @"shadowRadius", nil];
         _needDisplayKeys = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
                                @"YES", @"contents",
