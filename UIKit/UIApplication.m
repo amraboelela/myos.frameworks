@@ -908,6 +908,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     
     IOWindow *window = IOWindowCreateSharedWindow();
     CGRect cr = CGRectMake(0,0,640,480);
+    DLog();
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     UIGraphicsPushContext(ctx);
     BOOL canDraw = NO;
@@ -917,12 +918,12 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
         }
     }
     NSTimeInterval currentTime = CACurrentMediaTime();
-    
+    DLog();
     _application = [[UIApplication alloc] init];
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
-    //DLog();
+    DLog();
     
     [[UIScreen alloc] init];
     
@@ -936,7 +937,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     
     //NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-    //DLog(@"currentRunLoop: %@", currentRunLoop);
+    DLog(@"currentRunLoop: %@", currentRunLoop);
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
