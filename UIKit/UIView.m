@@ -116,7 +116,9 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
         }
         self.frame = theFrame;
         [self _updateContent];
+        DLog();
     }
+    DLog();
     return self;
 }
 

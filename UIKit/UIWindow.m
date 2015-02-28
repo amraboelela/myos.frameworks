@@ -69,14 +69,14 @@ NSString *const _CARootLayersModifiedNotification = @"CARootLayersModifiedNotifi
 - (id)initWithFrame:(CGRect)theFrame
 {
     if ((self=[super initWithFrame:theFrame])) {
+        DLog();
         _undoManager = [[NSUndoManager alloc] init];
         //[self _makeHidden];	// do this first because before the screen is set, it will prevent any visibility notifications from being sent.
         self.screen = [UIScreen mainScreen];
+        DLog();
         self.opaque = NO;
         _firstResponder = nil;
-        //        NSMutableArray *rootLayers = _CALayerGetRootLayers();
-        //        [rootLayers addObject:_layer];
-        //        DLog(@"rootLayers: %@", rootLayers);
+        DLog();
         [[NSNotificationCenter defaultCenter] postNotificationName:_CARootLayersModifiedNotification object:self];
         DLog();
     }
