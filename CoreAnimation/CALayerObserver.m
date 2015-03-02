@@ -25,8 +25,8 @@ static CALayerObserver *_layerObserver = nil;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    DLog(@"keyPath: %@", keyPath);
-    DLog(@"[keyPath retainCount]: %d", [keyPath retainCount]);
+    //DLog(@"keyPath: %@", keyPath);
+    //DLog(@"[keyPath retainCount]: %d", [keyPath retainCount]);
     NSNumber *isPrior = [change objectForKey:@"notificationIsPrior"];
     if (![isPrior boolValue]) {
         return;
@@ -45,28 +45,28 @@ static CALayerObserver *_layerObserver = nil;
     CAAnimationGroup *animationGroup = _CAAnimationGroupGetCurrent();
     if ((!layer->delegate && layer->_superlayer) || animationGroup) {
         //DLog(@"(!layer->delegate && layer->_superlayer) || animationGroup");
-        DLog(@"keyPath: %@", keyPath);
+        //DLog(@"keyPath: %@", keyPath);
         id<CAAction> action = [layer actionForKey:keyPath];
-        DLog();
+        //DLog();
         [action runActionForKey:keyPath object:layer arguments:nil];
-        DLog();
+        //DLog();
         CABasicAnimation *animation = (CABasicAnimation *)[layer animationForKey:keyPath];
-        DLog();
+        //DLog();
         if (animation) {
-            DLog();
+            //DLog();
             if (animationGroup) {
-                DLog(@"animationGroup: %@", animationGroup);
+                //DLog(@"animationGroup: %@", animationGroup);
                 _CAAnimationCopy(animation, (CAAnimation *)animationGroup);
                 _CAAnimationGroupAddAnimation(animationGroup, animation);
             }
             if ([keyPath isEqualToString:@"contents"]) {
-                DLog(@"layer: %@", layer);
+                //DLog(@"layer: %@", layer);
                 if (layer->_contents) {
                     if (layer->_oldContents) {
                         [layer->_oldContents release];
                     }
                     layer->_oldContents = CGImageCreateCopy(layer->_contents);
-                    DLog(@"layer->_oldContents: %@", layer->_oldContents);
+                    //DLog(@"layer->_oldContents: %@", layer->_oldContents);
                 }
             }
         }

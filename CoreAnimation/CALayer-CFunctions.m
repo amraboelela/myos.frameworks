@@ -109,7 +109,7 @@ static void _CALayerDrawBorder(CALayer *layer, CGContextRef ctx)
 
 void _CALayerSetNeedsLayout(CALayer *layer)
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     layer->_needsLayout = YES;
     _layersNeedLayout = YES;
     _CALayerSetNeedsComposite(layer);
@@ -119,7 +119,7 @@ void _CALayerSetNeedsLayout(CALayer *layer)
 
 void _CALayerDisplayIfNeeded(CALayer *layer)
 {
-    DLog();
+    //DLog();
     if (layer->_needsDisplay) {
         _CALayerDisplay(layer);
     }
@@ -147,14 +147,14 @@ void _CALayerSetNeedsUnload(CALayer *layer)
 
 void _CALayerSetNeedsComposite(CALayer *layer)
 {
-    DLog();
+    //DLog();
     layer->_needsComposite = YES;
     _CATransactionCreateImplicitTransactionIfNeeded();
 }
 
 void _CALayerSetNeedsDisplay(CALayer *layer)
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     layer->_needsDisplay = YES;
     //DLog(@"_needsDisplayLayers: %@", _needsDisplayLayers);
     CFSetAddValue(_needsDisplayLayers, layer);
@@ -163,14 +163,14 @@ void _CALayerSetNeedsDisplay(CALayer *layer)
 
 void _CALayerDisplay(CALayer *layer)
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (CGRectEqualToRect(layer->_bounds,CGRectZero)) {
         //DLog(@"CGRectZero layer: %@", layer);
         _CALayerSetNeedsUnload(layer);
         return;
     }
     if ([layer->delegate respondsToSelector:@selector(displayLayer:)]) {
-        DLog();
+        //DLog();
         [layer->delegate displayLayer:layer];
     }
     //if (!layer->_contentsWasSet) {

@@ -255,9 +255,9 @@ static CAMediaTimingFunction *CAMediaTimingFunctionFromUIViewAnimationCurve(UIVi
 
 - (void)commit
 {
-    DLog();
+    //DLog();
     if (_transitionLayer) {
-        DLog(@"_transitionLayer: %@", _transitionLayer);
+        //DLog(@"_transitionLayer: %@", _transitionLayer);
         CATransition *trans = [CATransition animation];
         trans.type = kCATransitionMoveIn;
         switch (_transitionType) {
@@ -279,7 +279,7 @@ static CAMediaTimingFunction *CAMediaTimingFunctionFromUIViewAnimationCurve(UIVi
         }
         [_transitionLayer addAnimation:[self addAnimation:trans] forKey:kCATransition];
     }
-    DLog();
+    //DLog();
     //[self animationDidStop:nil finished:YES];
     //_waitingAnimations--;
     //[self notifyAnimationsDidStopIfNeededUsingStatus:YES];

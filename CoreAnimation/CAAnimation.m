@@ -248,8 +248,8 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (void)runActionForKey:(NSString *)key object:(id)anObject arguments:(NSDictionary *)dict
 {
-    DLog(@"key: %@", key);
-    DLog(@"anObject: %@", anObject);
+    //DLog(@"key: %@", key);
+    //DLog(@"anObject: %@", anObject);
     [(CALayer *)anObject addAnimation:self forKey:key];
 }
 
