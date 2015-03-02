@@ -31,7 +31,7 @@ static CFMutableSetRef _removeLayers = nil;
 
 static CATransactionGroup *_CATransactionGetCurrentTransaction()
 {
-    DLog(@"_CATransactionGetCurrentTransaction");
+    //DLog(@"_CATransactionGetCurrentTransaction");
     _CATransactionCreateImplicitTransactionIfNeeded();
     return CFArrayGetValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
 }
@@ -144,7 +144,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)setValue:(id)value forKey:(NSString *)key
 {
-    DLog(@"key: %@", key);
+    //DLog(@"key: %@", key);
     //DLog(@"key: %s", key);
     CATransactionGroup *group = _CATransactionGetCurrentTransaction();
     CFDictionarySetValue(group->_values, key, value);
@@ -152,9 +152,9 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (id)valueForKey:(NSString *)key
 {
-    DLog(@"key: %@", key);
+    //DLog(@"key: %@", key);
     CATransactionGroup *group = _CATransactionGetCurrentTransaction();
-    DLog(@"group->_values: %@", group->_values);
+    //DLog(@"group->_values: %@", group->_values);
     return CFDictionaryGetValue(group->_values, key);
 }
 
@@ -169,7 +169,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)_commitTransaction
 {
-    DLog();
+    //DLog();
     if (![_CAAnimatorConditionLock tryLock]) {
         DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
         // Instead of blocking the run loop or the animation thread, we will try to commit later
@@ -179,7 +179,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
     }
     DLog();
     CALayer *rootLayer = _CALayerRootLayer();
-    DLog(@"LayoutLayers");
+    //DLog(@"LayoutLayers");
     if (_layersNeedLayout) {
         //DLog(@"_layersNeedLayout");
         _CATransactionLayoutLayers(rootLayer);
@@ -202,7 +202,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)commit
 {
-    DLog(@"");
+    //DLog(@"");
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
     _CATransactionCreateImplicitTransactionIfNeeded();
 }
@@ -244,9 +244,9 @@ void _CATransactionAddToRemoveLayers(CALayer *layer)
 
 void _CATransactionCreateImplicitTransactionIfNeeded()
 {
-    DLog();
+    //DLog();
     if (CFArrayGetCount(_transactions)==0) {
-        DLog();
+        //DLog();
         CATransactionGroup *group = [[CATransactionGroup alloc] init];
         CFArrayAppendValue(_transactions, group);
         [group release];

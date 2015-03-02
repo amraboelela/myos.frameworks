@@ -126,7 +126,7 @@ static void _UIApplicationInitialize()
 
 static void _UIApplicationLaunchApplicationWithDefaultWindow(UIWindow *window)
 {
-    DLog();
+    //DLog();
     //UIApplication *app = [UIApplication sharedApplication];
     id<UIApplicationDelegate> appDelegate = _application->_delegate;
     
@@ -135,14 +135,14 @@ static void _UIApplicationLaunchApplicationWithDefaultWindow(UIWindow *window)
     } else if ([appDelegate respondsToSelector:@selector(applicationDidFinishLaunching:)]) {
         [appDelegate applicationDidFinishLaunching:_application];
     }
-    DLog();
+    //DLog();
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification
                                                         object:_application];
-    DLog();
+    //DLog();
     if ([appDelegate respondsToSelector:@selector(applicationDidBecomeActive:)]) {
         [appDelegate applicationDidBecomeActive:_application];
     }
-    DLog();
+    //DLog();
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification
                                                         object:_application];
 }
@@ -812,7 +812,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //DLog();
     // Setting up the screen sleeping ability
     _application->_lastActivityTime = CACurrentMediaTime();
-    DLog();
+    //DLog();
     //_application->_blackScreen = [[UIView alloc] initWithFrame:cr];
     //DLog();
     //_application->_blackScreen.backgroundColor = [UIColor blackColor];
@@ -822,11 +822,11 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //[_application->_blackScreen addGestureRecognizer:tapGesture];
     //DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    DLog();
+    //DLog();
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        DLog();
+        //DLog();
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
@@ -940,7 +940,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     
     //NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-    DLog();
+    //DLog();
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
