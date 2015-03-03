@@ -354,10 +354,16 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 {
     DLog(@"layer: %@", layer);
     if ([_delegate respondsToSelector:@selector(animationDidStop:finished:)]) {
-        [_delegate animationDidStop:self finished:YES];
+        [_delegate performSelectorOnMainThread:@selector(animationDidStop) withObject:nil waitUntilDone:YES];
+        //[_delegate animationDidStop:self finished:YES];
     }
     [layer removeAnimationForKey:keyPath];
     _CAAnimationGroupRemoveAnimation(_animationGroup, self);
+}
+
+- (void)animationDidStop
+{
+    [_delegate animationDidStop:self finished:YES];
 }
 
 @end
