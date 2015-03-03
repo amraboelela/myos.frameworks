@@ -220,22 +220,23 @@ static void _CARenderLayerComposite(CARenderLayer *layer)
         textureID = layer->_backingStore->_texture->_textureIDs[0];
         //GLuint textureID2 = layer->_backingStore->_texture->_textureIDs[1];
         //DLog(@"oldBackingStore: %@", layer->_oldBackingStore);
-        //DLog(@"backingStore: %@", layer->backingStore);
-        //DLog(@"oldTextureID: %d", oldTextureID);
+        DLog(@"backingStore: %@", layer->_backingStore);
+        DLog(@"textureID: %d", textureID);
+        DLog(@"oldTextureID: %d", oldTextureID);
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity*(1.0-layer->_contentsTransitionProgress), oldTextureID);
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity*layer->_contentsTransitionProgress, textureID);
     } else if (layer->_keyframesProgress > -1) {
         int index = round(layer->_keyframesProgress * (layer->_backingStore->_texture->_numberOfTextures - 1));
         textureID = layer->_backingStore->_texture->_textureIDs[index];
         if (layer->_keyframesProgress < 0.1) {
-            //DLog(@"index: %d, textureID: %d", index, textureID);
+            DLog(@"index: %d, textureID: %d", index, textureID);
         }
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity, textureID);
     } else {
         if (layer->_backingStore->_texture->_numberOfTextures > 0) {
             textureID = layer->_backingStore->_texture->_textureIDs[0];
-            //DLog(@"opacity: %0.1f", layer->_opacity);
-            //DLog(@"textureID: %d", textureID);
+            DLog(@"opacity: %0.1f", layer->_opacity);
+            DLog(@"textureID: %d", textureID);
             _CARenderLayerCompositeWithOpacity(layer, layer->_opacity, textureID);
         } else {
             DLog(@"layer->_backingStore->_texture->_numberOfTextures == 0");
@@ -298,12 +299,6 @@ void _CARenderLayerCopy(CARenderLayer *renderLayer, CALayer *presentationLayer)
     CGImageRelease(renderLayer->_displayContents);
     renderLayer->_displayContents = CGImageRetain(presentationLayer->_displayContents);
 }
-/*
-void _CARenderLayerApplyTransform(CARenderLayer *layer)
-{
-    layer->_position = CGPointMake(layer->_position.x + layer->_transform.m41, layer->_position.y + layer->_transform.m42);
-    layer->_bounds.size = CGSizeMake(layer->_bounds.size.width * layer->_transform.m11, layer->_bounds.size.height * layer->_transform.m22);
-}*/
 
 CARenderLayer *_CARenderLayerClosestOpaqueLayerFromLayer(CARenderLayer *layer)
 {
