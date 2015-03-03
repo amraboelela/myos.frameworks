@@ -382,6 +382,7 @@ GSCurrentThread(void)
     NSThread *thr = pthread_getspecific(thread_object_key);
     if (nil == thr)
     {
+        DLog();
         GSRegisterCurrentThread();
         thr = pthread_getspecific(thread_object_key);
         if ((nil == defaultThread) && IS_MAIN_PTHREAD)
