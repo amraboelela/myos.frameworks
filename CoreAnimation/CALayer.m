@@ -62,10 +62,10 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 + (void)initialize
 {
     if (self == [CALayer class]) {
-        DLog();
+        //DLog();
         _rootLayers = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
-        DLog();
-        DLog(@"_rootLayers: %@", _rootLayers);
+        //DLog();
+        //DLog(@"_rootLayers: %@", _rootLayers);
         _CALayerAnimatableKeys = [[NSArray alloc] initWithObjects:@"position", @"zPosition", @"opacity", @"bounds", @"transform", @"sublayerTransform", @"anchorPoint", @"contentsRect", @"contents", @"contentsScale", @"contentCenter", @"backgroundColor", @"cornerRadius", @"borderWidth", @"borderColor", @"shadowColor", @"shadowOpacity", @"shadowOffset", @"shadowRadius", nil];
         _needDisplayKeys = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
                                @"YES", @"contents",
@@ -394,7 +394,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 {
     [self willChangeValueForKey:@"position"];
     _position = newPosition;
-    DLog(@"self: %@, newPosition: %@", self, _NSStringFromCGPoint(newPosition));
+    //DLog(@"self: %@, newPosition: %@", self, _NSStringFromCGPoint(newPosition));
     if (_superlayer) {
         //DLog(@"self: %@", self);
         if (_modelLayer == self) {
@@ -424,7 +424,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)setBounds:(CGRect)newBounds
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     [self willChangeValueForKey:@"bounds"];
     _bounds = newBounds;
     [self didChangeValueForKey:@"bounds"];
