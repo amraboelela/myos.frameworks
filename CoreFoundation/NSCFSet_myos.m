@@ -12,7 +12,7 @@
  Lesser General Public License for more details.
  
  Contributor(s):
- Ahmed Elmorsy
+ Ahmed Elmorsy <ahmedelmorsy89@gmail.com>
  Amr Aboelela <amraboelela@gmail.com>
  */
 
