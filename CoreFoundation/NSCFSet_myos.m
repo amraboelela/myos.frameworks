@@ -18,8 +18,8 @@
 
 #import <Foundation/NSSet.h>
 #import <Foundation/NSArray.h>
-#import <Foundation/NSCFType.h>
 #import <Foundation/NSEnumerator.h>
+#import <CoreFoundation/NSCFType.h>
 #import <CoreFoundation/CFSet.h>
 #import <CoreFoundation/CFArray.h>
 #import <CoreFoundation/GSHashTable.h>
