@@ -90,7 +90,7 @@ static CATransform3D _CARenderLayerTransform(CARenderLayer *layer)
 static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opacity, int textureID)
 {
     int i;
-    DLog(@"textureID: %d", textureID);
+    //DLog(@"textureID: %d", textureID);
     //DLog(@"layer: %@", layer);
     if (textureID == 0) {
         return;

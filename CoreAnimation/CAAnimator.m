@@ -155,7 +155,7 @@ static void reportFPS(BOOL withCondition)
     //DLog(@"_CACompositorPrepareComposite");
     _CACompositorPrepareComposite();
     if (_treeHasPendingAnimations) {
-        //DLog(@"_treeHasPendingAnimations");
+        DLog(@"_treeHasPendingAnimations");
         if (!_treeHadPendingAnimations) {
             previousTimestamp = CACurrentMediaTime();
             _treeHadPendingAnimations = YES;

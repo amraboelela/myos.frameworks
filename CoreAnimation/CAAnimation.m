@@ -488,7 +488,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         if (result) {
             [layer setValue:result forKeyPath:animation->keyPath];
         }
-        //DLog(@"animation: %@", animation);
+        DLog(@"animation: %@", animation);
         if ([animation->keyPath isEqualToString:@"contents"]) {
             DLog(@"[animation->keyPath isEqualToString:contents]");
             layer->_contentsTransitionProgress = progress;
