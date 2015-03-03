@@ -223,7 +223,7 @@ static void _CARenderLayerComposite(CARenderLayer *layer)
         //DLog(@"backingStore: %@", layer->_backingStore);
         //DLog(@"textureID: %d", textureID);
         //DLog(@"oldTextureID: %d", oldTextureID);
-        DLog(@"layer->_contentsTransitionProgress: %0.1f", layer->_contentsTransitionProgress);
+        //DLog(@"layer->_contentsTransitionProgress: %0.1f", layer->_contentsTransitionProgress);
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity*(1.0-layer->_contentsTransitionProgress), oldTextureID);
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity*layer->_contentsTransitionProgress, textureID);
     } else if (layer->_keyframesProgress > -1) {

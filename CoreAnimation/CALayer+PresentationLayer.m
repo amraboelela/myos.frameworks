@@ -65,7 +65,7 @@ void _CALayerAddSublayer(CALayer *layer, CALayer *sublayer, CFIndex index)
 
 void _CALayerCopyAnimations(CALayer *layer)
 {
-    DLog();
+    //DLog();
     if ([layer->_modelLayer->_animations count]) {
         //DLog(@"");
         if (layer->_animations) {
@@ -98,7 +98,7 @@ void _CALayerApplyAnimations(CALayer *layer)
     //DLog(@"layer: %@", layer);
     if ([layer->_animations count]) {
         CFTimeInterval time = [layer convertTime:CACurrentMediaTime() fromLayer:nil];
-        DLog(@"layer->_animations: %@", layer->_animations);
+        //DLog(@"layer->_animations: %@", layer->_animations);
         CFArrayRef keys = [layer animationKeys];
         DLog(@"keys: %@", keys);
         for (NSString *key in keys) {
