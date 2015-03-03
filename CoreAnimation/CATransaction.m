@@ -197,7 +197,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
     DLog(@"_transactions: %@", _transactions);
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
     //DLog(@"_transactions2: %@", _transactions);
-    DLog(@"Free memory: %ld KB", CFGetFreeMemory());
+    //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
 }
 
 + (void)commit

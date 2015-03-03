@@ -134,7 +134,7 @@ void UIParentApplicationPresentAppScreen(UIChildApplication *maApp, BOOL coldSta
         //UIParentApplicationCheckMemory();
         [_maAppView addSubview:maApp.defaultScreenView];
         long freeMemory = CFGetFreeMemory();
-        DLog(@"%@ Free memory: %ld KB", maApp->_name, freeMemory);
+        //DLog(@"%@ Free memory: %ld KB", maApp->_name, freeMemory);
         if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
             freeMemory < 5000 && (_freeMemoryCount % 2 == 1)) {
             DLog(@"Low memory");
