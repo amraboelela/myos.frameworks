@@ -95,7 +95,7 @@ void _CALayerCopyAnimations(CALayer *layer)
 
 void _CALayerApplyAnimations(CALayer *layer)
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if ([layer->_animations count]) {
         CFTimeInterval time = [layer convertTime:CACurrentMediaTime() fromLayer:nil];
         DLog(@"layer->_animations: %@", layer->_animations);

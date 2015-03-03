@@ -47,7 +47,7 @@ static void _CAAnimatorApplyAnimationsWithRoot(CALayer *layer)
     if (!_treeHasPendingAnimations) {
         if ([layer->_animations count]) {
             _treeHasPendingAnimations = YES;
-            DLog(@"_treeHasPendingAnimations: %d", _treeHasPendingAnimations);
+            //DLog(@"_treeHasPendingAnimations: %d", _treeHasPendingAnimations);
         }
     }
     for (CALayer *sublayer in layer->_sublayers) {
