@@ -612,7 +612,15 @@ static Class NSMutableSet_concrete_class;
 /**
  *  Returns listing of objects in set.
  */
-- (NSString*) description
+- (NSString *)description
+{
+    return [self descriptionWithLocale: nil];
+}
+
+/**
+ *  Returns listing of objects in set.
+ */
+- (NSString *)descriptionWithLocale:(id)locale
 {
     //return @"Amr descriptionWithLocale";
     return [NSString stringWithFormat:@"<%@: %p; %@>", [self className], self, [[self allObjects] descriptionWithLocale:locale]];
