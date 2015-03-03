@@ -94,7 +94,7 @@ void _CARendererLoadRenderLayers()
     //DLog(@"_needsLoadRenderLayers.count: %d", _needsLoadRenderLayers.count);
     for (CARenderLayer *layer in _needsLoadRenderLayers) {
         //DLog(@"layer: %@", layer);
-        DLog(@"layer->_presentationLayer->_contentsTransitionProgress: %f", layer->_presentationLayer->_contentsTransitionProgress);
+        //DLog(@"layer->_presentationLayer->_contentsTransitionProgress: %f", layer->_presentationLayer->_contentsTransitionProgress);
         if (layer->_keyframesContents) {
             //DLog(@"layer->_keyframesContents: %@", layer->_keyframesContents);
             _CABackingStoreLoad(layer->_backingStore, layer->_keyframesContents);
