@@ -103,11 +103,11 @@ void _CALayerApplyAnimations(CALayer *layer)
         DLog(@"keys: %@", keys);
         for (NSString *key in keys) {
             // Adjust animation begin time
-            DLog(@"key: %@", key);
+            //DLog(@"key: %@", key);
             CAAnimation *animation = [layer animationForKey:key];
             _CAAnimationApplyAnimationForLayer(animation, layer, time);
         }
-        DLog(@"keys: %@", keys);
+        //DLog(@"keys: %@", keys);
     }
 }
 

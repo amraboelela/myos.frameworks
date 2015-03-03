@@ -1005,7 +1005,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
              */
             if ((t = context->housekeeper) != nil)
             {
-                DLog();
+                //DLog();
                 if (timerInvalidated(t))
                 {
                     DESTROY(context->housekeeper);
@@ -1156,7 +1156,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     int			timeout_ms;
     NSString		*savedMode = _currentMode;
     NSAutoreleasePool	*arp = [NSAutoreleasePool new];
-    DLog(@"limit_date: %@", limit_date);
+    //DLog(@"limit_date: %@", limit_date);
     NSAssert(mode, NSInvalidArgumentException);
     if (mode == nil)
     {
