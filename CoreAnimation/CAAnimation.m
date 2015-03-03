@@ -509,8 +509,8 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
     if (animation->_remove) {
         DLog(@"remove animation: %@", animation);
         //[animation performSelector:@selector(removeFromLayer:) withObject:layer waitUntilDone:YES];
-        [animation performSelectorOnMainThread:@selector(removeFromLayer:) withObject:layer waitUntilDone:YES];
-        //[animation removeFromLayer:layer];
+        //[animation performSelectorOnMainThread:@selector(removeFromLayer:) withObject:layer waitUntilDone:YES];
+        [animation removeFromLayer:layer];
         
         //_CAAnimationRemove(animation, layer);
         //[layer removeAnimationForKey:animation->keyPath];
