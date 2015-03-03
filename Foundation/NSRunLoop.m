@@ -1069,7 +1069,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             i = GSIArrayCount(timers);
             while (i-- > 0)
             {
-                DLog();
+                //DLog();
                 t = GSIArrayItemAtIndex(timers, i).obj;
                 if (timerInvalidated(t) == YES)
                 {
@@ -1092,7 +1092,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
              */
             if (earliest != nil)
             {
-                DLog(); //animation thread
+                //DLog(); //animation thread
                 when = [earliest copy];
             }
             _currentMode = savedMode;
@@ -1164,7 +1164,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     }
     _currentMode = mode;
     context = NSMapGet(_contextMap, mode);
-    DLog();
+    //DLog();
     [self _checkPerformers: context];
     
     NS_DURING
@@ -1257,7 +1257,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         [localException raise];
     }
     NS_ENDHANDLER
-    DLog();
+    //DLog();
     [arp drain];
 }
 
