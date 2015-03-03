@@ -487,12 +487,12 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 + (void)commitAnimations
 {
-    DLog();
+    //DLog();
     [CATransaction commit];
     //if ([_animationGroups count] > 0) {
-    DLog();
+    //DLog();
     [UIViewAnimationGroupGetCurrent() commit];
-    DLog();
+    //DLog();
     //[_animationGroups removeLastObject];
     //}
 }

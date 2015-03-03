@@ -283,7 +283,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (id)initWithKeyPath:(NSString *)aKeyPath
 {
-    DLog();
+    //DLog();
     self = [super init];
     if (self) {
         keyPath = [aKeyPath copy];
@@ -293,7 +293,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 + (id)animationWithKeyPath:(NSString *)path
 {
-    DLog();
+    //DLog();
     return [[[self alloc] initWithKeyPath:path] autorelease];
 }
 
@@ -425,7 +425,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 {
     self = [super init];
     if (self) {
-        DLog();
+        //DLog();
         _animations = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
         //_committed = NO;
     }
@@ -549,12 +549,12 @@ void _CAAnimationGroupAddAnimation(CAAnimationGroup *animationGroup, CAAnimation
 
 void _CAAnimationGroupCommit()
 {
-    DLog();
+    //DLog();
     CAAnimationGroup *animationGroup = _CAAnimationGroupGetCurrent();
     if (animationGroup) {
         //[_animationGroups removeObject:animationGroup];
         animationGroup->_committed = YES;
-        DLog(@"animationGroup: %@", animationGroup);
+        //DLog(@"animationGroup: %@", animationGroup);
     }
 }
 

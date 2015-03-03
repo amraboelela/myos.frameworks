@@ -768,51 +768,51 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 - (id<CAAction>)actionForKey:(NSString *)key
 {
     //char *cKey = [key cString];
-    DLog(@"key: %@", key);
-    DLog(@"[key retainCount]: %d", [key retainCount]);
+    //DLog(@"key: %@", key);
+    //DLog(@"[key retainCount]: %d", [key retainCount]);
     if ([CATransaction disableActions]) {
         return nil;
     }
-    DLog();
+    //DLog();
     if ([delegate respondsToSelector:@selector(actionForLayer:forKey:)]) {
         return [delegate performSelector:@selector(actionForLayer:forKey:) withObject:self withObject:key];
     }
-    DLog(@"_actions: %@", _actions);
-    DLog(@"key: %@", key);
-    DLog(@"[key retainCount]: %d", [key retainCount]);
+    //DLog(@"_actions: %@", _actions);
+    //DLog(@"key: %@", key);
+    //DLog(@"[key retainCount]: %d", [key retainCount]);
     id<CAAction> action = CFDictionaryGetValue(_actions, key);
-    DLog();
+    //DLog();
     if (action == nil) {
-        DLog();
+        //DLog();
         NSDictionary *tmpStyle = _style;
         while (tmpStyle != nil) {
             action = CFDictionaryGetValue(tmpStyle, key);
             if (action != nil) {
                 return action;
             }
-            DLog();
+            //DLog();
             tmpStyle = CFDictionaryGetValue(tmpStyle, _kCAStyle);
         }
     }
-    DLog();
+    //DLog();
     return [CALayer defaultActionForKey:key];
 }
 
 + (id<CAAction>)defaultActionForKey:(NSString *)key
 {
-    DLog();
+    //DLog();
     if ([key isEqualToString:kCATransition]) {
-        DLog();
+        //DLog();
         return [[[CATransition alloc] init] autorelease];
     } else {
-        DLog();
+        //DLog();
         return [CABasicAnimation animationWithKeyPath:key];
     }
 }
 
 - (void)addAnimation:(CAAnimation *)anim forKey:(NSString *)key
 {
-    DLog();
+    //DLog();
     CAAnimation *animation = [anim copy];
     CFDictionarySetValue(_animations, key, animation);
     [animation release];
@@ -826,14 +826,14 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
             basicAnimation.fromValue = [self valueForKeyPath:basicAnimation->keyPath];
         }
     } else if ([animation isKindOfClass:[CAKeyframeAnimation class]]) {
-        DLog(@"[animation isKindOfClass:[CAKeyframeAnimation class]]");
+        //DLog(@"[animation isKindOfClass:[CAKeyframeAnimation class]]");
         CAKeyframeAnimation *keyframeAnimation = (CAKeyframeAnimation *)animation;
         if ([keyframeAnimation->keyPath isEqualToString:@"contents"]) {
             if (_keyframesContents) {
                 [_keyframesContents release];
             }
             _keyframesContents = [keyframeAnimation->_values copy];
-            DLog(@"_keyframesContents: %@", _keyframesContents);
+            //DLog(@"_keyframesContents: %@", _keyframesContents);
         }
     }
 }
@@ -868,7 +868,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)addSublayer:(CALayer *)layer
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (layer && layer->_superlayer != self) {
         [layer removeFromSuperlayer];
         //DLog(@"_sublayers: %@", _sublayers);
@@ -900,7 +900,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)insertSublayer:(CALayer *)layer atIndex:(unsigned)index
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (!layer) {
         return;
     }
@@ -926,7 +926,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)moveLayerToTop:(CALayer *)layer
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (!layer) {
         return;
     }
@@ -940,7 +940,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)insertSublayer:(CALayer *)layer below:(CALayer *)sibling
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (!layer || !sibling) {
         return;
     }
@@ -965,7 +965,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)insertSublayer:(CALayer *)layer above:(CALayer *)sibling
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (!layer || !sibling) {
         return;
     }
@@ -991,7 +991,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)replaceSublayer:(CALayer *)oldLayer with:(CALayer *)newLayer
 {
-    DLog(@"newLayer: %@", newLayer);
+    //DLog(@"newLayer: %@", newLayer);
     if (oldLayer && newLayer && newLayer->_superlayer != self) {
         [newLayer removeFromSuperlayer];
         CFIndex oldLayerIndex = [self indexOfLayer:oldLayer];
