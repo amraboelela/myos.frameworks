@@ -31,7 +31,7 @@ static CFMutableSetRef _needsLoadRenderLayers;
 
 void _CARendererInitialize()
 {
-    //DLog(@"");
+    DLog(@"");
     _needsDisplayLayers = CFSetCreateMutable(kCFAllocatorDefault, 10, &kCFTypeSetCallBacks);
     _needsDisplayPresentationLayers = CFSetCreateMutable(kCFAllocatorDefault, 10, &kCFTypeSetCallBacks);
     _needsLoadRenderLayers = CFSetCreateMutable(kCFAllocatorDefault, 10, &kCFTypeSetCallBacks);
