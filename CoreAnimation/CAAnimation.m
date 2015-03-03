@@ -40,7 +40,7 @@ static CFTimeInterval _CAAnimationGetProgressTime(CABasicAnimation *animation, C
 {
     CFTimeInterval localTime = (time - animation->_beginTime) * animation->_speed + animation->_timeOffset;
     CFTimeInterval activeTime = localTime - animation->_startTime;
-    //DLog(@"activeTime: %0.2f", activeTime);
+    DLog(@"activeTime: %0.2f", activeTime);
     if (activeTime < 0) {
         return activeTime;
     }
@@ -51,7 +51,7 @@ static CFTimeInterval _CAAnimationGetProgressTime(CABasicAnimation *animation, C
     }
     if (animation->_removedOnCompletion) {
         if (animation->_repeatCount > 0.0) {
-            //DLog(@"animation->_repeatCount: %f", animation->_repeatCount);
+            DLog(@"animation->_repeatCount: %f", animation->_repeatCount);
             if (k > animation->_repeatCount) {
                 animation->_remove = YES;
                 int repeatCount = floor(animation->_repeatCount);
@@ -507,7 +507,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         }
     }
     if (animation->_remove) {
-        //DLog(@"animation: %@", animation);
+        DLog(@"animation: %@", animation);
         //[animation performSelector:@selector(removeFromLayer:) withObject:layer waitUntilDone:YES];
         [animation performSelectorOnMainThread:@selector(removeFromLayer:) withObject:layer waitUntilDone:YES];
         //[animation removeFromLayer:layer];
