@@ -81,7 +81,7 @@ static CFTimeInterval _CAAnimationGetProgressTime(CABasicAnimation *animation, C
             }
         }
     }
-    //DLog(@"progressTime: %0.1f", progressTime);
+    DLog(@"progressTime: %0.1f", progressTime);
     return progressTime;
 }
 
@@ -91,17 +91,17 @@ static float _CAAnimationGetProgress(CABasicAnimation *animation, CFTimeInterval
         return 0;
     }
     float timeRatio = progressTime / animation->_duration;
-    //DLog(@"timeRatio: %0.2f", timeRatio);
+    DLog(@"timeRatio: %0.2f", timeRatio);
     return _CAMediaTimingFunctionApply(animation->_timingFunction, timeRatio);
 }
 
 static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float progress)
 {
-    //DLog(@"animation: %@", animation);
+    DLog(@"animation: %@", animation);
     float fromValue = [animation->fromValue floatValue];
     float toValue = [animation->toValue floatValue];
     float result = fromValue + (toValue - fromValue) * progress;
-    //DLog(@"result: %0.1f", result);
+    DLog(@"result: %0.1f", result);
     return [NSNumber numberWithFloat:result];
 }
 
@@ -487,8 +487,9 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         if (result) {
             [layer setValue:result forKeyPath:animation->keyPath];
         }
-        //DLog(@"animation: %@", animation);
+        DLog(@"animation: %@", animation);
         if ([animation->keyPath isEqualToString:@"contents"]) {
+            DLog(@"[animation->keyPath isEqualToString:contents]");
             layer->_contentsTransitionProgress = progress;
             if (animation->_remove) {
                 layer->_contentsTransitionProgress = 1.0;

@@ -91,7 +91,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
 {
     int i;
     DLog(@"textureID: %d", textureID);
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (textureID == 0) {
         return;
     }
@@ -221,8 +221,8 @@ static void _CARenderLayerComposite(CARenderLayer *layer)
         //GLuint textureID2 = layer->_backingStore->_texture->_textureIDs[1];
         //DLog(@"oldBackingStore: %@", layer->_oldBackingStore);
         //DLog(@"backingStore: %@", layer->_backingStore);
-        DLog(@"textureID: %d", textureID);
-        DLog(@"oldTextureID: %d", oldTextureID);
+        //DLog(@"textureID: %d", textureID);
+        //DLog(@"oldTextureID: %d", oldTextureID);
         DLog(@"layer->_contentsTransitionProgress: %0.1f", layer->_contentsTransitionProgress);
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity*(1.0-layer->_contentsTransitionProgress), oldTextureID);
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity*layer->_contentsTransitionProgress, textureID);
