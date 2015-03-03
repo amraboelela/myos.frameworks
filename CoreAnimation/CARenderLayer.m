@@ -90,8 +90,8 @@ static CATransform3D _CARenderLayerTransform(CARenderLayer *layer)
 static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opacity, int textureID)
 {
     int i;
-    //DLog(@"textureID: %d", textureID);
-    //DLog(@"layer: %@", layer);
+    DLog(@"textureID: %d", textureID);
+    DLog(@"layer: %@", layer);
     if (textureID == 0) {
         return;
     }
@@ -220,23 +220,24 @@ static void _CARenderLayerComposite(CARenderLayer *layer)
         textureID = layer->_backingStore->_texture->_textureIDs[0];
         //GLuint textureID2 = layer->_backingStore->_texture->_textureIDs[1];
         //DLog(@"oldBackingStore: %@", layer->_oldBackingStore);
-        DLog(@"backingStore: %@", layer->_backingStore);
+        //DLog(@"backingStore: %@", layer->_backingStore);
         DLog(@"textureID: %d", textureID);
         DLog(@"oldTextureID: %d", oldTextureID);
+        DLog(@"layer->_contentsTransitionProgress: %0.1f", layer->_contentsTransitionProgress);
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity*(1.0-layer->_contentsTransitionProgress), oldTextureID);
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity*layer->_contentsTransitionProgress, textureID);
     } else if (layer->_keyframesProgress > -1) {
         int index = round(layer->_keyframesProgress * (layer->_backingStore->_texture->_numberOfTextures - 1));
         textureID = layer->_backingStore->_texture->_textureIDs[index];
         if (layer->_keyframesProgress < 0.1) {
-            DLog(@"index: %d, textureID: %d", index, textureID);
+            //DLog(@"index: %d, textureID: %d", index, textureID);
         }
         _CARenderLayerCompositeWithOpacity(layer, layer->_opacity, textureID);
     } else {
         if (layer->_backingStore->_texture->_numberOfTextures > 0) {
             textureID = layer->_backingStore->_texture->_textureIDs[0];
-            DLog(@"opacity: %0.1f", layer->_opacity);
-            DLog(@"textureID: %d", textureID);
+            //DLog(@"opacity: %0.1f", layer->_opacity);
+            //DLog(@"textureID: %d", textureID);
             _CARenderLayerCompositeWithOpacity(layer, layer->_opacity, textureID);
         } else {
             DLog(@"layer->_backingStore->_texture->_numberOfTextures == 0");
