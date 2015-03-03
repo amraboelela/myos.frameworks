@@ -41,7 +41,7 @@ void _CARendererInitialize()
 
 void _CARendererDisplayLayers(BOOL isModelLayer)
 {
-    DLog();
+    //DLog();
     CFMutableSetRef displayLayers;
     DLog();
     if (isModelLayer) {

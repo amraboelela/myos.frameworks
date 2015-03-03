@@ -177,7 +177,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
         //[[CATransaction class] performSelector:@selector(_commitTransaction) withObject:nil afterDelay:0.01];
         return;
     }
-    DLog();
+    //DLog();
     CALayer *rootLayer = _CALayerRootLayer();
     //DLog(@"LayoutLayers");
     if (_layersNeedLayout) {
@@ -185,16 +185,16 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
         _CATransactionLayoutLayers(rootLayer);
         _layersNeedLayout = NO;
     }
-    DLog(@"_CARendererDisplayLayers");
+    //DLog(@"_CARendererDisplayLayers");
     _CARendererDisplayLayers(YES);
-    DLog(@"_CATransactionCopyTree");
+    //DLog(@"_CATransactionCopyTree");
     _CATransactionCopyTree(rootLayer);
-    DLog(@"_CATransactionUnloadIfNeeded");
+    //DLog(@"_CATransactionUnloadIfNeeded");
     _CATransactionUnloadIfNeeded(rootLayer);
     _CATransactionRemoveLayers();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
     // Removing last transaction group, as this is a stack. In a stack, you add and remove from same place, in our case from 0
-    DLog(@"_transactions: %@", _transactions);
+    //DLog(@"_transactions: %@", _transactions);
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
     //DLog(@"_transactions2: %@", _transactions);
     //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
@@ -225,11 +225,11 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 void _CATransactionInitialize()
 {
-    DLog();
+    //DLog();
     _transactions = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
     _removeLayers = CFSetCreateMutable(kCFAllocatorDefault, 10, &kCFTypeSetCallBacks);
     _CAAnimationInitialize();
-    DLog();
+    //DLog();
     _CARendererInitialize();
     //DLog();
     _CACompositorInitialize();

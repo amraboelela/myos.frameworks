@@ -63,7 +63,7 @@ OBJECTS = \
     NSCFData.o \
     NSCFDictionary.o \
     NSCFError.o \
-    NSCFSet_myos.o \
+    NSCFSet-myos.o \
     NSCFString.o \
     NSCFType.o \
     GSCArray.o \
