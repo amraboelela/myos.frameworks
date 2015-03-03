@@ -58,28 +58,29 @@ extern "C" {
 {
 #if	GS_EXPOSE(NSThread)
 @public
-  id			_target;
-  id			_arg;
-  SEL			_selector;
-  NSString              *_name;
-  NSUInteger            _stackSize;
-  BOOL			_cancelled;
-  BOOL			_active;
-  BOOL			_finished;
-  NSHandler		*_exception_handler;    // Not retained.
-  NSMutableDictionary	*_thread_dictionary;
-  struct autorelease_thread_vars _autorelease_vars;
-  id			_gcontext;
-  void                  *_runLoopInfo;  // Per-thread runloop related info.
+    id			_target;
+    id			_arg;
+    SEL			_selector;
+    int _threadID;
+    NSString              *_name;
+    NSUInteger            _stackSize;
+    BOOL			_cancelled;
+    BOOL			_active;
+    BOOL			_finished;
+    NSHandler		*_exception_handler;    // Not retained.
+    NSMutableDictionary	*_thread_dictionary;
+    struct autorelease_thread_vars _autorelease_vars;
+    id			_gcontext;
+    void                  *_runLoopInfo;  // Per-thread runloop related info.
 #endif
 #if     GS_NONFRAGILE
 #else
-  /* Pointer to private additional data used to avoid breaking ABI
-   * when we don't have the non-fragile ABI available.
-   * Use this mechanism rather than changing the instance variable
-   * layout (see Source/GSInternal.h for details).
-   */
-  @private id _internal GS_UNUSED_IVAR;
+    /* Pointer to private additional data used to avoid breaking ABI
+     * when we don't have the non-fragile ABI available.
+     * Use this mechanism rather than changing the instance variable
+     * layout (see Source/GSInternal.h for details).
+     */
+@private id _internal GS_UNUSED_IVAR;
 #endif
 }
 

@@ -379,18 +379,19 @@ static void exitedThread(void *thread)
 inline NSThread*
 GSCurrentThread(void)
 {
-  NSThread *thr = pthread_getspecific(thread_object_key);
-  if (nil == thr)
+    NSThread *thr = pthread_getspecific(thread_object_key);
+    if (nil == thr)
     {
-      GSRegisterCurrentThread();
-      thr = pthread_getspecific(thread_object_key);
-      if ((nil == defaultThread) && IS_MAIN_PTHREAD)
+        GSRegisterCurrentThread();
+        thr = pthread_getspecific(thread_object_key);
+        if ((nil == defaultThread) && IS_MAIN_PTHREAD)
         {
-          defaultThread = [thr retain];
+            defaultThread = [thr retain];
+            defaultThread->_threadID = (unsigned int)pthread_self();
         }
     }
-  assert(nil != thr && "No main thread");
-  return thr;
+    assert(nil != thr && "No main thread");
+    return thr;
 }
 
 NSMutableDictionary*
@@ -784,16 +785,16 @@ unregisterActiveThread(NSThread *thread)
 
 - (void) main
 {
-  if (_active == NO)
+    if (_active == NO)
     {
-      [NSException raise: NSInternalInconsistencyException
-                  format: @"[%@-%@] called on inactive thread",
-        NSStringFromClass([self class]),
-        NSStringFromSelector(_cmd)];
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"[%@-%@] called on inactive thread",
+         NSStringFromClass([self class]),
+         NSStringFromSelector(_cmd)];
     }
-
-  [_target performSelector: _selector withObject: _arg];
-
+    _threadID = (unsigned int)pthread_self();
+    [_target performSelector: _selector withObject: _arg];
+    
 }
 
 - (NSString*) name
@@ -854,6 +855,11 @@ unregisterActiveThread(NSThread *thread)
 - (NSUInteger) stackSize
 {
   return _stackSize;
+}
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p; name:%@; process ID: %d; thread ID: %d>", [self className], self, _name, getpid(), _threadID];
 }
 
 /**
@@ -1305,6 +1311,7 @@ GSRunLoopInfoForThread(NSThread *aThread)
 		       waitUntilDone: (BOOL)aFlag
 			       modes: (NSArray*)anArray
 {
+    DLog();
   /* It's possible that this method could be called before the NSThread
    * class is initialised, so we check and make sure it's initiailised
    * if necessary.
@@ -1336,75 +1343,78 @@ GSRunLoopInfoForThread(NSThread *aThread)
            waitUntilDone: (BOOL)aFlag
                    modes: (NSArray*)anArray
 {
-  GSRunLoopThreadInfo   *info;
-  NSThread	        *t;
-
-  if ([anArray count] == 0)
+    GSRunLoopThreadInfo   *info;
+    NSThread	        *t;
+    DLog(@"aThread: %@", aThread);
+    if ([anArray count] == 0)
     {
-      return;
+        return;
     }
-
-  t = GSCurrentThread();
-  if (aThread == nil)
+    DLog(@"t: %@", t);
+    t = GSCurrentThread();
+    if (aThread == nil)
     {
-      aThread = t;
+        DLog(@"aThread == nil");
+        aThread = t;
     }
-  info = GSRunLoopInfoForThread(aThread);
-  if (t == aThread)
+    info = GSRunLoopInfoForThread(aThread);
+    if (t == aThread)
     {
-      /* Perform in current thread.
-       */
-      if (aFlag == YES || info->loop == nil)
-	{
-          /* Wait until done or no run loop.
-           */
-	  [self performSelector: aSelector withObject: anObject];
-	}
-      else
-	{
-          /* Don't wait ... schedule operation in run loop.
-           */
-	  [info->loop performSelector: aSelector
-                               target: self
-                             argument: anObject
-                                order: 0
-                                modes: anArray];
-	}
-    }
-  else
-    {
-      GSPerformHolder   *h;
-      NSConditionLock	*l = nil;
-
-      if ([aThread isFinished] == YES)
+        /* Perform in current thread.
+         */
+        if (aFlag == YES || info->loop == nil)
         {
-          [NSException raise: NSInternalInconsistencyException
-                      format: @"perform on finished thread"];
+            /* Wait until done or no run loop.
+             */
+            [self performSelector: aSelector withObject: anObject];
         }
-      if (aFlag == YES)
-	{
-	  l = [[NSConditionLock alloc] init];
-	}
-
-      h = [GSPerformHolder newForReceiver: self
-				 argument: anObject
-				 selector: aSelector
-				    modes: anArray
-				     lock: l];
-      [info addPerformer: h];
-      if (l != nil)
-	{
-          [l lockWhenCondition: 1];
-	  [l unlock];
-	  RELEASE(l);
-          if ([h isInvalidated] == YES)
+        else
+        {
+            /* Don't wait ... schedule operation in run loop.
+             */
+            [info->loop performSelector: aSelector
+                                 target: self
+                               argument: anObject
+                                  order: 0
+                                  modes: anArray];
+        }
+    }
+    else
+    {
+        DLog();
+        GSPerformHolder   *h;
+        NSConditionLock	*l = nil;
+        
+        if ([aThread isFinished] == YES)
+        {
+            [NSException raise: NSInternalInconsistencyException
+                        format: @"perform on finished thread"];
+        }
+        if (aFlag == YES)
+        {
+            l = [[NSConditionLock alloc] init];
+        }
+        
+        h = [GSPerformHolder newForReceiver: self
+                                   argument: anObject
+                                   selector: aSelector
+                                      modes: anArray
+                                       lock: l];
+        [info addPerformer: h];
+        DLog(@"info: %@", info);
+        if (l != nil)
+        {
+            [l lockWhenCondition: 1];
+            [l unlock];
+            RELEASE(l);
+            if ([h isInvalidated] == YES)
             {
-              [NSException raise: NSInternalInconsistencyException
-                          format: @"perform on finished thread"];
-              RELEASE(h);
+                [NSException raise: NSInternalInconsistencyException
+                            format: @"perform on finished thread"];
+                RELEASE(h);
             }
-	}
-      RELEASE(h);
+        }
+        RELEASE(h);
     }
 }
 
