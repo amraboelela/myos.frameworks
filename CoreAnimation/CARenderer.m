@@ -43,48 +43,48 @@ void _CARendererDisplayLayers(BOOL isModelLayer)
 {
     //DLog();
     CFMutableSetRef displayLayers;
-    DLog();
+    //DLog();
     if (isModelLayer) {
-        DLog();
+        //DLog();
         displayLayers = _needsDisplayLayers;
         //DLog(@"displayLayers: %p", displayLayers);
     } else {
-        DLog();
+        //DLog();
         displayLayers = _needsDisplayPresentationLayers;
     }
-    DLog(@"displayLayers: %p", displayLayers);
-    DLog(@"displayLayers: %@", displayLayers);
+    //DLog(@"displayLayers: %p", displayLayers);
+    //DLog(@"displayLayers: %@", displayLayers);
     //DLog(@"_needsLoadRenderLayers: %@", _needsLoadRenderLayers);
     //DLog(@"[displayLayers className]: %@", [displayLayers className]);
     for (CALayer *layer in displayLayers) {
         _CALayerDisplay(layer);
-        DLog();
+        //DLog();
         if (layer->_displayContents) {
             CARenderLayer *renderLayer = (CARenderLayer *)layer->_renderLayer;
             if (renderLayer) {
-                DLog(@"renderLayer.retainCount: %d", renderLayer.retainCount);
+                //DLog(@"renderLayer.retainCount: %d", renderLayer.retainCount);
                 CFSetAddValue(_needsLoadRenderLayers, renderLayer);
-                DLog(@"renderLayer.retainCount: %d", renderLayer.retainCount);
+                //DLog(@"renderLayer.retainCount: %d", renderLayer.retainCount);
                 renderLayer->_oldContents = layer->_oldContents;
                 renderLayer->_displayContents = layer->_displayContents;
                 renderLayer->_keyframesContents = layer->_keyframesContents;
                 layer->_oldContents = nil;
                 layer->_displayContents = nil;
                 layer->_keyframesContents = nil;
-                DLog(@"layer: %@", layer);
-                DLog(@"renderLayer: %@", renderLayer);
+                //DLog(@"layer: %@", layer);
+                //DLog(@"renderLayer: %@", renderLayer);
             } else {
-                DLog(@"no renderLayer - layer: %@", layer);
+                //DLog(@"no renderLayer - layer: %@", layer);
             }
         } else {
-                DLog(@"no layer->_displayContents - layer: %@", layer);
+                //DLog(@"no layer->_displayContents - layer: %@", layer);
         }
     }
-    DLog(@"displayLayers.count: %d", displayLayers.count);
+    //DLog(@"displayLayers.count: %d", displayLayers.count);
     //DLog(@"_needsLoadRenderLayers: %@", _needsLoadRenderLayers);
     //DLog(@"_needsLoadRenderLayers.count: %d", _needsLoadRenderLayers.count);
     CFSetRemoveAllValues(displayLayers);
-    DLog();
+    //DLog();
 }
 
 void _CARendererLoadRenderLayers()
