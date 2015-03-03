@@ -41,12 +41,16 @@ void _CARendererDisplayLayers(BOOL isModelLayer)
 {
     DLog();
     CFMutableSetRef displayLayers;
+    DLog();
     if (isModelLayer) {
+        DLog();
         displayLayers = _needsDisplayLayers;
-        DLog(@"displayLayers: %@", displayLayers);
+        //DLog(@"displayLayers: %p", displayLayers);
     } else {
+        DLog();
         displayLayers = _needsDisplayPresentationLayers;
     }
+    DLog(@"displayLayers: %p", displayLayers);
     DLog(@"displayLayers: %@", displayLayers);
     //DLog(@"_needsLoadRenderLayers: %@", _needsLoadRenderLayers);
     //DLog(@"[displayLayers className]: %@", [displayLayers className]);
