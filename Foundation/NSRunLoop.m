@@ -1092,7 +1092,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
              */
             if (earliest != nil)
             {
-                DLog(); animation thread
+                DLog(); //animation thread
                 when = [earliest copy];
             }
             _currentMode = savedMode;
