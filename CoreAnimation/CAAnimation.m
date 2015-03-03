@@ -97,11 +97,11 @@ static float _CAAnimationGetProgress(CABasicAnimation *animation, CFTimeInterval
 
 static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float progress)
 {
-    DLog(@"animation: %@", animation);
+    //DLog(@"animation: %@", animation);
     float fromValue = [animation->fromValue floatValue];
     float toValue = [animation->toValue floatValue];
     float result = fromValue + (toValue - fromValue) * progress;
-    DLog(@"result: %0.1f", result);
+    //DLog(@"result: %0.1f", result);
     return [NSNumber numberWithFloat:result];
 }
 

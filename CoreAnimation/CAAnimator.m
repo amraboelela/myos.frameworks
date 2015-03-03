@@ -103,17 +103,17 @@ static void reportFPS(BOOL withCondition)
     //return;
     while (true) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        DLog(@"run");
+        //DLog(@"run");
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
 #ifdef NATIVE_APP
         //DLog(@"NATIVE_APP");
         if ([_CAAnimatorNAConditionLock tryLockWhenCondition:_CAAnimatorConditionLockHasWork]) {
-            DLog();
+            //DLog();
             EAGLParentHandleMessages();
             [_CAAnimatorNAConditionLock unlock];
-            DLog();
+            //DLog();
         }
 #endif
         [pool2 release];
@@ -155,7 +155,7 @@ static void reportFPS(BOOL withCondition)
     //DLog(@"_CACompositorPrepareComposite");
     _CACompositorPrepareComposite();
     if (_treeHasPendingAnimations) {
-        DLog(@"_treeHasPendingAnimations");
+        //DLog(@"_treeHasPendingAnimations");
         if (!_treeHadPendingAnimations) {
             previousTimestamp = CACurrentMediaTime();
             _treeHadPendingAnimations = YES;
