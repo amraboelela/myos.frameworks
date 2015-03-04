@@ -823,13 +823,16 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     //DLog();
-    
+    SInt32 ret;
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
         //DLog();
-        NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
-        [[NSRunLoop currentRunLoop] runUntilDate:limit];
-        [limit release];
+        //NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
+        //[[NSRunLoop currentRunLoop] runUntilDate:limit];
+        //[limit release];
+        ret = CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.0, true);
+        PASS_CF(ret == kCFRunLoopRunHandledSource, "Run loop handled sources.  Exit"
+                " code '%d'.", ret);
         if (IOEventGetNextEvent(window, _application->_currentEvent)) {
             //DLog();
             _UIApplicationSetCurrentEventTouchedView();
