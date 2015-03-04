@@ -1150,59 +1150,63 @@ static void *nsthreadLauncher(void* thread)
 
 - (void) fire
 {
-  NSArray	*toDo;
-  unsigned int	i;
-  unsigned int	c;
-
-  [lock lock];
+    NSArray	*toDo;
+    unsigned int	i;
+    unsigned int	c;
+    DLog();
+    [lock lock];
 #if defined(__MINGW__)
-  if (event != INVALID_HANDLE_VALUE)
+    if (event != INVALID_HANDLE_VALUE)
     {
-      if (ResetEvent(event) == 0)
+        if (ResetEvent(event) == 0)
         {
-          NSLog(@"Reset event failed - %@", [NSError _last]);
+            NSLog(@"Reset event failed - %@", [NSError _last]);
         }
     }
 #else
-  if (inputFd >= 0)
+    if (inputFd >= 0)
     {
-      char	buf[BUFSIZ];
-
-      /* We don't care how much we read.  If there have been multiple
-       * performers queued then there will be multiple bytes available,
-       * but we always handle all available performers, so we can also
-       * read all available bytes.
-       * The descriptor is non-blocking ... so it's safe to ask for more
-       * bytes than are available.
-       */
-      while (read(inputFd, buf, sizeof(buf)) > 0)
-	;
+        DLog(@"inputFd: %d", inputFd);
+        char	buf[BUFSIZ];
+        
+        /* We don't care how much we read.  If there have been multiple
+         * performers queued then there will be multiple bytes available,
+         * but we always handle all available performers, so we can also
+         * read all available bytes.
+         * The descriptor is non-blocking ... so it's safe to ask for more
+         * bytes than are available.
+         */
+        int count;
+        do {
+            count = read(inputFd, buf, sizeof(buf));
+            //DLog(@"count: %d", count);
+        } while (count > 0);
     }
 #endif
-
-  c = [performers count];
-  if (0 == c)
-    {
-      /* We deal with all available performers each time we fire, so
-       * it's likely that we will fire when we have no performers left.
-       * In that case we can skip the copying and emptying of the array.
-       */
-      [lock unlock];
-      return;
+    
+    c = [performers count];
+    //DLog();
+    if (0 == c) {
+        /* We deal with all available performers each time we fire, so
+         * it's likely that we will fire when we have no performers left.
+         * In that case we can skip the copying and emptying of the array.
+         */
+        [lock unlock];
+        return;
     }
-  toDo = [NSArray arrayWithArray: performers];
-  [performers removeAllObjects];
-  [lock unlock];
-
-  for (i = 0; i < c; i++)
+    toDo = [NSArray arrayWithArray: performers];
+    [performers removeAllObjects];
+    [lock unlock];
+    
+    for (i = 0; i < c; i++)
     {
-      GSPerformHolder	*h = [toDo objectAtIndex: i];
-
-      [loop performSelector: @selector(fire)
-		     target: h
-		   argument: nil
-		      order: 0
-		      modes: [h modes]];
+        GSPerformHolder	*h = [toDo objectAtIndex: i];
+        
+        [loop performSelector: @selector(fire)
+                       target: h
+                     argument: nil
+                        order: 0
+                        modes: [h modes]];
     }
 }
 @end
