@@ -830,8 +830,8 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
         //NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         //[[NSRunLoop currentRunLoop] runUntilDate:limit];
         //[limit release];
-        ret = CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.0, true);
-        DLog(@"ret: %d", ret);
+        ret = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, true);
+        //DLog(@"ret: %d", ret);
         //PASS_CF(ret == kCFRunLoopRunHandledSource, "Run loop handled sources.  Exit"
         //        " code '%d'.", ret);
         if (IOEventGetNextEvent(window, _application->_currentEvent)) {
@@ -839,7 +839,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
             _UIApplicationSetCurrentEventTouchedView();
             _application->_lastActivityTime = CACurrentMediaTime();
         }
-        currentTime = CACurrentMediaTime();
+        //currentTime = CACurrentMediaTime();
         /*if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
             && _application->_screenMode == _UIApplicationScreenModeActive) {
             _application->_screenMode = _UIApplicationScreenModeSleeping;
