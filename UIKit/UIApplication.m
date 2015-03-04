@@ -826,7 +826,7 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        DLog();
+        //DLog();
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
