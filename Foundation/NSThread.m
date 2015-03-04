@@ -1153,7 +1153,7 @@ static void *nsthreadLauncher(void* thread)
     NSArray	*toDo;
     unsigned int	i;
     unsigned int	c;
-    DLog();
+    //DLog();
     [lock lock];
 #if defined(__MINGW__)
     if (event != INVALID_HANDLE_VALUE)
