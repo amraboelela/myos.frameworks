@@ -379,20 +379,18 @@ static void exitedThread(void *thread)
 inline NSThread*
 GSCurrentThread(void)
 {
-    NSThread *thr = pthread_getspecific(thread_object_key);
-    if (nil == thr)
+  NSThread *thr = pthread_getspecific(thread_object_key);
+  if (nil == thr)
     {
-        //DLog();
-        GSRegisterCurrentThread();
-        thr = pthread_getspecific(thread_object_key);
-        if ((nil == defaultThread) && IS_MAIN_PTHREAD)
+      GSRegisterCurrentThread();
+      thr = pthread_getspecific(thread_object_key);
+      if ((nil == defaultThread) && IS_MAIN_PTHREAD)
         {
-            defaultThread = [thr retain];
-            defaultThread->_threadID = (unsigned int)pthread_self();
+          defaultThread = [thr retain];
         }
     }
-    assert(nil != thr && "No main thread");
-    return thr;
+  assert(nil != thr && "No main thread");
+  return thr;
 }
 
 NSMutableDictionary*
@@ -786,16 +784,16 @@ unregisterActiveThread(NSThread *thread)
 
 - (void) main
 {
-    if (_active == NO)
+  if (_active == NO)
     {
-        [NSException raise: NSInternalInconsistencyException
-                    format: @"[%@-%@] called on inactive thread",
-         NSStringFromClass([self class]),
-         NSStringFromSelector(_cmd)];
+      [NSException raise: NSInternalInconsistencyException
+                  format: @"[%@-%@] called on inactive thread",
+        NSStringFromClass([self class]),
+        NSStringFromSelector(_cmd)];
     }
-    _threadID = (unsigned int)pthread_self();
-    [_target performSelector: _selector withObject: _arg];
-    
+
+  [_target performSelector: _selector withObject: _arg];
+
 }
 
 - (NSString*) name
@@ -856,11 +854,6 @@ unregisterActiveThread(NSThread *thread)
 - (NSUInteger) stackSize
 {
   return _stackSize;
-}
-
-- (NSString *)description
-{
-    return [NSString stringWithFormat:@"<%@: %p; name:%@; process ID: %d; thread ID: %x>", [self className], self, _name, getpid(), _threadID];
 }
 
 /**
@@ -998,125 +991,114 @@ static void *nsthreadLauncher(void* thread)
 @implementation GSRunLoopThreadInfo
 - (void) addPerformer: (id)performer
 {
-    BOOL  signalled = NO;
-    //DLog(@"performer: %@", performer);
-    [lock lock];
+  BOOL  signalled = NO;
+
+  [lock lock];
 #if defined(__MINGW__)
-    if (INVALID_HANDLE_VALUE != event)
+  if (INVALID_HANDLE_VALUE != event)
     {
-        if (SetEvent(event) == 0)
+      if (SetEvent(event) == 0)
         {
-            NSLog(@"Set event failed - %@", [NSError _last]);
+          NSLog(@"Set event failed - %@", [NSError _last]);
         }
-        else
+      else
         {
-            signalled = YES;
+          signalled = YES;
         }
     }
 #else
-    //DLog(@"outputFd: %d", outputFd);
-    /* The write could concievably fail if the pipe is full.
-     * In that case we need to release the lock teporarily to allow the other
-     * thread to consume data from the pipe.  It's possible that the thread
-     * and its runloop might stop during that ... so we need to check that
-     * outputFd is still valid.
-     */
-    while (outputFd >= 0
-           && NO == (signalled = (write(outputFd, "0", 1) == 1) ? YES : NO))
+  /* The write could concievably fail if the pipe is full.
+   * In that case we need to release the lock teporarily to allow the other
+   * thread to consume data from the pipe.  It's possible that the thread
+   * and its runloop might stop during that ... so we need to check that
+   * outputFd is still valid.
+   */
+  while (outputFd >= 0
+    && NO == (signalled = (write(outputFd, "0", 1) == 1) ? YES : NO))
     {
-        //DLog();
-        [lock unlock];
-        //DLog();
-        [lock lock];
+      [lock unlock];
+      [lock lock];
     }
 #endif
-    //DLog();
-    if (YES == signalled)
+  if (YES == signalled)
     {
-        [performers addObject: performer];
+      [performers addObject: performer];
     }
-    //DLog();
-    [lock unlock];
-    if (NO == signalled)
+  [lock unlock];
+  if (NO == signalled)
     {
-        /* We failed to add the performer ... so we must invalidate it in
-         * case there is code waiting for it to complete.
-         */
-        [performer invalidate];
+      /* We failed to add the performer ... so we must invalidate it in
+       * case there is code waiting for it to complete.
+       */
+      [performer invalidate];
     }
 }
 
 - (void) dealloc
 {
-    [self invalidate];
-    DESTROY(lock);
-    DESTROY(loop);
-    [super dealloc];
+  [self invalidate];
+  DESTROY(lock);
+  DESTROY(loop);
+  [super dealloc];
 }
 
 - (id) init
 {
 #ifdef __MINGW__
-    if ((event = CreateEvent(NULL, TRUE, FALSE, NULL)) == INVALID_HANDLE_VALUE)
+  if ((event = CreateEvent(NULL, TRUE, FALSE, NULL)) == INVALID_HANDLE_VALUE)
     {
-        DESTROY(self);
-        [NSException raise: NSInternalInconsistencyException
-                    format: @"Failed to create event to handle perform in thread"];
+      DESTROY(self);
+      [NSException raise: NSInternalInconsistencyException
+        format: @"Failed to create event to handle perform in thread"];
     }
 #else
-    int	fd[2];
-    
-    if (pipe(fd) == 0)
+  int	fd[2];
+
+  if (pipe(fd) == 0)
     {
-        int	e;
-        
-        inputFd = fd[0];
-        outputFd = fd[1];
-        //DLog(@"inputFd: %d", inputFd);
-        //DLog(@"outputFd: %d", outputFd);
-        
-        long flags = fcntl(inputFd, F_GETFL);
-        fcntl(inputFd, F_SETFL, flags | O_NONBLOCK);
-        /*
-        if ((e = fcntl(inputFd, F_GETFL, 0)) >= 0)
-        {
-            e |= NBLK_OPT;
-            if (fcntl(inputFd, F_SETFL, e) < 0)
-            {
-                [NSException raise: NSInternalInconsistencyException
-                            format: @"Failed to set non block flag for perform in thread"];
-            }
-        }
-        else
-        {
-            [NSException raise: NSInternalInconsistencyException
-                        format: @"Failed to get non block flag for perform in thread"];
-        }
-        if ((e = fcntl(outputFd, F_GETFL, 0)) >= 0)
-        {
-            e |= NBLK_OPT;
-            if (fcntl(outputFd, F_SETFL, e) < 0)
-            {
-                [NSException raise: NSInternalInconsistencyException
-                            format: @"Failed to set non block flag for perform in thread"];
-            }
-        }
-        else
-        {
-            [NSException raise: NSInternalInconsistencyException
-                        format: @"Failed to get non block flag for perform in thread"];
-        }*/
+      int	e;
+
+      inputFd = fd[0];
+      outputFd = fd[1];
+      if ((e = fcntl(inputFd, F_GETFL, 0)) >= 0)
+	{
+	  e |= NBLK_OPT;
+	  if (fcntl(inputFd, F_SETFL, e) < 0)
+	    {
+	      [NSException raise: NSInternalInconsistencyException
+		format: @"Failed to set non block flag for perform in thread"];
+	    }
+	}
+      else
+	{
+	  [NSException raise: NSInternalInconsistencyException
+	    format: @"Failed to get non block flag for perform in thread"];
+	}
+      if ((e = fcntl(outputFd, F_GETFL, 0)) >= 0)
+	{
+	  e |= NBLK_OPT;
+	  if (fcntl(outputFd, F_SETFL, e) < 0)
+	    {
+	      [NSException raise: NSInternalInconsistencyException
+		format: @"Failed to set non block flag for perform in thread"];
+	    }
+	}
+      else
+	{
+	  [NSException raise: NSInternalInconsistencyException
+	    format: @"Failed to get non block flag for perform in thread"];
+	}
     }
-    else
+  else
     {
-        DESTROY(self);
-        [NSException raise: NSInternalInconsistencyException
-                    format: @"Failed to create pipe to handle perform in thread"];
+      DESTROY(self);
+      [NSException raise: NSInternalInconsistencyException
+        format: @"Failed to create pipe to handle perform in thread"];
     }
 #endif
-    lock = [NSLock new];
-    performers = [NSMutableArray new];
-    return self;
+  lock = [NSLock new];
+  performers = [NSMutableArray new];
+  return self;
 }
 
 - (void) invalidate
@@ -1150,63 +1132,59 @@ static void *nsthreadLauncher(void* thread)
 
 - (void) fire
 {
-    NSArray	*toDo;
-    unsigned int	i;
-    unsigned int	c;
-    //DLog();
-    [lock lock];
+  NSArray	*toDo;
+  unsigned int	i;
+  unsigned int	c;
+
+  [lock lock];
 #if defined(__MINGW__)
-    if (event != INVALID_HANDLE_VALUE)
+  if (event != INVALID_HANDLE_VALUE)
     {
-        if (ResetEvent(event) == 0)
+      if (ResetEvent(event) == 0)
         {
-            NSLog(@"Reset event failed - %@", [NSError _last]);
+          NSLog(@"Reset event failed - %@", [NSError _last]);
         }
     }
 #else
-    if (inputFd >= 0)
+  if (inputFd >= 0)
     {
-        //DLog(@"inputFd: %d", inputFd);
-        char	buf[BUFSIZ];
-        
-        /* We don't care how much we read.  If there have been multiple
-         * performers queued then there will be multiple bytes available,
-         * but we always handle all available performers, so we can also
-         * read all available bytes.
-         * The descriptor is non-blocking ... so it's safe to ask for more
-         * bytes than are available.
-         */
-        int count;
-        do {
-            count = read(inputFd, buf, sizeof(buf));
-            //DLog(@"count: %d", count);
-        } while (count > 0);
+      char	buf[BUFSIZ];
+
+      /* We don't care how much we read.  If there have been multiple
+       * performers queued then there will be multiple bytes available,
+       * but we always handle all available performers, so we can also
+       * read all available bytes.
+       * The descriptor is non-blocking ... so it's safe to ask for more
+       * bytes than are available.
+       */
+      while (read(inputFd, buf, sizeof(buf)) > 0)
+	;
     }
 #endif
-    
-    c = [performers count];
-    //DLog();
-    if (0 == c) {
-        /* We deal with all available performers each time we fire, so
-         * it's likely that we will fire when we have no performers left.
-         * In that case we can skip the copying and emptying of the array.
-         */
-        [lock unlock];
-        return;
-    }
-    toDo = [NSArray arrayWithArray: performers];
-    [performers removeAllObjects];
-    [lock unlock];
-    
-    for (i = 0; i < c; i++)
+
+  c = [performers count];
+  if (0 == c)
     {
-        GSPerformHolder	*h = [toDo objectAtIndex: i];
-        
-        [loop performSelector: @selector(fire)
-                       target: h
-                     argument: nil
-                        order: 0
-                        modes: [h modes]];
+      /* We deal with all available performers each time we fire, so
+       * it's likely that we will fire when we have no performers left.
+       * In that case we can skip the copying and emptying of the array.
+       */
+      [lock unlock];
+      return;
+    }
+  toDo = [NSArray arrayWithArray: performers];
+  [performers removeAllObjects];
+  [lock unlock];
+
+  for (i = 0; i < c; i++)
+    {
+      GSPerformHolder	*h = [toDo objectAtIndex: i];
+
+      [loop performSelector: @selector(fire)
+		     target: h
+		   argument: nil
+		      order: 0
+		      modes: [h modes]];
     }
 }
 @end
@@ -1327,7 +1305,6 @@ GSRunLoopInfoForThread(NSThread *aThread)
 		       waitUntilDone: (BOOL)aFlag
 			       modes: (NSArray*)anArray
 {
-    DLog();
   /* It's possible that this method could be called before the NSThread
    * class is initialised, so we check and make sure it's initiailised
    * if necessary.
@@ -1359,80 +1336,75 @@ GSRunLoopInfoForThread(NSThread *aThread)
            waitUntilDone: (BOOL)aFlag
                    modes: (NSArray*)anArray
 {
-    GSRunLoopThreadInfo   *info;
-    NSThread	        *t;
-    //DLog(@"aThread: %@", aThread);
-    if ([anArray count] == 0)
+  GSRunLoopThreadInfo   *info;
+  NSThread	        *t;
+
+  if ([anArray count] == 0)
     {
-        return;
+      return;
     }
-    t = GSCurrentThread();
-    //DLog(@"t: %@", t);
-    if (aThread == nil)
+
+  t = GSCurrentThread();
+  if (aThread == nil)
     {
-        //DLog(@"aThread == nil");
-        aThread = t;
+      aThread = t;
     }
-    info = GSRunLoopInfoForThread(aThread);
-    if (t == aThread)
+  info = GSRunLoopInfoForThread(aThread);
+  if (t == aThread)
     {
-        /* Perform in current thread.
-         */
-        if (aFlag == YES || info->loop == nil)
-        {
-            /* Wait until done or no run loop.
-             */
-            [self performSelector: aSelector withObject: anObject];
-        }
-        else
-        {
-            /* Don't wait ... schedule operation in run loop.
-             */
-            [info->loop performSelector: aSelector
-                                 target: self
-                               argument: anObject
-                                  order: 0
-                                  modes: anArray];
-        }
+      /* Perform in current thread.
+       */
+      if (aFlag == YES || info->loop == nil)
+	{
+          /* Wait until done or no run loop.
+           */
+	  [self performSelector: aSelector withObject: anObject];
+	}
+      else
+	{
+          /* Don't wait ... schedule operation in run loop.
+           */
+	  [info->loop performSelector: aSelector
+                               target: self
+                             argument: anObject
+                                order: 0
+                                modes: anArray];
+	}
     }
-    else
+  else
     {
-        //DLog();
-        GSPerformHolder   *h;
-        NSConditionLock	*l = nil;
-        
-        if ([aThread isFinished] == YES)
+      GSPerformHolder   *h;
+      NSConditionLock	*l = nil;
+
+      if ([aThread isFinished] == YES)
         {
-            [NSException raise: NSInternalInconsistencyException
-                        format: @"perform on finished thread"];
+          [NSException raise: NSInternalInconsistencyException
+                      format: @"perform on finished thread"];
         }
-        if (aFlag == YES)
-        {
-            l = [[NSConditionLock alloc] init];
-        }
-        
-        h = [GSPerformHolder newForReceiver: self
-                                   argument: anObject
-                                   selector: aSelector
-                                      modes: anArray
-                                       lock: l];
-        [info addPerformer: h];
-        //DLog(@"info: %@", info);
-        if (l != nil)
-        {
-            //DLog();
-            [l lockWhenCondition: 1];
-            //DLog();
-            [l unlock];
-            RELEASE(l);
-            if ([h isInvalidated] == YES)
+      if (aFlag == YES)
+	{
+	  l = [[NSConditionLock alloc] init];
+	}
+
+      h = [GSPerformHolder newForReceiver: self
+				 argument: anObject
+				 selector: aSelector
+				    modes: anArray
+				     lock: l];
+      [info addPerformer: h];
+      if (l != nil)
+	{
+          [l lockWhenCondition: 1];
+	  [l unlock];
+	  RELEASE(l);
+          if ([h isInvalidated] == YES)
             {
-                [NSException raise: NSInternalInconsistencyException
-                            format: @"perform on finished thread"];
-                RELEASE(h);
+              [NSException raise: NSInternalInconsistencyException
+                          format: @"perform on finished thread"];
+              RELEASE(h);
             }
-        }
-        RELEASE(h);
+	}
+      RELEASE(h);
     }
 }
 

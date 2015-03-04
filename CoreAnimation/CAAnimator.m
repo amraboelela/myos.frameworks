@@ -94,7 +94,7 @@ static void reportFPS(BOOL withCondition)
     _EAGLSwapBuffers();
     //DLog();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
-    DLog();
+    //DLog();
     _eaglContextIsReady = YES;
     BOOL vSyncEnabled = context->_vSyncEnabled;
     
