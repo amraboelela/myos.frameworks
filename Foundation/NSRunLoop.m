@@ -1272,6 +1272,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
   d = [self limitDateForMode: mode];
   if (d == nil)
     {
+      [self acceptInputForMode:mode beforeDate:date];
       [arp drain];
       return NO;
     }
