@@ -860,7 +860,7 @@ unregisterActiveThread(NSThread *thread)
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@: %p; name:%@; process ID: %d; thread ID: %d>", [self className], self, _name, getpid(), _threadID];
+    return [NSString stringWithFormat:@"<%@: %p; name:%@; process ID: %d; thread ID: %x>", [self className], self, _name, getpid(), _threadID];
 }
 
 /**
@@ -998,114 +998,121 @@ static void *nsthreadLauncher(void* thread)
 @implementation GSRunLoopThreadInfo
 - (void) addPerformer: (id)performer
 {
-  BOOL  signalled = NO;
-
-  [lock lock];
+    BOOL  signalled = NO;
+    DLog(@"performer: %@", performer);
+    [lock lock];
 #if defined(__MINGW__)
-  if (INVALID_HANDLE_VALUE != event)
+    if (INVALID_HANDLE_VALUE != event)
     {
-      if (SetEvent(event) == 0)
+        if (SetEvent(event) == 0)
         {
-          NSLog(@"Set event failed - %@", [NSError _last]);
+            NSLog(@"Set event failed - %@", [NSError _last]);
         }
-      else
+        else
         {
-          signalled = YES;
+            signalled = YES;
         }
     }
 #else
-  /* The write could concievably fail if the pipe is full.
-   * In that case we need to release the lock teporarily to allow the other
-   * thread to consume data from the pipe.  It's possible that the thread
-   * and its runloop might stop during that ... so we need to check that
-   * outputFd is still valid.
-   */
-  while (outputFd >= 0
-    && NO == (signalled = (write(outputFd, "0", 1) == 1) ? YES : NO))
+    /* The write could concievably fail if the pipe is full.
+     * In that case we need to release the lock teporarily to allow the other
+     * thread to consume data from the pipe.  It's possible that the thread
+     * and its runloop might stop during that ... so we need to check that
+     * outputFd is still valid.
+     */
+    while (outputFd >= 0
+           && NO == (signalled = (write(outputFd, "0", 1) == 1) ? YES : NO))
     {
-      [lock unlock];
-      [lock lock];
+        DLog();
+        [lock unlock];
+        DLog();
+        [lock lock];
     }
 #endif
-  if (YES == signalled)
+    if (YES == signalled)
     {
-      [performers addObject: performer];
+        [performers addObject: performer];
     }
-  [lock unlock];
-  if (NO == signalled)
+    DLog();
+    [lock unlock];
+    if (NO == signalled)
     {
-      /* We failed to add the performer ... so we must invalidate it in
-       * case there is code waiting for it to complete.
-       */
-      [performer invalidate];
+        /* We failed to add the performer ... so we must invalidate it in
+         * case there is code waiting for it to complete.
+         */
+        [performer invalidate];
     }
 }
 
 - (void) dealloc
 {
-  [self invalidate];
-  DESTROY(lock);
-  DESTROY(loop);
-  [super dealloc];
+    [self invalidate];
+    DESTROY(lock);
+    DESTROY(loop);
+    [super dealloc];
 }
 
 - (id) init
 {
 #ifdef __MINGW__
-  if ((event = CreateEvent(NULL, TRUE, FALSE, NULL)) == INVALID_HANDLE_VALUE)
+    if ((event = CreateEvent(NULL, TRUE, FALSE, NULL)) == INVALID_HANDLE_VALUE)
     {
-      DESTROY(self);
-      [NSException raise: NSInternalInconsistencyException
-        format: @"Failed to create event to handle perform in thread"];
+        DESTROY(self);
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"Failed to create event to handle perform in thread"];
     }
 #else
-  int	fd[2];
-
-  if (pipe(fd) == 0)
+    int	fd[2];
+    
+    if (pipe(fd) == 0)
     {
-      int	e;
-
-      inputFd = fd[0];
-      outputFd = fd[1];
-      if ((e = fcntl(inputFd, F_GETFL, 0)) >= 0)
-	{
-	  e |= NBLK_OPT;
-	  if (fcntl(inputFd, F_SETFL, e) < 0)
-	    {
-	      [NSException raise: NSInternalInconsistencyException
-		format: @"Failed to set non block flag for perform in thread"];
-	    }
-	}
-      else
-	{
-	  [NSException raise: NSInternalInconsistencyException
-	    format: @"Failed to get non block flag for perform in thread"];
-	}
-      if ((e = fcntl(outputFd, F_GETFL, 0)) >= 0)
-	{
-	  e |= NBLK_OPT;
-	  if (fcntl(outputFd, F_SETFL, e) < 0)
-	    {
-	      [NSException raise: NSInternalInconsistencyException
-		format: @"Failed to set non block flag for perform in thread"];
-	    }
-	}
-      else
-	{
-	  [NSException raise: NSInternalInconsistencyException
-	    format: @"Failed to get non block flag for perform in thread"];
-	}
+        int	e;
+        
+        inputFd = fd[0];
+        outputFd = fd[1];
+        
+        long flags = fcntl(inputFd, F_GETFL);
+        fcntl(inputFd, F_SETFL, flags | O_NONBLOCK);
+        /*
+        if ((e = fcntl(inputFd, F_GETFL, 0)) >= 0)
+        {
+            e |= NBLK_OPT;
+            if (fcntl(inputFd, F_SETFL, e) < 0)
+            {
+                [NSException raise: NSInternalInconsistencyException
+                            format: @"Failed to set non block flag for perform in thread"];
+            }
+        }
+        else
+        {
+            [NSException raise: NSInternalInconsistencyException
+                        format: @"Failed to get non block flag for perform in thread"];
+        }
+        if ((e = fcntl(outputFd, F_GETFL, 0)) >= 0)
+        {
+            e |= NBLK_OPT;
+            if (fcntl(outputFd, F_SETFL, e) < 0)
+            {
+                [NSException raise: NSInternalInconsistencyException
+                            format: @"Failed to set non block flag for perform in thread"];
+            }
+        }
+        else
+        {
+            [NSException raise: NSInternalInconsistencyException
+                        format: @"Failed to get non block flag for perform in thread"];
+        }*/
     }
-  else
+    else
     {
-      DESTROY(self);
-      [NSException raise: NSInternalInconsistencyException
-        format: @"Failed to create pipe to handle perform in thread"];
+        DESTROY(self);
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"Failed to create pipe to handle perform in thread"];
     }
 #endif
-  lock = [NSLock new];
-  performers = [NSMutableArray new];
-  return self;
+    lock = [NSLock new];
+    performers = [NSMutableArray new];
+    return self;
 }
 
 - (void) invalidate
@@ -1351,8 +1358,8 @@ GSRunLoopInfoForThread(NSThread *aThread)
     {
         return;
     }
-    DLog(@"t: %@", t);
     t = GSCurrentThread();
+    DLog(@"t: %@", t);
     if (aThread == nil)
     {
         DLog(@"aThread == nil");
@@ -1405,7 +1412,9 @@ GSRunLoopInfoForThread(NSThread *aThread)
         DLog(@"info: %@", info);
         if (l != nil)
         {
+            DLog();
             [l lockWhenCondition: 1];
+            DLog();
             [l unlock];
             RELEASE(l);
             if ([h isInvalidated] == YES)
