@@ -824,6 +824,8 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     //DLog();
     SInt32 ret;
+    CFRunLoopRef rl = CFRunLoopGetMain();
+    DLog(@"rl: %@", rl);
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
         //DLog();

@@ -31,7 +31,7 @@ static CFMutableSetRef _removeLayers = nil;
 
 static CATransactionGroup *_CATransactionGetCurrentTransaction()
 {
-    DLog(@"_CATransactionGetCurrentTransaction");
+    //DLog();
     _CATransactionCreateImplicitTransactionIfNeeded();
     return CFArrayGetValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
 }
