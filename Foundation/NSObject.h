@@ -54,14 +54,6 @@
 extern "C" {
 #endif
 
-#ifdef DEBUG
-#   define DLog(fmt, ...) NSLog((@"%s%d " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
-#else
-#   define DLog(...)
-#endif
-
-#define ALog(fmt, ...) NSLog((@"%s%d " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
-
 @class NSArchiver;
 @class NSArray;
 @class NSCoder;
