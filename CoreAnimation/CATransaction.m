@@ -244,7 +244,7 @@ void _CATransactionAddToRemoveLayers(CALayer *layer)
 
 void _CATransactionCreateImplicitTransactionIfNeeded()
 {
-    DLog();
+    //DLog();
     if (CFArrayGetCount(_transactions)==0) {
         //DLog();
         CATransactionGroup *group = [[CATransactionGroup alloc] init];
