@@ -821,11 +821,12 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //DLog();
     //[_application->_blackScreen addGestureRecognizer:tapGesture];
     //DLog();
+    CFRunLoopRef rl = CFRunLoopGetMain();
+    DLog(@"rl: %@", rl);
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     //DLog();
     SInt32 ret;
-    CFRunLoopRef rl = CFRunLoopGetMain();
-    DLog(@"rl: %@", rl);
+
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
         //DLog();
