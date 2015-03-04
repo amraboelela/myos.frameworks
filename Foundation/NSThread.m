@@ -999,7 +999,7 @@ static void *nsthreadLauncher(void* thread)
 - (void) addPerformer: (id)performer
 {
     BOOL  signalled = NO;
-    DLog(@"performer: %@", performer);
+    //DLog(@"performer: %@", performer);
     [lock lock];
 #if defined(__MINGW__)
     if (INVALID_HANDLE_VALUE != event)
@@ -1014,7 +1014,7 @@ static void *nsthreadLauncher(void* thread)
         }
     }
 #else
-    DLog(@"outputFd: %d", outputFd);
+    //DLog(@"outputFd: %d", outputFd);
     /* The write could concievably fail if the pipe is full.
      * In that case we need to release the lock teporarily to allow the other
      * thread to consume data from the pipe.  It's possible that the thread
@@ -1024,18 +1024,18 @@ static void *nsthreadLauncher(void* thread)
     while (outputFd >= 0
            && NO == (signalled = (write(outputFd, "0", 1) == 1) ? YES : NO))
     {
-        DLog();
+        //DLog();
         [lock unlock];
-        DLog();
+        //DLog();
         [lock lock];
     }
 #endif
-    DLog();
+    //DLog();
     if (YES == signalled)
     {
         [performers addObject: performer];
     }
-    DLog();
+    //DLog();
     [lock unlock];
     if (NO == signalled)
     {
@@ -1361,16 +1361,16 @@ GSRunLoopInfoForThread(NSThread *aThread)
 {
     GSRunLoopThreadInfo   *info;
     NSThread	        *t;
-    DLog(@"aThread: %@", aThread);
+    //DLog(@"aThread: %@", aThread);
     if ([anArray count] == 0)
     {
         return;
     }
     t = GSCurrentThread();
-    DLog(@"t: %@", t);
+    //DLog(@"t: %@", t);
     if (aThread == nil)
     {
-        DLog(@"aThread == nil");
+        //DLog(@"aThread == nil");
         aThread = t;
     }
     info = GSRunLoopInfoForThread(aThread);
@@ -1397,7 +1397,7 @@ GSRunLoopInfoForThread(NSThread *aThread)
     }
     else
     {
-        DLog();
+        //DLog();
         GSPerformHolder   *h;
         NSConditionLock	*l = nil;
         
@@ -1417,12 +1417,12 @@ GSRunLoopInfoForThread(NSThread *aThread)
                                       modes: anArray
                                        lock: l];
         [info addPerformer: h];
-        DLog(@"info: %@", info);
+        //DLog(@"info: %@", info);
         if (l != nil)
         {
-            DLog();
+            //DLog();
             [l lockWhenCondition: 1];
-            DLog();
+            //DLog();
             [l unlock];
             RELEASE(l);
             if ([h isInvalidated] == YES)
