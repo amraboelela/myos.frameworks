@@ -1014,6 +1014,7 @@ static void *nsthreadLauncher(void* thread)
         }
     }
 #else
+    DLog(@"outputFd: %d", outputFd);
     /* The write could concievably fail if the pipe is full.
      * In that case we need to release the lock teporarily to allow the other
      * thread to consume data from the pipe.  It's possible that the thread
@@ -1029,6 +1030,7 @@ static void *nsthreadLauncher(void* thread)
         [lock lock];
     }
 #endif
+    DLog();
     if (YES == signalled)
     {
         [performers addObject: performer];
@@ -1070,6 +1072,8 @@ static void *nsthreadLauncher(void* thread)
         
         inputFd = fd[0];
         outputFd = fd[1];
+        DLog(@"inputFd: %d", inputFd);
+        DLog(@"outputFd: %d", outputFd);
         
         long flags = fcntl(inputFd, F_GETFL);
         fcntl(inputFd, F_SETFL, flags | O_NONBLOCK);
