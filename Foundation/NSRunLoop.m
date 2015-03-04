@@ -1167,98 +1167,98 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     //DLog();
     [self _checkPerformers: context];
     
-    NS_DURING
+    //NS_DURING
+    //{
+    /*
+     * If we have a housekeeping timer, and it is earlier than the
+     * limit date we have been given, we use the date of the housekeeper
+     * to determine when to stop.
+     */
+    if (limit_date != nil && context != nil && context->housekeeper != nil
+        && [timerDate(context->housekeeper) timeIntervalSinceReferenceDate]
+        < [limit_date timeIntervalSinceReferenceDate])
     {
-        /*
-         * If we have a housekeeping timer, and it is earlier than the
-         * limit date we have been given, we use the date of the housekeeper
-         * to determine when to stop.
+        limit_date = timerDate(context->housekeeper);
+    }
+    
+    if (context == nil
+        || (GSIArrayCount(context->watchers) == 0
+            && GSIArrayCount(context->timers) == 0))
+    {
+        NSDebugMLLog(@"NSRunLoop", @"no inputs or timers in mode %@", mode);
+        GSPrivateNotifyASAP(_currentMode);
+        GSPrivateNotifyIdle(_currentMode);
+        /* Pause until the limit date or until we might have
+         * a method to perform in this thread.
          */
-        if (limit_date != nil && context != nil && context->housekeeper != nil
-            && [timerDate(context->housekeeper) timeIntervalSinceReferenceDate]
-            < [limit_date timeIntervalSinceReferenceDate])
+        [GSRunLoopCtxt awakenedBefore: nil];
+        GSPrivateCheckTasks();
+        if (context != nil)
         {
-            limit_date = timerDate(context->housekeeper);
+            [self _checkPerformers: context];
         }
-        
-        if (context == nil
-            || (GSIArrayCount(context->watchers) == 0
-                && GSIArrayCount(context->timers) == 0))
+        GSPrivateNotifyASAP(_currentMode);
+        _currentMode = savedMode;
+        [arp drain];
+        NS_VOIDRETURN;
+    }
+    
+    /* Find out how much time we should wait, and set SELECT_TIMEOUT. */
+    if (limit_date == nil
+        || (ti = [limit_date timeIntervalSinceNow]) <= 0.0)
+    {
+        /* Don't wait at all. */
+        timeout_ms = 0;
+    }
+    else
+    {
+        /* Wait until the LIMIT_DATE. */
+        if (ti >= INT_MAX / 1000)
         {
-            NSDebugMLLog(@"NSRunLoop", @"no inputs or timers in mode %@", mode);
-            GSPrivateNotifyASAP(_currentMode);
-            GSPrivateNotifyIdle(_currentMode);
-            /* Pause until the limit date or until we might have
-             * a method to perform in this thread.
-             */
-            [GSRunLoopCtxt awakenedBefore: nil];
-            GSPrivateCheckTasks();
-            if (context != nil)
-            {
-                [self _checkPerformers: context];
-            }
-            GSPrivateNotifyASAP(_currentMode);
-            _currentMode = savedMode;
-            [arp drain];
-            NS_VOIDRETURN;
-        }
-        
-        /* Find out how much time we should wait, and set SELECT_TIMEOUT. */
-        if (limit_date == nil
-            || (ti = [limit_date timeIntervalSinceNow]) <= 0.0)
-        {
-            /* Don't wait at all. */
-            timeout_ms = 0;
+            timeout_ms = INT_MAX;	// Far future.
         }
         else
         {
-            /* Wait until the LIMIT_DATE. */
-            if (ti >= INT_MAX / 1000)
-            {
-                timeout_ms = INT_MAX;	// Far future.
-            }
-            else
-            {
-                timeout_ms = (ti * 1000.0);
-            }
+            timeout_ms = (ti * 1000.0);
         }
-        
-        NSDebugMLLog(@"NSRunLoop",
-                     @"accept I/P before %d millisec from now in %@",
-                     timeout_ms, mode);
-        
-        if ([_contextStack indexOfObjectIdenticalTo: context] == NSNotFound)
-        {
-            [_contextStack addObject: context];
-        }
-        if ([context pollUntil: timeout_ms within: _contextStack] == NO)
-        {
-            GSPrivateNotifyIdle(_currentMode);
-        }
-        [self _checkPerformers: context];
-        GSPrivateNotifyASAP(_currentMode);
-        _currentMode = savedMode;
-        
-        /* Once a poll has been completed on a context, we can remove that
-         * context from the stack even if it actually polling at an outer
-         * level of re-entrancy ... since the poll we have just done will
-         * have handled any events that the outer levels would have wanted
-         * to handle, and the polling for this context will be marked as ended.
-         */
-        [context endPoll];
-        [_contextStack removeObjectIdenticalTo: context];
-        NSDebugMLLog(@"NSRunLoop", @"accept I/P completed in %@", mode);
     }
-    NS_HANDLER
+    
+    NSDebugMLLog(@"NSRunLoop",
+                 @"accept I/P before %d millisec from now in %@",
+                 timeout_ms, mode);
+    
+    if ([_contextStack indexOfObjectIdenticalTo: context] == NSNotFound)
     {
-        _currentMode = savedMode;
-        [context endPoll];
-        [_contextStack removeObjectIdenticalTo: context];
-        [localException raise];
+        [_contextStack addObject: context];
     }
-    NS_ENDHANDLER
-    //DLog();
-    [arp drain];
+    if ([context pollUntil: timeout_ms within: _contextStack] == NO)
+    {
+        GSPrivateNotifyIdle(_currentMode);
+    }
+    [self _checkPerformers: context];
+    GSPrivateNotifyASAP(_currentMode);
+    _currentMode = savedMode;
+    
+    /* Once a poll has been completed on a context, we can remove that
+     * context from the stack even if it actually polling at an outer
+     * level of re-entrancy ... since the poll we have just done will
+     * have handled any events that the outer levels would have wanted
+     * to handle, and the polling for this context will be marked as ended.
+     */
+    [context endPoll];
+    [_contextStack removeObjectIdenticalTo: context];
+    NSDebugMLLog(@"NSRunLoop", @"accept I/P completed in %@", mode);
+    /*}
+     NS_HANDLER
+     {
+     _currentMode = savedMode;
+     [context endPoll];
+     [_contextStack removeObjectIdenticalTo: context];
+     [localException raise];
+     }
+     NS_ENDHANDLER
+     //DLog();*/
+     [arp drain];
 }
 
 - (BOOL) runMode: (NSString*)mode beforeDate: (NSDate*)date
