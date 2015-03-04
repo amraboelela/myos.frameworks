@@ -473,7 +473,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
     CFTimeInterval progressTime = _CAAnimationGetProgressTime(animation, time);
     id result = nil;
     float progress = _CAAnimationGetProgress(animation, progressTime);
-    DLog(@"progress: %0.1f", progress);
+    //DLog(@"progress: %0.1f", progress);
     if ([theAnimation isKindOfClass:[CABasicAnimation class]]) {
         id localValue = [layer valueForKeyPath:animation->keyPath];
         //DLog(@"localValue: %@", localValue);
@@ -494,7 +494,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         if (result) {
             [layer setValue:result forKeyPath:animation->keyPath];
         }
-        DLog(@"animation: %@", animation);
+        //DLog(@"animation: %@", animation);
         if ([animation->keyPath isEqualToString:@"contents"]) {
             //DLog(@"[animation->keyPath isEqualToString:contents]");
             layer->_contentsTransitionProgress = progress;

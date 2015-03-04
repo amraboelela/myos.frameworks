@@ -1072,8 +1072,8 @@ static void *nsthreadLauncher(void* thread)
         
         inputFd = fd[0];
         outputFd = fd[1];
-        DLog(@"inputFd: %d", inputFd);
-        DLog(@"outputFd: %d", outputFd);
+        //DLog(@"inputFd: %d", inputFd);
+        //DLog(@"outputFd: %d", outputFd);
         
         long flags = fcntl(inputFd, F_GETFL);
         fcntl(inputFd, F_SETFL, flags | O_NONBLOCK);
@@ -1166,7 +1166,7 @@ static void *nsthreadLauncher(void* thread)
 #else
     if (inputFd >= 0)
     {
-        DLog(@"inputFd: %d", inputFd);
+        //DLog(@"inputFd: %d", inputFd);
         char	buf[BUFSIZ];
         
         /* We don't care how much we read.  If there have been multiple

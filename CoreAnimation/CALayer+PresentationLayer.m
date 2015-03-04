@@ -100,7 +100,7 @@ void _CALayerApplyAnimations(CALayer *layer)
         CFTimeInterval time = [layer convertTime:CACurrentMediaTime() fromLayer:nil];
         //DLog(@"layer->_animations: %@", layer->_animations);
         CFArrayRef keys = [layer animationKeys];
-        DLog(@"keys: %@", keys);
+        //DLog(@"keys: %@", keys);
         for (NSString *key in keys) {
             // Adjust animation begin time
             //DLog(@"key: %@", key);
