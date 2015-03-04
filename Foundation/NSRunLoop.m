@@ -332,21 +332,16 @@ static inline BOOL timerInvalidated(NSTimer *t)
 	      withObject: (id)argument
 	      afterDelay: (NSTimeInterval)seconds
 {
-    DLog();
-    NSRunLoop		*loop = [NSRunLoop currentRunLoop];
-    DLog(@"loop: %@", loop);
-    GSTimedPerformer	*item;
-    DLog();
-    item = [[GSTimedPerformer alloc] initWithSelector: aSelector
-                                               target: self
-                                             argument: argument
-                                                delay: seconds];
-    DLog();
-    [[loop _timedPerformers] addObject: item];
-    DLog();
-    RELEASE(item);
-    [loop addTimer: item->timer forMode: NSDefaultRunLoopMode];
-    DLog();
+  NSRunLoop		*loop = [NSRunLoop currentRunLoop];
+  GSTimedPerformer	*item;
+
+  item = [[GSTimedPerformer alloc] initWithSelector: aSelector
+					     target: self
+					   argument: argument
+					      delay: seconds];
+  [[loop _timedPerformers] addObject: item];
+  RELEASE(item);
+  [loop addTimer: item->timer forMode: NSDefaultRunLoopMode];
 }
 
 - (void) performSelector: (SEL)aSelector
