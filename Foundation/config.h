@@ -294,6 +294,9 @@
 /* Define to 1 if you have the `getpwuid_r' function. */
 #define HAVE_GETPWUID_R 1
 
+/* Define if you have gettid() */
+#define HAVE_GETTID 1
+
 /* Define if you have this function */
 /* #undef HAVE_GICONV */
 
@@ -455,6 +458,9 @@
 
 /* Define to 1 if you have the <pthread.h> header file. */
 #define HAVE_PTHREAD_H 1
+
+/* Define to 1 if you have the `pthread_set_name_np' function. */
+/* #undef HAVE_PTHREAD_SET_NAME_NP */
 
 /* Define this if you work on sysv */
 #define HAVE_PTS_STREAM_MODULES 0
@@ -776,7 +782,7 @@
 /* Define as the link to exe of process in /proc filesystem. */
 #define PROCFS_EXE_LINK "/proc/self/exe"
 
-/* Description: Define set name function for pthread */
+/* Description: Define setname function for pthread with three args */
 #define PTHREAD_SETNAME(a) pthread_setname_np(pthread_self(),a)
 
 /* Define to 1 if the `setpgrp' function takes no argument. */
