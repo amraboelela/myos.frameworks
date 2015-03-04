@@ -831,8 +831,9 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
         //[[NSRunLoop currentRunLoop] runUntilDate:limit];
         //[limit release];
         ret = CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.0, true);
-        PASS_CF(ret == kCFRunLoopRunHandledSource, "Run loop handled sources.  Exit"
-                " code '%d'.", ret);
+        DLog(@"ret: %d", ret);
+        //PASS_CF(ret == kCFRunLoopRunHandledSource, "Run loop handled sources.  Exit"
+        //        " code '%d'.", ret);
         if (IOEventGetNextEvent(window, _application->_currentEvent)) {
             //DLog();
             _UIApplicationSetCurrentEventTouchedView();
