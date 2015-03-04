@@ -1156,7 +1156,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     int			timeout_ms;
     NSString		*savedMode = _currentMode;
     NSAutoreleasePool	*arp = [NSAutoreleasePool new];
-    //DLog(@"limit_date: %@", limit_date);
+    DLog(@"limit_date: %@", limit_date);
     NSAssert(mode, NSInvalidArgumentException);
     if (mode == nil)
     {
@@ -1164,7 +1164,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     }
     _currentMode = mode;
     context = NSMapGet(_contextMap, mode);
-    //DLog();
+    DLog();
     [self _checkPerformers: context];
     
     //NS_DURING
@@ -1180,7 +1180,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     {
         limit_date = timerDate(context->housekeeper);
     }
-    
+    DLog();
     if (context == nil
         || (GSIArrayCount(context->watchers) == 0
             && GSIArrayCount(context->timers) == 0))
@@ -1202,7 +1202,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         //[arp drain];
         //NS_VOIDRETURN;
     }
-    
+    DLog();
     /* Find out how much time we should wait, and set SELECT_TIMEOUT. */
     if (limit_date == nil
         || (ti = [limit_date timeIntervalSinceNow]) <= 0.0)
@@ -1222,7 +1222,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             timeout_ms = (ti * 1000.0);
         }
     }
-    
+    DLog();
     NSDebugMLLog(@"NSRunLoop",
                  @"accept I/P before %d millisec from now in %@",
                  timeout_ms, mode);
@@ -1231,6 +1231,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     {
         [_contextStack addObject: context];
     }
+    DLog();
     if ([context pollUntil: timeout_ms within: _contextStack] == NO)
     {
         GSPrivateNotifyIdle(_currentMode);
@@ -1238,7 +1239,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     [self _checkPerformers: context];
     GSPrivateNotifyASAP(_currentMode);
     _currentMode = savedMode;
-    
+    DLog();
     /* Once a poll has been completed on a context, we can remove that
      * context from the stack even if it actually polling at an outer
      * level of re-entrancy ... since the poll we have just done will
@@ -1248,6 +1249,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     [context endPoll];
     [_contextStack removeObjectIdenticalTo: context];
     NSDebugMLLog(@"NSRunLoop", @"accept I/P completed in %@", mode);
+    DLog(@"accept I/P completed in %@", mode);
     /*}
      NS_HANDLER
      {
@@ -1256,9 +1258,9 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
      [_contextStack removeObjectIdenticalTo: context];
      [localException raise];
      }
-     NS_ENDHANDLER
-     //DLog();*/
-     //[arp drain];
+     NS_ENDHANDLER*/
+     DLog();
+     [arp drain];
 }
 
 - (BOOL) runMode: (NSString*)mode beforeDate: (NSDate*)date
