@@ -325,11 +325,11 @@ static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
     }
     pollfds_count = 0;
     ((pollextra*)extra)->limit = 0;
-    DLog(@"threadInfo->inputFd: %d", threadInfo->inputFd);
+    //DLog(@"threadInfo->inputFd: %d", threadInfo->inputFd);
     /* Watch for signals from other threads.
      */
     setPollfd(threadInfo->inputFd, POLLIN, self);
-    DLog(@"POLLIN: %d", POLLIN);
+    //DLog(@"POLLIN: %d", POLLIN);
     while (i-- > 0)
     {
         GSRunLoopWatcher	*info;

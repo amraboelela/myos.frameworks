@@ -1305,13 +1305,13 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         d = [d earlierDate: date];
     }
     [d retain];
-    DLog();
+    //DLog();
     /* Wait, listening to our input sources. */
     [self acceptInputForMode: mode beforeDate: d];
     
     [d release];
     [arp drain];
-    DLog();
+    //DLog();
     return YES;
 }
 
