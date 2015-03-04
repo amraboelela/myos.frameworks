@@ -1199,8 +1199,8 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         }
         GSPrivateNotifyASAP(_currentMode);
         _currentMode = savedMode;
-        [arp drain];
-        NS_VOIDRETURN;
+        //[arp drain];
+        //NS_VOIDRETURN;
     }
     
     /* Find out how much time we should wait, and set SELECT_TIMEOUT. */
@@ -1258,7 +1258,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
      }
      NS_ENDHANDLER
      //DLog();*/
-     [arp drain];
+     //[arp drain];
 }
 
 - (BOOL) runMode: (NSString*)mode beforeDate: (NSDate*)date
