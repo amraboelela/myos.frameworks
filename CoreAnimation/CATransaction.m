@@ -38,7 +38,7 @@ static CATransactionGroup *_CATransactionGetCurrentTransaction()
 
 static void _CATransactionLayoutLayers(CALayer *layer)
 {
-    DLog();
+    //DLog();
     [layer layoutIfNeeded];
     for (CALayer *sublayer in layer->_sublayers) {
         _CATransactionLayoutLayers(sublayer);
@@ -47,7 +47,7 @@ static void _CATransactionLayoutLayers(CALayer *layer)
 
 static void _CATransactionCopyTree(CALayer *layer)
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (layer->_needsComposite) {
         CALayer *presentationLayer = layer->_presentationLayer;
         CARenderLayer *renderLayer = (CARenderLayer *)presentationLayer->_renderLayer;
@@ -70,7 +70,7 @@ static void _CATransactionCopyTree(CALayer *layer)
 
 static void _CATransactionUnloadIfNeeded(CALayer *layer)
 {
-    DLog(@"layer: %@", layer);
+    //DLog(@"layer: %@", layer);
     if (layer->_needsUnload) {
         layer->_needsUnload = NO;
         CALayer *presentationLayer = layer->_presentationLayer;
@@ -84,7 +84,7 @@ static void _CATransactionUnloadIfNeeded(CALayer *layer)
 
 static void _CATransactionRemoveLayers()
 {
-    DLog();
+    //DLog();
     for (CALayer *layer in _removeLayers) {
         //DLog(@"layer: %@", layer);
         CALayer *presentationLayer = layer->_presentationLayer;
@@ -169,7 +169,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)_commitTransaction
 {
-    DLog();
+    //DLog();
     if (![_CAAnimatorConditionLock tryLock]) {
         DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
         // Instead of blocking the run loop or the animation thread, we will try to commit later
@@ -202,7 +202,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)commit
 {
-    DLog(@"");
+    //DLog(@"");
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
     _CATransactionCreateImplicitTransactionIfNeeded();
 }
@@ -225,7 +225,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 void _CATransactionInitialize()
 {
-    DLog();
+    //DLog();
     _transactions = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
     _removeLayers = CFSetCreateMutable(kCFAllocatorDefault, 10, &kCFTypeSetCallBacks);
     _CAAnimationInitialize();
