@@ -1276,7 +1276,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
      */
     GSPrivateCheckTasks();
     GSPrivateNotifyASAP(mode);
-    //DLog(@"date: %@", date);
+    DLog(@"date: %@", date);
     /* And process any performers scheduled in the loop (eg something from
      * another thread.
      */
@@ -1290,9 +1290,11 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     d = [self limitDateForMode: mode];
     if (d == nil)
     {
+        [self acceptInputForMode:mode beforeDate:date];
         [arp drain];
         return NO;
     }
+    DLog();
     //DLog();
     /* Use the earlier of the two dates we have.
      * Retain the date in case the firing of a timer (or some other event)
@@ -1303,12 +1305,13 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         d = [d earlierDate: date];
     }
     [d retain];
-    //DLog();
+    DLog();
     /* Wait, listening to our input sources. */
     [self acceptInputForMode: mode beforeDate: d];
     
     [d release];
     [arp drain];
+    DLog();
     return YES;
 }
 
