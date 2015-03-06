@@ -19,6 +19,7 @@
 #import <Foundation/NSSet.h>
 #import <Foundation/NSArray.h>
 #import <Foundation/NSEnumerator.h>
+#import <GNUstepBase/NSDebug+GNUstepBase.h>
 #import <CoreFoundation/NSCFType.h>
 #import <CoreFoundation/CFSet.h>
 #import <CoreFoundation/CFArray.h>
