@@ -89,7 +89,7 @@ void _CALayerCopyAnimations(CALayer *layer)
                 //DLog(@"[theAnimation isKindOfClass:[CAKeyframeAnimation class]]");
             }
         }
-        DLog(@"_animations: %@", layer->_animations);
+        //DLog(@"_animations: %@", layer->_animations);
     }
 }
 

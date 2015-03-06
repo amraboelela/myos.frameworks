@@ -57,7 +57,13 @@ GSThreadID()
 #if defined(__MINGW__)
   return (unsigned long)GetCurrentThreadId();
 #elif defined(HAVE_GETTID)
-  return (unsigned long)syscall(SYS_gettid);
+
+#ifdef ANDROID
+    return gettid();
+#else
+    return (unsigned long)syscall(SYS_gettid);
+#endif
+
 #else
   return (unsigned long)GSCurrentThread();
 #endif
