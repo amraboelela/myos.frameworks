@@ -40,7 +40,7 @@ static CFTimeInterval _CAAnimationGetProgressTime(CABasicAnimation *animation, C
 {
     CFTimeInterval localTime = (time - animation->_beginTime) * animation->_speed + animation->_timeOffset;
     CFTimeInterval activeTime = localTime - animation->_startTime;
-    DLog(@"activeTime: %0.2f", activeTime);
+    //DLog(@"activeTime: %0.2f", activeTime);
     if (activeTime < 0) {
         return activeTime;
     }
@@ -473,14 +473,14 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
     CFTimeInterval progressTime = _CAAnimationGetProgressTime(animation, time);
     id result = nil;
     float progress = _CAAnimationGetProgress(animation, progressTime);
-    //DLog(@"progress: %0.1f", progress);
+    DLog(@"progress: %0.1f", progress);
     if ([theAnimation isKindOfClass:[CABasicAnimation class]]) {
         id localValue = [layer valueForKeyPath:animation->keyPath];
-        //DLog(@"localValue: %@", localValue);
+        DLog(@"localValue: %@", localValue);
         if ([localValue isKindOfClass:[NSNumber class]]) {
             result = _CAAnimationFloatProgressValue(animation, progress);
         } else if ([localValue isKindOfClass:[NSValue class]]) {
-            //DLog(@"@encode(CGPoint): %s", @encode(CGPoint));
+            DLog(@"@encode(CGPoint): %s", @encode(CGPoint));
             if (strcmp([localValue objCType], @encode(CGPoint)) == 0) {
                 result = _CAAnimationPointProgressValue(animation, progress);
             } else if (strcmp([localValue objCType], @encode(CGRect)) == 0) {
@@ -494,7 +494,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         if (result) {
             [layer setValue:result forKeyPath:animation->keyPath];
         }
-        //DLog(@"animation: %@", animation);
+        DLog(@"animation: %@", animation);
         if ([animation->keyPath isEqualToString:@"contents"]) {
             //DLog(@"[animation->keyPath isEqualToString:contents]");
             layer->_contentsTransitionProgress = progress;
@@ -513,7 +513,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         }
     }
     if (animation->_remove) {
-        //DLog(@"remove animation: %@", animation);
+        DLog(@"remove animation: %@", animation);
         //[animation performSelector:@selector(removeFromLayer:) withObject:layer];// waitUntilDone:YES];
         //[animation performSelectorOnMainThread:@selector(removeFromLayer:) withObject:layer waitUntilDone:YES];
         [animation removeFromLayer:layer];
