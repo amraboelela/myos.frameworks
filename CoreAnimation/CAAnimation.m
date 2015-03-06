@@ -481,6 +481,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
             result = _CAAnimationFloatProgressValue(animation, progress);
         } else if ([localValue isKindOfClass:[NSValue class]]) {
             DLog(@"@encode(CGPoint): %s", @encode(CGPoint));
+            DLog(@"[localValue objCType]: %s", [localValue objCType]);
             if (strcmp([localValue objCType], @encode(CGPoint)) == 0) {
                 result = _CAAnimationPointProgressValue(animation, progress);
             } else if (strcmp([localValue objCType], @encode(CGRect)) == 0) {
@@ -495,6 +496,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
             [layer setValue:result forKeyPath:animation->keyPath];
         }
         DLog(@"animation: %@", animation);
+        DLog(@"result: %@", result);
         if ([animation->keyPath isEqualToString:@"contents"]) {
             //DLog(@"[animation->keyPath isEqualToString:contents]");
             layer->_contentsTransitionProgress = progress;
