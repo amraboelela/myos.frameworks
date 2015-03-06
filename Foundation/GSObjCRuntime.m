@@ -53,6 +53,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#import <UIKit/UIGeometry.h>
 
 #ifndef NeXT_RUNTIME
 #include <pthread.h>
