@@ -40,7 +40,7 @@ static CFTimeInterval _CAAnimationGetProgressTime(CABasicAnimation *animation, C
 {
     CFTimeInterval localTime = (time - animation->_beginTime) * animation->_speed + animation->_timeOffset;
     CFTimeInterval activeTime = localTime - animation->_startTime;
-    //DLog(@"activeTime: %0.2f", activeTime);
+    DLog(@"activeTime: %0.2f", activeTime);
     if (activeTime < 0) {
         return activeTime;
     }
@@ -97,7 +97,7 @@ static float _CAAnimationGetProgress(CABasicAnimation *animation, CFTimeInterval
 
 static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float progress)
 {
-    //DLog(@"animation: %@", animation);
+    DLog(@"animation: %@", animation);
     float fromValue = [animation->fromValue floatValue];
     float toValue = [animation->toValue floatValue];
     float result = fromValue + (toValue - fromValue) * progress;
@@ -107,10 +107,10 @@ static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float prog
 
 static id _CAAnimationPointProgressValue(CABasicAnimation *animation, float progress)
 {
-    //DLog();
+    DLog();
     CGPoint fromPoint = [animation->fromValue CGPointValue];
     CGPoint toPoint = [animation->toValue CGPointValue];
-    //DLog(@"toPoint: %@", NSStringFromPoint(NSPointFromCGPoint(toPoint)));
+    DLog(@"toPoint: %@", NSStringFromPoint(NSPointFromCGPoint(toPoint)));
 
     float resultX = fromPoint.x + (toPoint.x - fromPoint.x) * progress;
     float resultY = fromPoint.y + (toPoint.y - fromPoint.y) * progress;
@@ -122,7 +122,7 @@ static id _CAAnimationPointProgressValue(CABasicAnimation *animation, float prog
 
 static id _CAAnimationRectProgressValue(CABasicAnimation *animation, float progress)
 {
-    //DLog();
+    DLog();
     CGRect fromRect = [animation->fromValue CGRectValue];
     CGRect toRect = [animation->toValue CGRectValue];
     float resultX = fromRect.origin.x + (toRect.origin.x - fromRect.origin.x) * progress;
@@ -136,7 +136,7 @@ static id _CAAnimationRectProgressValue(CABasicAnimation *animation, float progr
 
 static id _CAAnimationTransformProgressValue(CABasicAnimation *animation, float progress)
 {
-    //DLog();
+    DLog();
     CATransform3D fromTransform = [animation->fromValue CATransform3DValue];
     CATransform3D toTransform = [animation->toValue CATransform3DValue];
     CGFloat m11 = fromTransform.m11 + (toTransform.m11 - fromTransform.m11) * progress;
