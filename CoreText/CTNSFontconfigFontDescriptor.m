@@ -740,9 +740,9 @@
 
 static NSDictionary *ReadSelectors;
 
-- (NSValue*)selValue: (SEL)selector
+- (NSValue *)selValue:(SEL)selector
 {
-  return [NSValue valueWithBytes: &selector objCType: @encode(SEL)];
+  return [NSValue valueWithBytes:&selector objCType:@encode(SEL)];
 }
 
 - (id) objectFromPlatformFontPatternForKey: (NSString *)attribute

@@ -152,88 +152,80 @@ SetValueForKey(NSObject *self, id anObject, const char *key, unsigned size)
 
 static id ValueForKey(NSObject *self, const char *key, unsigned size)
 {
-  SEL		sel = 0;
-  int		off = 0;
-  const char	*type = NULL;
-
-  if (size > 0)
-    {
-      const char	*name;
-      char		buf[size + 5];
-      char		lo;
-      char		hi;
-
-      strncpy(buf, "_get", 4);
-      strncpy(&buf[4], key, size);
-      buf[size + 4] = '\0';
-      lo = buf[4];
-      hi = islower(lo) ? toupper(lo) : lo;
-      buf[4] = hi;
-
-      name = &buf[1];	// getKey
-      sel = sel_getUid(name);
-      if (sel == 0 || [self respondsToSelector: sel] == NO)
-	{
-	  buf[4] = lo;
-	  name = &buf[4];	// key
-	  sel = sel_getUid(name);
-	  if (sel == 0 || [self respondsToSelector: sel] == NO)
-	    {
-              buf[4] = hi;
-              buf[3] = 's';
-              buf[2] = 'i';
-              name = &buf[2];	// isKey
-              sel = sel_getUid(name);
-              if (sel == 0 || [self respondsToSelector: sel] == NO)
-                {
-                  sel = 0;
+    SEL		sel = 0;
+    int		off = 0;
+    const char	*type = NULL;
+    
+    if (size > 0) {
+        const char	*name;
+        char		buf[size + 5];
+        char		lo;
+        char		hi;
+        
+        strncpy(buf, "_get", 4);
+        strncpy(&buf[4], key, size);
+        buf[size + 4] = '\0';
+        lo = buf[4];
+        hi = islower(lo) ? toupper(lo) : lo;
+        buf[4] = hi;
+        
+        name = &buf[1];	// getKey
+        sel = sel_getUid(name);
+        if (sel == 0 || [self respondsToSelector: sel] == NO) {
+            buf[4] = lo;
+            name = &buf[4];	// key
+            sel = sel_getUid(name);
+            if (sel == 0 || [self respondsToSelector: sel] == NO) {
+                buf[4] = hi;
+                buf[3] = 's';
+                buf[2] = 'i';
+                name = &buf[2];	// isKey
+                sel = sel_getUid(name);
+                if (sel == 0 || [self respondsToSelector: sel] == NO) {
+                    sel = 0;
                 }
-	    }
-	}
-
-      if (sel == 0 && [[self class] accessInstanceVariablesDirectly] == YES)
-	{
-	  buf[4] = hi;
-	  name = buf;	// _getKey
-	  sel = sel_getUid(name);
-	  if (sel == 0 || [self respondsToSelector: sel] == NO)
-	    {
-	      buf[4] = lo;
-	      buf[3] = '_';
-	      name = &buf[3];	// _key
-	      sel = sel_getUid(name);
-	      if (sel == 0 || [self respondsToSelector: sel] == NO)
-		{
-		  sel = 0;
-		}
-	    }
-	  if (sel == 0)
-	    {
-	      if (GSObjCFindVariable(self, name, &type, &size, &off) == NO)
-		{
-                  buf[4] = hi;
-                  buf[3] = 's';
-                  buf[2] = 'i';
-                  buf[1] = '_';
-                  name = &buf[1];	// _isKey
-		  if (!GSObjCFindVariable(self, name, &type, &size, &off))
+            }
+        }
+        if (sel == 0 && [[self class] accessInstanceVariablesDirectly] == YES) {
+            buf[4] = hi;
+            name = buf;	// _getKey
+            sel = sel_getUid(name);
+            if (sel == 0 || [self respondsToSelector: sel] == NO)
+            {
+                buf[4] = lo;
+                buf[3] = '_';
+                name = &buf[3];	// _key
+                sel = sel_getUid(name);
+                if (sel == 0 || [self respondsToSelector: sel] == NO)
+                {
+                    sel = 0;
+                }
+            }
+            if (sel == 0) {
+                if (GSObjCFindVariable(self, name, &type, &size, &off) == NO) {
+                    buf[4] = hi;
+                    buf[3] = 's';
+                    buf[2] = 'i';
+                    buf[1] = '_';
+                    name = &buf[1];	// _isKey
+                    if (!GSObjCFindVariable(self, name, &type, &size, &off))
                     {
-                       buf[4] = lo;
-                       name = &buf[4];		// key
-		       if (!GSObjCFindVariable(self, name, &type, &size, &off))
-                         {
+                        buf[4] = lo;
+                        name = &buf[4];		// key
+                        if (!GSObjCFindVariable(self, name, &type, &size, &off))
+                        {
                             buf[4] = hi;
                             buf[3] = 's';
                             buf[2] = 'i';
                             name = &buf[2];	// isKey
                             GSObjCFindVariable(self, name, &type, &size, &off);
-                         }
+                        }
                     }
-		}
-	    }
-	}
+                }
+            }
+        }
     }
-  return GSObjCGetVal(self, key, sel, type, size, off);
+    return GSObjCGetVal(self, key, sel, type, size, off);
 }
 
 
