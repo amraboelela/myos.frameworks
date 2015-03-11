@@ -168,43 +168,43 @@ static NSLock			*placeholderLock;
 /* Returns the concrete class associated with the type encoding */
 + (Class) valueClassWithObjCType: (const char *)type
 {
-  Class	theClass = concreteClass;
-
-  /* Let someone else deal with this error */
-  if (!type)
+    Class	theClass = concreteClass;
+    
+    /* Let someone else deal with this error */
+    if (!type)
+        return theClass;
+    
+    /* Try for an exact type match.
+     */
+    if (strcmp(@encode(id), type) == 0)
+        theClass = nonretainedObjectValueClass;
+    else if (strcmp(@encode(NSPoint), type) == 0)
+        theClass = pointValueClass;
+    else if (strcmp(@encode(void *), type) == 0)
+        theClass = pointerValueClass;
+    else if (strcmp(@encode(NSRange), type) == 0)
+        theClass = rangeValueClass;
+    else if (strcmp(@encode(NSRect), type) == 0)
+        theClass = rectValueClass;
+    else if (strcmp(@encode(NSSize), type) == 0)
+        theClass = sizeValueClass;
+    
+    /* Try for equivalent types match.
+     */
+    /*else if (GSSelectorTypesMatch(@encode(id), type))
+        theClass = nonretainedObjectValueClass;
+    else if (GSSelectorTypesMatch(@encode(NSPoint), type))
+        theClass = pointValueClass;
+    else if (GSSelectorTypesMatch(@encode(void *), type))
+        theClass = pointerValueClass;
+    else if (GSSelectorTypesMatch(@encode(NSRange), type))
+        theClass = rangeValueClass;
+    else if (GSSelectorTypesMatch(@encode(NSRect), type))
+        theClass = rectValueClass;
+    else if (GSSelectorTypesMatch(@encode(NSSize), type))
+        theClass = sizeValueClass;*/
+    DLog(@"theClass: %@", theClass);
     return theClass;
-
-  /* Try for an exact type match.
-   */
-  if (strcmp(@encode(id), type) == 0)
-    theClass = nonretainedObjectValueClass;
-  else if (strcmp(@encode(NSPoint), type) == 0)
-    theClass = pointValueClass;
-  else if (strcmp(@encode(void *), type) == 0)
-    theClass = pointerValueClass;
-  else if (strcmp(@encode(NSRange), type) == 0)
-    theClass = rangeValueClass;
-  else if (strcmp(@encode(NSRect), type) == 0)
-    theClass = rectValueClass;
-  else if (strcmp(@encode(NSSize), type) == 0)
-    theClass = sizeValueClass;
-
-  /* Try for equivalent types match.
-   */
-  else if (GSSelectorTypesMatch(@encode(id), type))
-    theClass = nonretainedObjectValueClass;
-  else if (GSSelectorTypesMatch(@encode(NSPoint), type))
-    theClass = pointValueClass;
-  else if (GSSelectorTypesMatch(@encode(void *), type))
-    theClass = pointerValueClass;
-  else if (GSSelectorTypesMatch(@encode(NSRange), type))
-    theClass = rangeValueClass;
-  else if (GSSelectorTypesMatch(@encode(NSRect), type))
-    theClass = rectValueClass;
-  else if (GSSelectorTypesMatch(@encode(NSSize), type))
-    theClass = sizeValueClass;
-
-  return theClass;
 }
 
 // Allocating and Initializing
@@ -223,12 +223,13 @@ static NSLock			*placeholderLock;
 + (NSValue*) valueWithBytes: (const void *)value
 		   objCType: (const char *)type
 {
-  Class		theClass = [self valueClassWithObjCType: type];
-  NSValue	*theObj;
-
-  theObj = [theClass allocWithZone: NSDefaultMallocZone()];
-  theObj = [theObj initWithBytes: value objCType: type];
-  return AUTORELEASE(theObj);
+    Class		theClass = [self valueClassWithObjCType: type];
+    NSValue	*theObj;
+    
+    theObj = [theClass allocWithZone: NSDefaultMallocZone()];
+    //DLog(@"type: %s", type);
+    theObj = [theObj initWithBytes: value objCType: type];
+    return AUTORELEASE(theObj);
 }
 		
 + (NSValue*) valueWithNonretainedObject: (id)anObject
