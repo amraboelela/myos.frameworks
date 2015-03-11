@@ -80,74 +80,74 @@ static inline void setupCompat()
 static void
 SetValueForKey(NSObject *self, id anObject, const char *key, unsigned size)
 {
-  SEL		sel = 0;
-  const char	*type = 0;
-  int		off = 0;
-
-  if (size > 0)
+    SEL		sel = 0;
+    const char	*type = 0;
+    int		off = 0;
+    
+    if (size > 0)
     {
-      const char	*name;
-      char		buf[size + 6];
-      char		lo;
-      char		hi;
-
-      strncpy(buf, "_set", 4);
-      strncpy(&buf[4], key, size);
-      lo = buf[4];
-      hi = islower(lo) ? toupper(lo) : lo;
-      buf[4] = hi;
-      buf[size + 4] = ':';
-      buf[size + 5] = '\0';
-
-      name = &buf[1];	// setKey:
-      type = NULL;
-      sel = sel_getUid(name);
-      if (sel == 0 || [self respondsToSelector: sel] == NO)
-	{
-	  name = buf;	// _setKey:
-	  sel = sel_getUid(name);
-	  if (sel == 0 || [self respondsToSelector: sel] == NO)
-	    {
-	      sel = 0;
-	      if ([[self class] accessInstanceVariablesDirectly] == YES)
-		{
-		  buf[size + 4] = '\0';
-		  buf[3] = '_';
-		  buf[4] = lo;
-		  name = &buf[3];	// _key
-		  if (GSObjCFindVariable(self, name, &type, &size, &off) == NO)
-		    {
-		      buf[4] = hi;
-		      buf[3] = 's';
-		      buf[2] = 'i';
-		      buf[1] = '_';
-		      name = &buf[1];	// _isKey
-		      if (GSObjCFindVariable(self,
-			name, &type, &size, &off) == NO)
-			{
-			  buf[4] = lo;
-			  name = &buf[4];	// key
-			  if (GSObjCFindVariable(self,
-			    name, &type, &size, &off) == NO)
-			    {
-			      buf[4] = hi;
-			      buf[3] = 's';
-			      buf[2] = 'i';
-			      name = &buf[2];	// isKey
-			      GSObjCFindVariable(self,
-				name, &type, &size, &off);
-			    }
-			}
-		    }
-		}
-	    }
-	  else
-	    {
-	      GSOnceFLog(@"Key-value access using _setKey: is deprecated:");
-	    }
-	}
+        const char	*name;
+        char		buf[size + 6];
+        char		lo;
+        char		hi;
+        
+        strncpy(buf, "_set", 4);
+        strncpy(&buf[4], key, size);
+        lo = buf[4];
+        hi = islower(lo) ? toupper(lo) : lo;
+        buf[4] = hi;
+        buf[size + 4] = ':';
+        buf[size + 5] = '\0';
+        
+        name = &buf[1];	// setKey:
+        type = NULL;
+        sel = sel_getUid(name);
+        if (sel == 0 || [self respondsToSelector: sel] == NO)
+        {
+            name = buf;	// _setKey:
+            sel = sel_getUid(name);
+            if (sel == 0 || [self respondsToSelector: sel] == NO)
+            {
+                sel = 0;
+                if ([[self class] accessInstanceVariablesDirectly] == YES)
+                {
+                    buf[size + 4] = '\0';
+                    buf[3] = '_';
+                    buf[4] = lo;
+                    name = &buf[3];	// _key
+                    if (GSObjCFindVariable(self, name, &type, &size, &off) == NO)
+                    {
+                        buf[4] = hi;
+                        buf[3] = 's';
+                        buf[2] = 'i';
+                        buf[1] = '_';
+                        name = &buf[1];	// _isKey
+                        if (GSObjCFindVariable(self,
+                                               name, &type, &size, &off) == NO)
+                        {
+                            buf[4] = lo;
+                            name = &buf[4];	// key
+                            if (GSObjCFindVariable(self,
+                                                   name, &type, &size, &off) == NO)
+                            {
+                                buf[4] = hi;
+                                buf[3] = 's';
+                                buf[2] = 'i';
+                                name = &buf[2];	// isKey
+                                GSObjCFindVariable(self,
+                                                   name, &type, &size, &off);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                GSOnceFLog(@"Key-value access using _setKey: is deprecated:");
+            }
+        }
     }
-  GSObjCSetVal(self, key, anObject, sel, type, size, off);
+    GSObjCSetVal(self, key, anObject, sel, type, size, off);
 }
 
 static id ValueForKey(NSObject *self, const char *key, unsigned size)

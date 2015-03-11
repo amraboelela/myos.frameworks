@@ -97,7 +97,7 @@ static float _CAAnimationGetProgress(CABasicAnimation *animation, CFTimeInterval
 
 static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float progress)
 {
-    DLog(@"animation: %@", animation);
+    //DLog(@"animation: %@", animation);
     float fromValue = [animation->fromValue floatValue];
     float toValue = [animation->toValue floatValue];
     float result = fromValue + (toValue - fromValue) * progress;
@@ -107,10 +107,10 @@ static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float prog
 
 static id _CAAnimationPointProgressValue(CABasicAnimation *animation, float progress)
 {
-    DLog();
+    //DLog();
     CGPoint fromPoint = [animation->fromValue CGPointValue];
     CGPoint toPoint = [animation->toValue CGPointValue];
-    DLog(@"toPoint: %@", NSStringFromPoint(NSPointFromCGPoint(toPoint)));
+    //DLog(@"toPoint: %@", NSStringFromPoint(NSPointFromCGPoint(toPoint)));
 
     float resultX = fromPoint.x + (toPoint.x - fromPoint.x) * progress;
     float resultY = fromPoint.y + (toPoint.y - fromPoint.y) * progress;
@@ -122,7 +122,7 @@ static id _CAAnimationPointProgressValue(CABasicAnimation *animation, float prog
 
 static id _CAAnimationRectProgressValue(CABasicAnimation *animation, float progress)
 {
-    DLog();
+    //DLog();
     CGRect fromRect = [animation->fromValue CGRectValue];
     CGRect toRect = [animation->toValue CGRectValue];
     float resultX = fromRect.origin.x + (toRect.origin.x - fromRect.origin.x) * progress;
@@ -136,7 +136,7 @@ static id _CAAnimationRectProgressValue(CABasicAnimation *animation, float progr
 
 static id _CAAnimationTransformProgressValue(CABasicAnimation *animation, float progress)
 {
-    DLog();
+    //DLog();
     CATransform3D fromTransform = [animation->fromValue CATransform3DValue];
     CATransform3D toTransform = [animation->toValue CATransform3DValue];
     CGFloat m11 = fromTransform.m11 + (toTransform.m11 - fromTransform.m11) * progress;
@@ -473,15 +473,15 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
     CFTimeInterval progressTime = _CAAnimationGetProgressTime(animation, time);
     id result = nil;
     float progress = _CAAnimationGetProgress(animation, progressTime);
-    DLog(@"progress: %0.1f", progress);
+    //DLog(@"progress: %0.1f", progress);
     if ([theAnimation isKindOfClass:[CABasicAnimation class]]) {
         id localValue = [layer valueForKeyPath:animation->keyPath];
-        DLog(@"localValue: %@", localValue);
+        //DLog(@"localValue: %@", localValue);
         if ([localValue isKindOfClass:[NSNumber class]]) {
             result = _CAAnimationFloatProgressValue(animation, progress);
         } else if ([localValue isKindOfClass:[NSValue class]]) {
-            DLog(@"@encode(CGPoint): %s", @encode(CGPoint));
-            DLog(@"[localValue objCType]: %s", [localValue objCType]);
+            //DLog(@"@encode(CGPoint): %s", @encode(CGPoint));
+            //DLog(@"[localValue objCType]: %s", [localValue objCType]);
             if (strcmp([localValue objCType], @encode(CGPoint)) == 0) {
                 result = _CAAnimationPointProgressValue(animation, progress);
             } else if (strcmp([localValue objCType], @encode(CGRect)) == 0) {
@@ -495,8 +495,8 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         if (result) {
             [layer setValue:result forKeyPath:animation->keyPath];
         }
-        DLog(@"animation: %@", animation);
-        DLog(@"result: %@", result);
+        //DLog(@"animation: %@", animation);
+        //DLog(@"result: %@", result);
         if ([animation->keyPath isEqualToString:@"contents"]) {
             //DLog(@"[animation->keyPath isEqualToString:contents]");
             layer->_contentsTransitionProgress = progress;
@@ -515,7 +515,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         }
     }
     if (animation->_remove) {
-        DLog(@"remove animation: %@", animation);
+        //DLog(@"remove animation: %@", animation);
         //[animation performSelector:@selector(removeFromLayer:) withObject:layer];// waitUntilDone:YES];
         //[animation performSelectorOnMainThread:@selector(removeFromLayer:) withObject:layer waitUntilDone:YES];
         [animation removeFromLayer:layer];
