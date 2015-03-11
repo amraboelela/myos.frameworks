@@ -203,7 +203,7 @@ static NSLock			*placeholderLock;
         theClass = rectValueClass;
     else if (GSSelectorTypesMatch(@encode(NSSize), type))
         theClass = sizeValueClass;*/
-    DLog(@"theClass: %@", theClass);
+    //DLog(@"theClass: %@", theClass);
     return theClass;
 }
 
