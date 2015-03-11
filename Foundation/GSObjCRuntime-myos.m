@@ -1313,7 +1313,7 @@ GSObjCGetVal(NSObject *self, const char *key, SEL sel,
                 
             case _C_STRUCT_B:
                 if (strcmp(@encode(CGPoint), type)==0) {
-                    DLog(@"@encode(CGPoint): %s", @encode(CGPoint));
+                    //DLog(@"@encode(CGPoint): %s", @encode(CGPoint));
                     CGPoint	v;
                     if (sel == 0) {
                         memcpy((char*)&v, ((char *)self + offset), sizeof(v));
@@ -1324,7 +1324,7 @@ GSObjCGetVal(NSObject *self, const char *key, SEL sel,
                     }
                     val = [NSValue valueWithCGPoint:v];
                 } else if (strcmp(@encode(CGRect), type)==0) {
-                    DLog(@"@encode(CGRect): %s", @encode(CGRect));
+                    //DLog(@"@encode(CGRect): %s", @encode(CGRect));
                     CGRect	v;
                     if (sel == 0) {
                         memcpy((char*)&v, ((char *)self + offset), sizeof(v));
@@ -1336,7 +1336,7 @@ GSObjCGetVal(NSObject *self, const char *key, SEL sel,
                     val = [NSValue valueWithCGRect:v];
                 } else if (GSSelectorTypesMatch(@encode(NSPoint), type))
                 {
-                    DLog(@"@encode(NSPoint): %s", @encode(NSPoint));
+                    //DLog(@"@encode(NSPoint): %s", @encode(NSPoint));
                     NSPoint	v;
                     
                     if (sel == 0)
