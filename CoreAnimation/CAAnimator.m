@@ -148,7 +148,7 @@ static void reportFPS(BOOL withCondition)
     //_CAAnimatorFrameCount++;
 #endif
     //currentTime = CACurrentMediaTime();
-    reportFPS(YES);
+    //reportFPS(YES);
     //DLog();
     _CAAnimatorApplyAnimations();
     //DLog(@"_CARendererLoadRenderLayers");
@@ -164,7 +164,7 @@ static void reportFPS(BOOL withCondition)
         [_CAAnimatorConditionLock unlock];
         //DLog();
     } else {
-        //DLog(@"not _treeHasPendingAnimations");
+        DLog(@"not _treeHasPendingAnimations");
         if (_treeHadPendingAnimations) {
 #ifdef DEBUG
             reportFPS(NO);
