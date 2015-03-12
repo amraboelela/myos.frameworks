@@ -142,7 +142,7 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     self->_state = UIGestureRecognizerStatePossible;
     _lastMovementTime = event->_timestamp;
 }
@@ -164,7 +164,7 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
         DLog(@"UIGestureRecognizerStateBegan");
     }
     if (self->_state == UIGestureRecognizerStateBegan || self->_state == UIGestureRecognizerStateChanged) {
-        DLog(@"touch: %@", touch);
+        //DLog(@"touch: %@", touch);
         if (touch) {
             if (_UIPanGestureRecognizerUpdate(self, touch->_delta, event)) {
                 DLog();

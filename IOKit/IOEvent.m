@@ -40,12 +40,13 @@ BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
     //    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     //DLog(@"");
     //XNextEvent(d,&_xevent);
-    //DLog(@"e: %d", _xevent.type);
+    DLog(@"e: %d", _xevent.type);
     
     if (XCheckWindowEvent(window->display, window->xwindow, ButtonPressMask | Button1MotionMask | ButtonReleaseMask, &_xevent)) {
         UITouch *touch = [[uievent allTouches] anyObject];
         CGPoint screenLocation = CGPointMake(_xevent.xbutton.x / _screenScaleFactor, _xevent.xbutton.y / _screenScaleFactor);
         NSTimeInterval timestamp = _xevent.xbutton.time / 1000.0;
+        DLog(@"timestamp: %f", timestamp);
         switch (_xevent.type) {
             case ButtonPress: {
                 CGPoint delta = CGPointZero;
