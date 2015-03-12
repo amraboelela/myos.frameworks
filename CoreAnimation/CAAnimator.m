@@ -65,6 +65,7 @@ static void _CAAnimatorApplyAnimations()
 
 static void reportFPS(BOOL withCondition)
 {
+    DLog();
     //NSTimeInterval currentTime = CACurrentMediaTime();
     if (CACurrentMediaTime() - beforeLockTime > _kResetTimeInterval || !withCondition) {
         float fps = _CAAnimatorFrameCount * 1.0 / (CACurrentMediaTime() - previousTimestamp);
@@ -147,7 +148,7 @@ static void reportFPS(BOOL withCondition)
     //_CAAnimatorFrameCount++;
 #endif
     //currentTime = CACurrentMediaTime();
-    //reportFPS(YES);
+    reportFPS(YES);
     //DLog();
     _CAAnimatorApplyAnimations();
     //DLog(@"_CARendererLoadRenderLayers");
