@@ -145,7 +145,7 @@ static void reportFPS(BOOL withCondition)
 #endif
     //DLog();
 #ifdef DEBUG
-    //_CAAnimatorFrameCount++;
+    _CAAnimatorFrameCount++;
 #endif
     //currentTime = CACurrentMediaTime();
     //reportFPS(YES);
