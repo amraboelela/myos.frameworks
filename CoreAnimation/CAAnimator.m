@@ -70,7 +70,7 @@ static void reportFPS(BOOL withCondition)
     if (CACurrentMediaTime() - beforeLockTime > _kResetTimeInterval || !withCondition) {
         float fps = _CAAnimatorFrameCount * 1.0 / (CACurrentMediaTime() - previousTimestamp);
         if (_CAAnimatorFrameCount>1) {
-            DLog(@"_CAAnimatorFrameCount: %d, fps: %0.0f", _CAAnimatorFrameCount, fps);
+            //DLog(@"_CAAnimatorFrameCount: %d, fps: %0.0f", _CAAnimatorFrameCount, fps);
         }
         _CAAnimatorFrameCount = 0;
         previousTimestamp = CACurrentMediaTime();
