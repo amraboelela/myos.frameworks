@@ -35,11 +35,11 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
 {
     NSTimeInterval timeDiff = event.timestamp - recognizer->_lastMovementTime;
     //DLog(@"delta: %@", NSStringFromCGPoint(delta));
-    //DLog(@"timeDiff: %f", timeDiff);
-    //DLog(@"recognizer->_lastMovementTime: %f", recognizer->_lastMovementTime);
-    //DLog(@"event.timestamp: %f", event.timestamp);
+    DLog(@"timeDiff: %f", timeDiff);
+    DLog(@"recognizer->_lastMovementTime: %f", recognizer->_lastMovementTime);
+    DLog(@"event.timestamp: %f", event.timestamp);
     if (timeDiff > 0) { //!CGPointEqualToPoint(delta, CGPointZero) &&
-        //DLog(@"recognizer->_translation: %@", NSStringFromCGPoint(recognizer->_translation));
+        DLog(@"recognizer->_translation: %@", NSStringFromCGPoint(recognizer->_translation));
         recognizer->_translation.x = delta.x;
         recognizer->_translation.y = delta.y;
         //CGPoint tempVelocity;
@@ -150,7 +150,7 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
     UITouch *touch = [touches anyObject];
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     //UITouch *touch = PanTouch([event touchesForGestureRecognizer:self]);
     // note that we being the gesture here in the _gesturesMoved:withEvent: method instead of the _gesturesBegan:withEvent:
     // method because the pan gesture cannot be recognized until the user moves their fingers a bit and OSX won't tag the
