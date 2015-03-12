@@ -65,7 +65,7 @@ static void _CAAnimatorApplyAnimations()
 
 static void reportFPS(BOOL withCondition)
 {
-    DLog();
+    //DLog();
     //NSTimeInterval currentTime = CACurrentMediaTime();
     if (CACurrentMediaTime() - beforeLockTime > _kResetTimeInterval || !withCondition) {
         float fps = _CAAnimatorFrameCount * 1.0 / (CACurrentMediaTime() - previousTimestamp);
@@ -164,7 +164,7 @@ static void reportFPS(BOOL withCondition)
         [_CAAnimatorConditionLock unlock];
         //DLog();
     } else {
-        DLog(@"not _treeHasPendingAnimations");
+        //DLog(@"not _treeHasPendingAnimations");
         if (_treeHadPendingAnimations) {
 #ifdef DEBUG
             reportFPS(NO);
