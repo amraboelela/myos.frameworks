@@ -35,9 +35,10 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
 {
     NSTimeInterval timeDiff = event.timestamp - recognizer->_lastMovementTime;
     //DLog(@"delta: %@", NSStringFromCGPoint(delta));
+    DLog(@"event: %@", event);
     DLog(@"timeDiff: %f", timeDiff);
     DLog(@"recognizer->_lastMovementTime: %f", recognizer->_lastMovementTime);
-    DLog(@"event.timestamp: %f", event.timestamp);
+    //DLog(@"event.timestamp: %f", event.timestamp);
     if (timeDiff > 0) { //!CGPointEqualToPoint(delta, CGPointZero) &&
         DLog(@"recognizer->_translation: %@", NSStringFromCGPoint(recognizer->_translation));
         recognizer->_translation.x = delta.x;
