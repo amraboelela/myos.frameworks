@@ -40,7 +40,7 @@ BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
     //    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     //DLog(@"");
     //XNextEvent(d,&_xevent);
-    DLog(@"e: %d", _xevent.type);
+    //DLog(@"e: %d", _xevent.type);
     
     if (XCheckWindowEvent(window->display, window->xwindow, ButtonPressMask | Button1MotionMask | ButtonReleaseMask, &_xevent)) {
         UITouch *touch = [[uievent allTouches] anyObject];
