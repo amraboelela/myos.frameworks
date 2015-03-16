@@ -46,7 +46,6 @@ BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
         UITouch *touch = [[uievent allTouches] anyObject];
         CGPoint screenLocation = CGPointMake(_xevent.xbutton.x / _screenScaleFactor, _xevent.xbutton.y / _screenScaleFactor);
         NSTimeInterval timestamp = _xevent.xbutton.time / 1000.0;
-        uievent.timestamp = timestamp;
         DLog(@"timestamp: %f", timestamp);
         switch (_xevent.type) {
             case ButtonPress: {

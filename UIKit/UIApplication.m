@@ -811,7 +811,8 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     [_CAAnimatorConditionLock unlock];
     //DLog();
     // Setting up the screen sleeping ability
-    _application->_lastActivityTime = CACurrentMediaTime();
+    NSTimeInterval timestamp = CACurrentMediaTime();
+    _application->_lastActivityTime = timestamp;
     //DLog();
     //_application->_blackScreen = [[UIView alloc] initWithFrame:cr];
     //DLog();
@@ -822,20 +823,20 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //[_application->_blackScreen addGestureRecognizer:tapGesture];
     //DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    //DLog();
-    
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
         //DLog();
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
+        timestamp = CACurrentMediaTime();
         if (IOEventGetNextEvent(window, _application->_currentEvent)) {
             //DLog();
             _UIApplicationSetCurrentEventTouchedView();
-            _application->_lastActivityTime = CACurrentMediaTime();
+            _application->_lastActivityTime = timestamp;
+            _application->_currentEvent->_timestamp = timestamp;
         }
-        currentTime = CACurrentMediaTime();
+        //currentTime = timestamp;
         /*if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
             && _application->_screenMode == _UIApplicationScreenModeActive) {
             _application->_screenMode = _UIApplicationScreenModeSleeping;
