@@ -148,7 +148,7 @@ static NSArray *_GestureRecognizersForView(UIView *view)
 void _UITouchSetPhase(UITouch *touch, UITouchPhase phase, CGPoint screenLocation, NSUInteger tapCount, CGPoint delta, NSTimeInterval timestamp)
 {
     //DLog(@"screenLocation: %@", NSStringFromCGPoint(screenLocation));
-    DLog(@"timestamp: %f", timestamp);
+    //DLog(@"timestamp: %f", timestamp);
     //DLog(@"tapCount: %d", tapCount);
     touch->_phase = phase;
     touch->_gesture = _UITouchGestureUnknown;
@@ -162,7 +162,7 @@ void _UITouchSetPhase(UITouch *touch, UITouchPhase phase, CGPoint screenLocation
 void _UITouchUpdatePhase(UITouch *touch, UITouchPhase phase, CGPoint screenLocation, NSTimeInterval timestamp)
 {
     //DLog(@"screenLocation: %@", NSStringFromCGPoint(screenLocation));
-    DLog(@"timestamp: %f", timestamp);
+    //DLog(@"timestamp: %f", timestamp);
     //if (!CGPointEqualToPoint(screenLocation, touch->_location)) {
     touch->_previousLocation = touch->_location;
     touch->_location = screenLocation;

@@ -35,12 +35,12 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
 {
     NSTimeInterval timeDiff = event.timestamp - recognizer->_lastMovementTime;
     //DLog(@"delta: %@", NSStringFromCGPoint(delta));
-    DLog(@"event: %@", event);
-    DLog(@"timeDiff: %f", timeDiff);
-    DLog(@"recognizer->_lastMovementTime: %f", recognizer->_lastMovementTime);
+    //DLog(@"event: %@", event);
+    //DLog(@"timeDiff: %f", timeDiff);
+    //DLog(@"recognizer->_lastMovementTime: %f", recognizer->_lastMovementTime);
     //DLog(@"event.timestamp: %f", event.timestamp);
     if (timeDiff > 0) { //!CGPointEqualToPoint(delta, CGPointZero) &&
-        DLog(@"recognizer->_translation: %@", NSStringFromCGPoint(recognizer->_translation));
+        //DLog(@"recognizer->_translation: %@", NSStringFromCGPoint(recognizer->_translation));
         recognizer->_translation.x = delta.x;
         recognizer->_translation.y = delta.y;
         //CGPoint tempVelocity;
@@ -117,7 +117,7 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
 
 - (void)setTranslation:(CGPoint)translation inView:(UIView *)view
 {
-    DLog(@"translation: %@", NSStringFromCGPoint(translation));
+    //DLog(@"translation: %@", NSStringFromCGPoint(translation));
     _velocity = CGPointZero;
     _translation = translation;
 }
@@ -127,12 +127,6 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
     //DLog(@"_velocity: %@", NSStringFromCGPoint(_velocity));
     return _velocity;
 }
-/*
-- (void)setState:(UIGestureRecognizerState)state
-{
-    [super setState:state];
-    //_UIGestureRecognizerPerformActions(self);
-}*/
 
 - (NSString *)description
 {
@@ -162,7 +156,7 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
         _startLocation = touch->_location;
         _startTime = event.timestamp;
         _UIGestureRecognizerPerformActions(self);
-        DLog(@"UIGestureRecognizerStateBegan");
+        //DLog(@"UIGestureRecognizerStateBegan");
     }
     if (self->_state == UIGestureRecognizerStateBegan || self->_state == UIGestureRecognizerStateChanged) {
         //DLog(@"touch: %@", touch);
@@ -185,7 +179,7 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     UITouch *touch = [touches anyObject];
     if (self.state == UIGestureRecognizerStateChanged) {
         NSTimeInterval timeDiff = event.timestamp - _lastMovementTime;// - _startTime;
