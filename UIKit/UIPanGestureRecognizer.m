@@ -162,14 +162,12 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
         //DLog(@"touch: %@", touch);
         if (touch) {
             if (_UIPanGestureRecognizerUpdate(self, touch->_delta, event)) {
-                DLog();
+                //DLog();
                 //_lastMovementTime = event.timestamp;
                 self.state = UIGestureRecognizerStateChanged;
                 _UIGestureRecognizerPerformActions(self);
             }
-        } /*else {
-           self->_state = UIGestureRecognizerStateCancelled;
-           }*/
+        }
     }
     /*if (self.state == UIGestureRecognizerStateChanged) {
         _lastMovementTime = event.timestamp;
