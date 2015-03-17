@@ -6,4 +6,5 @@ Frameworks for myOS applications in Android environment, using Objective-C, base
   * [myos.libraries](https://github.com/amraboelela/myos.libraries)
   * [myos.sdk](https://github.com/amraboelela/myos.sdk)
   
-* For more info: [myos.frameworks.wiki](https://github.com/amraboelela/myos.frameworks/wiki)
+* For more info:
+[myos.wiki](https://github.com/amraboelela/myos/wiki)
