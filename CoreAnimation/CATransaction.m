@@ -238,7 +238,7 @@ void _CATransactionInitialize()
 
 void _CATransactionAddToRemoveLayers(CALayer *layer)
 {
-    DLog();
+    //DLog();
     CFSetAddValue(_removeLayers, layer);
 }
 
