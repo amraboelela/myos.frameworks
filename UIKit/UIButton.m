@@ -297,7 +297,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
         frame.size = [title sizeWithFont:font];
         self.frame = frame;
     }
-    _UIButtonSetContent(self, title, state, UIButtonContentTypeTitle);
+    //_UIButtonSetContent(self, title, state, UIButtonContentTypeTitle);
 }
 
 - (void)setTitleColor:(UIColor *)color forState:(UIControlState)state
