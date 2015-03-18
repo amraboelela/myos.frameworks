@@ -801,15 +801,15 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
-    //DLog();
+    DLog();
     
     _CAAnimatorInitialize();
-    //DLog();
+    DLog();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
-    //DLog();
+    DLog();
     [[UIScreen alloc] init];
     [_CAAnimatorConditionLock unlock];
-    //DLog();
+    DLog();
     // Setting up the screen sleeping ability
     NSTimeInterval timestamp = CACurrentMediaTime();
     _application->_lastActivityTime = timestamp;
@@ -821,11 +821,11 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
     //UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
     //DLog();
     //[_application->_blackScreen addGestureRecognizer:tapGesture];
-    //DLog();
+    DLog();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        //DLog();
+        DLog();
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
