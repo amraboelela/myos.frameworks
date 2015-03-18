@@ -954,174 +954,180 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
  * without timeouts.<br />
  * Returns nil if the loop contains neither timers nor input sources.
  */
-- (NSDate*) limitDateForMode: (NSString*)mode
+- (NSDate *)limitDateForMode:(NSString *)mode
 {
-  GSRunLoopCtxt		*context;
-  NSDate		*when = nil;
-
-  context = NSMapGet(_contextMap, mode);
-  if (context != nil)
+    GSRunLoopCtxt		*context;
+    NSDate		*when = nil;
+    DLog();
+    context = NSMapGet(_contextMap, mode);
+    if (context != nil)
     {
-      NSString		*savedMode = _currentMode;
-      NSAutoreleasePool	*arp = [NSAutoreleasePool new];
-
-      _currentMode = mode;
-      NS_DURING
-	{
-	  GSIArray		timers = context->timers;
-	  NSTimeInterval	now;
-          NSDate                *earliest;
-	  NSDate		*d;
-	  NSTimer		*t;
-	  NSTimeInterval	ti;
-	  NSTimeInterval	ei;
-          unsigned              c;
-          unsigned              i;
-
-	  ei = 0.0;	// Only needed to avoid compiler warning
-
-	  /*
-	   * Save current time so we don't keep redoing system call to
-	   * get it and so that we check timer fire dates against a known
-	   * value at the point when the method was called.
-           * If we refetched the date after firing each timer, the time
-           * taken in firing the timer could be large enough so we would
-	   * just keep firing the timer repeatedly and never return from
-           * this method.
-	   */
-	  now = GSPrivateTimeNow();
-
-	  /* Fire housekeeping timer as necessary
-	   */
-	  if ((t = context->housekeeper) != nil)
-            {
-              if (timerInvalidated(t))
-                {
-                  DESTROY(context->housekeeper);
-                }
-              else if ([(d=timerDate(t)) timeIntervalSinceReferenceDate] <= now)
-                {
-                  [t fire];
-                  GSPrivateNotifyASAP(_currentMode);
-                  IF_NO_GC([arp emptyPool];)
-		  updateTimer(t, d, now);
-                }
-            }
-
-	  /* Fire the oldest/first valid timer whose fire date has passed
-	   * and fire it.
-	   * We fire timers in the order in which they were added to the
-	   * run loop rather than in date order.  This prevents code
-	   * from blocking other timers by adding timers whose fire date
-	   * is some time in the past... we guarantee fair handling.
-	   */
-	  c = GSIArrayCount(timers);
-	  for (i = 0; i < c; i++)
-	    {
-	      t = GSIArrayItemAtIndex(timers, i).obj;
-	      if (timerInvalidated(t) == NO)
-		{
-		  d = timerDate(t);
-		  ti = [d timeIntervalSinceReferenceDate];
-		  if (ti < now)
-		    {
-		      GSIArrayRemoveItemAtIndexNoRelease(timers, i);
-		      [t fire];
-		      GSPrivateNotifyASAP(_currentMode);
-		      IF_NO_GC([arp emptyPool];)
-		      if (updateTimer(t, d, now) == YES)
-			{
-			  /* Updated ... replace in array.
-			   */
-			  GSIArrayAddItemNoRetain(timers,
-			    (GSIArrayItem)((id)t));
-			}
-		      else
-			{
-			  /* The timer was invalidated, so we can
-			   * release it as we aren't putting it back
-			   * in the array.
-			   */
-			  RELEASE(t);
-			}
-		      break;
-		    }
-		}
-	    }
-
-	  /* Now, find the earliest remaining timer date while removing
-	   * any invalidated timers.  We iterate from the end of the
-	   * array to minimise the amount of array alteration needed.
-	   */
-	  earliest = nil;
-	  i = GSIArrayCount(timers);
-	  while (i-- > 0)
-	    {
-	      t = GSIArrayItemAtIndex(timers, i).obj;
-	      if (timerInvalidated(t) == YES)
-		{
-		  GSIArrayRemoveItemAtIndex(timers, i);
-		}
-	      else
-		{
-		  d = timerDate(t);
-		  ti = [d timeIntervalSinceReferenceDate];
-		  if (earliest == nil || ti < ei)
-		    {
-		      earliest = d;
-		      ei = ti;
-		    }
-		}
-	    }
-
-          /* The earliest date of a valid timeout is copied into 'when'
-           * and used as our limit date.
-           */
-          if (earliest != nil)
-            {
-              when = [earliest copy];
-            }
-	  _currentMode = savedMode;
-	}
-      NS_HANDLER
-	{
-	  _currentMode = savedMode;
-	  [localException raise];
-	}
-      NS_ENDHANDLER
-
-      [arp release];
-
-      if (when == nil)
+        NSString		*savedMode = _currentMode;
+        NSAutoreleasePool	*arp = [NSAutoreleasePool new];
+        DLog();
+        _currentMode = mode;
+        NS_DURING
         {
-	  GSIArray		watchers = context->watchers;
-	  unsigned		i = GSIArrayCount(watchers);
-
-	  while (i-- > 0)
-	    {
-	      GSRunLoopWatcher	*w = GSIArrayItemAtIndex(watchers, i).obj;
-
-	      if (w->_invalidated == YES)
-	        {
-		  GSIArrayRemoveItemAtIndex(watchers, i);
-		}
-	    }
-	  if (GSIArrayCount(context->watchers) > 0)
-	    {
-	      when = theFuture;
-	    }
-	}
+            DLog();
+            GSIArray		timers = context->timers;
+            NSTimeInterval	now;
+            NSDate                *earliest;
+            NSDate		*d;
+            NSTimer		*t;
+            NSTimeInterval	ti;
+            NSTimeInterval	ei;
+            unsigned              c;
+            unsigned              i;
+            DLog();
+            ei = 0.0;	// Only needed to avoid compiler warning
+            
+            /*
+             * Save current time so we don't keep redoing system call to
+             * get it and so that we check timer fire dates against a known
+             * value at the point when the method was called.
+             * If we refetched the date after firing each timer, the time
+             * taken in firing the timer could be large enough so we would
+             * just keep firing the timer repeatedly and never return from
+             * this method.
+             */
+            now = GSPrivateTimeNow();
+            DLog();
+            /* Fire housekeeping timer as necessary
+             */
+            if ((t = context->housekeeper) != nil)
+            {
+                if (timerInvalidated(t))
+                {
+                    DESTROY(context->housekeeper);
+                }
+                else if ([(d=timerDate(t)) timeIntervalSinceReferenceDate] <= now)
+                {
+                    DLog();
+                    [t fire];
+                    GSPrivateNotifyASAP(_currentMode);
+                    IF_NO_GC([arp emptyPool];)
+                    updateTimer(t, d, now);
+                }
+            }
+            DLog();
+            /* Fire the oldest/first valid timer whose fire date has passed
+             * and fire it.
+             * We fire timers in the order in which they were added to the
+             * run loop rather than in date order.  This prevents code
+             * from blocking other timers by adding timers whose fire date
+             * is some time in the past... we guarantee fair handling.
+             */
+            c = GSIArrayCount(timers);
+            for (i = 0; i < c; i++)
+            {
+                DLog();
+                t = GSIArrayItemAtIndex(timers, i).obj;
+                if (timerInvalidated(t) == NO)
+                {
+                    DLog();
+                    d = timerDate(t);
+                    ti = [d timeIntervalSinceReferenceDate];
+                    if (ti < now)
+                    {
+                        DLog();
+                        GSIArrayRemoveItemAtIndexNoRelease(timers, i);
+                        [t fire];
+                        GSPrivateNotifyASAP(_currentMode);
+                        IF_NO_GC([arp emptyPool];)
+                        if (updateTimer(t, d, now) == YES)
+                        {
+                            /* Updated ... replace in array.
+                             */
+                            GSIArrayAddItemNoRetain(timers,
+                                                    (GSIArrayItem)((id)t));
+                        }
+                        else
+                        {
+                            DLog();
+                            /* The timer was invalidated, so we can
+                             * release it as we aren't putting it back
+                             * in the array.
+                             */
+                            RELEASE(t);
+                        }
+                        break;
+                    }
+                }
+            }
+            DLog();
+            /* Now, find the earliest remaining timer date while removing
+             * any invalidated timers.  We iterate from the end of the
+             * array to minimise the amount of array alteration needed.
+             */
+            earliest = nil;
+            i = GSIArrayCount(timers);
+            while (i-- > 0)
+            {
+                t = GSIArrayItemAtIndex(timers, i).obj;
+                if (timerInvalidated(t) == YES)
+                {
+                    GSIArrayRemoveItemAtIndex(timers, i);
+                }
+                else
+                {
+                    d = timerDate(t);
+                    ti = [d timeIntervalSinceReferenceDate];
+                    if (earliest == nil || ti < ei)
+                    {
+                        earliest = d;
+                        ei = ti;
+                    }
+                }
+            }
+            
+            /* The earliest date of a valid timeout is copied into 'when'
+             * and used as our limit date.
+             */
+            if (earliest != nil)
+            {
+                when = [earliest copy];
+            }
+            _currentMode = savedMode;
+        }
+        NS_HANDLER
+        {
+            _currentMode = savedMode;
+            [localException raise];
+        }
+        NS_ENDHANDLER
+        DLog();
+        [arp release];
+        
+        if (when == nil)
+        {
+            GSIArray		watchers = context->watchers;
+            unsigned		i = GSIArrayCount(watchers);
+            
+            while (i-- > 0)
+            {
+                GSRunLoopWatcher	*w = GSIArrayItemAtIndex(watchers, i).obj;
+                
+                if (w->_invalidated == YES)
+                {
+                    GSIArrayRemoveItemAtIndex(watchers, i);
+                }
+            }
+            if (GSIArrayCount(context->watchers) > 0)
+            {
+                when = theFuture;
+            }
+        }
 #if	!GS_WITH_GC
-      else
-	{
-	  AUTORELEASE(when);
-	}
+        else
+        {
+            AUTORELEASE(when);
+        }
 #endif
-
-      NSDebugMLLog(@"NSRunLoop", @"limit date %f in %@",
-	nil == when ? 0.0 : [when timeIntervalSinceReferenceDate], mode);
+        DLog();
+        NSDebugMLLog(@"NSRunLoop", @"limit date %f in %@",
+                     nil == when ? 0.0 : [when timeIntervalSinceReferenceDate], mode);
     }
-  return when;
+    return when;
 }
 
 /**
@@ -1269,7 +1275,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     DLog();
     /* Find out how long we can wait before first limit date.
      */
-    d = [self limitDateForMode: mode];
+    d = [self limitDateForMode:mode];
     DLog();
     if (d == nil) {
         [self acceptInputForMode:mode beforeDate:date];
