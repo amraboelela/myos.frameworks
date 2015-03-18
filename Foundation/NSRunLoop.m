@@ -1310,17 +1310,18 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
  * -runMode:beforeDate: while there are still input sources.  Exits when no
  * more input sources remain, or date is reached, whichever occurs first.
  */
-- (void) runUntilDate: (NSDate*)date
+- (void)runUntilDate:(NSDate *)date
 {
-  double	ti = [date timeIntervalSinceNow];
-  BOOL		mayDoMore = YES;
-
-  /* Positive values are in the future. */
-  while (ti > 0 && mayDoMore == YES)
-    {
-      NSDebugMLLog(@"NSRunLoop", @"run until date %f seconds from now", ti);
-      mayDoMore = [self runMode: NSDefaultRunLoopMode beforeDate: date];
-      ti = [date timeIntervalSinceNow];
+    double	ti = [date timeIntervalSinceNow];
+    BOOL mayDoMore = YES;
+    DLog();
+    /* Positive values are in the future. */
+    while (ti > 0 && mayDoMore == YES) {
+        DLog();
+        NSDebugMLLog(@"NSRunLoop", @"run until date %f seconds from now", ti);
+        mayDoMore = [self runMode: NSDefaultRunLoopMode beforeDate: date];
+        ti = [date timeIntervalSinceNow];
+        DLog();
     }
 }
 
