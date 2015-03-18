@@ -958,17 +958,17 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
 {
     GSRunLoopCtxt		*context;
     NSDate		*when = nil;
-    DLog();
+    //DLog();
     context = NSMapGet(_contextMap, mode);
     if (context != nil)
     {
         NSString		*savedMode = _currentMode;
         NSAutoreleasePool	*arp = [NSAutoreleasePool new];
-        DLog();
+        //DLog();
         _currentMode = mode;
         NS_DURING
         {
-            DLog();
+            //DLog();
             GSIArray		timers = context->timers;
             NSTimeInterval	now;
             NSDate                *earliest;
@@ -978,7 +978,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             NSTimeInterval	ei;
             unsigned              c;
             unsigned              i;
-            DLog();
+            //DLog();
             ei = 0.0;	// Only needed to avoid compiler warning
             
             /*
@@ -991,7 +991,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
              * this method.
              */
             now = GSPrivateTimeNow();
-            DLog();
+            //DLog();
             /* Fire housekeeping timer as necessary
              */
             if ((t = context->housekeeper) != nil)
@@ -1009,7 +1009,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                     updateTimer(t, d, now);
                 }
             }
-            DLog();
+            //DLog();
             /* Fire the oldest/first valid timer whose fire date has passed
              * and fire it.
              * We fire timers in the order in which they were added to the
@@ -1020,7 +1020,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             c = GSIArrayCount(timers);
             for (i = 0; i < c; i++)
             {
-                DLog();
+                //DLog();
                 t = GSIArrayItemAtIndex(timers, i).obj;
                 if (timerInvalidated(t) == NO)
                 {
@@ -1264,7 +1264,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
      */
     GSPrivateCheckTasks();
     GSPrivateNotifyASAP(mode);
-    DLog();
+    //DLog();
     /* And process any performers scheduled in the loop (eg something from
      * another thread.
      */
