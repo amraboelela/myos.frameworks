@@ -1319,7 +1319,9 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     while (ti > 0 && mayDoMore == YES) {
         DLog();
         NSDebugMLLog(@"NSRunLoop", @"run until date %f seconds from now", ti);
-        mayDoMore = [self runMode: NSDefaultRunLoopMode beforeDate: date];
+        DLog();
+        mayDoMore = [self runMode:NSDefaultRunLoopMode beforeDate:date];
+        DLog();
         ti = [date timeIntervalSinceNow];
         DLog();
     }
