@@ -828,10 +828,12 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
         DLog();
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
+        DLog();
         [limit release];
         timestamp = CACurrentMediaTime();
+        DLog();
         if (IOEventGetNextEvent(window, _application->_currentEvent)) {
-            //DLog();
+            DLog();
             _UIApplicationSetCurrentEventTouchedView();
             _application->_lastActivityTime = timestamp;
             _application->_currentEvent->_timestamp = timestamp;
