@@ -1245,54 +1245,53 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
   [arp drain];
 }
 
-- (BOOL) runMode: (NSString*)mode beforeDate: (NSDate*)date
+- (BOOL)runMode:(NSString *)mode beforeDate:(NSDate *)date
 {
-  NSAutoreleasePool	*arp = [NSAutoreleasePool new];
-  NSString              *savedMode = _currentMode;
-  GSRunLoopCtxt		*context;
-  NSDate		*d;
-
-  NSAssert(mode != nil, NSInvalidArgumentException);
-
-  /* Process any pending notifications.
-   */
-  GSPrivateCheckTasks(); 
-  GSPrivateNotifyASAP(mode); 
-
-  /* And process any performers scheduled in the loop (eg something from
-   * another thread.
-   */
-  _currentMode = mode;
-  context = NSMapGet(_contextMap, mode);
-  [self _checkPerformers: context];
-  _currentMode = savedMode;
-
-  /* Find out how long we can wait before first limit date.
-   */
-  d = [self limitDateForMode: mode];
-  if (d == nil)
-    {
-      [self acceptInputForMode:mode beforeDate:date];
-      [arp drain];
-      return NO;
+    NSAutoreleasePool *arp = [NSAutoreleasePool new];
+    NSString *savedMode = _currentMode;
+    GSRunLoopCtxt *context;
+    NSDate *d;
+    
+    NSAssert(mode != nil, NSInvalidArgumentException);
+    
+    /* Process any pending notifications.
+     */
+    GSPrivateCheckTasks();
+    GSPrivateNotifyASAP(mode);
+    DLog();
+    /* And process any performers scheduled in the loop (eg something from
+     * another thread.
+     */
+    _currentMode = mode;
+    context = NSMapGet(_contextMap, mode);
+    [self _checkPerformers: context];
+    _currentMode = savedMode;
+    DLog();
+    /* Find out how long we can wait before first limit date.
+     */
+    d = [self limitDateForMode: mode];
+    DLog();
+    if (d == nil) {
+        [self acceptInputForMode:mode beforeDate:date];
+        [arp drain];
+        return NO;
     }
-
-  /* Use the earlier of the two dates we have.
-   * Retain the date in case the firing of a timer (or some other event)
-   * releases it.
-   */
-  if (date != nil)
-    {
-      d = [d earlierDate: date];
+    DLog();
+    /* Use the earlier of the two dates we have.
+     * Retain the date in case the firing of a timer (or some other event)
+     * releases it.
+     */
+    if (date != nil) {
+        d = [d earlierDate: date];
     }
-  [d retain];
-
-  /* Wait, listening to our input sources. */
-  [self acceptInputForMode: mode beforeDate: d];
-
-  [d release];
-  [arp drain];
-  return YES;
+    [d retain];
+    DLog();
+    /* Wait, listening to our input sources. */
+    [self acceptInputForMode:mode beforeDate:d];
+    DLog();
+    [d release];
+    [arp drain];
+    return YES;
 }
 
 /**
