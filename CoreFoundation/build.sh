@@ -15,37 +15,5 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-echo
-echo "****************************** Building frameworks ******************************"
-
-cd Foundation
-source build.sh
-cd ..
-
-cd CoreFoundation
-source build.sh
-cd ..
-
-cd CoreGraphics
-source build.sh
-cd ..
-
-cd CoreText
-source build.sh
-cd ..
-
-cd IOKit
-source build.sh
-cd ..
-
-cd OpenGLES
-source build.sh
-cd ..
-
-cd CoreAnimation
-source build.sh
-cd ..
-
-cd UIKit
-source build.sh
-cd ..
+TARGET=Universal
+source ${MYOS_PATH}/sdk/library-build.sh
