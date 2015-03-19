@@ -1002,7 +1002,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                 }
                 else if ([(d=timerDate(t)) timeIntervalSinceReferenceDate] <= now)
                 {
-                    DLog();
+                    //DLog();
                     [t fire];
                     GSPrivateNotifyASAP(_currentMode);
                     IF_NO_GC([arp emptyPool];)
@@ -1024,12 +1024,12 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                 t = GSIArrayItemAtIndex(timers, i).obj;
                 if (timerInvalidated(t) == NO)
                 {
-                    DLog();
+                    //DLog();
                     d = timerDate(t);
                     ti = [d timeIntervalSinceReferenceDate];
                     if (ti < now)
                     {
-                        DLog();
+                        //DLog();
                         GSIArrayRemoveItemAtIndexNoRelease(timers, i);
                         [t fire];
                         GSPrivateNotifyASAP(_currentMode);
@@ -1043,7 +1043,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                         }
                         else
                         {
-                            DLog();
+                            //DLog();
                             /* The timer was invalidated, so we can
                              * release it as we aren't putting it back
                              * in the array.
@@ -1054,7 +1054,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                     }
                 }
             }
-            DLog();
+            //DLog();
             /* Now, find the earliest remaining timer date while removing
              * any invalidated timers.  We iterate from the end of the
              * array to minimise the amount of array alteration needed.
@@ -1095,7 +1095,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             [localException raise];
         }
         NS_ENDHANDLER
-        DLog();
+        //DLog();
         [arp release];
         
         if (when == nil)
@@ -1123,7 +1123,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             AUTORELEASE(when);
         }
 #endif
-        DLog();
+        //DLog();
         NSDebugMLLog(@"NSRunLoop", @"limit date %f in %@",
                      nil == when ? 0.0 : [when timeIntervalSinceReferenceDate], mode);
     }
@@ -1324,9 +1324,9 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     while (ti > 0 && mayDoMore == YES) {
         //DLog();
         NSDebugMLLog(@"NSRunLoop", @"run until date %f seconds from now", ti);
-        DLog();
+        //DLog();
         mayDoMore = [self runMode:NSDefaultRunLoopMode beforeDate:date];
-        DLog();
+        //DLog();
         ti = [date timeIntervalSinceNow];
         //DLog();
     }
