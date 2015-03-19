@@ -15,39 +15,5 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-#source ${MYOS_PATH}/sdk/config.sh
-
-echo
-echo "****************************** Cleaning frameworks ******************************"
-
-cd Foundation
-source clean.sh
-cd ..
-
-cd CoreFoundation
-source clean.sh
-cd ..
-
-cd CoreGraphics
-source clean.sh
-cd ..
-
-cd CoreText
-source clean.sh
-cd ..
-
-cd IOKit
-source clean.sh
-cd ..
-
-cd OpenGLES
-source clean.sh
-cd ..
-
-cd CoreAnimation
-source clean.sh
-cd ..
-
-cd UIKit
-source clean.sh
-cd ..
+source ${MYOS_PATH}/sdk/config.sh
+make clean
