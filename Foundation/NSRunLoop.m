@@ -1272,17 +1272,17 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     context = NSMapGet(_contextMap, mode);
     [self _checkPerformers: context];
     _currentMode = savedMode;
-    DLog();
+    //DLog();
     /* Find out how long we can wait before first limit date.
      */
     d = [self limitDateForMode:mode];
-    DLog();
+    //DLog();
     if (d == nil) {
         [self acceptInputForMode:mode beforeDate:date];
         [arp drain];
         return NO;
     }
-    DLog();
+    //DLog();
     /* Use the earlier of the two dates we have.
      * Retain the date in case the firing of a timer (or some other event)
      * releases it.
@@ -1291,10 +1291,10 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         d = [d earlierDate: date];
     }
     [d retain];
-    DLog();
+    //DLog();
     /* Wait, listening to our input sources. */
     [self acceptInputForMode:mode beforeDate:d];
-    DLog();
+    //DLog();
     [d release];
     [arp drain];
     return YES;
