@@ -264,7 +264,7 @@ CFAttributedStringCreate(CFAllocatorRef allocator, CFStringRef str, CFDictionary
 CFAttributedStringRef
 CFAttributedStringCreateCopy (CFAllocatorRef allocator,CFAttributedStringRef aStr)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "copy");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "copy");
     struct __CFAttributedString *new;
     new = (struct __CFAttributedString*) _CFRuntimeCreateInstance (allocator,_kCFAttributedStringTypeID,
                                                                    CFATTRIBUTEDSTRING_SIZE, 0);
@@ -281,7 +281,7 @@ CFAttributedStringCreateCopy (CFAllocatorRef allocator,CFAttributedStringRef aSt
 CFAttributedStringRef
 CFAttributedStringCreateWithSubstring (CFAllocatorRef allocator,CFAttributedStringRef aStr,CFRange aRange)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "initWithString:attributes:");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "initWithString:attributes:");
     
     CFStringRef strCopy =  CFStringCreateWithSubstring(allocator,aStr->str,aRange);
     
@@ -404,7 +404,7 @@ CFDictionaryRef CFAttributedStringGetAttributes (CFAttributedStringRef aStr,CFIn
 CFTypeRef
 CFAttributedStringGetAttribute (CFAttributedStringRef aAStr,CFIndex aLoc,CFStringRef aAttrName,CFRange *aEffectiveRange)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aAStr, "attribute:atIndex:effectiveRange:");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aAStr, "attribute:atIndex:effectiveRange:");
     CFIndex len = CFStringGetLength(aAStr->str);
     return CFAttributedStringGetAttributeDependParameted ( aAStr, aLoc, aAttrName,CFRangeMake(aLoc,len - aLoc), aEffectiveRange);
 }
@@ -412,14 +412,14 @@ CFAttributedStringGetAttribute (CFAttributedStringRef aAStr,CFIndex aLoc,CFStrin
 CFTypeRef
 CFAttributedStringGetAttributeAndLongestEffectiveRange (CFAttributedStringRef aStr,CFIndex loc,CFStringRef attrName,CFRange  inRange,CFRange *longestEffectiveRange)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attribute:atIndex:longestEffectiveRange:inRange:");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attribute:atIndex:longestEffectiveRange:inRange:");
     
     return CFAttributedStringGetAttributeDependParameted ( aStr,loc, attrName,inRange, longestEffectiveRange);
 }
 
 CFDictionaryRef CFAttributedStringGetAttributesAndLongestEffectiveRange (CFAttributedStringRef aStr,CFIndex loc,CFRange inRange,CFRange *longestEffectiveRange)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attributesAtIndex:longestEffectiveRange:inRange");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attributesAtIndex:longestEffectiveRange:inRange");
     
     if(longestEffectiveRange != NULL)
     {
@@ -458,7 +458,7 @@ CFDictionaryRef CFAttributedStringGetAttributesAndLongestEffectiveRange (CFAttri
 
 CFIndex CFAttributedStringGetLength(CFAttributedStringRef aStr)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "length");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "length");
     if(aStr->str == NULL)
         return -1;
     return CFStringGetLength(aStr->str);
@@ -467,7 +467,7 @@ CFIndex CFAttributedStringGetLength(CFAttributedStringRef aStr)
 CFStringRef CFAttributedStringGetString(CFAttributedStringRef aStr)
 {
     
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "string");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "string");
     if(aStr->str == NULL)
         return NULL;
     return (CFStringRef)CFRetain(aStr->str);
@@ -524,7 +524,7 @@ CFMutableAttributedStringRef
 CFAttributedStringCreateMutableCopy (CFAllocatorRef allocator,CFIndex maxLength,CFAttributedStringRef aStr)
 {
     
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFMutableAttributedStringRef, aStr, "copy");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFMutableAttributedStringRef, aStr, "copy");
     if(!aStr)
         return NULL;
     CFMutableAttributedStringRef new = CFAttributedStringCreateMutable(allocator,maxLength);
@@ -538,7 +538,7 @@ CFAttributedStringCreateMutableCopy (CFAllocatorRef allocator,CFIndex maxLength,
 CFMutableStringRef
 CFAttributedStringGetMutableString (CFMutableAttributedStringRef aStr)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "mutableString");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "mutableString");
     if(aStr->str == NULL)
         return NULL;
     return aStr->str;
@@ -550,7 +550,7 @@ void CFAttributedStringReplaceAttributedString (
                                                 CFAttributedStringRef replacement)
 {
     
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "replaceCharactersInRange:withAttributedString:");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "replaceCharactersInRange:withAttributedString:");
     CFIndex stringSize = CFStringGetLength(aStr->str);
     
     
@@ -582,7 +582,7 @@ CFAttributedStringReplaceString (CFMutableAttributedStringRef aStr,
                                  CFRange range,
                                  CFStringRef replacement)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "replaceCharactersInRange:withString:");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "replaceCharactersInRange:withString:");
     
     CFStringReplace (aStr->str, range,replacement);
 }
@@ -592,7 +592,7 @@ CFAttributedStringReplaceString (CFMutableAttributedStringRef aStr,
 void
 CFAttributedStringRemoveAttribute ( CFMutableAttributedStringRef aStr, CFRange range,CFStringRef attrName)
 {
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "removeAttribute:range:");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "removeAttribute:range:");
     CFIndex strSize = CFStringGetLength(aStr->str);
     CFIndex index = range.location;
     CFIndex to = index + range.length;
@@ -609,7 +609,7 @@ void
 CFAttributedStringSetAttribute (CFMutableAttributedStringRef aStr,CFRange range,CFStringRef attrName,CFTypeRef value)
 {
     
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "addAttribute:value:range:");
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "addAttribute:value:range:");
     CFIndex strSize = CFStringGetLength(aStr->str);
     CFIndex index = range.location;
     CFIndex to = index + range.length;
@@ -633,7 +633,7 @@ CFAttributedStringSetAttributes ( CFMutableAttributedStringRef aStr,
                                  ,Boolean clearOtherAttributes)
 {
     
-    CF_OBJC_FUNCDISPATCH0(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "setAttributes:range:");	
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "setAttributes:range:");	
     
     CFIndex strSize = CFStringGetLength(aStr->str);
     CFIndex index = range.location;
