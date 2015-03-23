@@ -16,18 +16,19 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#include "CFAttributedString.h"
-#include "CFRuntime.h"
-#include "CFBase.h"
-#include "CFString.h"
-#include "CFDictionary.h"
-#include "GSPrivate.h"
+#import "CFAttributedString.h"
+#import "CFRuntime.h"
+#import "CFBase.h"
+#import "CFString.h"
+#import "CFDictionary.h"
+#import "GSPrivate.h"
+#import "GSObjCRuntime.h"
 
-#include <string.h>
-#include <assert.h>
+#import <string.h>
+#import <assert.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+#import <stdio.h>
+#import <stdlib.h>
 
 
 //#include "CoreFoundation/CFRuntime.h"
@@ -39,7 +40,7 @@
 //#include "CoreFoundation/CFString.h"
 
 //#include "GSPrivate.h"
-#include "GSObjCRuntime.h"
+
 
 //#include <string.h>
 
