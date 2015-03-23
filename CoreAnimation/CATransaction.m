@@ -38,7 +38,7 @@ static CATransactionGroup *_CATransactionGetCurrentTransaction()
 
 static void _CATransactionLayoutLayers(CALayer *layer)
 {
-    //DLog();
+    DLog();
     [layer layoutIfNeeded];
     for (CALayer *sublayer in layer->_sublayers) {
         _CATransactionLayoutLayers(sublayer);
@@ -103,6 +103,7 @@ static void _CATransactionRemoveLayers()
 
 static void _CATransactionCommitTransactionAfterDelay(float delay)
 {
+    DLog();
     [[CATransaction class] performSelector:@selector(_commitTransaction) withObject:nil afterDelay:delay];
 }
 
@@ -169,7 +170,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)_commitTransaction
 {
-    //DLog();
+    DLog();
     if (![_CAAnimatorConditionLock tryLock]) {
         DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
         // Instead of blocking the run loop or the animation thread, we will try to commit later
@@ -177,24 +178,24 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
         //[[CATransaction class] performSelector:@selector(_commitTransaction) withObject:nil afterDelay:0.01];
         return;
     }
-    //DLog();
+    DLog();
     CALayer *rootLayer = _CALayerRootLayer();
-    //DLog(@"LayoutLayers");
+    DLog(@"LayoutLayers");
     if (_layersNeedLayout) {
-        //DLog(@"_layersNeedLayout");
+        DLog(@"_layersNeedLayout");
         _CATransactionLayoutLayers(rootLayer);
         _layersNeedLayout = NO;
     }
-    //DLog(@"_CARendererDisplayLayers");
+    DLog(@"_CARendererDisplayLayers");
     _CARendererDisplayLayers(YES);
     //DLog(@"_CATransactionCopyTree");
     _CATransactionCopyTree(rootLayer);
-    //DLog(@"_CATransactionUnloadIfNeeded");
+    DLog(@"_CATransactionUnloadIfNeeded");
     _CATransactionUnloadIfNeeded(rootLayer);
     _CATransactionRemoveLayers();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
     // Removing last transaction group, as this is a stack. In a stack, you add and remove from same place, in our case from 0
-    //DLog(@"_transactions: %@", _transactions);
+    DLog(@"_transactions: %@", _transactions);
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
     //DLog(@"_transactions2: %@", _transactions);
     //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
