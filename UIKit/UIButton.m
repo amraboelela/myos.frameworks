@@ -70,20 +70,25 @@ static id _UIButtonNormalContentForState(UIButton *button, UIControlState state,
 
 static void _UIButtonSetContent(UIButton *button, id value, UIControlState state, NSString *type)
 {
-    //DLog(@"type: %@", type);
+    DLog(@"type: %@", type);
     NSMutableDictionary *typeContent = [button->_content objectForKey:type];
     
+    //DLog(@"typeContent: %@", typeContent);
     if (!typeContent) {
+        //DLog();
         typeContent = [[[NSMutableDictionary alloc] init] autorelease];
         [button->_content setObject:typeContent forKey:type];
     }
     NSNumber *key = [NSNumber numberWithInt:state];
     if (value) {
+        //DLog(@"typeContent: %@", typeContent);
         [typeContent setObject:value forKey:key];
+        DLog(@"typeContent: %@", typeContent);
     } else {
         [typeContent removeObjectForKey:key];
     }
     [button _updateContent];
+
     //_UIButtonUpdateContent(button);
 }
 
@@ -297,7 +302,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
         frame.size = [title sizeWithFont:font];
         self.frame = frame;
     }
-    //_UIButtonSetContent(self, title, state, UIButtonContentTypeTitle);
+    _UIButtonSetContent(self, title, state, UIButtonContentTypeTitle);
 }
 
 - (void)setTitleColor:(UIColor *)color forState:(UIControlState)state

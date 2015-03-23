@@ -1027,11 +1027,14 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                     //DLog();
                     d = timerDate(t);
                     ti = [d timeIntervalSinceReferenceDate];
+                    DLog(@"ti: %f, now: %f", ti, now);
                     if (ti < now)
                     {
-                        //DLog();
+                        DLog();
                         GSIArrayRemoveItemAtIndexNoRelease(timers, i);
+                        DLog();
                         [t fire];
+                        DLog();
                         GSPrivateNotifyASAP(_currentMode);
                         IF_NO_GC([arp emptyPool];)
                         if (updateTimer(t, d, now) == YES)
@@ -1054,7 +1057,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                     }
                 }
             }
-            //DLog();
+            DLog();
             /* Now, find the earliest remaining timer date while removing
              * any invalidated timers.  We iterate from the end of the
              * array to minimise the amount of array alteration needed.
@@ -1095,7 +1098,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             [localException raise];
         }
         NS_ENDHANDLER
-        //DLog();
+        DLog();
         [arp release];
         
         if (when == nil)
@@ -1123,7 +1126,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             AUTORELEASE(when);
         }
 #endif
-        //DLog();
+        DLog();
         NSDebugMLLog(@"NSRunLoop", @"limit date %f in %@",
                      nil == when ? 0.0 : [when timeIntervalSinceReferenceDate], mode);
     }
