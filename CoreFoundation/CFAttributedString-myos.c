@@ -30,6 +30,19 @@
 #include <stdlib.h>
 
 
+//#include "CoreFoundation/CFRuntime.h"
+//#include "CoreFoundation/CFAttributedString.h"
+//#include "CoreFoundation/CFBag.h"
+//#include "CoreFoundation/CFBase.h"
+//#include "CoreFoundation/CFArray.h"
+//#include "CoreFoundation/CFDictionary.h"
+//#include "CoreFoundation/CFString.h"
+
+//#include "GSPrivate.h"
+#include "GSObjCRuntime.h"
+
+//#include <string.h>
+
 
 enum
 {
