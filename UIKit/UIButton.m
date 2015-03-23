@@ -457,16 +457,17 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 {
     [super layoutSubviews];
    
+    DLog();
     const CGRect bounds = self.bounds;
     _gradientLayer.frame = self.bounds;
     const CGRect contentRect = [self contentRectForBounds:bounds];
 
     _backgroundImageView.frame = [self backgroundRectForBounds:bounds];
-    //DLog(@"2");
+    DLog(@"2");
     _titleLabel.frame = [self titleRectForContentRect:contentRect];
-    //DLog(@"3");
+    DLog(@"3");
     _imageView.frame = [self imageRectForContentRect:contentRect];
-    //DLog(@"4");
+    DLog(@"4");
 }
 
 #pragma mark - Public methods
