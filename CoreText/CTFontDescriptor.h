@@ -31,10 +31,10 @@
 /* Data Types */
 
 #ifdef __OBJC__
-@class CTNSFontDescriptor;
-typedef CTNSFontDescriptor* CTFontDescriptorRef;
+@class OPFontDescriptor;
+typedef OPFontDescriptor* CTFontDescriptorRef;
 #else
-typedef struct CTNSFontDescriptor* CTFontDescriptorRef;
+typedef struct OPFontDescriptor* CTFontDescriptorRef;
 #endif
 
 /* Constants */

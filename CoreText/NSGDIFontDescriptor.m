@@ -1,4 +1,4 @@
-/** <title>CTNSGDIFontDescriptor</title>
+/** <title>NSGDIFontDescriptor</title>
 
    <abstract>C Interface to text layout library</abstract>
 
@@ -24,7 +24,8 @@
 
 #include <windows.h>
 
-@interface CTNSGDIFontDescriptor : CTNSFontDescriptor {
+@interface NSGDIFontDescriptor : OPFontDescriptor
+{
   LOGFONTW _logfont;
 }
 
@@ -118,11 +119,11 @@
     weight = MAX(-1, MIN(1, weight));
     if (weight <= 0)
     {
-	_logfont.lfWeight = FW_THIN + ((weight + 1.0) * (FW_REGULAR - FW_THIN));
+			_logfont.lfWeight = FW_THIN + ((weight + 1.0) * (FW_REGULAR - FW_THIN));
     }
     else
     {
- 	_logfont.lfWeight = FW_NORMAL + (weight * (FW_BLACK - FW_NORMAL));
+ 			_logfont.lfWeight = FW_NORMAL + (weight * (FW_BLACK - FW_NORMAL));
     }
   }
 
@@ -140,12 +141,12 @@
 
     if (slant > 0)
     {
-	_logfont.lfItalic = TRUE;
+			_logfont.lfItalic = TRUE;
     }
     else
     {
-	_logfont.lfItalic = FALSE;
-    }
+			_logfont.lfItalic = FALSE;
+		}
   }
 }
 

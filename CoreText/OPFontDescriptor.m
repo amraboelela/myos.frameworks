@@ -1,4 +1,4 @@
-/** <title>CTNSFontDescriptor</title>
+/** <title>OPFontDescriptor</title>
 
    <abstract>The font descriptor class</abstract>
 
@@ -6,7 +6,7 @@
 
    Author: H. Nikolaus Schaller <hns@computer.org>
    Date: 2006
-   Extracted from CTNSFont: Fred Kiefer <fredkiefer@gmx.de>
+   Extracted from OPFont: Fred Kiefer <fredkiefer@gmx.de>
    Date August 2007
 
    This file is part of the GNUstep GUI Library.
@@ -35,44 +35,40 @@
 #import <Foundation/NSSet.h>
 #import <Foundation/NSString.h>
 #import <Foundation/NSValue.h>
-#import <CoreGraphics/CoreGraphics-private.h>
 
-#import "CTFontDescriptor.h"
-#import "CTNSFontDescriptor.h"
+#include <CoreText/CTFontDescriptor.h>
+#import "OPFontDescriptor.h"
 
 
-@implementation CTNSFontDescriptor
+@implementation OPFontDescriptor
 
-+ (Class)fontDescriptorClass
++ (Class) fontDescriptorClass
 {
-  return NSClassFromString(@"CTNSFontDescriptor");//(@"CTNSFontconfigFontDescriptor");
+  return NSClassFromString(@"OPFontconfigFontDescriptor");
 }
 
-+ (id)fontDescriptorWithFontAttributes:(NSDictionary *)attributes
++ (id) fontDescriptorWithFontAttributes: (NSDictionary *)attributes
 {
-    //DLog();
-    return AUTORELEASE([[[self fontDescriptorClass] alloc] initWithFontAttributes: attributes]);
+  return AUTORELEASE([[[self fontDescriptorClass] alloc] initWithFontAttributes: attributes]);
 }
 
-+ (id)fontDescriptorWithName: (NSString *)name
++ (id) fontDescriptorWithName: (NSString *)name
 		       matrix: (NSAffineTransform *)matrix
 {
-    //DLog();
-    return [self fontDescriptorWithFontAttributes:
-            [NSDictionary dictionaryWithObjectsAndKeys:
-             name, CTNSFontNameAttribute,
-             matrix, CTNSFontMatrixAttribute,
-             nil]];
+  return [self fontDescriptorWithFontAttributes:
+    [NSDictionary dictionaryWithObjectsAndKeys:
+      name, OPFontNameAttribute,
+      matrix, OPFontMatrixAttribute,
+      nil]];
 }
 
-+ (id)fontDescriptorWithName: (NSString *)name size: (CGFloat)size
++ (id) fontDescriptorWithName: (NSString *)name size: (CGFloat)size
 {
-    //DLog();
-    return [self fontDescriptorWithFontAttributes:
-            [NSDictionary dictionaryWithObjectsAndKeys:
-             name, CTNSFontNameAttribute,
-             [NSString stringWithFormat: @"%f", size], kCTFontSizeAttribute,
-             nil]];
+  return [self fontDescriptorWithFontAttributes:
+    [NSDictionary dictionaryWithObjectsAndKeys:
+      name, OPFontNameAttribute,
+      [NSString stringWithFormat: @"%f", size], OPFontSizeAttribute,
+      nil]];
 }
 
 - (NSDictionary *) fontAttributes
@@ -80,108 +76,80 @@
   return _attributes;
 }
 
-- (CTNSFontDescriptor *) fontDescriptorByAddingAttributes:
+- (OPFontDescriptor *) fontDescriptorByAddingAttributes:
   (NSDictionary *)attributes
 {
-    //DLog();
-    NSMutableDictionary *m = [_attributes mutableCopy];
-    CTNSFontDescriptor *new;
-    
-    [m addEntriesFromDictionary: attributes];
-    
-    new = [isa fontDescriptorWithFontAttributes:m];
-    RELEASE(m);
-    
-    return new;
+  NSMutableDictionary *m = [_attributes mutableCopy];
+  OPFontDescriptor *new;
+
+  [m addEntriesFromDictionary: attributes];
+
+  new = [isa fontDescriptorWithFontAttributes: m];
+  RELEASE(m);
+
+  return new;
 }
 
-- (CTNSFontDescriptor *) fontDescriptorWithFace: (NSString *)face
+- (OPFontDescriptor *) fontDescriptorWithFace: (NSString *)face
 {
   return [self fontDescriptorByAddingAttributes:
-    [NSDictionary dictionaryWithObject: face forKey: CTNSFontFaceAttribute]];
+    [NSDictionary dictionaryWithObject: face forKey: OPFontFaceAttribute]];
 }
 
-- (CTNSFontDescriptor *) fontDescriptorWithFamily: (NSString *)family
+- (OPFontDescriptor *) fontDescriptorWithFamily: (NSString *)family
 {
   return [self fontDescriptorByAddingAttributes:
-    [NSDictionary dictionaryWithObject: family forKey: CTNSFontFamilyAttribute]];
+    [NSDictionary dictionaryWithObject: family forKey: OPFontFamilyAttribute]];
 }
 
-- (CTNSFontDescriptor *) fontDescriptorWithMatrix: (NSAffineTransform *)matrix
+- (OPFontDescriptor *) fontDescriptorWithMatrix: (NSAffineTransform *)matrix
 {
   return [self fontDescriptorByAddingAttributes:
-    [NSDictionary dictionaryWithObject: matrix forKey: CTNSFontMatrixAttribute]];
+    [NSDictionary dictionaryWithObject: matrix forKey: OPFontMatrixAttribute]];
 }
 
-- (CTNSFontDescriptor *) fontDescriptorWithSize: (CGFloat)size
+- (OPFontDescriptor *) fontDescriptorWithSize: (CGFloat)size
 {
   return [self fontDescriptorByAddingAttributes:
     [NSDictionary dictionaryWithObject: [NSString stringWithFormat:@"%f", size]
-				forKey: kCTFontSizeAttribute]];
+				forKey: OPFontSizeAttribute]];
 }
 
-- (CTNSFontDescriptor *) fontDescriptorWithSymbolicTraits:
-  (CTNSFontSymbolicTraits)symbolicTraits
+- (OPFontDescriptor *) fontDescriptorWithSymbolicTraits:
+  (OPFontSymbolicTraits)symbolicTraits
 {
   NSDictionary *traits;
 
-  traits = [_attributes objectForKey: CTNSFontTraitsAttribute];
+  traits = [_attributes objectForKey: OPFontTraitsAttribute];
   if (traits == nil)
     {
       traits = [NSDictionary dictionaryWithObject: 
 			       [NSNumber numberWithUnsignedInt: symbolicTraits]
-			     forKey: CTNSFontSymbolicTrait];
+			     forKey: OPFontSymbolicTrait];
     }
   else
     {
       traits = AUTORELEASE([traits mutableCopy]);
       [(NSMutableDictionary*)traits setObject: 
 			       [NSNumber numberWithUnsignedInt: symbolicTraits]
-			     forKey: CTNSFontSymbolicTrait];
+			     forKey: OPFontSymbolicTrait];
     }
 
   return [self fontDescriptorByAddingAttributes:
 		 [NSDictionary dictionaryWithObject: traits
-			       forKey: CTNSFontTraitsAttribute]];
+			       forKey: OPFontTraitsAttribute]];
 }
 
-- (id)initWithFontAttributes:(NSDictionary *)attributes
+- (id) initWithFontAttributes: (NSDictionary *)attributes
 {
-    if ((self = [super init]) != nil) {
-        if (attributes) {
-            _attributes = [attributes copy];
-            // fill the rest of attributes given the font
-            NSString *fontName = [attributes objectForKey:kCTFontNameAttribute];
-            
-            if (fontName != nil) {
-                //DLog(@"fontName: %@", fontName);
-                FcPattern *pat = opal_FcPatternCacheLookup([fontName UTF8String]);
-                cairo_font_face_t *unscaled;
-                if (pat) {
-                    unscaled = cairo_ft_font_face_create_for_pattern(pat);
-                } else {
-                    [self release];
-                    return NULL;
-                }
-                cairo_matrix_t ident;
-                cairo_matrix_init_identity(&ident);
-                //DLog(@"1");
-                cairo_font_options_t *opts = cairo_font_options_create();
-                //DLog(@"2");
-                cairo_font_options_set_hint_metrics(opts, CAIRO_HINT_METRICS_OFF);
-                //DLog(@"3");
-                cairo_font_options_set_hint_style(opts, CAIRO_HINT_STYLE_NONE);
-                //DLog(@"4");
-                self->cairofont = cairo_scaled_font_create(unscaled, &ident, &ident, opts);
-                //DLog(@"5");
-                cairo_font_options_destroy(opts);
-                //DLog(@"6");
-            }
-        } else {
-            _attributes = [NSDictionary new];
-        }
-    }
-    return self;
+  if ((self = [super init]) != nil)
+  {
+    if (attributes)
+      _attributes = [attributes copy];
+    else
+      _attributes = [NSDictionary new];
+  }
+  return self;
 }
 
 - (void) encodeWithCoder: (NSCoder *)aCoder
@@ -217,7 +185,7 @@
 
 - (id) copyWithZone: (NSZone *)z
 {
-  CTNSFontDescriptor *f = [isa allocWithZone: z];
+  OPFontDescriptor *f = [isa allocWithZone: z];
 
   if (f != nil)
   {
@@ -234,7 +202,7 @@
   return nil;
 }
 
-- (CTNSFontDescriptor *) matchingFontDescriptorWithMandatoryKeys: (NSSet *)keys
+- (OPFontDescriptor *) matchingFontDescriptorWithMandatoryKeys: (NSSet *)keys
 {
   NSArray *found = [self matchingFontDescriptorsWithMandatoryKeys: keys];
 
@@ -250,7 +218,7 @@
 
 - (NSAffineTransform *) matrix
 {
-  return [self objectForKey: CTNSFontMatrixAttribute];
+  return [self objectForKey: OPFontMatrixAttribute];
 }
 
 /**
@@ -294,24 +262,24 @@
 - (CGFloat) pointSize
 {
   // NOTE: 0 is returned if point size is not defined
-  return [[self objectForKey: kCTFontSizeAttribute] doubleValue];
+  return [[self objectForKey: OPFontSizeAttribute] doubleValue];
 }
 
 - (NSString *) postscriptName
 {
-  return [self objectForKey: kCTFontNameAttribute];
+  return [self objectForKey: OPFontNameAttribute];
 }
 
-- (CTNSFontSymbolicTraits) symbolicTraits
+- (OPFontSymbolicTraits) symbolicTraits
 {
-  NSDictionary *traits = [self objectForKey: CTNSFontTraitsAttribute];
+  NSDictionary *traits = [self objectForKey: OPFontTraitsAttribute];
   if (traits == nil)
   {
     return 0;
   }
   else
   {
-    return [[traits objectForKey: CTNSFontSymbolicTrait] unsignedIntValue];
+    return [[traits objectForKey: OPFontSymbolicTrait] unsignedIntValue];
   }
 }
 

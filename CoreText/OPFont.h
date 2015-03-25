@@ -1,5 +1,5 @@
 /*
-   CTNSFont.h
+   OPFont.h
 
    The font class
 
@@ -28,19 +28,19 @@
    Boston, MA 02110-1301, USA.
 */
 
-#ifndef _GNUstep_H_CTNSFont
-#define _GNUstep_H_CTNSFont
+#ifndef _GNUstep_H_OPFont
+#define _GNUstep_H_OPFont
 
-#import "CTFont.h"
+#include <CoreText/CTFont.h>
 #import <Foundation/NSObject.h>
 #import <Foundation/NSGeometry.h>
 
-#import "CTNSFontDescriptor.h"
+#import "OPFontDescriptor.h"
 
 @class NSAffineTransform;
 @class NSCharacterSet;
 @class NSDictionary;
-@class CTNSFontDescriptor;
+@class OPFontDescriptor;
 @class NSGraphicsContext;
 
 typedef unsigned int NSGlyph;
@@ -64,15 +64,15 @@ typedef enum _NSMultibyteGlyphPacking {
   NSFourByteGlyphPacking
 } NSMultibyteGlyphPacking;
 
-typedef enum _CTNSFontRenderingMode
+typedef enum _OPFontRenderingMode
 {
-  CTNSFontDefaultRenderingMode = 0,
-  CTNSFontAntialiasedRenderingMode,
-  CTNSFontIntegerAdvancementsRenderingMode,
-  CTNSFontAntialiasedIntegerAdvancementsRenderingMode
-} CTNSFontRenderingMode;
+  OPFontDefaultRenderingMode = 0,
+  OPFontAntialiasedRenderingMode,
+  OPFontIntegerAdvancementsRenderingMode,
+  OPFontAntialiasedIntegerAdvancementsRenderingMode
+} OPFontRenderingMode;
 
-const CGFloat *CTNSFontIdentityMatrix;
+const CGFloat *OPFontIdentityMatrix;
 
 
 /**
@@ -93,25 +93,13 @@ typedef union _OPAffineTransform
  * (often 2048 units per EM square) are divided by unitsPerEM, then transformed by
  * the PostScript matrix (textTransform scaled by pointSize).
  */
-@interface CTNSFont : NSObject {
-  CTNSFontDescriptor *_descriptor;
+@interface OPFont : NSObject
+{
+  OPFontDescriptor *_descriptor;
   OPAffineTransform _matrix;
-  BOOL isFixedPitch;
-  CGFloat ascender;
-  CGFloat descender;
-  CGFloat capHeight;
-  CGFloat italicAngle;
-  CGFloat leading;
-  CGFloat underlinePosition;
-  CGFloat underlineThickness;
-  CGFloat xHeight;
-  NSUInteger numberOfGlyphs;
-  NSStringEncoding mostCompatibleStringEncoding;
-  NSString* fontName;
-  NSString* familyName;
 }
 
-//2
+//
 // Querying the Font
 //
 - (NSRect) boundingRectForFont;
@@ -129,8 +117,8 @@ typedef union _OPAffineTransform
  */
 - (NSAffineTransform*) textTransform;
 - (CGFloat) pointSize;
-- (CTNSFont*) printerFont;
-- (CTNSFont*) screenFont;
+- (OPFont*) printerFont;
+- (OPFont*) screenFont;
 - (CGFloat) ascender;
 - (CGFloat) descender;
 - (CGFloat) capHeight;
@@ -142,37 +130,37 @@ typedef union _OPAffineTransform
 - (CGFloat) xHeight;
 - (NSUInteger) numberOfGlyphs;
 - (NSCharacterSet*) coveredCharacterSet;
-- (CTNSFontDescriptor*) fontDescriptor;
-- (CTNSFontRenderingMode) renderingMode;
-- (CTNSFont*) screenFontWithRenderingMode: (CTNSFontRenderingMode)mode;
+- (OPFontDescriptor*) fontDescriptor;
+- (OPFontRenderingMode) renderingMode;
+- (OPFont*) screenFontWithRenderingMode: (OPFontRenderingMode)mode;
 
 //
 // Manipulating Glyphs
 //
-- (CGSize) advancementForGlyph: (CGGlyph)aGlyph;
-- (CGRect) boundingRectForGlyph: (CGGlyph)aGlyph;
-- (void) getAdvancements: (CGSize [])advancements
-               forGlyphs: (const CGGlyph [])glyphs
+- (NSSize) advancementForGlyph: (NSGlyph)aGlyph;
+- (NSRect) boundingRectForGlyph: (NSGlyph)aGlyph;
+- (void) getAdvancements: (NSSizeArray)advancements
+               forGlyphs: (const NSGlyph*)glyphs
                    count: (NSUInteger)count;
-- (void) getAdvancements: (CGSize [])advancements
+- (void) getAdvancements: (NSSizeArray)advancements
          forPackedGlyphs: (const void*)packedGlyphs
                   length: (NSUInteger)count;
-- (void) getBoundingRects: (CGRect [])advancements
-                forGlyphs: (const CGGlyph*)glyphs
+- (void) getBoundingRects: (NSRectArray)advancements
+                forGlyphs: (const NSGlyph*)glyphs
                     count: (NSUInteger)count;
-- (CGGlyph) glyphWithName: (NSString*)glyphName;
+- (NSGlyph) glyphWithName: (NSString*)glyphName;
 - (NSStringEncoding) mostCompatibleStringEncoding;
 
 //
 // CTFont private
 //
-+ (CTNSFont*) fontWithDescriptor: (CTNSFontDescriptor*)descriptor
-                       	options: (CTFontOptions)options;
-+ (CTNSFont*) UIFontWithType: (CTFontUIFontType)type
++ (OPFont*) fontWithDescriptor: (OPFontDescriptor*)descriptor
+                       options: (CTFontOptions)options;
++ (OPFont*) UIFontWithType: (CTFontUIFontType)type
                       size: (CGFloat)size
                forLanguage: (NSString*)languageCode;
-+ (CTNSFont*) fontWithGraphicsFont: (CGFontRef)graphics
-            additionalDescriptor: (CTNSFontDescriptor*)descriptor;
++ (OPFont*) fontWithGraphicsFont: (CGFontRef)graphics
+            additionalDescriptor: (OPFontDescriptor*)descriptor;
 - (CGFloat) unitsPerEm;
 - (NSString*) nameForKey: (NSString*)nameKey;
 - (NSString*) localizedNameForKey: (NSString*)nameKey
@@ -195,7 +183,7 @@ typedef union _OPAffineTransform
                          transform: (const CGAffineTransform *)xform;
 - (NSArray*) variationAxes;
 - (NSDictionary*) variation;
-- (CGFontRef) graphicsFontWithDescriptor: (CTNSFontDescriptor**)descriptorOut;
+- (CGFontRef) graphicsFontWithDescriptor: (OPFontDescriptor**)descriptorOut;
 - (NSArray*) availableTablesWithOptions: (CTFontTableOptions)options;
 - (NSData*) tableForTag: (CTFontTableTag)tag
             withOptions: (CTFontTableOptions)options;
@@ -206,9 +194,9 @@ typedef union _OPAffineTransform
 + (CTFontRef) fontWithData: (NSData*)fontData
                       size: (CGFloat)size
        		          matrix: (const CGFloat*)fontMatrix
-      additionalDescriptor: (CTNSFontDescriptor*)descriptor;
+      additionalDescriptor: (OPFontDescriptor*)descriptor;
 
-- (id)_initWithDescriptor: (CTNSFontDescriptor*)descriptor
+- (id)_initWithDescriptor: (OPFontDescriptor*)descriptor
                   options: (CTFontOptions)options;
 
 // Put in -gui:
@@ -217,15 +205,15 @@ typedef union _OPAffineTransform
 // Creating a Font Object
 //
 
-+ (CTNSFont*) fontWithName: (NSString*)aFontName
++ (OPFont*) fontWithName: (NSString*)aFontName
                   matrix: (const CGFloat*)fontMatrix;
-+ (CTNSFont*) fontWithName: (NSString*)aFontName
++ (OPFont*) fontWithName: (NSString*)aFontName
                     size: (CGFloat)fontSize;
-+ (CTNSFont*) fontWithDescriptor: (CTNSFontDescriptor*)descriptor size: (CGFloat)size;
-+ (CTNSFont*) fontWithDescriptor: (CTNSFontDescriptor*)descriptor
++ (OPFont*) fontWithDescriptor: (OPFontDescriptor*)descriptor size: (CGFloat)size;
++ (OPFont*) fontWithDescriptor: (OPFontDescriptor*)descriptor
                  textTransform: (NSAffineTransform*)transform;
 // This method was a mistake in the 10.4 documentation
-+ (CTNSFont*) fontWithDescriptor: (CTNSFontDescriptor*)descriptor
++ (OPFont*) fontWithDescriptor: (OPFontDescriptor*)descriptor
                           size: (CGFloat)size
                  textTransform: (NSAffineTransform*)transform;
 
@@ -233,25 +221,25 @@ typedef union _OPAffineTransform
 // UI fonts
 //
 
-+ (CTNSFont*) boldSystemFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) systemFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) titleBarFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) menuFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) messageFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) paletteFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) toolTipsFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) controlContentFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) labelFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) menuBarFontOfSize: (CGFloat)fontSize;
++ (OPFont*) boldSystemFontOfSize: (CGFloat)fontSize;
++ (OPFont*) systemFontOfSize: (CGFloat)fontSize;
++ (OPFont*) titleBarFontOfSize: (CGFloat)fontSize;
++ (OPFont*) menuFontOfSize: (CGFloat)fontSize;
++ (OPFont*) messageFontOfSize: (CGFloat)fontSize;
++ (OPFont*) paletteFontOfSize: (CGFloat)fontSize;
++ (OPFont*) toolTipsFontOfSize: (CGFloat)fontSize;
++ (OPFont*) controlContentFontOfSize: (CGFloat)fontSize;
++ (OPFont*) labelFontOfSize: (CGFloat)fontSize;
++ (OPFont*) menuBarFontOfSize: (CGFloat)fontSize;
 
 //
 // User fonts
 //
 
-+ (CTNSFont*) userFixedPitchFontOfSize: (CGFloat)fontSize;
-+ (CTNSFont*) userFontOfSize: (CGFloat)fontSize;
-+ (void) setUserFixedPitchFont: (CTNSFont*)userFont;
-+ (void) setUserFont: (CTNSFont*)userFont;
++ (OPFont*) userFixedPitchFontOfSize: (CGFloat)fontSize;
++ (OPFont*) userFontOfSize: (CGFloat)fontSize;
++ (void) setUserFixedPitchFont: (OPFont*)userFont;
++ (void) setUserFont: (OPFont*)userFont;
 
 
 //
@@ -271,7 +259,7 @@ typedef union _OPAffineTransform
 //
 // CoreText private
 //
-+ (CTNSFont*) UIFontWithType: (CTFontUIFontType)type
++ (OPFont*) UIFontWithType: (CTFontUIFontType)type
                       size: (CGFloat)size
                forLanguage: (NSString*)languageCode;
 
@@ -311,4 +299,4 @@ typedef union _OPAffineTransform
 
 @end
 
-#endif // _GNUstep_H_CTNSFont
+#endif // _GNUstep_H_OPFont

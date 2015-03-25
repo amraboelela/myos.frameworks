@@ -1,4 +1,4 @@
-/** <title>CTNSFont</title>
+/** <title>OPFont</title>
 
    <abstract>The font class</abstract>
 
@@ -38,36 +38,17 @@
 #import <Foundation/NSDebug.h>
 #import <Foundation/NSValue.h>
 
-//#import <CoreGraphics/StandardGlyphNames.h>
+#import "OPFont.h"
 
-#import "OPFreeTypeUtil.h"
-#import "CTNSFont.h"
+const CGFloat *OPFontIdentityMatrix;
 
-#define REAL_SIZE(x) CGFloatFromFontUnits(x, [_descriptor pointSize], ft_face->units_per_EM)
 
-// FIXME: This definitions need to be ammended to take vertical typesetting into
-// account.
-#define TRANSFORMED_SIZE(x,y)\
-  ((CGSize)(CGSizeApplyAffineTransform(CGSizeMake(REAL_SIZE(x), REAL_SIZE(y)), _matrix.CGTransform)))
-
-#define TRANSFORMED_POINT(x,y)\
-  ((CGPoint)(CGPointApplyAffineTransform(CGPointMake(REAL_SIZE(x), REAL_SIZE(y)), _matrix.CGTransform)))
-
-#define TRANSFORMED_RECT(x,y,w,h)\
-  ((CGRect)(CGRectApplyAffineTransform(CGRectMake(REAL_SIZE(x), REAL_SIZE(y), REAL_SIZE(w), REAL_SIZE(h)), _matrix.CGTransform)))
-
-const CGFloat *CTNSFontIdentityMatrix;
-
-//static CFDictionaryRef StandardGlyphNamesDictionary;
-static NSDictionary * StandardGlyphNamesDictionary;
-
-@implementation CTNSFont
+@implementation OPFont
 
 + (void)load
 {
   static CGFloat identity[6] = {1.0, 0.0, 1.0, 0.0, 0.0, 0.0};
-  CTNSFontIdentityMatrix = identity;
-  //StandardGlyphNamesDictionary = CFDictionaryCreate (NULL, StandardGlyphNamesKeys, StandardGlyphNames, 258, NULL, NULL);
+  OPFontIdentityMatrix = identity;
 }
 
 //
@@ -77,35 +58,29 @@ static NSDictionary * StandardGlyphNamesDictionary;
 {
   return NSMakeRect(0,0,0,0);
 }
-
 - (NSString*) displayName
 {
-  return familyName;
+  return [self nameForKey: kCTFontFullNameKey];
 }
-
 - (NSString*) familyName
 {
-    return familyName;
+  return [self nameForKey: kCTFontFamilyNameKey];
 }
-
 - (NSString*) fontName
 {
-    return fontName;
+  return [self nameForKey: kCTFontPostScriptNameKey];
 }
-
 - (BOOL) isFixedPitch
 {
-  return isFixedPitch;
+  return NO;
 }
-
 - (const CGFloat*) matrix
 {
   return _matrix.PSMatrix;
 }
-
 - (NSAffineTransform*) textTransform
 {
-  // FIXME: Need to implement bridging between CTNSFontMatrixAttribute and kCTFontMatrixAttribute somewhere
+  // FIXME: Need to implement bridging between OPFontMatrixAttribute and kCTFontMatrixAttribute somewhere
   NSAffineTransform *transform = [NSAffineTransform transform];
   [transform setTransformStruct: _matrix.NSTransform];
   return transform;
@@ -113,811 +88,171 @@ static NSDictionary * StandardGlyphNamesDictionary;
 
 - (CGFloat) pointSize
 {
-  return [[[self fontDescriptor] objectForKey: kCTFontSizeAttribute] doubleValue];
+  return [[[self fontDescriptor] objectForKey: OPFontSizeAttribute] doubleValue];
 }
-
-- (CTNSFont*) printerFont
+- (OPFont*) printerFont
 {
   return nil;
 }
-
-- (CTNSFont*) screenFont
+- (OPFont*) screenFont
 {
   return nil;
 }
-
 - (CGFloat) ascender
 {
-  return ascender;
+  return 0;
 }
-
 - (CGFloat) descender
 {
-  return descender;
+  return 0;
 }
-
 - (CGFloat) capHeight
 {
-  return capHeight;
+  return 0;
 }
-
 - (CGFloat) italicAngle
 {
-    return italicAngle;
+  return 0;
 }
-
 - (CGFloat) leading
 {
-    return leading;
+  return 0;
 }
-
 - (NSSize) maximumAdvancement
 {
-    return NSMakeSize(0,0);
+  return NSMakeSize(0,0);
 }
-
 - (CGFloat) underlinePosition
 {
-    return underlinePosition;
+  return 0;
 }
-
 - (CGFloat) underlineThickness
 {
-    return underlineThickness;
+  return 0;
 }
-
 - (CGFloat) xHeight
 {
-    return xHeight;
+  return 0;
 }
-
 - (NSUInteger) numberOfGlyphs
 {
-    return numberOfGlyphs;
+  return 0;
 }
-
 - (NSCharacterSet*) coveredCharacterSet
 {
-    return [[self fontDescriptor] objectForKey: kCTFontCharacterSetAttribute];
+  return [[self fontDescriptor] objectForKey: kCTFontCharacterSetAttribute];
 }
-
-- (CTNSFontDescriptor*) fontDescriptor
+- (OPFontDescriptor*) fontDescriptor
 {
-    return _descriptor;
+  return _descriptor;
 }
-
-- (CTNSFontRenderingMode) renderingMode
+- (OPFontRenderingMode) renderingMode
 {
-    return 0;
+  return 0;
 }
-
-- (CTNSFont*) screenFontWithRenderingMode: (CTNSFontRenderingMode)mode
+- (OPFont*) screenFontWithRenderingMode: (OPFontRenderingMode)mode
 {
-    return nil;
+  return nil;
 }
 
 //
 // Manipulating Glyphs
 //
-- (CGSize)advancementForGlyph: (CGGlyph)glyph
+- (NSSize) advancementForGlyph: (NSGlyph)aGlyph
 {
-    if ((NSNullGlyph == glyph) || (NSControlGlyph == glyph)) {
-        return CGSizeMake(0,0);
-    }
-    
-    FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
-    
-    FT_Load_Glyph(ft_face, glyph, FT_LOAD_NO_SCALE);
-    CGSize size = CGSizeMake(REAL_SIZE(ft_face->glyph->metrics.horiAdvance),
-                             REAL_SIZE(ft_face->glyph->metrics.vertAdvance));
-    
-    cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
-    
-    return size;
-    /*
-     * FIXME: Add fast path for integer rendering modes. We don't need to do
-     * so many integer->float conversions then.
-     */
+  return NSMakeSize(0,0);
 }
-
-- (CGRect) boundingRectForGlyph: (CGGlyph)aGlyph
+- (NSRect) boundingRectForGlyph: (NSGlyph)aGlyph
 {
-    FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
-    
-    FT_Load_Glyph(ft_face, aGlyph, FT_LOAD_NO_SCALE);
-    FT_Glyph_Metrics m = ft_face->glyph->metrics;
-    CGRect bbox = CGRectMake(m.horiBearingX, m.horiBearingY - m.height, m.width, m.height);
-    
-    cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
-    
-    return bbox;
+  return NSMakeRect(0,0,0,0);
 }
-
-- (void) getAdvancements: (CGSize [])advancements
-               forGlyphs: (const CGGlyph [])glyphs
+- (void) getAdvancements: (NSSizeArray)advancements
+               forGlyphs: (const NSGlyph*)glyphs
                    count: (NSUInteger)count
 {
-    CGSize nullSize = CGSizeMake(0,0);
-    for (int i = 0; i < count; i++) {
-        if ((NSNullGlyph == glyphs[i]) || (NSControlGlyph == glyphs[i])) {
-            advancements[i] = nullSize;
-        } else {
-            //TODO: Optimize if too slow.
-            advancements[i] = [self advancementForGlyph: glyphs[i]];
-        }
-    }
 }
-
-- (void) getAdvancements: (CGSize [])advancements
+- (void) getAdvancements: (NSSizeArray)advancements
          forPackedGlyphs: (const void*)packedGlyphs
                   length: (NSUInteger)count
 {
 }
-
-- (void) getBoundingRects: (CGRect [])boundingRects
-                forGlyphs: (const CGGlyph [])glyphs
+- (void) getBoundingRects: (NSRectArray)advancements
+                forGlyphs: (const NSGlyph*)glyphs
                     count: (NSUInteger)count
 {
-    for (int i = 0; i < count; i++) {
-        if ((NSNullGlyph == glyphs[i]) || (NSControlGlyph == glyphs[i])) {
-            boundingRects[i] = CGRectZero;
-        } else {
-            //TODO: Optimize if too slow.
-            boundingRects[i] = [self boundingRectForGlyph:glyphs[i]];
-        }
-    }
 }
-
-- (FT_String*)glyphNameForKey:(NSString*)glyphKey
+- (NSGlyph) glyphWithName: (NSString*)glyphName
 {
-    if (!StandardGlyphNamesDictionary) {
-        NSString * _StandardGlyphNames[258] = {
-            @".notdef",
-            @".null",
-            @"nonmarkingreturn",
-            @"space",
-            @"exclam",
-            @"quotedbl",
-            @"numbersign",
-            @"dollar",
-            @"percent",
-            @"ampersand",
-            @"quotesingle",
-            @"parenleft",
-            @"parenright",
-            @"asterisk",
-            @"plus",
-            @"comma",
-            @"hyphen",
-            @"period",
-            @"slash",
-            @"zero",
-            @"one",
-            @"two",
-            @"three",
-            @"four",
-            @"five",
-            @"six",
-            @"seven",
-            @"eight",
-            @"nine",
-            @"colon",
-            @"semicolon",
-            @"less",
-            @"equal",
-            @"greater",
-            @"question",
-            @"at",
-            @"A",
-            @"B",
-            @"C",
-            @"D",
-            @"E",
-            @"F",
-            @"G",
-            @"H",
-            @"I",
-            @"J",
-            @"K",
-            @"L",
-            @"M",
-            @"N",
-            @"O",
-            @"P",
-            @"Q",
-            @"R",
-            @"S",
-            @"T",
-            @"U",
-            @"V",
-            @"W",
-            @"X",
-            @"Y",
-            @"Z",
-            @"bracketleft",
-            @"backslash",
-            @"bracketright",
-            @"asciicircum",
-            @"underscore",
-            @"grave",
-            @"a",
-            @"b",
-            @"c",
-            @"d",
-            @"e",
-            @"f",
-            @"g",
-            @"h",
-            @"i",
-            @"j",
-            @"k",
-            @"l",
-            @"m",
-            @"n",
-            @"o",
-            @"p",
-            @"q",
-            @"r",
-            @"s",
-            @"t",
-            @"u",
-            @"v",
-            @"w",
-            @"x",
-            @"y",
-            @"z",
-            @"braceleft",
-            @"bar",
-            @"braceright",
-            @"asciitilde",
-            @"Adieresis",
-            @"Aring",
-            @"Ccedilla",
-            @"Eacute",
-            @"Ntilde",
-            @"Odieresis",
-            @"Udieresis",
-            @"aacute",
-            @"agrave",
-            @"acircumflex",
-            @"adieresis",
-            @"atilde",
-            @"aring",
-            @"ccedilla",
-            @"eacute",
-            @"egrave",
-            @"ecircumflex",
-            @"edieresis",
-            @"iacute",
-            @"igrave",
-            @"icircumflex",
-            @"idieresis",
-            @"ntilde",
-            @"oacute",
-            @"ograve",
-            @"ocircumflex",
-            @"odieresis",
-            @"otilde",
-            @"uacute",
-            @"ugrave",
-            @"ucircumflex",
-            @"udieresis",
-            @"dagger",
-            @"degree",
-            @"cent",
-            @"sterling",
-            @"section",
-            @"bullet",
-            @"paragraph",
-            @"germandbls",
-            @"registered",
-            @"copyright",
-            @"trademark",
-            @"acute",
-            @"dieresis",
-            @"notequal",
-            @"AE",
-            @"Oslash",
-            @"infinity",
-            @"plusminus",
-            @"lessequal",
-            @"greaterequal",
-            @"yen",
-            @"mu",
-            @"partialdiff",
-            @"summation",
-            @"product",
-            @"pi",
-            @"integral",
-            @"ordfeminine",
-            @"ordmasculine",
-            @"Omega",
-            @"ae",
-            @"oslash",
-            @"questiondown",
-            @"exclamdown",
-            @"logicalnot",
-            @"radical",
-            @"florin",
-            @"approxequal",
-            @"Delta",
-            @"guillemotleft",
-            @"guillemotright",
-            @"ellipsis",
-            @"nonbreakingspace",
-            @"Agrave",
-            @"Atilde",
-            @"Otilde",
-            @"OE",
-            @"oe",
-            @"endash",
-            @"emdash",
-            @"quotedblleft",
-            @"quotedblright",
-            @"quoteleft",
-            @"quoteright",
-            @"divide",
-            @"lozenge",
-            @"ydieresis",
-            @"Ydieresis",
-            @"fraction",
-            @"currency",
-            @"guilsinglleft",
-            @"guilsinglright",
-            @"fi",
-            @"fl",
-            @"daggerdbl",
-            @"periodcentered",
-            @"quotesinglbase",
-            @"quotedblbase",
-            @"perthousand",
-            @"Acircumflex",
-            @"Ecircumflex",
-            @"Aacute",
-            @"Edieresis",
-            @"Egrave",
-            @"Iacute",
-            @"Icircumflex",
-            @"Idieresis",
-            @"Igrave",
-            @"Oacute",
-            @"Ocircumflex",
-            @"apple",
-            @"Ograve",
-            @"Uacute",
-            @"Ucircumflex",
-            @"Ugrave",
-            @"dotlessi",
-            @"circumflex",
-            @"tilde",
-            @"macron",
-            @"breve",
-            @"dotaccent",
-            @"ring",
-            @"cedilla",
-            @"hungarumlaut",
-            @"ogonek",
-            @"caron",
-            @"Lslash",
-            @"lslash",
-            @"Scaron",
-            @"scaron",
-            @"Zcaron",
-            @"zcaron",
-            @"brokenbar",
-            @"Eth",
-            @"eth",
-            @"Yacute",
-            @"yacute",
-            @"Thorn",
-            @"thorn",
-            @"minus",
-            @"multiply",
-            @"onesuperior",
-            @"twosuperior",
-            @"threesuperior",
-            @"onehalf",
-            @"onequarter",
-            @"threequarters",
-            @"franc",
-            @"Gbreve",
-            @"gbreve",
-            @"Idotaccent",
-            @"Scedilla",
-            @"scedilla",
-            @"Cacute",
-            @"cacute",
-            @"Ccaron",
-            @"ccaron",
-            @"dcroat"
-        };
-        NSString * _StandardGlyphNamesKeys[258] = {
-            @".notdef",
-            @".null",
-            @"nonmarkingreturn",
-            @" ",
-            @"!",
-            @"\"",
-            @"#",
-            @"$",
-            @"%",
-            @"&",
-            @"'",
-            @"(",
-            @")",
-            @"*",
-            @"+",
-            @",",
-            @"-",
-            @".",
-            @"\\",
-            @"0",
-            @"1",
-            @"2",
-            @"3",
-            @"4",
-            @"5",
-            @"6",
-            @"7",
-            @"8",
-            @"9",
-            @":",
-            @";",
-            @"<",
-            @"=",
-            @">",
-            @"?",
-            @"@",
-            @"A",
-            @"B",
-            @"C",
-            @"D",
-            @"E",
-            @"F",
-            @"G",
-            @"H",
-            @"I",
-            @"J",
-            @"K",
-            @"L",
-            @"M",
-            @"N",
-            @"O",
-            @"P",
-            @"Q",
-            @"R",
-            @"S",
-            @"T",
-            @"U",
-            @"V",
-            @"W",
-            @"X",
-            @"Y",
-            @"Z",
-            @"bracketleft",
-            @"backslash",
-            @"bracketright",
-            @"asciicircum",
-            @"_",
-            @"grave",
-            @"a",
-            @"b",
-            @"c",
-            @"d",
-            @"e",
-            @"f",
-            @"g",
-            @"h",
-            @"i",
-            @"j",
-            @"k",
-            @"l",
-            @"m",
-            @"n",
-            @"o",
-            @"p",
-            @"q",
-            @"r",
-            @"s",
-            @"t",
-            @"u",
-            @"v",
-            @"w",
-            @"x",
-            @"y",
-            @"z",
-            @"braceleft",
-            @"bar",
-            @"braceright",
-            @"asciitilde",
-            @"Adieresis",
-            @"Aring",
-            @"Ccedilla",
-            @"Eacute",
-            @"Ntilde",
-            @"Odieresis",
-            @"Udieresis",
-            @"aacute",
-            @"agrave",
-            @"acircumflex",
-            @"adieresis",
-            @"atilde",
-            @"aring",
-            @"ccedilla",
-            @"eacute",
-            @"egrave",
-            @"ecircumflex",
-            @"edieresis",
-            @"iacute",
-            @"igrave",
-            @"icircumflex",
-            @"idieresis",
-            @"ntilde",
-            @"oacute",
-            @"ograve",
-            @"ocircumflex",
-            @"odieresis",
-            @"otilde",
-            @"uacute",
-            @"ugrave",
-            @"ucircumflex",
-            @"udieresis",
-            @"dagger",
-            @"degree",
-            @"cent",
-            @"sterling",
-            @"section",
-            @"bullet",
-            @"paragraph",
-            @"germandbls",
-            @"registered",
-            @"copyright",
-            @"trademark",
-            @"acute",
-            @"dieresis",
-            @"notequal",
-            @"AE",
-            @"Oslash",
-            @"infinity",
-            @"plusminus",
-            @"lessequal",
-            @"greaterequal",
-            @"yen",
-            @"mu",
-            @"partialdiff",
-            @"summation",
-            @"product",
-            @"pi",
-            @"integral",
-            @"ordfeminine",
-            @"ordmasculine",
-            @"Omega",
-            @"ae",
-            @"oslash",
-            @"questiondown",
-            @"exclamdown",
-            @"logicalnot",
-            @"radical",
-            @"florin",
-            @"approxequal",
-            @"Delta",
-            @"guillemotleft",
-            @"guillemotright",
-            @"ellipsis",
-            @"nonbreakingspace",
-            @"Agrave",
-            @"Atilde",
-            @"Otilde",
-            @"OE",
-            @"oe",
-            @"endash",
-            @"emdash",
-            @"quotedblleft",
-            @"quotedblright",
-            @"quoteleft",
-            @"quoteright",
-            @"divide",
-            @"lozenge",
-            @"ydieresis",
-            @"Ydieresis",
-            @"fraction",
-            @"currency",
-            @"guilsinglleft",
-            @"guilsinglright",
-            @"fi",
-            @"fl",
-            @"daggerdbl",
-            @"periodcentered",
-            @"quotesinglbase",
-            @"quotedblbase",
-            @"perthousand",
-            @"Acircumflex",
-            @"Ecircumflex",
-            @"Aacute",
-            @"Edieresis",
-            @"Egrave",
-            @"Iacute",
-            @"Icircumflex",
-            @"Idieresis",
-            @"Igrave",
-            @"Oacute",
-            @"Ocircumflex",
-            @"apple",
-            @"Ograve",
-            @"Uacute",
-            @"Ucircumflex",
-            @"Ugrave",
-            @"dotlessi",
-            @"circumflex",
-            @"tilde",
-            @"macron",
-            @"breve",
-            @"dotaccent",
-            @"ring",
-            @"cedilla",
-            @"hungarumlaut",
-            @"ogonek",
-            @"caron",
-            @"Lslash",
-            @"lslash",
-            @"Scaron",
-            @"scaron",
-            @"Zcaron",
-            @"zcaron",
-            @"brokenbar",
-            @"Eth",
-            @"eth",
-            @"Yacute",
-            @"yacute",
-            @"Thorn",
-            @"thorn",
-            @"minus",
-            @"multiply",
-            @"onesuperior",
-            @"twosuperior",
-            @"threesuperior",
-            @"onehalf",
-            @"onequarter",
-            @"threequarters",
-            @"franc",
-            @"Gbreve",
-            @"gbreve",
-            @"Idotaccent",
-            @"Scedilla",
-            @"scedilla",
-            @"Cacute",
-            @"cacute",
-            @"Ccaron",
-            @"ccaron",
-            @"dcroat"
-        };
-        StandardGlyphNamesDictionary = [[NSDictionary dictionaryWithObjects:_StandardGlyphNames forKeys:_StandardGlyphNamesKeys count:258] retain];
-    }
-    return (FT_String*)[[StandardGlyphNamesDictionary objectForKey:glyphKey] UTF8String];
+  return 0;
 }
-
-- (CGGlyph) glyphWithName: (NSString*)glyphName
-{
-    FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
-    CGGlyph result = 0;
-    //TODO using #import <CoreGraphics/StandardGlyphNames.h>
-    result = (CGGlyph)FT_Get_Name_Index(ft_face, (FT_String*)[glyphName UTF8String]);
-    
-    if (result == 0) {
-        FT_String* nameFromKey = [self glyphNameForKey:glyphName];
-        if (nameFromKey != NULL) {
-            result = (CGGlyph)FT_Get_Name_Index(ft_face, nameFromKey);
-        }
-    }
-    
-    
-    cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
-    
-    return result;
-}
-
 - (NSStringEncoding) mostCompatibleStringEncoding
 {
-    return mostCompatibleStringEncoding;
+  return 0;
 }
 
 //
 // CTFont private
 //
-+ (CTNSFont*) fontWithDescriptor: (CTNSFontDescriptor*)descriptor
++ (OPFont*) fontWithDescriptor: (OPFontDescriptor*)descriptor
                        options: (CTFontOptions)options
 {
-    // FIXME: placeholder code.
-    return [[[CTNSFont alloc] _initWithDescriptor: descriptor
-                                          options: options] autorelease];
+  // FIXME: placeholder code.
+  return [[[OPFont alloc] _initWithDescriptor: descriptor
+                                      options: options] autorelease];
 }
 
-+ (CTNSFont*) fontWithGraphicsFont: (CGFontRef)graphics
-            additionalDescriptor: (CTNSFontDescriptor*)descriptor
++ (OPFont*) fontWithGraphicsFont: (CGFontRef)graphics
+            additionalDescriptor: (OPFontDescriptor*)descriptor
 {
 	return nil;
 }
 
-- (id)_initWithDescriptor: (CTNSFontDescriptor*)aDescriptor
+- (id)_initWithDescriptor: (OPFontDescriptor*)aDescriptor
                   options: (CTFontOptions)options
 {
-    if (nil == (self = [super init])) {
-        return nil;
-    }
-    ASSIGN(_descriptor, aDescriptor);
-    NSAffineTransform *transform = [_descriptor objectForKey: CTNSFontMatrixAttribute];
-    if (transform == nil) {
-        _matrix.CGTransform = CGAffineTransformIdentity;
-    } else {
-        _matrix.NSTransform = [transform transformStruct];
-    }
-    // TODO set the rest of the attributes:
-    FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
-    
-    ascender = REAL_SIZE(ft_face->ascender);
-    descender = REAL_SIZE(ft_face->descender);
-    leading = TRANSFORMED_SIZE(0, ft_face->height - (ascender - descender)).height;
-    underlinePosition = TRANSFORMED_POINT(0, ft_face->underline_position).y;
-    underlineThickness = TRANSFORMED_SIZE(0, ft_face->underline_thickness).height;
-    
-    // TT_OS2* OS2Table = FT_Get_Sfnt_Table(ft_face, TTAG_OS2);
-    // if (NULL != OS2Table) {
-    //   capHeight = TRANSFORMED_SIZE(0, OS2Table->sCapHeight).height;
-    //   xHeight = = TRANSFORMED_SIZE(0, OS2Table->sxHeight).height;
-    // }
-    
-    // TT_Postscript *postTable = FT_Get_Sfnt_Table(fontFace, TTAG_post);
-    // if (NULL != postTable) {
-    //   isFixedPitch = postTable->isFixedPitch;
-    //   italicAngle = CGFloatFromFT_Fixed(postTable->italicAngle);
-    // }
-    
-    numberOfGlyphs = ft_face->num_glyphs;
-    
-    fontName = [[[_descriptor fontAttributes] objectForKey:kCTFontNameAttribute] retain];
-    familyName = [[NSString alloc] initWithUTF8String:ft_face->family_name];
-    
-    cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
-    return self;
-}
-
-- (void)dealloc
-{
-    [fontName release];
-    [familyName release];
-    [super dealloc];
+  if (nil == (self = [super init]))
+  {
+    return nil;
+  }
+  ASSIGN(_descriptor, aDescriptor);
+  NSAffineTransform *transform = [_descriptor objectForKey: OPFontMatrixAttribute];
+  if (transform == nil)
+  {
+    _matrix.CGTransform = CGAffineTransformIdentity;
+  }
+  else
+  {
+    _matrix.NSTransform = [transform transformStruct];
+  }
+  return self;
 }
 
 - (CGFloat) unitsPerEm
 {
 	return 0;
 }
-
+- (NSString*) nameForKey: (NSString*)nameKey
+{
+	return nil;
+}
 - (NSString*) localizedNameForKey: (NSString*)nameKey
                          language: (NSString**)languageOut
 {
 	return nil;
 }
-
 - (bool) getGraphicsGlyphsForCharacters: (const unichar *)characters
                          graphicsGlyphs: (const CGGlyph *)glyphs
                                   count: (CFIndex)count
 {
-  memcpy((void*)glyphs, characters, count*sizeof(unichar));
-  return true;
+	return 0;
 }
-
-- (double) getAdvancesForGraphicsGlyphs: (const CGGlyph [])glyphs
-                               advances: (CGSize [])advances
+- (double) getAdvancesForGraphicsGlyphs: (const CGGlyph *)glyphs
+                               advances: (CGSize*)advances
                             orientation: (CTFontOrientation)orientation
                                   count: (CFIndex)count
 {
-  //TODO
-  [self getAdvancements:advances forGlyphs:glyphs count:count];
-
 	return 0;
 }
-
 - (CGRect) getBoundingRectsForGraphicsGlyphs: (const CGGlyph *)glyphs
                                        rects: (CGRect*)rects
                                  orientation: (CTFontOrientation)orientation
@@ -926,39 +261,32 @@ static NSDictionary * StandardGlyphNamesDictionary;
 	CGRect r = {{0,0},{0,0}};
 	return r;
 }
-
 - (void) getVerticalTranslationForGraphicsGlyphs: (const CGGlyph*)glyphs
                                      translation: (CGSize*)translation
                                            count: (CFIndex)count
 {
 }
-
 - (CGPathRef) graphicsPathForGlyph: (CGGlyph)glyph
                          transform: (const CGAffineTransform *)xform
 {
 	return nil;
 }
-
 - (NSArray*) variationAxes
 {
 	return nil;
 }
-
 - (NSDictionary*) variation
 {
 	return nil;
 }
-
-- (CGFontRef) graphicsFontWithDescriptor: (CTNSFontDescriptor**)descriptorOut
+- (CGFontRef) graphicsFontWithDescriptor: (OPFontDescriptor**)descriptorOut
 {
 	return nil;
 }
-
 - (NSArray*) availableTablesWithOptions: (CTFontTableOptions)options
 {
 	return nil;
 }
-
 - (NSData*) tableForTag: (CTFontTableTag)tag
             withOptions: (CTFontTableOptions)options
 {
@@ -972,25 +300,12 @@ static NSDictionary * StandardGlyphNamesDictionary;
 {
 	return nil;
 }
-
 + (CTFontRef) fontWithData: (NSData*)fontData
                       size: (CGFloat)size
        		          matrix: (const CGFloat*)fontMatrix
-      additionalDescriptor: (CTNSFontDescriptor*)descriptor
+      additionalDescriptor: (OPFontDescriptor*)descriptor
 {
 	return nil;
-}
-
-- (NSString *)nameForKey:(NSString *)nameKey
-{
-    return nil;
-}
-
-+ (CTNSFont *)UIFontWithType:(CTFontUIFontType)type
-                      size:(CGFloat)size
-               forLanguage:(NSString*)languageCode
-{
-    return nil;
 }
 
 @end
