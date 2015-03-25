@@ -30,21 +30,6 @@
 #import <stdio.h>
 #import <stdlib.h>
 
-
-//#include "CoreFoundation/CFRuntime.h"
-//#include "CoreFoundation/CFAttributedString.h"
-//#include "CoreFoundation/CFBag.h"
-//#include "CoreFoundation/CFBase.h"
-//#include "CoreFoundation/CFArray.h"
-//#include "CoreFoundation/CFDictionary.h"
-//#include "CoreFoundation/CFString.h"
-
-//#include "GSPrivate.h"
-
-
-//#include <string.h>
-
-
 enum
 {
     _kCFAttributedStringIsMutable = (1<<0),
@@ -559,13 +544,15 @@ CFAttributedStringGetMutableString (CFMutableAttributedStringRef aStr)
 }
 
 void CFAttributedStringReplaceAttributedString (
-                                                CFMutableAttributedStringRef aStr,
+                                                CFMutableAttributedStringRef str,
                                                 CFRange range,
-                                                CFAttributedStringRef replacement)
+                                                CFAttributedStringRef repl)
 {
+    CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                           "replaceCharactersInRange:withAttributeString:", range, repl);
     
-    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "replaceCharactersInRange:withAttributedString:");
-    CFIndex stringSize = CFStringGetLength(aStr->str);
+    
+    CFIndex stringSize = CFStringGetLength(str->str);
     
     
     CFIndex size = range.location + range.length;
@@ -573,74 +560,140 @@ void CFAttributedStringReplaceAttributedString (
     
     CFIndex i = range.location;
     
-    CFStringReplace (aStr->str, range,replacement->str);
+    CFStringReplace (str->str, range,repl->str);
     
-    CFIndex to = CFStringGetLength(replacement->str)+i;
+    CFIndex to = CFStringGetLength(repl->str)+i;
     
     
     CFDictionaryRef attributes = NULL;
-    for(; i < to ; ++i)
+    for (; i < to ; ++i)
     {
         CFIndex idx = (i-range.location);
-        if(CFDictionaryContainsKey(replacement->attributes,&idx))
+        if (CFDictionaryContainsKey(repl->attributes,&idx))
         {
-            attributes = CFDictionaryGetValue(replacement->attributes,&idx);
-            CFAttributedStringSetAttributes ( aStr, CFRangeMake(i,1), CFDictionaryCreateCopy(NULL,attributes), true);
+            attributes = CFDictionaryGetValue(repl->attributes,&idx);
+            CFAttributedStringSetAttributes ( str, CFRangeMake(i,1), CFDictionaryCreateCopy(NULL,attributes), true);
         }
     }
 }
 
 
 void
-CFAttributedStringReplaceString (CFMutableAttributedStringRef aStr,
+CFAttributedStringReplaceString (CFMutableAttributedStringRef str,
                                  CFRange range,
-                                 CFStringRef replacement)
+                                 CFStringRef repl)
 {
-    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "replaceCharactersInRange:withString:");
-    
-    CFStringReplace (aStr->str, range,replacement);
+    //CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "replaceCharactersInRange:withString:");
+    CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str, "replaceCharactersInRange:withString:", range, repl);
+    CFStringReplace (str->str, range,repl);
 }
 
 
 
 void
-CFAttributedStringRemoveAttribute ( CFMutableAttributedStringRef aStr, CFRange range,CFStringRef attrName)
+CFAttributedStringRemoveAttribute(CFMutableAttributedStringRef str, CFRange range, CFStringRef attrName)
 {
-    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "removeAttribute:range:");
-    CFIndex strSize = CFStringGetLength(aStr->str);
+    //CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "removeAttribute:range:");
+      CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, void, str, "removeAttribute:range:", attrName, range);
+    CFIndex strSize = CFStringGetLength(str->str);
     CFIndex index = range.location;
     CFIndex to = index + range.length;
     CFDictionaryRef  dic;
     for(; index < to ; ++index)
     {
-        dic = aStr->attributes;
+        dic = str->attributes;
         if(CFDictionaryContainsKey(dic,&index))
             CFDictionaryRemoveValue ((CFMutableDictionaryRef)CFDictionaryGetValue(dic,&index) ,attrName);
     }
 }
 
 void 
-CFAttributedStringSetAttribute (CFMutableAttributedStringRef aStr,CFRange range,CFStringRef attrName,CFTypeRef value)
+CFAttributedStringSetAttribute(CFMutableAttributedStringRef str, CFRange range, CFStringRef attrName, CFTypeRef value)
 {
-    
-    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "addAttribute:value:range:");
-    CFIndex strSize = CFStringGetLength(aStr->str);
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, void, str, "addAttribute:value:range:", attrName, value, range);
+    CFIndex strSize = CFStringGetLength(str->str);
     CFIndex index = range.location;
     CFIndex to = index + range.length;
-    CFDictionaryRef dic =  aStr->attributes;
-    CFDictionaryRef attr ;
-    for(; index < to ; ++index)
-    {
-        
-        if(CFDictionaryContainsKey(dic,&index))
-        {
+    CFDictionaryRef dic = str->attributes;
+    CFDictionaryRef attr;
+    for (; index < to ; ++index) {
+        if (CFDictionaryContainsKey(dic,&index)) {
             attr = CFDictionaryGetValue(dic,&index);
             CFDictionarySetValue (attr,CFRetain(attrName),CFRetain(value));
         }
     }
 }
 
-
+void
+CFAttributedStringSetAttributes (CFMutableAttributedStringRef str,
+                                 CFRange range, CFDictionaryRef repl,
+                                 Boolean clearOtherAttribs)
+{
+    CFIndex idxS;
+    CFIndex idxE;
+    CFIndex cur;
+    CFRange rS;
+    CFRange rE;
+    CFIndex rangeMax;
+    Attr *array;
+    
+    CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                           "setAttributes:range:", repl, range);
+    
+    if (!CFAttributedStringIsMutable(str))
+        return;
+    
+    array = str->_attribs;
+    rangeMax = range.location + range.length;
+    idxS = CFAttributedStringArrayGetIndex (str, range.location, &rS);
+    idxE = CFAttributedStringArrayGetIndex (str, rangeMax - 1, &rE);
+    cur = idxS;
+    
+    /* Split the last attribute in 2 if new attribute does not fall in a
+     * boundary and the new attributes are different from what's already there.
+     */
+    if (rE.location + rE.length > rangeMax
+        && !CFEqual (array[idxE].attrib, repl))
+        InsertAttributesAtIndex (str, idxE + 1, rangeMax, array[idxE].attrib);
+    
+    if (range.location == rS.location)
+    {
+        if (clearOtherAttribs)
+            ReplaceAttributesAtIndex (str, cur, repl);
+        else
+            SetAttributesAtIndex (str, cur, repl);
+    }
+    else if (!CFEqual (array[idxS].attrib, repl))
+    {
+        /* Only insert a new attribute if the new attribute is different from
+         * the existing attribute
+         */
+        cur += 1;
+        idxE += 1;
+        InsertAttributesAtIndex (str, cur, range.location, repl);
+        if (!clearOtherAttribs)
+            SetAttributesAtIndex (str, cur, array[idxS].attrib);
+    }
+    cur += 1;
+    
+    if (cur <= idxE)
+    {
+        if (clearOtherAttribs)
+        {
+            RemoveAttributesAtIndex (str, CFRangeMake (cur, idxE - cur + 1));
+        }
+        else
+        {
+            do
+            {
+                SetAttributesAtIndex (str, cur++, repl);
+            } while (cur <= idxE);
+        }
+    }
+    
+    CFAttributedStringCoalesce (str, CFRangeMake (idxS, cur));
+}
+/*
 void 
 CFAttributedStringSetAttributes ( CFMutableAttributedStringRef aStr,
                                  CFRange range,CFDictionaryRef replacement
@@ -684,6 +737,4 @@ CFAttributedStringSetAttributes ( CFMutableAttributedStringRef aStr,
     free(keys);
     free(values);
     
-}
-
-
+}*/
