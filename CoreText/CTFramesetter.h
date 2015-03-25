@@ -44,7 +44,7 @@ typedef struct CTFramesetter* CTFramesetterRef;
 
 CFTypeID CTFramesetterGetTypeID();
 
-CTFramesetterRef CTFramesetterCreateWithAttributedString(NSAttributedString * string);
+CTFramesetterRef CTFramesetterCreateWithAttributedString(CFAttributedStringRef string);
 
 CTFrameRef CTFramesetterCreateFrame(
   CTFramesetterRef framesetter,

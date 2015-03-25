@@ -31,9 +31,10 @@
  * Convenience class which typsets a whole paragraph.
  * I believe this can be totally implemented using the public API of CTTypesetter
  */
-@interface CTFramesetter : NSObject {
-    NSAttributedString *_string;
-    CTTypesetterRef _ts;
+@interface CTFramesetter : NSObject
+{
+  NSAttributedString *_string;
+  CTTypesetterRef _ts;
 }
 
 - (id)initWithAttributedString: (NSAttributedString*)string;
@@ -76,38 +77,52 @@
                               path: (CGPathRef)path
                         attributes: (NSDictionary*)attributes
 {
-    CGRect frameRect;
-    if (!CGPathIsRect(path, &frameRect)) {
-        return nil;
-    }
-    
-    CTFrameRef frame = [[CTFrame alloc] initWithPath: path
-                                         stringRange: NSMakeRange(range.location, range.length)
-                                          attributes: attributes];
-    
-    // FIXME: take in to account CTTextTab settings (alignment, justification, etc?)
-    
-    switch ([[attributes objectForKey: kCTFrameProgressionAttributeName] intValue]) {
-        default:
-        case kCTFrameProgressionTopToBottom: {
-            CFIndex start = 0;
-            while (start < [_string length]) {
-                CFIndex lineBreak = CTTypesetterSuggestLineBreak(_ts, start, frameRect.size.width);
-                //DLog();
-                CTLineRef line = CTTypesetterCreateLine(_ts, CFRangeMake(start, lineBreak));
-                [frame addLine: line];
-                [line release];
-                
-                start = lineBreak;
-            }
+  CGRect frameRect;
+  if (!CGPathIsRect(path, &frameRect))
+  {
+    return nil;
+  }
+
+  if (!_string)
+  {
+    return nil;
+  }
+
+  CTFrameRef frame = [[CTFrame alloc] initWithPath: path
+                                       stringRange: NSMakeRange(range.location, range.length)
+                                        attributes: attributes];
+		
+  // FIXME: take in to account CTTextTab settings (alignment, justification, etc?)
+
+  switch ([[attributes objectForKey: kCTFrameProgressionAttributeName] intValue])
+  {
+    default:
+    case kCTFrameProgressionTopToBottom:
+    {
+      CFIndex start = 0;
+      while (start < [_string length])
+      {
+        CFIndex lineBreak = CTTypesetterSuggestLineBreak(_ts, start, frameRect.size.width);
+
+        CTLineRef line = CTTypesetterCreateLine(_ts, CFRangeMake(start, lineBreak));
+        [frame addLine: line];
+        [line release];
+        
+        if (start == lineBreak)
+          {
+            NSLog(@"WARNING: Broke possible infinite loop in %s; string %@", __PRETTY_FUNCTION__, _string);
             break;
-        }
-        case kCTFrameProgressionRightToLeft:
-            // FIXME: as above but for right to left, vertical text layout
-            break;
+          }
+        start = lineBreak;
+      }
+      break;
     }
-    
-    return frame;
+    case kCTFrameProgressionRightToLeft:
+      // FIXME: as above but for right to left, vertical text layout
+      break;
+  }
+
+  return frame;
 }
 
 - (CTTypesetterRef)typesetter
@@ -132,7 +147,7 @@
 
 /* Functions */
 
-CTFramesetterRef CTFramesetterCreateWithAttributedString(NSAttributedString * string)
+CTFramesetterRef CTFramesetterCreateWithAttributedString(CFAttributedStringRef string)
 {
   return [[CTFramesetter alloc] initWithAttributedString: string];
 }

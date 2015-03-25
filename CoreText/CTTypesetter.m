@@ -25,7 +25,6 @@
 #include <CoreText/CTTypesetter.h>
 
 #import "CTLine-private.h"
-#import "CTRun-private.h"
 // FIXME: use advanced layout engines if available
 #import "OPSimpleLayoutEngine.h"
 
@@ -39,9 +38,10 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
 /**
  * Typesetter
  */
-@interface CTTypesetter : NSObject {
-    NSAttributedString *_as;
-    NSDictionary *_options;
+@interface CTTypesetter : NSObject
+{
+  NSAttributedString *_as;
+  NSDictionary *_options;
 }
 
 - (id)initWithAttributedString: (NSAttributedString*)string
@@ -57,131 +57,69 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
 
 @implementation CTTypesetter
 
-#pragma mark - Life cycle
-
-- (id)initWithAttributedString:(NSAttributedString *)string
-                       options:(NSDictionary *)options
+- (id)initWithAttributedString: (NSAttributedString*)string
+                       options: (NSDictionary*)options
 {
-    //DLog(@"string: %@", string);
-    if ((self = [super init])) {
-        _as = [string retain];
-        _options = [options retain];
-    }
-    return self;
+  if ((self = [super init]))
+  {
+    _as = [string retain];
+    _options = [options retain];
+  }
+  return self;
 }
 
-- (void)dealloc
+- (void) dealloc
 {
-    [_as release];
-    [_options release];
-    [super dealloc];
+  [_as release];
+  [_options release];
+  [super dealloc];
 }
 
-#pragma mark - Accessors
-
-- (NSString *)description
+- (CTLineRef)createLineWithRange: (CFRange)range
 {
-    return [NSString stringWithFormat:@"<%@: %p; as: %@; options: %@>", [self className], self, _as, _options];
+  // FIXME: This should do the core typesetting stuff:
+  // - divide the attributed string into runs with the same attributes.
+  // - run the bidirectional algorithm if needed
+  // - call the shaper on each run
+  
+  NSArray *runs = [NSMutableArray array];
+  
+  CTLineRef line = [[CTLine alloc] initWithRuns: runs];
+  
+  return line;
 }
-
-#pragma mark - Private methods
-
-- (CTLineRef)createLineWithRange:(CFRange)range
+- (CFIndex)suggestClusterBreakAtIndex: (CFIndex)start
+                                width: (double)width
 {
-    // FIXME: This should do the core typesetting stuff:
-    // - divide the attributed string into runs with the same attributes.
-     
-    //DLog(@"range: %d, %d", range.location, range.length);
-    NSMutableArray *runs = [NSMutableArray array];
-    
-    OPSimpleLayoutEngine *layoutEngine = [[[OPSimpleLayoutEngine alloc] init] autorelease];
-    NSUInteger index = range.location;
-    
-    while (index < range.length) {
-        CFRange runRange;
-        NSDictionary *runAttributes = CFAttributedStringGetAttributesAndLongestEffectiveRange(_as, index, CFRangeMake(index, range.length - index), &runRange);
-        CFAttributedStringRef runAttributedString = CFAttributedStringCreateWithSubstring(NULL, _as, runRange);
-        NSString *runString = CFAttributedStringGetString(runAttributedString);
-        CFRelease(runAttributedString);
-        //DLog(@"self: %@", self);
-        CTRun *run = [layoutEngine layoutString:runString withAttributes:runAttributes];
-        run.range = runRange;
-        [runs addObject:run];
-        index += runRange.length;
-    }
-    // - run the bidirectional algorithm if needed
-    // - call the shaper on each run
-    CTLineRef line = [[CTLine alloc] initWithRuns:runs];
-    return line;
+  return 0;
 }
-
-- (CFIndex)suggestClusterBreakAtIndex:(CFIndex)start
-                                width:(double)width
+- (CFIndex)suggestLineBreakAtIndex: (CFIndex)start
+                             width: (double)width
 {
-    DLog();
-    return 0;
-}
-
-- (CFIndex)suggestLineBreakAtIndex:(CFIndex)start width:(double)width
-{
-    int stringLength = _as.string.length;
-    int numberOfChars = stringLength - start;
-    if (numberOfChars > 10) {
-        numberOfChars = 10;
-    }
-    //DLog(@"start: %d, width: %0.2f, numberOfChars: %d", start, width, numberOfChars);
-    CTLineRef line = [self createLineWithRange:CFRangeMake(start, numberOfChars)];
-    double lineWidth = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
-    float charAverageWidth = lineWidth / numberOfChars;
-    int suggestedLength = width / charAverageWidth;
-    if (suggestedLength + start > stringLength) {
-        suggestedLength = stringLength - start;
-    }
-    line = [self createLineWithRange:CFRangeMake(start, suggestedLength)];
-    lineWidth = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
-    if (lineWidth > width) {
-        while (lineWidth > width) {
-            suggestedLength--;
-            CTLineRef line = [self createLineWithRange:CFRangeMake(start, suggestedLength)];
-            lineWidth = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
-            CFRelease(line);
-        }
-    } else if (lineWidth < width) {
-        while (lineWidth < width && suggestedLength + start < stringLength) {
-            suggestedLength++;
-            CTLineRef line = [self createLineWithRange:CFRangeMake(start, suggestedLength)];
-            lineWidth = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
-            CFRelease(line);
-        }
-        if (lineWidth > width) {
-            suggestedLength--;
-        }
-    }
-    return suggestedLength;
+  return 0;
 }
 
 @end
 
-#pragma mark - Shared functions
+/* Functions */
 
-CTTypesetterRef CTTypesetterCreateWithAttributedString(NSAttributedString *string)
+CTTypesetterRef CTTypesetterCreateWithAttributedString(CFAttributedStringRef string)
 {
-    return [[CTTypesetter alloc] initWithAttributedString:string
-                                                  options:nil];
+  return [[CTTypesetter alloc] initWithAttributedString: string
+                                                options: nil];
 }
 
 CTTypesetterRef CTTypesetterCreateWithAttributedStringAndOptions(
-	NSAttributedString * string,
+	CFAttributedStringRef string,
 	CFDictionaryRef opts)
 {
-    return [[CTTypesetter alloc] initWithAttributedString: string
-                                                  options: opts];
+  return [[CTTypesetter alloc] initWithAttributedString: string
+                                                options: opts];
 }
 
 CTLineRef CTTypesetterCreateLine(CTTypesetterRef ts, CFRange range)
 {
-    //DLog(@"ts: %@", ts);
-    return [ts createLineWithRange:range];
+  return [ts createLineWithRange: range];
 }
 
 CFIndex CTTypesetterSuggestClusterBreak(
@@ -189,7 +127,7 @@ CFIndex CTTypesetterSuggestClusterBreak(
 	CFIndex start,
 	double width)
 {
-    return [ts suggestClusterBreakAtIndex:start width:width];
+  return [ts suggestClusterBreakAtIndex: start width: width];
 }
 
 CFIndex CTTypesetterSuggestLineBreak(
@@ -197,12 +135,11 @@ CFIndex CTTypesetterSuggestLineBreak(
 	CFIndex start,
 	double width)
 {
-    //DLog(@"width: %f", width);
-    return [ts suggestLineBreakAtIndex:start width:width];
+  return [ts suggestLineBreakAtIndex: start width: width];
 }
 
 CFTypeID CTTypesetterGetTypeID()
 {
-    return (CFTypeID)[CTTypesetter class];
+  return (CFTypeID)[CTTypesetter class];
 }
 

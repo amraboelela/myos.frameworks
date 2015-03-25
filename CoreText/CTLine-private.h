@@ -24,17 +24,15 @@
 
 #include <CoreText/CTLine.h>
 #include <CoreText/CTTypesetter.h>
-#include "CTRun-private.h"
 
 /**
  * Container of CTRun objects (glyph runs)
  */
-@interface CTLine : NSObject {
-    @package
-    NSArray *_runs;
-    double penOffset;
+@interface CTLine : NSObject
+{
+  NSArray *_runs;
 }
 
-- (id)initWithRuns:(NSArray *)runs;
+- (id)initWithRuns: (NSArray*)runs;
 
 @end

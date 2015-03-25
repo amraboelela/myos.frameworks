@@ -29,15 +29,15 @@
 #include <CoreGraphics/CGAffineTransform.h>
 #include <CoreGraphics/CGPath.h>
 #include <CoreGraphics/CGFont.h>
-#import "CTFontDescriptor.h"
+#include <CoreText/CTFontDescriptor.h>
 
 /* Data Types */
 
 #ifdef __OBJC__
-@class CTNSFont;
-typedef CTNSFont* CTFontRef;
+@class OPFont;
+typedef OPFont* CTFontRef;
 #else
-typedef struct CTNSFont* CTFontRef;
+typedef struct OPFont* CTFontRef;
 #endif
 
 /* Constants */

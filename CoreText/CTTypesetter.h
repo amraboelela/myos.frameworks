@@ -44,10 +44,10 @@ extern const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel;
 
 /* Functions */
 
-CTTypesetterRef CTTypesetterCreateWithAttributedString(NSAttributedString * string);
+CTTypesetterRef CTTypesetterCreateWithAttributedString(CFAttributedStringRef string);
 
 CTTypesetterRef CTTypesetterCreateWithAttributedStringAndOptions(
-  NSAttributedString * string,
+  CFAttributedStringRef string,
   CFDictionaryRef opts
 );
 

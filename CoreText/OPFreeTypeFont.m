@@ -52,7 +52,7 @@
 static const NSString *kOPFreeTypeLibrary = @"OPFreeTypeLibrary";
 
 
-@interface NSObject (CTNSFontconfigFontDescriptorInternals)
+@interface NSObject (OPFontconfigFontDescriptorInternals)
 - (NSString*)_fontPath;
 - (NSInteger)_fontfaceIndex;
 @end
@@ -78,7 +78,7 @@ static const NSString *kOPFreeTypeLibrary = @"OPFreeTypeLibrary";
   return [[threadDict objectForKey: kOPFreeTypeLibrary] pointerValue];
 }
 
-- (id)_initWithDescriptor: (CTNSFontDescriptor*)aDescriptor
+- (id)_initWithDescriptor: (OPFontDescriptor*)aDescriptor
                   options: (CTFontOptions)options
 {
   NSInteger error = 0;
@@ -91,7 +91,7 @@ static const NSString *kOPFreeTypeLibrary = @"OPFreeTypeLibrary";
   }
   /*
    * FIXME: It is ugly to rely on the font descriptor being a
-   * CTNSFontconfigFontDescriptor but it is probably the most common situation.
+   * OPFontconfigFontDescriptor but it is probably the most common situation.
    */
   if ([aDescriptor respondsToSelector: @selector(_fontPath)])
   {
@@ -454,76 +454,76 @@ static const NSString *kOPFreeTypeLibrary = @"OPFreeTypeLibrary";
   return thickness;
 }
 
-// - (NSSize)advancementForGlyph: (NSGlyph)glyph
-// {
-//   if ((NSNullGlyph == glyph) || (NSControlGlyph == glyph))
-//   {
-//     return NSMakeSize(0, 0);
-//   }
-//   [fontFaceLock lock];
-//   FT_Load_Glyph(fontFace, glyph, FT_LOAD_DEFAULT);
-//   NSSize size = NSMakeSize(REAL_SIZE(fontFace->glyph->linearHoriAdvance),
-//     REAL_SIZE(fontFace->glyph->linearVertAdvance));
-//   [fontFaceLock unlock];
+- (NSSize)advancementForGlyph: (NSGlyph)glyph
+{
+  if ((NSNullGlyph == glyph) || (NSControlGlyph == glyph))
+  {
+    return NSMakeSize(0, 0);
+  }
+  [fontFaceLock lock];
+  FT_Load_Glyph(fontFace, glyph, FT_LOAD_DEFAULT);
+  NSSize size = NSMakeSize(REAL_SIZE(fontFace->glyph->linearHoriAdvance),
+    REAL_SIZE(fontFace->glyph->linearVertAdvance));
+  [fontFaceLock unlock];
 
-//   return size;
-//   /*
-//    * FIXME: Add fast path for integer rendering modes. We don't need to do
-//    * so many integer->float conversions then.
-//    */
-// }
+  return size;
+  /*
+   * FIXME: Add fast path for integer rendering modes. We don't need to do
+   * so many integer->float conversions then.
+   */
+}
 
-// - (void)getAdvancements: (NSSizeArray)advancements
-//               forGlyphs: (const NSGlyph*)glyphs
-// 	          count: (NSUInteger)glyphCount
-// {
-//   NSSize nullSize = NSMakeSize(0,0);
-//   for (int i = 0; i < glyphCount; i++, glyphs++, advancements++)
-//   {
-//     if ((NSNullGlyph == *glyphs) || (NSControlGlyph == *glyphs))
-//     {
-//       *advancements = nullSize;
-//     }
-//     else
-//     {
-//       //TODO: Optimize if too slow.
-//       *advancements = [self advancementForGlyph: *glyphs];
-//     }
-//   }
-// }
+- (void)getAdvancements: (NSSizeArray)advancements
+              forGlyphs: (const NSGlyph*)glyphs
+	          count: (NSUInteger)glyphCount
+{
+  NSSize nullSize = NSMakeSize(0,0);
+  for (int i = 0; i < glyphCount; i++, glyphs++, advancements++)
+  {
+    if ((NSNullGlyph == *glyphs) || (NSControlGlyph == *glyphs))
+    {
+      *advancements = nullSize;
+    }
+    else
+    {
+      //TODO: Optimize if too slow.
+      *advancements = [self advancementForGlyph: *glyphs];
+    }
+  }
+}
 
-// - (void)getAdvancements: (NSSizeArray)advancements
-//         forPackedGlyphs: (const void*)packedGlyphs
-// 	         length: (NSUInteger)length
-// {
-//   /*
-//    * We only support NSNativeShortGlyphPacking, which gives us glyph streams
-//    * which are big-endian, short integer values.
-//    */
+- (void)getAdvancements: (NSSizeArray)advancements
+        forPackedGlyphs: (const void*)packedGlyphs
+	         length: (NSUInteger)length
+{
+  /*
+   * We only support NSNativeShortGlyphPacking, which gives us glyph streams
+   * which are big-endian, short integer values.
+   */
 
-//   // FIXME: Breaks for platforms where shorts are not word aligned.
-//   NSUInteger glyphsPerWord = sizeof(void*)/sizeof(unsigned short);
-//   NSUInteger maxGlyphCount = length * glyphsPerWord;
-//   NSUInteger step = 0;
-//   for (int i=0; i < maxGlyphCount; i++, step = (i / sizeof(void*)), advancements++)
-//   {
-    
-//      * Mask the value by bit-shifting it to the correct starting point,
-//      * truncating it to short, and converting it back to host byte-order.
-     
+  // FIXME: Breaks for platforms where shorts are not word aligned.
+  NSUInteger glyphsPerWord = sizeof(void*)/sizeof(unsigned short);
+  NSUInteger maxGlyphCount = length * glyphsPerWord;
+  NSUInteger step = 0;
+  for (int i=0; i < maxGlyphCount; i++, step = (i / sizeof(void*)), advancements++)
+  {
+    /*
+     * Mask the value by bit-shifting it to the correct starting point,
+     * truncating it to short, and converting it back to host byte-order.
+     */
 
-//     /*
-//      * The modulus of index and word size calculates how many glyphs we
-//      * processed in this word, so we shift the content of the word by n
-//      * times the size of short.
-//      */
-//     NSUInteger shift = ((i % sizeof(void*)) * sizeof(unsigned short));
-//     NSGlyph glyph = NSSwapBigShortToHost((unsigned short)(((intptr_t*)packedGlyphs)[step] << shift));
+    /*
+     * The modulus of index and word size calculates how many glyphs we
+     * processed in this word, so we shift the content of the word by n
+     * times the size of short.
+     */
+    NSUInteger shift = ((i % sizeof(void*)) * sizeof(unsigned short));
+    NSGlyph glyph = NSSwapBigShortToHost((unsigned short)(((intptr_t*)packedGlyphs)[step] << shift));
 
-//     // TODO: Optimize if too slow
-//     *advancements = [self advancementForGlyph: glyph];
-//   }
-// }
+    // TODO: Optimize if too slow
+    *advancements = [self advancementForGlyph: glyph];
+  }
+}
 
 - (NSRect)boundingRectForFont
 {
@@ -539,42 +539,42 @@ static const NSString *kOPFreeTypeLibrary = @"OPFreeTypeLibrary";
   return NSMakeRect(originX, originY, sizeX, sizeY);
 }
 
-// - (NSRect)boundingRectforGlyph: (NSGlyph)glyph
-// {
-//   //FIXME: Handle vertical typesetting.
-//   if ((NSNullGlyph == glyph) || (NSControlGlyph == glyph))
-//   {
-//     return NSMakeRect(0, 0, 0, 0);
-//   }
+- (NSRect)boundingRectforGlyph: (NSGlyph)glyph
+{
+  //FIXME: Handle vertical typesetting.
+  if ((NSNullGlyph == glyph) || (NSControlGlyph == glyph))
+  {
+    return NSMakeRect(0, 0, 0, 0);
+  }
 
-//   [fontFaceLock lock];
-//   FT_Load_Glyph(fontFace, glyph, FT_LOAD_DEFAULT);
-//   NSRect result = NSRectFromCGRect(TRANSFORMED_RECT(fontFace->glyph->metrics.horiBearingX,
-//     fontFace->glyph->metrics.horiBearingY,
-//     fontFace->glyph->metrics.width,
-//     fontFace->glyph->metrics.height));
-//   [fontFaceLock unlock];
-//   return result;
-// }
+  [fontFaceLock lock];
+  FT_Load_Glyph(fontFace, glyph, FT_LOAD_DEFAULT);
+  NSRect result = NSRectFromCGRect(TRANSFORMED_RECT(fontFace->glyph->metrics.horiBearingX,
+    fontFace->glyph->metrics.horiBearingY,
+    fontFace->glyph->metrics.width,
+    fontFace->glyph->metrics.height));
+  [fontFaceLock unlock];
+  return result;
+}
 
-// - (void)getBoundingRects: (NSRectArray)rects
-//                forGlyphs: (const NSGlyph*)glyphs
-// 	           count: (NSUInteger)glyphCount
-// {
-//   NSRect nullRect = NSMakeRect(0,0,0,0);
-//   for (int i = 0; i < glyphCount; i++, glyphs++, rects++)
-//   {
-//     if ((NSNullGlyph == *glyphs) || (NSControlGlyph == *glyphs))
-//     {
-//       *rects = nullRect;
-//     }
-//     else
-//     {
-//       //TODO: Optimize if too slow.
-//       *rects = [self boundingRectForGlyph: *glyphs];
-//     }
-//   }
-// }
+- (void)getBoundingRects: (NSRectArray)rects
+               forGlyphs: (const NSGlyph*)glyphs
+	           count: (NSUInteger)glyphCount
+{
+  NSRect nullRect = NSMakeRect(0,0,0,0);
+  for (int i = 0; i < glyphCount; i++, glyphs++, rects++)
+  {
+    if ((NSNullGlyph == *glyphs) || (NSControlGlyph == *glyphs))
+    {
+      *rects = nullRect;
+    }
+    else
+    {
+      //TODO: Optimize if too slow.
+      *rects = [self boundingRectForGlyph: *glyphs];
+    }
+  }
+}
 
 - (NSGlyph)glyphWithName: (NSString*)name
 {
