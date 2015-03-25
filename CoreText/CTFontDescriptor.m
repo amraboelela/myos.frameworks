@@ -26,7 +26,7 @@
 #include <CoreText/CTFont.h>
 
 #import <Foundation/NSLocale.h>
-#import "CTNSFontDescriptor.h"
+#import "OPFontDescriptor.h"
 
 /* Constants */
 
@@ -62,13 +62,12 @@ CTFontDescriptorRef CTFontDescriptorCreateWithNameAndSize(
   CFStringRef name,
   CGFloat size)
 {
-  return [[CTNSFontDescriptor fontDescriptorWithName: name size: size] retain];
+  return [[OPFontDescriptor fontDescriptorWithName: name size: size] retain];
 }
 
 CTFontDescriptorRef CTFontDescriptorCreateWithAttributes(CFDictionaryRef attributes)
 {
-    DLog();
-    return [[CTNSFontDescriptor fontDescriptorWithFontAttributes: attributes] retain];
+  return [[OPFontDescriptor fontDescriptorWithFontAttributes: attributes] retain];
 }
   
 CTFontDescriptorRef CTFontDescriptorCreateCopyWithAttributes(
@@ -83,15 +82,13 @@ CTFontDescriptorRef CTFontDescriptorCreateCopyWithVariation(
   CFNumberRef variationIdentifier,
   CGFloat variationValue)
 {
-  NSMutableDictionary *newVariation = [[original->_attributes objectForKey: kCTFontVariationAttribute] mutableCopy];
-   
+  NSMutableDictionary *newVariation = [[original objectForKey: kCTFontVariationAttribute] mutableCopy];
   if (nil == newVariation)
   {
     newVariation = [[NSMutableDictionary alloc] init];
   }
-  //TODO ALI: check if CFNumberRef TDF NSNumber
   [newVariation setObject: [NSNumber numberWithDouble: variationValue]
-                   forKey: (NSNumber *)variationIdentifier];
+                   forKey: variationIdentifier];
 
   NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:
     newVariation, kCTFontVariationAttribute,
@@ -114,7 +111,7 @@ CTFontDescriptorRef CTFontDescriptorCreateCopyWithFeature(
   }
   [newFeatureSettings addObject:
     [NSDictionary dictionaryWithObjectsAndKeys:
-      (NSNumber *)featureTypeIdentifier, kCTFontFeatureTypeIdentifierKey,
+      featureTypeIdentifier, kCTFontFeatureTypeIdentifierKey,
       featureSelectorIdentifier, kCTFontFeatureSelectorIdentifierKey,
       nil]];
 
@@ -177,6 +174,6 @@ CFTypeRef CTFontDescriptorCopyLocalizedAttribute(
 
 CFTypeID CTFontDescriptorGetTypeID()
 {
-  return (CFTypeID)[CTNSFontDescriptor class];
+  return (CFTypeID)[OPFontDescriptor class];
 }
 

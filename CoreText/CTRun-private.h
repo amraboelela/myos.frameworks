@@ -27,22 +27,19 @@
 /**
  * Container of adjacent glyphs with the same attributes which have been layed out
  */
-@interface CTRun : NSObject {
-    @package
-    size_t _count;
-    CGGlyph *_glyphs; // pointer to C array of glphs
-    CGSize *_advances;
-    CGPoint *_positions;
-    CFIndex *_stringIndices;
-    CFRange _stringRange;
-    NSDictionary *_attributes;
-    CTRunStatus _status;
-    CGAffineTransform _matrix;
+@interface CTRun : NSObject
+{
+  size_t _count;
+  CGGlyph *_glyphs; // pointer to C array of glphs
+  CGSize *_advances;
+  CGPoint *_positions;
+  CFIndex *_stringIndices;
+  CFRange _stringRange;
+  NSDictionary *_attributes;
+  CTRunStatus _status;
+  CGAffineTransform _matrix;
 }
 
-@property (nonatomic, assign) CFRange range;
-
-- (id)initWithGlyphs:(CGGlyph *)glyphs advances:(CGSize *)advances range:(CFRange)range attributes:(NSDictionary *)attributes;
 - (CFIndex)glyphCount;
 - (NSDictionary*)attributes;
 - (CTRunStatus)status;
@@ -59,6 +56,5 @@
                   withContext: (CGContextRef)context;
 - (CGAffineTransform)matrix;
 - (void)drawRange: (CFRange)range onContext: (CGContextRef)ctx;
-- (CTRun *)runInRange:(CFRange)range;
 
 @end

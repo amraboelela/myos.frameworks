@@ -33,8 +33,9 @@ const CFStringRef kCTFontCollectionRemoveDuplicatesOption = @"kCTFontCollectionR
 /**
  * Collection of font descriptors
  */
-@interface CTFontCollection : NSObject {
-    NSArray *_descriptors;
+@interface CTFontCollection : NSObject
+{
+  NSArray *_descriptors;
 }
 
 - (id)initWithAvailableFontsWithOptions: (NSDictionary*)opts;
