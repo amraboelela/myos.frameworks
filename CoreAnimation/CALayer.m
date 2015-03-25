@@ -625,9 +625,9 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 - (void)layoutIfNeeded
 {
     if (_needsLayout) {
-        DLog(@"self: %@", self);
+        //DLog(@"self: %@", self);
         if ([delegate respondsToSelector:@selector(layoutSublayersOfLayer:)]) {
-            DLog();
+            //DLog();
             [delegate layoutSublayersOfLayer:self];
         } else if ([_layoutManager respondsToSelector:@selector(layoutSublayersOfLayer:)]) {
             [_layoutManager layoutSublayersOfLayer:self];

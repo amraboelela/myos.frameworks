@@ -38,7 +38,7 @@ static CATransactionGroup *_CATransactionGetCurrentTransaction()
 
 static void _CATransactionLayoutLayers(CALayer *layer)
 {
-    DLog();
+    //DLog();
     [layer layoutIfNeeded];
     for (CALayer *sublayer in layer->_sublayers) {
         _CATransactionLayoutLayers(sublayer);
@@ -170,17 +170,17 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)_commitTransaction
 {
-    DLog();
+    //DLog();
     if (![_CAAnimatorConditionLock tryLock]) {
-        DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
+        //DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
         // Instead of blocking the run loop or the animation thread, we will try to commit later
         _CATransactionCommitTransactionAfterDelay(0.01);
         //[[CATransaction class] performSelector:@selector(_commitTransaction) withObject:nil afterDelay:0.01];
         return;
     }
-    DLog();
+    //DLog();
     CALayer *rootLayer = _CALayerRootLayer();
-    DLog(@"LayoutLayers");
+    //DLog(@"LayoutLayers");
     if (_layersNeedLayout) {
         DLog(@"_layersNeedLayout");
         _CATransactionLayoutLayers(rootLayer);
