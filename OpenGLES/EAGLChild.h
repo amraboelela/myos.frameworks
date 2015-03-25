@@ -22,21 +22,21 @@
 #endif
 
 typedef enum {
-    EAGLChildApplicationMessageEndOfMessage,
-    EAGLChildApplicationMessageGenTexture,
-} EAGLChildApplicationMessage;
+    EAGLChildMessageEndOfMessage,
+    EAGLChildMessageGenTexture,
+} EAGLChildMessage;
 
-#define _kEAGLChildApplicationPipeRead   110
-#define _kEAGLChildApplicationPipeWrite  121
+#define _kEAGLChildPipeRead   110
+#define _kEAGLChildPipeWrite  121
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int EAGLChildApplicationGenTexture();
-    void EAGLChildApplicationLoadImage(int textureID, int width, int height, const GLvoid *pixels);
-    void EAGLChildApplicationDraw(int textureID, const GLvoid *texCoords, const GLvoid *vertices, GLfloat opacity);
-    void EAGLChildApplicationSwapBuffers();
-    void EAGLChildApplicationDeleteTexture();
+    int EAGLChildGenTexture();
+    void EAGLChildLoadImage(int textureID, int width, int height, const GLvoid *pixels);
+    void EAGLChildDraw(int textureID, const GLvoid *texCoords, const GLvoid *vertices, GLfloat opacity);
+    void EAGLChildSwapBuffers();
+    void EAGLChildDeleteTexture();
 #ifdef __cplusplus
 }
 #endif

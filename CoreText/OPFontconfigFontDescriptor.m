@@ -27,7 +27,7 @@
 #include <CoreGraphics/CGAffineTransform.h>
 #include <CoreText/CTFontDescriptor.h>
 
-#import "../OPFontDescriptor.h"
+#import "OPFontDescriptor.h"
 
 @interface OPFontconfigFontDescriptor : OPFontDescriptor
 {
