@@ -1,4 +1,4 @@
-/** <title>CTNSFontconfigFontDescriptor</title>
+/** <title>OPFontconfigFontDescriptor</title>
 
    <abstract>C Interface to text layout library</abstract>
 
@@ -24,11 +24,13 @@
 
 #include <fontconfig/fontconfig.h>
 
-#import <CoreGraphics/CGAffineTransform.h>
-#import "CTFontDescriptor.h"
-#import "CTNSFontDescriptor.h"
+#include <CoreGraphics/CGAffineTransform.h>
+#include <CoreText/CTFontDescriptor.h>
 
-@interface CTNSFontconfigFontDescriptor : CTNSFontDescriptor {
+#import "../OPFontDescriptor.h"
+
+@interface OPFontconfigFontDescriptor : OPFontDescriptor
+{
   /**
    * This is a Fontconfig representation of the attributes this descriptor
    * was created with.
@@ -42,7 +44,7 @@
 }
 @end
 
-@implementation CTNSFontconfigFontDescriptor
+@implementation OPFontconfigFontDescriptor
 
 - (void)addURL: (NSURL*)url
 {
@@ -182,11 +184,11 @@
     int fcWeight;
     if (weight <= 0)
     {
-	fcWeight = FC_WEIGHT_THIN + ((weight + 1.0) * (FC_WEIGHT_NORMAL - FC_WEIGHT_THIN));
+			fcWeight = FC_WEIGHT_THIN + ((weight + 1.0) * (FC_WEIGHT_NORMAL - FC_WEIGHT_THIN));
     }
     else
     {
-	fcWeight = FC_WEIGHT_NORMAL + (weight * (FC_WEIGHT_ULTRABLACK - FC_WEIGHT_NORMAL));
+ 			fcWeight = FC_WEIGHT_NORMAL + (weight * (FC_WEIGHT_ULTRABLACK - FC_WEIGHT_NORMAL));
     }
     FcPatternAddInteger(_pat, FC_WEIGHT, fcWeight);
   }
@@ -201,11 +203,11 @@
     int fcWidth;
     if (width <= 0)
     {
-	fcWidth = FC_WIDTH_ULTRACONDENSED + ((width + 1.0) * (FC_WIDTH_NORMAL - FC_WIDTH_ULTRACONDENSED));
+			fcWidth = FC_WIDTH_ULTRACONDENSED + ((width + 1.0) * (FC_WIDTH_NORMAL - FC_WIDTH_ULTRACONDENSED));
     }
     else
     {
-	fcWidth = FC_WIDTH_NORMAL + (width * (FC_WIDTH_ULTRAEXPANDED - FC_WIDTH_NORMAL));
+ 			fcWidth = FC_WIDTH_NORMAL + (width * (FC_WIDTH_ULTRAEXPANDED - FC_WIDTH_NORMAL));
     }
     FcPatternAddInteger(_pat, FC_WIDTH, fcWidth);
   }
@@ -376,31 +378,26 @@
 {
   return [NSURL fileURLWithPath: [self readFontconfigString: FC_FILE fromPattern: pat]];
 }
-
 - (NSString*)readNameFromPattern: (FcPattern*)pat
 {
   // FIXME: try to get the localized one
   return [self readFontconfigString: FC_FAMILY fromPattern: pat];
 }
-
 - (NSString*)readDisplayNameFromPattern: (FcPattern*)pat
 {
   // FIXME: try to get the localized one
   return [self readFontconfigString: FC_FULLNAME fromPattern: pat];
 }
-
 - (NSString*)readFamilyNameFromPattern: (FcPattern*)pat
 {
   // FIXME: try to get the localized one
   return [self readFontconfigString: FC_FAMILY fromPattern: pat];
 }
-
 - (NSString*)readStyleNameFromPattern: (FcPattern*)pat
 {
   // FIXME: try to get the localized one
   return [self readFontconfigString: FC_STYLE fromPattern: pat];
 }
-
 - (NSDictionary*)readTraitsFromPattern: (FcPattern*)pat
 {
   NSMutableDictionary *traits = [NSMutableDictionary dictionary];
@@ -538,6 +535,9 @@
   return nil;
 }
 
+
+
+
 //-------------
 // Private
 - (void)handleKey: (NSString*)key selector: (SEL)selector valueClass: (Class)valueClass
@@ -554,7 +554,7 @@
     }
     else
     {
-      NSLog(@"CTNSFontDescriptor: Ignoring invalid value %@ for attribute %@", value, key);
+      NSLog(@"OPFontDescriptor: Ignoring invalid value %@ for attribute %@", value, key);
     }
   }
 }
@@ -579,20 +579,24 @@
 }
 
 
-- (id)initWithFontAttributes:(NSDictionary *)attributes
+- (id) initWithFontAttributes: (NSDictionary *)attributes
 {
-    DLog();
-    self = [super initWithFontAttributes: attributes];
-    if (nil == self) {
-        return nil;
-    }
-    _pat = FcPatternCreate();
-    // Call the corresponding add...: method for each element in the attributes dictionary
-    [self handleAddValues];
-    //NSLog(@"CTNSFontconfigFontDescriptor: Input attributes %@", attributes);
-    //NSLog(@"CTNSFontconfigFontDescriptor: Output pattern:");
-    //FcPatternPrint(_pat);
-    return self;
+  self = [super initWithFontAttributes: attributes];
+  if (nil == self)
+  {
+    return nil;
+  }
+
+  _pat = FcPatternCreate();
+
+  // Call the corresponding add...: method for each element in the attributes dictionary
+  [self handleAddValues];
+
+  //NSLog(@"OPFontconfigFontDescriptor: Input attributes %@", attributes);
+  //NSLog(@"OPFontconfigFontDescriptor: Output pattern:");
+  //FcPatternPrint(_pat);
+
+  return self;
 }
 
 /**
@@ -631,7 +635,7 @@
 
 - (NSString*)description
 {
-  return [NSString stringWithFormat: @"<CTNSFontconfigFontDescriptor name: %@ URL: %@>",
+  return [NSString stringWithFormat: @"<OPFontconfigFontDescriptor name: %@ URL: %@>",
     [self objectForKey: kCTFontNameAttribute],
     [self objectForKey: kCTFontURLAttribute]];
 }
@@ -668,7 +672,7 @@
       //NSLog(@"FcFontMatch succeeded, attributes: ");
       //FcPatternPrint(_matchedPat);
     }
-    FcPatternDestroy(patCopy);
+		FcPatternDestroy(patCopy);
   }
 }
 
@@ -690,7 +694,7 @@
     {
       FcPattern *pat = FcPatternDuplicate(fontSet->fonts[i]);
 
-      CTNSFontDescriptor *candidate = [[CTNSFontconfigFontDescriptor alloc] initWithImmutableMatchedPattern: pat];
+      OPFontDescriptor *candidate = [[OPFontconfigFontDescriptor alloc] initWithImmutableMatchedPattern: pat];
       BOOL acceptable = YES;
       if (mandatoryKeys)
       {
@@ -740,9 +744,9 @@
 
 static NSDictionary *ReadSelectors;
 
-- (NSValue *)selValue:(SEL)selector
+- (NSValue*)selValue: (SEL)selector
 {
-  return [NSValue valueWithBytes:&selector objCType:@encode(SEL)];
+  return [NSValue valueWithBytes: &selector objCType: @encode(SEL)];
 }
 
 - (id) objectFromPlatformFontPatternForKey: (NSString *)attribute

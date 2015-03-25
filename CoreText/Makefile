@@ -35,9 +35,9 @@ OBJECTS = \
 	CTFramesetter.o \
 	CTGlyphInfo.o \
 	CTLine.o \
-	CTNSFontconfigFontDescriptor.o \
-	CTNSFontDescriptor.o \
-	CTNSFont.o \
+	OPFontconfigFontDescriptor.o \
+	OPFontDescriptor.o \
+	OPFont.o \
 	CTParagraphStyle.o \
 	CTRun.o \
 	CTStringAttributes.o \
