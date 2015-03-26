@@ -23,7 +23,7 @@
 #endif
 
 #import <OpenGLES/EAGLParent.h>
-#import <OpenGLES/EAGLChildApplication.h>
+#import <OpenGLES/EAGLChild.h>
 
 
 extern BOOL _EAGLSwappingBuffers;

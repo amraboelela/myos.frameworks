@@ -84,9 +84,9 @@ void EAGLParentGenTexture()
     GLuint textureID;
     glGenTextures(1, &textureID);
     //DLog(@"textureID: %d", textureID);
-    IOPipeWriteMessageWithPipe(EAGLChildApplicationMessageGenTexture, NO, _pipeWrite);
+    IOPipeWriteMessageWithPipe(EAGLChildMessageGenTexture, NO, _pipeWrite);
     IOPipeWriteIntWithPipe(textureID, _pipeWrite);
-    IOPipeWriteMessageWithPipe(EAGLChildApplicationMessageEndOfMessage, NO, _pipeWrite);
+    IOPipeWriteMessageWithPipe(EAGLChildMessageEndOfMessage, NO, _pipeWrite);
 }
 
 void EAGLParentLoadImage()

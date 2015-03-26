@@ -269,8 +269,8 @@ static void UIChildApplicationRunApp(NSString *appName)
         flags = fcntl(animationPipe1[0], F_GETFL);
         fcntl(animationPipe1[0], F_SETFL, flags | O_NONBLOCK);
         //dup(mypipe[0]);
-        dup2(animationPipe1[0], _kEAGLChildApplicationPipeRead);
-        dup2(animationPipe2[1], _kEAGLChildApplicationPipeWrite);
+        dup2(animationPipe1[0], _kEAGLChildPipeRead);
+        dup2(animationPipe2[1], _kEAGLChildPipeWrite);
         
         //DLog(@"dup2");
         IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);

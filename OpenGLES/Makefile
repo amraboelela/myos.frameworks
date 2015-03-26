@@ -27,7 +27,7 @@ ifeq ($(TARGET),NativeApp)
 else
     LIB_NAME=OpenGLES
     LDLIBS+=-lIOKit -lCoreGraphics
-    OBJECTS+=EAGLChildApplication.o
+    OBJECTS+=EAGLChild.o
 endif
 
 ifeq ($(BASE_OS),android)
