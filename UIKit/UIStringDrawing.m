@@ -124,8 +124,11 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
         }
         DLog(@"6");
         CFRelease(typesetter);
+        DLog(@"attributedString: %@", attributedString);
         CFRelease(attributedString);
+        DLog(@"6.2");
         CFRelease(attributes);
+        DLog(@"6.3");
     }
     DLog(@"7");
     if (renderSize) {
