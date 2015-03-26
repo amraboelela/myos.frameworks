@@ -27,7 +27,7 @@ endif
 
 OBJECTS = \
     CFArray.o \
-    CFAttributedString.o \
+    CFAttributedString-myos.o \
     CFBag.o \
     CFBase.o \
     CFBinaryHeap.o \
