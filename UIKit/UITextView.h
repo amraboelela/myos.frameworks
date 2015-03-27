@@ -30,7 +30,7 @@
 #import <UIKit/UIScrollView.h>
 #import <UIKit/UIDataDetectors.h>
 #import <UIKit/UITextInputTraits.h>
-#import <CoreAnimation/CoreAnimation.h>
+#import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIStringDrawing.h>
 
 extern NSString *const UITextViewTextDidBeginEditingNotification;

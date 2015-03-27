@@ -18,7 +18,7 @@
 #import <Foundation/Foundation.h>
 #import <OpenGLES/EAGL-private.h>
 #import <IOKit/IOKit.h>
-#import <CoreAnimation/CoreAnimation.h>
+#import <QuartzCore/QuartzCore.h>
 
 #define _kTimeoutLimit 5.0
 

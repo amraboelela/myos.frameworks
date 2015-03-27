@@ -44,7 +44,7 @@ cd OpenGLES
 source clean.sh
 cd ..
 
-cd CoreAnimation
+cd QuartzCore
 source clean.sh
 cd ..
 

@@ -42,7 +42,7 @@ cd OpenGLES
 source build.sh
 cd ..
 
-cd CoreAnimation
+cd QuartzCore
 source build.sh
 cd ..
 

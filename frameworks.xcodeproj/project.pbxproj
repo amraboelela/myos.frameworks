@@ -9,7 +9,6 @@
 /* Begin PBXFileReference section */
 		F564A68919D0D2300069E9BB /* clean.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
 		F57545F719C7A91C000DDF29 /* build.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
-		F57545F819C7A91C000DDF29 /* CoreAnimation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreAnimation; sourceTree = "<group>"; };
 		F57545F919C7A91C000DDF29 /* CoreFoundation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreFoundation; sourceTree = "<group>"; };
 		F57545FA19C7A91C000DDF29 /* CoreGraphics */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreGraphics; sourceTree = "<group>"; };
 		F57545FB19C7A91C000DDF29 /* CoreText */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreText; sourceTree = "<group>"; };
@@ -19,6 +18,7 @@
 		F57545FF19C7A91C000DDF29 /* OpenGLES */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OpenGLES; sourceTree = "<group>"; };
 		F575460019C7A91C000DDF29 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		F575460119C7A91C000DDF29 /* UIKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = UIKit; sourceTree = "<group>"; };
+		F5E860851AC61D4D00FBCC41 /* QuartzCore */ = {isa = PBXFileReference; lastKnownFileType = folder; path = QuartzCore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -27,7 +27,6 @@
 			children = (
 				F57545F719C7A91C000DDF29 /* build.sh */,
 				F564A68919D0D2300069E9BB /* clean.sh */,
-				F57545F819C7A91C000DDF29 /* CoreAnimation */,
 				F57545F919C7A91C000DDF29 /* CoreFoundation */,
 				F57545FA19C7A91C000DDF29 /* CoreGraphics */,
 				F57545FB19C7A91C000DDF29 /* CoreText */,
@@ -35,6 +34,7 @@
 				F57545FD19C7A91C000DDF29 /* IOKit */,
 				F57545FE19C7A91C000DDF29 /* libs */,
 				F57545FF19C7A91C000DDF29 /* OpenGLES */,
+				F5E860851AC61D4D00FBCC41 /* QuartzCore */,
 				F575460019C7A91C000DDF29 /* README.md */,
 				F575460119C7A91C000DDF29 /* UIKit */,
 			);

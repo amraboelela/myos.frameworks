@@ -28,7 +28,7 @@
  */
 
 //#import <Foundation/Foundation.h>
-#import <CoreAnimation/CoreAnimation.h>
+#import <QuartzCore/QuartzCore.h>
 
 @protocol UIViewLayoutManagerProtocol <NSObject>
 - (void)layoutSubviews;
