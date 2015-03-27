@@ -32,11 +32,12 @@
 
 static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToSize, UIFont *font, UILineBreakMode lineBreakMode, CGSize *renderSize)
 {
-    DLog(@"string: %@", string);
+    DLog(@"string: %p %@", string, string);
     CFMutableArrayRef lines = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
     CGSize drawSize = CGSizeZero;
     if (font) {
         CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(NULL, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        //CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(NULL, 2, &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         CFDictionarySetValue(attributes, kCTFontAttributeName, font->_font);
         CFDictionarySetValue(attributes, kCTForegroundColorFromContextAttributeName, kCFBooleanTrue);
         
@@ -44,12 +45,13 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
         //TODO uncomment the previous line when memory issue is done.
         CFStringRef tmpStr = CFStringCreateWithCString(NULL, [string UTF8String], kCFStringEncodingUTF8);
         NSAttributedString *attributedString = CFAttributedStringCreate(NULL, tmpStr, attributes);
+        DLog(@"tmpStr: %p %@", tmpStr, tmpStr);
         CFRelease(tmpStr);
         //////////////Work around
 
         CTTypesetterRef typesetter = CTTypesetterCreateWithAttributedString(attributedString);
         
-        const CFIndex stringLength = CFAttributedStringGetLength(attributedString);
+       const CFIndex stringLength = CFAttributedStringGetLength(attributedString);
         const CGFloat lineHeight = font.lineHeight;
         //const CGFloat capHeight = font.capHeight;
         //DLog(@"capHeight %f", capHeight);
@@ -58,7 +60,8 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
         DLog(@"constrainedToSize: %@", NSStringFromCGSize(constrainedToSize));
         CFIndex start = 0;
         BOOL isLastLine = NO;
-        
+ 
+       
         while (start < stringLength && !isLastLine) {
             DLog(@"start: %d", start);
             drawSize.height += lineHeight;
@@ -67,10 +70,10 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
             DLog(@"lineBreakMode: %d", lineBreakMode);
             CFIndex usedCharacters = 0;
             CTLineRef line = NULL;
-            DLog(@"2");
+            //DLog(@"2");
             
             if (isLastLine && (lineBreakMode != UILineBreakModeWordWrap && lineBreakMode != UILineBreakModeCharacterWrap)) {
-                DLog(@"2");
+                //DLog(@"2");
                 if (lineBreakMode == UILineBreakModeClip) {
                     usedCharacters = CTTypesetterSuggestClusterBreak(typesetter, start, constrainedToSize.width);
                     line = CTTypesetterCreateLine(typesetter, CFRangeMake(start, usedCharacters));
@@ -83,7 +86,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
                     } else {
                         truncType = kCTLineTruncationMiddle;
                     }
-                    DLog(@"3");
+                    //DLog(@"3");
                     usedCharacters = stringLength - start;
                     DLog(@"usedCharacters: %d", usedCharacters);
                     NSAttributedString *ellipsisString = CFAttributedStringCreate(NULL, CFSTR("..."), attributes);
@@ -94,6 +97,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
                     line = CTLineCreateTruncatedLine(tempLine, constrainedToSize.width, truncType, ellipsisLine);
                     CFRelease(tempLine);
                     CFRelease(ellipsisLine);
+                    DLog();
                     CFRelease(ellipsisString);
                 }
             } else {
@@ -122,7 +126,14 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
             }
             start += usedCharacters;
         }
-        DLog(@"6");
+         DLog();
+        CFRelease(typesetter);
+        DLog();
+        CFRelease(attributedString);
+        DLog();
+        return nil; 
+ 
+       DLog(@"6");
         CFRelease(typesetter);
         DLog(@"attributedString: %@", attributedString);
         CFRelease(attributedString);

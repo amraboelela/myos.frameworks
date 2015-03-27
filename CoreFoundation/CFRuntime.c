@@ -348,17 +348,22 @@ CFMakeCollectable (CFTypeRef cf)
 void
 CFRelease (CFTypeRef cf)
 {
+  //printf("CFRelease cf: %x\n", cf);
 #if defined (OBJC_SMALL_OBJECT_MASK)
+//  printf("CFRelease 1\n");
   if (((unsigned long)cf & OBJC_SMALL_OBJECT_MASK) == 0)
 #endif
     {
+  //    printf("CFRelease 2\n");
       CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf), void, cf, "release");
 
       if (!((CFRuntimeBase *) cf)->_flags.ro)
         {
+          //printf("CFRelease 3\n");
           CFIndex result = GSAtomicDecrementCFIndex (&(((obj) cf)[-1].retained));
           if (result < 0)
             {
+              //printf("CFRelease 4\n");
               assert (result == -1);
               GSRuntimeDeallocateInstance (cf);
             }

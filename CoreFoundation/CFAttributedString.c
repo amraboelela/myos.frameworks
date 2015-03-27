@@ -114,6 +114,7 @@ CFAttributedStringCacheAttribute (CFDictionaryRef attribs)
   else
     {
       cachedAttr = CFBagGetValue (_kCFAttributedStringCache, attribs);
+      printf("attribs: %x, cachedAttr: %x\n", attribs, cachedAttr);
     }
   
   if (cachedAttr == NULL)
@@ -121,6 +122,7 @@ CFAttributedStringCacheAttribute (CFDictionaryRef attribs)
       CFDictionaryRef insert;
       
       insert = CFDictionaryCreateCopy (NULL, attribs);
+      printf("attribs: %x, insert: %x\n", attribs, insert);
       CFBagAddValue (_kCFAttributedStringCache, insert);
       cachedAttr = insert;
       CFRelease (insert);
@@ -135,9 +137,11 @@ static void
 CFAttributedStringUncacheAttribute (CFDictionaryRef attribs)
 {
   GSMutexLock (&_kCFAttributedStringCacheLock);
-  
+  printf("CFAttributedStringUncacheAttribute attribs: %x\n", attribs);
+  printf("CFAttributedStringUncacheAttribute CFGetRetainCount(attribs): %d\n", CFGetRetainCount(attribs));
   CFBagRemoveValue (_kCFAttributedStringCache, attribs);
   
+  printf("CFAttributedStringUncacheAttribute 2\n");
   GSMutexUnlock (&_kCFAttributedStringCacheLock);
 }
 
@@ -213,13 +217,18 @@ CFAttributedStringFinalize (CFTypeRef cf)
   CFIndex idx;
   CFAttributedStringRef str = (CFAttributedStringRef)cf;
   
+  printf("CFAttributedStringFinalize 0\n");
   CFRelease (str->_string);
-  
-  for (idx = 0 ; idx < str->_attribCount ; ++idx)
+  printf("CFAttributedStringFinalize 1\n");
+  for (idx = 0 ; idx < str->_attribCount ; ++idx) {
+    printf("CFAttributedStringFinalize 2\n");
     CFAttributedStringUncacheAttribute (str->_attribs[idx].attrib);
-  
-  if (!CFAttributedStringIsInline(str))
+    printf("CFAttributedStringFinalize 2.1\n");
+  }
+  if (!CFAttributedStringIsInline(str)) {
+    printf("CFAttributedStringFinalize 3\n");
     CFAllocatorDeallocate (CFGetAllocator(str), str->_attribs);
+  }
 }
 
 static Boolean

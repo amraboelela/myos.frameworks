@@ -101,7 +101,7 @@ static void reportFPS(BOOL withCondition)
     
     _displayLink = [[CADisplayLink alloc] initWithTarget:self selector:@selector(display)];
     //_displayLink.frameInterval = 1;
-    return;
+    //return;
     while (true) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
         //DLog(@"run");

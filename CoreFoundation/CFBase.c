@@ -85,6 +85,7 @@ malloc_realloc (void *ptr, CFIndex newsize, CFOptionFlags hint, void *info)
 static void
 malloc_dealloc (void *ptr, void *info)
 {
+  //printf("dealloc %x\n", ptr);
   free (ptr);
 }
 

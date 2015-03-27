@@ -70,7 +70,7 @@ static id _UIButtonNormalContentForState(UIButton *button, UIControlState state,
 
 static void _UIButtonSetContent(UIButton *button, id value, UIControlState state, NSString *type)
 {
-    DLog(@"type: %@", type);
+    //DLog(@"type: %@", type);
     NSMutableDictionary *typeContent = [button->_content objectForKey:type];
     
     //DLog(@"typeContent: %@", typeContent);
@@ -83,7 +83,7 @@ static void _UIButtonSetContent(UIButton *button, id value, UIControlState state
     if (value) {
         //DLog(@"typeContent: %@", typeContent);
         [typeContent setObject:value forKey:key];
-        DLog(@"typeContent: %@", typeContent);
+        //DLog(@"typeContent: %@", typeContent);
     } else {
         [typeContent removeObjectForKey:key];
     }
@@ -101,19 +101,19 @@ static CGSize _UIButtonBackgroundSizeForState(UIButton *button, UIControlState s
 static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
 {
     NSString *title = [button titleForState:state];
-    DLog(@"title: %@", title);
-    DLog(@"button: %@", button);
+    //DLog(@"title: %@", title);
+    //DLog(@"button: %@", button);
     
     CGSize maxSize = button->_layer->_bounds.size;
-    DLog();
+    //DLog();
     //if (_numberOfLines > 0) {
     maxSize.height = button->_titleLabel.font.lineHeight;
     //}
-    DLog();
+    //DLog();
     CGSize resultSize = [title sizeWithFont:button->_titleLabel.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeTailTruncation];
-    DLog();
+    //DLog();
     //CGSize result = [title sizeWithFont:button->_titleLabel.font constrainedToSize:CGSizeMake(CGFLOAT_MAX,CGFLOAT_MAX)];
-    DLog(@"resultSize: %@", NSStringFromCGSize(resultSize));
+    //DLog(@"resultSize: %@", NSStringFromCGSize(resultSize));
     return ([title length] > 0)? resultSize : CGSizeZero;
 }
 
@@ -367,7 +367,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 
 - (CGRect)titleRectForContentRect:(CGRect)contentRect
 {
-    DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
+    //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     const UIControlState state = self.state;
     //DLog(@"1");
     UIEdgeInsets inset = _titleEdgeInsets;
@@ -375,7 +375,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     //DLog(@"2");
     inset.left += imageSize.width;
     //DLog(@"3");
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     DLog(@"_UIButtonTitleSizeForState(self, state): %@", NSStringFromCGSize(_UIButtonTitleSizeForState(self, state)));
     DLog(@"UIEdgeInsetsInsetRect(contentRect,inset): %@", NSStringFromCGRect(UIEdgeInsetsInsetRect(contentRect,inset)));
     DLog(@"state: %d", state);
@@ -466,11 +466,11 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     const CGRect contentRect = [self contentRectForBounds:bounds];
 
     _backgroundImageView.frame = [self backgroundRectForBounds:bounds];
-    DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
+    //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     _titleLabel.frame = [self titleRectForContentRect:contentRect];
-    DLog(@"3");
+    //DLog(@"3");
     _imageView.frame = [self imageRectForContentRect:contentRect];
-    DLog(@"4");
+    //DLog(@"4");
 }
 
 #pragma mark - Public methods
