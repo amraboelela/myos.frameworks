@@ -33,7 +33,7 @@
 #import <OpenGLES/EAGL-private.h>
 #import <IOKit/IOKit.h>
 #import <CoreGraphics/CoreGraphics-private.h>
-#import <CoreAnimation/CoreAnimation-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 
 #define _kInactiveTimeLimit     30.0
 #define _kLongInactiveTimeLimit 60.0

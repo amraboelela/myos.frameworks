@@ -28,7 +28,7 @@
  */
 
 #import <UIKit/UIKit-private.h>
-#import <CoreAnimation/CoreAnimation-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 
 static const UIEdgeInsets kButtonEdgeInsets = {0,0,0,3};
 //static const CGFloat kMinButtonWidth = 30;

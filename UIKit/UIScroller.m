@@ -28,7 +28,7 @@
  */
 
 #import <UIKit/UIKit-private.h>
-#import <CoreAnimation/CoreAnimation-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 
 static const BOOL _UIScrollerGutterEnabled = NO;
 static const BOOL _UIScrollerJumpToSpotThatIsClicked = NO;	// _UIScrollerGutterEnabled must be YES for this to have any meaning

@@ -28,7 +28,7 @@
  */
 
 #import <UIKit/UIKit-private.h>
-#import <CoreAnimation/CoreAnimation-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 #import <OpenGLES/EAGL-private.h>
 #import <IOKit/IOKit.h>
 

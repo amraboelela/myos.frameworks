@@ -28,7 +28,7 @@
  */
 
 #import <UIKit/UIKit-private.h>
-#import <CoreAnimation/CoreAnimation-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 
 static NSString *const UIButtonContentTypeTitle = @"UIButtonContentTypeTitle";
 static NSString *const UIButtonContentTypeTitleColor = @"UIButtonContentTypeTitleColor";

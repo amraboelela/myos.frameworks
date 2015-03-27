@@ -18,7 +18,7 @@
 #import <fcntl.h>
 #import <UIKit/UIKit-private.h>
 #import <IOKit/IOKit.h>
-#import <CoreAnimation/CoreAnimation-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 #import <CoreFoundation/CoreFoundation-private.h>
 
 #define _kTerminateChildTimeOut         2.0

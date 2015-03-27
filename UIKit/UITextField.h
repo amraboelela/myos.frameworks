@@ -30,7 +30,7 @@
 #import <UIKit/UIControl.h>
 #import <UIKit/UIStringDrawing.h>
 #import <UIKit/UITextInputTraits.h>
-#import <CoreAnimation/CoreAnimation.h>
+#import <QuartzCore/QuartzCore.h>
 
 extern NSString *const UITextFieldTextDidBeginEditingNotification;
 extern NSString *const UITextFieldTextDidChangeNotification;

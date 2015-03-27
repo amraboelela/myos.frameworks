@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit-private.h>
-#import <CoreAnimation/CoreAnimation-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 
 static NSString *const kSSSegmentedControlEnabledKey = @"enabled";
 
