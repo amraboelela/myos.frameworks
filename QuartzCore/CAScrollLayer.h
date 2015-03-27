@@ -15,7 +15,7 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#import <QuartzCore/QuartzCore.h>
+#import <QuartzCore/CALayer.h>
 
 extern NSString *const kCAScrollNone;
 extern NSString *const kCAScrollVertically;

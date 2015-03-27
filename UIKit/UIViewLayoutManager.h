@@ -27,8 +27,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//#import <Foundation/Foundation.h>
-#import <QuartzCore/QuartzCore.h>
+#import <Foundation/Foundation.h>
+//#import <QuartzCore/QuartzCore.h>
 
 @protocol UIViewLayoutManagerProtocol <NSObject>
 - (void)layoutSubviews;
