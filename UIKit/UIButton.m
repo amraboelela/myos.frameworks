@@ -376,9 +376,9 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     inset.left += imageSize.width;
     //DLog(@"3");
     //DLog(@"self: %@", self);
-    DLog(@"_UIButtonTitleSizeForState(self, state): %@", NSStringFromCGSize(_UIButtonTitleSizeForState(self, state)));
-    DLog(@"UIEdgeInsetsInsetRect(contentRect,inset): %@", NSStringFromCGRect(UIEdgeInsetsInsetRect(contentRect,inset)));
-    DLog(@"state: %d", state);
+    //DLog(@"_UIButtonTitleSizeForState(self, state): %@", NSStringFromCGSize(_UIButtonTitleSizeForState(self, state)));
+    //DLog(@"UIEdgeInsetsInsetRect(contentRect,inset): %@", NSStringFromCGRect(UIEdgeInsetsInsetRect(contentRect,inset)));
+    //DLog(@"state: %d", state);
     return _UIButtonComponentRectForSize(self, _UIButtonTitleSizeForState(self, state), UIEdgeInsetsInsetRect(contentRect,inset), state);
 }
 
@@ -477,6 +477,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 
 - (CGSize)sizeThatFits:(CGSize)size
 {
+    DLog();
     const UIControlState state = self.state;
     
     const CGSize imageSize = _UIButtonImageSizeForState(self, state);
