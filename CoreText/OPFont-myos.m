@@ -186,6 +186,11 @@ static NSDictionary * StandardGlyphNamesDictionary;
   return _descriptor;
 }
 
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p; fontName: %@; pointSize: %0.0f>", [self className], self, self.fontName, self.pointSize];
+}
+
 - (OPFontRenderingMode) renderingMode
 {
   return 0;
