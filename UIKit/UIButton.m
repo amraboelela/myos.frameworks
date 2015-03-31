@@ -75,15 +75,12 @@ static void _UIButtonSetContent(UIButton *button, id value, UIControlState state
     
     //DLog(@"typeContent: %@", typeContent);
     if (!typeContent) {
-        //DLog();
         typeContent = [[[NSMutableDictionary alloc] init] autorelease];
         [button->_content setObject:typeContent forKey:type];
     }
     NSNumber *key = [NSNumber numberWithInt:state];
     if (value) {
-        //DLog(@"typeContent: %@", typeContent);
         [typeContent setObject:value forKey:key];
-        //DLog(@"typeContent: %@", typeContent);
     } else {
         [typeContent removeObjectForKey:key];
     }
@@ -101,17 +98,14 @@ static CGSize _UIButtonBackgroundSizeForState(UIButton *button, UIControlState s
 static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
 {
     NSString *title = [button titleForState:state];
-    //DLog(@"title: %@", title);
     //DLog(@"button: %@", button);
     
     CGSize maxSize = button->_layer->_bounds.size;
-    //DLog();
     //if (_numberOfLines > 0) {
     maxSize.height = button->_titleLabel.font.lineHeight;
     //}
-    //DLog();
+    DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
     CGSize resultSize = [title sizeWithFont:button->_titleLabel.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeTailTruncation];
-    //DLog();
     //CGSize result = [title sizeWithFont:button->_titleLabel.font constrainedToSize:CGSizeMake(CGFLOAT_MAX,CGFLOAT_MAX)];
     //DLog(@"resultSize: %@", NSStringFromCGSize(resultSize));
     return ([title length] > 0)? resultSize : CGSizeZero;
@@ -376,9 +370,9 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     inset.left += imageSize.width;
     //DLog(@"3");
     //DLog(@"self: %@", self);
-    DLog(@"_UIButtonTitleSizeForState(self, state): %@", NSStringFromCGSize(_UIButtonTitleSizeForState(self, state)));
-    DLog(@"UIEdgeInsetsInsetRect(contentRect,inset): %@", NSStringFromCGRect(UIEdgeInsetsInsetRect(contentRect,inset)));
-    DLog(@"state: %d", state);
+    //DLog(@"_UIButtonTitleSizeForState(self, state): %@", NSStringFromCGSize(_UIButtonTitleSizeForState(self, state)));
+    //DLog(@"UIEdgeInsetsInsetRect(contentRect,inset): %@", NSStringFromCGRect(UIEdgeInsetsInsetRect(contentRect,inset)));
+    //DLog(@"state: %d", state);
     return _UIButtonComponentRectForSize(self, _UIButtonTitleSizeForState(self, state), UIEdgeInsetsInsetRect(contentRect,inset), state);
 }
 
