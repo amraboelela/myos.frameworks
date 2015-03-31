@@ -220,6 +220,7 @@
             maxSize.height = _font.lineHeight * _numberOfLines;
         }
         //DLog(@"_lineBreakMode: %d", _lineBreakMode);
+        DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
         drawRect.size = [_text sizeWithFont:_font constrainedToSize:maxSize lineBreakMode:_lineBreakMode];
 
         // now vertically center it
@@ -254,6 +255,7 @@
             maxSize.height = _font.lineHeight * numberOfLines;
         }
         //DLog(@"_lineBreakMode: %d", _lineBreakMode);
+        DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
         CGSize size = [_text sizeWithFont:_font constrainedToSize:maxSize lineBreakMode:_lineBreakMode];
         return (CGRect){bounds.origin, size};
     }
@@ -262,7 +264,7 @@
 
 - (void)drawTextInRect:(CGRect)rect
 {
-    //DLog();
+    DLog();
     [_text drawInRect:rect withFont:_font lineBreakMode:_lineBreakMode alignment:_textAlignment];
 }
 
@@ -270,6 +272,7 @@
 {
     size = CGSizeMake(((_numberOfLines > 0)? CGFLOAT_MAX : size.width), ((_numberOfLines <= 0)? CGFLOAT_MAX : (_font.lineHeight*_numberOfLines)));
     //DLog(@"_lineBreakMode: %d", _lineBreakMode);
+    DLog(@"size: %@", NSStringFromCGSize(size));
     CGSize result = [_text sizeWithFont:_font constrainedToSize:size lineBreakMode:_lineBreakMode];
     return CGSizeMake(result.width+2, result.height+2);
 }

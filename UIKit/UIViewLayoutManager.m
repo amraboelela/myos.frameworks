@@ -28,6 +28,7 @@
  */
 
 #import <UIKit/UIViewLayoutManager.h>
+#import <QuartzCore/QuartzCore.h>
 
 static UIViewLayoutManager *theLayoutManager = nil;
 

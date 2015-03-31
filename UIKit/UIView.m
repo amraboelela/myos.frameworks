@@ -910,7 +910,7 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 - (void)layoutSublayersOfLayer:(CALayer *)layer
 {
-    DLog();
+    //DLog();
     [self layoutSubviews];
 }
 
