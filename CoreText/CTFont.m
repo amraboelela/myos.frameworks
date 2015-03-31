@@ -162,7 +162,8 @@ CTFontRef CTFontCreateWithName(
   CGFloat size,
   const CGAffineTransform *matrixPtr)
 {
-  return CTFontCreateWithNameAndOptions(name, size, matrixPtr, kCTFontOptionsDefault);
+    DLog(@"name: %@", name);
+    return CTFontCreateWithNameAndOptions(name, size, matrixPtr, kCTFontOptionsDefault);
 }
 
 CTFontRef CTFontCreateWithNameAndOptions(
@@ -171,13 +172,13 @@ CTFontRef CTFontCreateWithNameAndOptions(
   const CGAffineTransform *matrixPtr,
   CTFontOptions opts)
 {
-  NSDictionary *attrs = [NSDictionary dictionaryWithObjectsAndKeys:
-    name, kCTFontNameAttribute,
-    nil];
-
-  OPFontDescriptor *descriptor = [OPFontDescriptor fontDescriptorWithFontAttributes: attrs];
-
-  return CTFontCreateWithFontDescriptorAndOptions(descriptor, size, matrixPtr, opts);
+    NSDictionary *attrs = [NSDictionary dictionaryWithObjectsAndKeys:
+                           name, kCTFontNameAttribute,
+                           nil];
+    DLog(@"attrs: %@", attrs);
+    OPFontDescriptor *descriptor = [OPFontDescriptor fontDescriptorWithFontAttributes:attrs];
+    DLog(@"descriptor: %@", descriptor);
+    return CTFontCreateWithFontDescriptorAndOptions(descriptor, size, matrixPtr, opts);
 }
 
 CTFontRef CTFontCreateWithPlatformFont(
