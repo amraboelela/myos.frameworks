@@ -29,7 +29,7 @@ endif
 OBJECTS = \
 	CTFontCollection.o \
 	CTFontDescriptor-myos.o \
-	CTFont.o \
+	CTFont-myos.o \
 	CTFontTraits.o \
 	CTFrame.o \
 	CTFramesetter.o \

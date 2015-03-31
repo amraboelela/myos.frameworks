@@ -1,5 +1,5 @@
 /* 
-   OPFontDescriptor.h
+   OPFontDescriptor-myos.h
 
    Holds an image to use as a cursor
 

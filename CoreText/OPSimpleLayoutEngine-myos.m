@@ -24,7 +24,7 @@
 
 
 #import "OPSimpleLayoutEngine.h"
-#import "CTRun-private.h"
+#import "CTRun-private-myos.h"
 #import <CoreText/CTFont.h>
 #import <CoreText/CTStringAttributes.h>
 
