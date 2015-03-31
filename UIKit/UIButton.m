@@ -361,7 +361,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 
 - (CGRect)titleRectForContentRect:(CGRect)contentRect
 {
-    //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
+    DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     const UIControlState state = self.state;
     //DLog(@"1");
     UIEdgeInsets inset = _titleEdgeInsets;
@@ -460,9 +460,9 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     const CGRect contentRect = [self contentRectForBounds:bounds];
 
     _backgroundImageView.frame = [self backgroundRectForBounds:bounds];
-    //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
+    DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     _titleLabel.frame = [self titleRectForContentRect:contentRect];
-    //DLog(@"3");
+    DLog(@"_titleLabel: %@", _titleLabel);
     _imageView.frame = [self imageRectForContentRect:contentRect];
     //DLog(@"4");
 }
