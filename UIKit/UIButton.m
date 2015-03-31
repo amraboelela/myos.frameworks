@@ -98,9 +98,10 @@ static CGSize _UIButtonBackgroundSizeForState(UIButton *button, UIControlState s
 static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
 {
     NSString *title = [button titleForState:state];
-    //DLog(@"button: %@", button);
+    DLog(@"button: %@", button);
     
     CGSize maxSize = button->_layer->_bounds.size;
+    DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
     //if (_numberOfLines > 0) {
     maxSize.height = button->_titleLabel.font.lineHeight;
     //}
