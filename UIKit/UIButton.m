@@ -471,6 +471,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 
 - (CGSize)sizeThatFits:(CGSize)size
 {
+    DLog();
     const UIControlState state = self.state;
     
     const CGSize imageSize = _UIButtonImageSizeForState(self, state);
