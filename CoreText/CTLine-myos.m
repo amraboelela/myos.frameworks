@@ -22,7 +22,7 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
    */
 
-#import "CTLine-private.h"
+#import "CTLine-private-myos.h"
 
 /* Classes */
 
@@ -176,7 +176,7 @@
 
 /* Functions */
 
-CTLineRef CTLineCreateWithAttributedString(NSAttributedString * string)
+CTLineRef CTLineCreateWithAttributedString(CFAttributedStringRef string)
 {
   CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
   CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));

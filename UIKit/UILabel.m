@@ -200,7 +200,7 @@
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@: %p; text: %@; frame = %@; layer = %p>", [self className], self, _text, NSStringFromCGRect(self.frame), _layer];
+    return [NSString stringWithFormat:@"<%@: %p; text: %@; frame = %@; font = %@, layer = %p>", [self className], self, _text, NSStringFromCGRect(self.frame), _font, _layer];
 }
 
 #pragma mark - Overridden methods
