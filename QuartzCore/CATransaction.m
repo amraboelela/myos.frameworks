@@ -38,7 +38,7 @@ static CATransactionGroup *_CATransactionGetCurrentTransaction()
 
 static void _CATransactionLayoutLayers(CALayer *layer)
 {
-    DLog();
+    //DLog();
     [layer layoutIfNeeded];
     for (CALayer *sublayer in layer->_sublayers) {
         _CATransactionLayoutLayers(sublayer);

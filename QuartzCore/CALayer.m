@@ -616,7 +616,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 
 - (void)setNeedsLayout
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     if (_modelLayer == self) {
         _CALayerSetNeedsLayout(self);
     }
@@ -625,7 +625,7 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
 - (void)layoutIfNeeded
 {
     if (_needsLayout) {
-        DLog(@"self: %@", self);
+        //DLog(@"self: %@", self);
         if ([delegate respondsToSelector:@selector(layoutSublayersOfLayer:)]) {
             //DLog();
             [delegate layoutSublayersOfLayer:self];
