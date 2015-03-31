@@ -38,7 +38,7 @@ static CATransactionGroup *_CATransactionGetCurrentTransaction()
 
 static void _CATransactionLayoutLayers(CALayer *layer)
 {
-    //DLog();
+    DLog();
     [layer layoutIfNeeded];
     for (CALayer *sublayer in layer->_sublayers) {
         _CATransactionLayoutLayers(sublayer);
@@ -182,7 +182,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
     CALayer *rootLayer = _CALayerRootLayer();
     //DLog(@"LayoutLayers");
     if (_layersNeedLayout) {
-        //DLog(@"_layersNeedLayout");
+        DLog(@"_layersNeedLayout");
         _CATransactionLayoutLayers(rootLayer);
         _layersNeedLayout = NO;
     }
