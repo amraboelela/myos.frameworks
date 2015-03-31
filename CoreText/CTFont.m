@@ -25,7 +25,7 @@
 #include <CoreText/CTFont.h>
 #include <CoreText/CTFontDescriptor.h>
 #import "OPFont.h"
-#import "OPFontDescriptor.h"
+#import "OPFontDescriptor-myos.h"
 
 /* Constants */
 
