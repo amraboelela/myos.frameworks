@@ -98,13 +98,12 @@ static CGSize _UIButtonBackgroundSizeForState(UIButton *button, UIControlState s
 static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
 {
     NSString *title = [button titleForState:state];
-    DLog(@"button: %@", button);
+    //DLog(@"button: %@", button);
     
     CGSize maxSize = button->_layer->_bounds.size;
     DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
-    //if (_numberOfLines > 0) {
+    DLog(@"button->_titleLabel: %@", button->_titleLabel);
     maxSize.height = button->_titleLabel.font.lineHeight;
-    //}
     DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
     CGSize resultSize = [title sizeWithFont:button->_titleLabel.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeTailTruncation];
     //CGSize result = [title sizeWithFont:button->_titleLabel.font constrainedToSize:CGSizeMake(CGFLOAT_MAX,CGFLOAT_MAX)];
@@ -115,7 +114,6 @@ static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
 static CGSize _UIButtonImageSizeForState(UIButton *button, UIControlState state)
 {
     UIImage *image = [button imageForState:state];
-    //DLog(@"image: %@", image);
     return image ? image.size : CGSizeZero;
 }
 
@@ -131,7 +129,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     if (CGRectGetMaxX(rect) > CGRectGetMaxX(contentRect)) {
         rect.size.width -= CGRectGetMaxX(rect) - CGRectGetMaxX(contentRect);
     }
-    //DLog(@"1");
     switch (button.contentHorizontalAlignment) {
         case UIControlContentHorizontalAlignmentCenter:
             rect.origin.x += floorf((contentRect.size.width/2.f) - (rect.size.width/2.f));
@@ -146,7 +143,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
             // don't do anything - it's already left aligned
             break;
     }
-    //DLog(@"2");
     switch (button.contentVerticalAlignment) {
         case UIControlContentVerticalAlignmentCenter:
             rect.origin.y += floorf((contentRect.size.height/2.f) - (rect.size.height/2.f));
@@ -161,7 +157,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
             // don't do anything - it's already top aligned
             break;
     }
-    //DLog(@"3");
     return rect;
 }
 
@@ -183,7 +178,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 + (id)buttonWithType:(UIButtonType)buttonType
 {
     UIButton *button = [[[self alloc] initWithFrame:CGRectZero] autorelease];
-    //DLog(@"1");
     button->_buttonType = buttonType;
    // button->_layer.backgroundColor = [[UIColor whiteColor] CGColor];
     if (buttonType==UIButtonTypeRoundedRect) {
@@ -197,7 +191,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
                                                                  (id)[_kEndBlueGradientColor CGColor], nil];
         button->_gradientLayer.cornerRadius = 10;
         button->_gradientLayer.borderWidth = 0;
-        //DLog(@"5");
     }
 
    /*switch (buttonType) {
@@ -362,14 +355,12 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 
 - (CGRect)titleRectForContentRect:(CGRect)contentRect
 {
-    DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
+    //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     const UIControlState state = self.state;
     //DLog(@"1");
     UIEdgeInsets inset = _titleEdgeInsets;
     CGSize imageSize = _UIButtonImageSizeForState(self, state);
-    //DLog(@"2");
     inset.left += imageSize.width;
-    //DLog(@"3");
     //DLog(@"self: %@", self);
     //DLog(@"_UIButtonTitleSizeForState(self, state): %@", NSStringFromCGSize(_UIButtonTitleSizeForState(self, state)));
     //DLog(@"UIEdgeInsetsInsetRect(contentRect,inset): %@", NSStringFromCGRect(UIEdgeInsetsInsetRect(contentRect,inset)));
@@ -452,18 +443,17 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 
 - (void)layoutSubviews
 {
-    //DLog();
     [super layoutSubviews];
    
-    //DLog();
+    DLog();
     const CGRect bounds = self.bounds;
     _gradientLayer.frame = self.bounds;
     const CGRect contentRect = [self contentRectForBounds:bounds];
 
     _backgroundImageView.frame = [self backgroundRectForBounds:bounds];
-    DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
+    //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     _titleLabel.frame = [self titleRectForContentRect:contentRect];
-    DLog(@"_titleLabel: %@", _titleLabel);
+    //DLog(@"_titleLabel: %@", _titleLabel);
     _imageView.frame = [self imageRectForContentRect:contentRect];
     //DLog(@"4");
 }

@@ -176,7 +176,7 @@
 
 /* Functions */
 
-CTLineRef CTLineCreateWithAttributedString(NSAttributedString * string)
+CTLineRef CTLineCreateWithAttributedString(CFAttributedStringRef string)
 {
   CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
   CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));

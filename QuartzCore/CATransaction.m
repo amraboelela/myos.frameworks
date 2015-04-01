@@ -178,11 +178,10 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
         //[[CATransaction class] performSelector:@selector(_commitTransaction) withObject:nil afterDelay:0.01];
         return;
     }
-    //DLog();
     CALayer *rootLayer = _CALayerRootLayer();
     //DLog(@"LayoutLayers");
     if (_layersNeedLayout) {
-        DLog(@"_layersNeedLayout");
+        //DLog(@"_layersNeedLayout");
         _CATransactionLayoutLayers(rootLayer);
         _layersNeedLayout = NO;
     }
