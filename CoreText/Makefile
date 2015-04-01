@@ -35,7 +35,7 @@ OBJECTS = \
 	CTFramesetter.o \
 	CTGlyphInfo.o \
 	CTLine-myos.o \
-	OPFontconfigFontDescriptor.o \
+	OPFontconfigFontDescriptor-myos.o \
 	OPFontDescriptor-myos.o \
 	OPFont-myos.o \
 	CTParagraphStyle.o \

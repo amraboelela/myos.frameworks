@@ -25,7 +25,7 @@
 #include <CoreText/CTFont.h>
 #include <CoreText/CTFontDescriptor.h>
 #import "OPFont.h"
-#import "OPFontDescriptor-myos.h"
+#import "OPFontDescriptor.h"
 
 /* Constants */
 
@@ -162,7 +162,6 @@ CTFontRef CTFontCreateWithName(
   CGFloat size,
   const CGAffineTransform *matrixPtr)
 {
-    DLog(@"name: %@", name);
     return CTFontCreateWithNameAndOptions(name, size, matrixPtr, kCTFontOptionsDefault);
 }
 
@@ -175,9 +174,9 @@ CTFontRef CTFontCreateWithNameAndOptions(
     NSDictionary *attrs = [NSDictionary dictionaryWithObjectsAndKeys:
                            name, kCTFontNameAttribute,
                            nil];
-    DLog(@"attrs: %@", attrs);
+
     OPFontDescriptor *descriptor = [OPFontDescriptor fontDescriptorWithFontAttributes:attrs];
-    DLog(@"descriptor: %@", descriptor);
+
     return CTFontCreateWithFontDescriptorAndOptions(descriptor, size, matrixPtr, opts);
 }
 
