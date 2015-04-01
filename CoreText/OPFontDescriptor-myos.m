@@ -208,6 +208,11 @@
   [super dealloc];
 }
 
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p; fontAttributes: %@>", [self className], self, _attributes];
+}
+
 - (id) copyWithZone: (NSZone *)z
 {
   OPFontDescriptor *f = [isa allocWithZone: z];
