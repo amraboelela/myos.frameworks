@@ -79,8 +79,8 @@ CFAttributedStringGetAttributeAndLongestEffectiveRange (
 
 CF_EXPORT CFDictionaryRef
 CFAttributedStringGetAttributesAndLongestEffectiveRange (
-  CFAttributedStringRef str, CFIndex loc, CFRange inRange,
-  CFRange *longestEffRange);
+  CFAttributedStringRef aStr, CFIndex loc, CFRange inRange,
+  CFRange *longestEffectiveRange);
 
 /*
  * Creating a CFMutableAttributedString

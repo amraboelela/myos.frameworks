@@ -427,8 +427,8 @@ CFAttributedStringGetAttributeAndLongestEffectiveRange (
 
 CFDictionaryRef
 CFAttributedStringGetAttributesAndLongestEffectiveRange (
-  CFAttributedStringRef str, CFIndex loc, CFRange inRange,
-  CFRange *longestEffRange)
+  CFAttributedStringRef aStr, CFIndex loc, CFRange inRange,
+  CFRange *longestEffectiveRange)
 {
     CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attributesAtIndex:longestEffectiveRange:inRange");
     
