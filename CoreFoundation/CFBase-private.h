@@ -15,6 +15,8 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
+#import <CoreFoundation/CFBase.h>
+
 #ifdef ANDROID
 
 #import <android/log.h>
@@ -29,12 +31,16 @@
 
 CF_EXPORT long CFGetFreeMemory(); // in KB
 
+CF_INLINE int CFRangeMaxRange(CFRange range)
+{
+    return range.location + range.length;
+}
+
 CF_INLINE CFRange CFRangeIntersection(CFRange aRange, CFRange bRange)
 {
     CFRange range;
     
-    if (NSMaxRange(aRange) < bRange.location
-        || NSMaxRange(bRange) < aRange.location) {
+    if (NSMaxRange(aRange) < bRange.location || NSMaxRange(bRange) < aRange.location) {
         return CFRangeMake(0, 0);
     }
     range.location = MAX(aRange.location, bRange.location);
