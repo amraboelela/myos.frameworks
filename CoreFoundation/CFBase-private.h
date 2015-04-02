@@ -28,3 +28,17 @@
 #endif /* ANDROID */
 
 CF_EXPORT long CFGetFreeMemory(); // in KB
+
+CF_INLINE CFRange CFRangeIntersection(CFRange aRange, CFRange bRange)
+{
+    CFRange range;
+    
+    if (NSMaxRange(aRange) < bRange.location
+        || NSMaxRange(bRange) < aRange.location) {
+        return CFRangeMake(0, 0);
+    }
+    range.location = MAX(aRange.location, bRange.location);
+    range.length   = MIN(NSMaxRange(aRange), NSMaxRange(bRange))
+    - range.location;
+    return range;
+}
