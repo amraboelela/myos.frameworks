@@ -24,13 +24,16 @@
    Boston, MA 02110-1301, USA.
 */
 
-#include "CoreFoundation/CFRuntime.h"
+#import <CoreFoundation/CoreFoundation-private.h>
+
+/*#include "CoreFoundation/CFRuntime.h"
 #include "CoreFoundation/CFAttributedString.h"
 #include "CoreFoundation/CFBag.h"
 #include "CoreFoundation/CFBase.h"
 #include "CoreFoundation/CFArray.h"
 #include "CoreFoundation/CFDictionary.h"
 #include "CoreFoundation/CFString.h"
+*/
 
 #include "GSPrivate.h"
 #include "GSObjCRuntime.h"
@@ -478,7 +481,7 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
             break;
         }
     }
-    *longestEffectiveRange = NSIntersectionRange(*longestEffectiveRange,inRange);//Clip to rangeLimit
+    *longestEffectiveRange = CFRangeIntersection(*longestEffectiveRange,inRange);//Clip to rangeLimit
     return attrDictionary;
     
     
