@@ -441,12 +441,13 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
   CFRange *longestEffectiveRange)
 {
     CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attributesAtIndex:longestEffectiveRange:inRange");
-    
+    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange 1\n");
+   /* 
     if (longestEffectiveRange != NULL) {
         longestEffectiveRange->location = inRange.location;
         longestEffectiveRange->length = 0;
     }
-    CFIndex strSize = CFStringGetLength(aStr->str);
+    CFIndex strSize = CFStringGetLength(aStr->_string);
     if (loc >= strSize) {
         return NULL;
     }
@@ -467,7 +468,8 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
         }
         longestEffectiveRange->length = i - loc;
     }
-    return attributes;
+    return attributes;*/
+    return nil;
 }
 
 static void
