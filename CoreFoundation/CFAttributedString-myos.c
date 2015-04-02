@@ -430,10 +430,35 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
   CFAttributedStringRef str, CFIndex loc, CFRange inRange,
   CFRange *longestEffRange)
 {
-  return NULL; /* FIXME */
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attributesAtIndex:longestEffectiveRange:inRange");
+    
+    if (longestEffectiveRange != NULL) {
+        longestEffectiveRange->location = inRange.location;
+        longestEffectiveRange->length = 0;
+    }
+    CFIndex strSize = CFStringGetLength(aStr->str);
+    if (loc >= strSize) {
+        return NULL;
+    }
+    CFDictionaryRef attributes = CFDictionaryGetValue(aStr->attributes,&loc);
+    if (attributes == NULL) {
+        return NULL;
+    }
+    if (longestEffectiveRange != NULL)  {
+        CFIndex i;
+        CFIndex len = loc + inRange.length;
+        for (i = loc + 1 ; i < len; ++i) {
+            CFDictionaryRef temp   =  CFDictionaryGetValue(aStr->attributes,&i)  ;
+            if (temp == NULL) {
+                break;
+            } else if (!CFEqual(attributes,temp)) {
+                break;
+            }
+        }
+        longestEffectiveRange->length = i - loc;
+    }
+    return attributes;
 }
-
-
 
 static void
 InsertAttributesAtIndex (CFMutableAttributedStringRef str, CFIndex idx,
