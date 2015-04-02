@@ -178,9 +178,13 @@
 
 CTLineRef CTLineCreateWithAttributedString(CFAttributedStringRef string)
 {
+  DLog();
   CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
+  DLog();
   CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));
+  DLog();
   [ts release];
+  DLog();
   return line;
 }
 
