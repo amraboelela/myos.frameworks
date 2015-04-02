@@ -446,29 +446,30 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
     
     CFDictionaryRef attrDictionary;
     CFDictionaryRef tmpDictionary;
-    NSRange	tmpRange;
+    CFRange	tmpRange;
     //IMP		getImp;
     
-    if (NSMaxRange(rangeLimit) > [self length]) {
-        [NSException raise: NSRangeException
-                    format: @"RangeError in method -attributesAtIndex:longestEffectiveRange:inRange: in class NSAttributedString"];
+    if (NSMaxRange(inRange) > CFAttributedStringGetLength(aStr)) {
+        //[NSException raise: NSRangeException
+        //            format: @"RangeError in method -attributesAtIndex:longestEffectiveRange:inRange: in class NSAttributedString"];
+        return nil;
     }
     //getImp = [self methodForSelector: getSel];
     attrDictionary = CFAttributedStringGetAttributes(aStr, loc, longestEffectiveRange);//(*getImp)(self, getSel, index, aRange);
-    if (aRange == 0) {
+    if (longestEffectiveRange == 0) {
         return attrDictionary;
     }
-    while (aRange->location > rangeLimit.location) {
+    while (longestEffectiveRange->location > inRange.location) {
         //Check extend range backwards
         tmpDictionary = CFAttributedStringGetAttributes(aStr, longestEffectiveRange->location-1, &tmpRange);//(*getImp)(self, getSel, aRange->location-1, &tmpRange);
         if (CFDictionaryEqual(tmpDictionary, attrDictionary)) {
-            longestEffectiveRange->length = NSMaxRange(*aRange) - tmpRange.location;
+            longestEffectiveRange->length = NSMaxRange(*longestEffectiveRange) - tmpRange.location;
             longestEffectiveRange->location = tmpRange.location;
         } else {
             break;
         }
     }
-    while (NSMaxRange(*aRange) < NSMaxRange(rangeLimit)) {
+    while (NSMaxRange(*longestEffectiveRange) < NSMaxRange(inRange)) {
         //Check extend range forwards
         tmpDictionary = CFAttributedStringGetAttributes(aStr, NSMaxRange(*longestEffectiveRange), &tmpRange);//(*getImp)(self, getSel, NSMaxRange(*aRange), &tmpRange);
         if (CFDictionaryEqual(tmpDictionary, attrDictionary)) {
@@ -477,7 +478,7 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
             break;
         }
     }
-    *aRange = NSIntersectionRange(*longestEffectiveRange,inRange);//Clip to rangeLimit
+    *longestEffectiveRange = NSIntersectionRange(*longestEffectiveRange,inRange);//Clip to rangeLimit
     return attrDictionary;
     
     
