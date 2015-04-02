@@ -35,10 +35,10 @@
 #include "CoreFoundation/CFString.h"
 */
 
-#include "GSPrivate.h"
-#include "GSObjCRuntime.h"
+//#include "GSPrivate.h"
+//#include "GSObjCRuntime.h"
 
-#include <string.h>
+//#include <string.h>
 
 static CFTypeID _kCFAttributedStringTypeID = 0;
 static CFDictionaryRef _kCFAttributedStringBlankAttribute = NULL;
