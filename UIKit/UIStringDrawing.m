@@ -63,14 +63,14 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
  
        
         while (start < stringLength && !isLastLine) {
-            //DLog(@"start: %d", start);
+            DLog(@"start: %d", start);
             drawSize.height += lineHeight;
             isLastLine = (drawSize.height+lineHeight >= constrainedToSize.height);
-            //DLog(@"isLastLine: %d", isLastLine);
-            //DLog(@"lineBreakMode: %d", lineBreakMode);
+            DLog(@"isLastLine: %d", isLastLine);
+            DLog(@"lineBreakMode: %d", lineBreakMode);
             CFIndex usedCharacters = 0;
             CTLineRef line = NULL;
-            //DLog(@"2");
+            DLog(@"2");
             
             if (isLastLine && (lineBreakMode != UILineBreakModeWordWrap && lineBreakMode != UILineBreakModeCharacterWrap)) {
                 if (lineBreakMode == UILineBreakModeClip) {
@@ -85,27 +85,26 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
                     } else {
                         truncType = kCTLineTruncationMiddle;
                     }
-                    //DLog(@"3");
                     usedCharacters = stringLength - start;
-                    //DLog(@"usedCharacters: %d", usedCharacters);
+                    DLog(@"usedCharacters: %d", usedCharacters);
                     NSAttributedString *ellipsisString = CFAttributedStringCreate(NULL, CFSTR("..."), attributes);
-                    //DLog(@"ellipsisString: %@", ellipsisString);
+                    DLog(@"ellipsisString: %@", ellipsisString);
                     CTLineRef ellipsisLine = CTLineCreateWithAttributedString(ellipsisString);
-                    //DLog();
+                    DLog();
                     CTLineRef tempLine = CTTypesetterCreateLine(typesetter, CFRangeMake(start, usedCharacters));
                     line = CTLineCreateTruncatedLine(tempLine, constrainedToSize.width, truncType, ellipsisLine);
                     CFRelease(tempLine);
                     CFRelease(ellipsisLine);
-                    //DLog();
+                    DLog();
                     CFRelease(ellipsisString);
                 }
             } else {
-                //DLog(@"4");
+                DLog(@"4");
                 if (lineBreakMode == UILineBreakModeCharacterWrap) {
-                    //DLog(@"4.1");
+                    DLog(@"4.1");
                     usedCharacters = CTTypesetterSuggestClusterBreak(typesetter, start, constrainedToSize.width);
                 } else {
-                    //DLog(@"4.2");
+                    DLog(@"4.2");
                     usedCharacters = CTTypesetterSuggestLineBreak(typesetter, start, constrainedToSize.width);
                 }
                 // FIXME
@@ -114,10 +113,10 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
                     usedCharacters = 7;
                     break;
                 }
-                //DLog(@"start: %d, usedCharacters: %d", start, usedCharacters);
+                DLog(@"start: %d, usedCharacters: %d", start, usedCharacters);
                 line = CTTypesetterCreateLine(typesetter, CFRangeMake(start, usedCharacters));
             }
-            //DLog(@"line: %@", line);
+            DLog(@"line: %@", line);
             if (line) {
                 drawSize.width = MAX(drawSize.width, ceilf(CTLineGetTypographicBounds(line,NULL,NULL,NULL)));
                 CFArrayAppendValue(lines, line);
@@ -125,7 +124,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
             }
             start += usedCharacters;
         }
-        //DLog();
+        DLog();
         //CFRelease(typesetter);
         //DLog();
         //CFRelease(attributedString);
@@ -134,17 +133,17 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
  
         //DLog(@"6");
         CFRelease(typesetter);
-        //DLog(@"attributedString: %@", attributedString);
+        DLog(@"attributedString: %@", attributedString);
         CFRelease(attributedString);
         //DLog(@"6.2");
         CFRelease(attributes);
-        //DLog(@"6.3");
+        DLog(@"6.3");
     }
-    //DLog(@"7");
+    DLog(@"7");
     if (renderSize) {
         *renderSize = drawSize;
     }
-    //DLog(@"8");
+    DLog(@"8");
     return lines;
 }
 

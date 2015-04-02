@@ -81,23 +81,30 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
   // FIXME: This should do the core typesetting stuff:
   // - divide the attributed string into runs with the same attributes.
   
-  //DLog(@"");
+  DLog(@"");
   NSMutableArray *runs = [NSMutableArray array];
   
   OPSimpleLayoutEngine * layoutEngine = [[[OPSimpleLayoutEngine alloc] init] autorelease];
   NSUInteger index = range.location;
-
+  DLog(@"range.location: %d", range.location);
+  DLog(@"range.length: %d", range.length);
   while (index < range.length) {
     CFRange runRange; 
     NSDictionary * runAttributes = CFAttributedStringGetAttributesAndLongestEffectiveRange(_as, index, CFRangeMake(index, range.length - index), &runRange);
+  DLog();
     CFAttributedStringRef runAttributedString = CFAttributedStringCreateWithSubstring(NULL, _as, runRange);
+  DLog();
     NSString * runString = CFAttributedStringGetString(runAttributedString);
+  DLog();
     CFRelease(runAttributedString);
+  DLog();
     CTRun * run = [layoutEngine layoutString:runString withAttributes:runAttributes];
+  DLog();
     run.range = runRange;
     [runs addObject:run];
     index += runRange.length;
   }
+  DLog();
 
 
 
@@ -141,7 +148,8 @@ CTTypesetterRef CTTypesetterCreateWithAttributedStringAndOptions(
 
 CTLineRef CTTypesetterCreateLine(CTTypesetterRef ts, CFRange range)
 {
-    //DLog();
+    DLog(@"range.location: %d", range.location);
+    DLog(@"range.length: %d", range.length);
     return [ts createLineWithRange: range];
 }
 

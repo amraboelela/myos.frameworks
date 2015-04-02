@@ -72,14 +72,13 @@ static UIFont *_UIFontGetFontWithCTFont(CTFontRef aFont)
 
 - (id)initWithName:(NSString *)name size:(CGFloat)size
 {
-    //DLog();
     self = [super init];
     if (self) {
-        DLog(@"name: %@", name);
-        DLog(@"size: %0.1f", size);
+        //DLog(@"name: %@", name);
+        //DLog(@"size: %0.1f", size);
         _font = CTFontCreateWithName(name, size, NULL);
-        DLog(@"_font: %@", _font);
-        DLog(@"self: %@", self);
+        //DLog(@"_font: %@", _font);
+        //DLog(@"self: %@", self);
     }
     return self;
 }

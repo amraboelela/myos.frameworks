@@ -101,13 +101,13 @@ static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
     //DLog(@"button: %@", button);
     
     CGSize maxSize = button->_layer->_bounds.size;
-    DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
-    DLog(@"button->_titleLabel: %@", button->_titleLabel);
+    //DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
+    //DLog(@"button->_titleLabel: %@", button->_titleLabel);
     maxSize.height = button->_titleLabel.font.lineHeight;
     DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
     CGSize resultSize = [title sizeWithFont:button->_titleLabel.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeTailTruncation];
     //CGSize result = [title sizeWithFont:button->_titleLabel.font constrainedToSize:CGSizeMake(CGFLOAT_MAX,CGFLOAT_MAX)];
-    //DLog(@"resultSize: %@", NSStringFromCGSize(resultSize));
+    DLog(@"resultSize: %@", NSStringFromCGSize(resultSize));
     return ([title length] > 0)? resultSize : CGSizeZero;
 }
 
@@ -392,7 +392,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     //_UIButtonUpdateContent(self);
     //[super _updateContent];
     
-    //DLog(@"button: %@", button);
     UIControlState state = self.state;
     _titleLabel.text = [self titleForState:state];
     _titleLabel.textColor = [self titleColorForState:state] ?: _UIButtonDefaultTitleColor(self, state);
@@ -445,7 +444,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 {
     [super layoutSubviews];
    
-    DLog();
+    //DLog();
     const CGRect bounds = self.bounds;
     _gradientLayer.frame = self.bounds;
     const CGRect contentRect = [self contentRectForBounds:bounds];
@@ -462,7 +461,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 
 - (CGSize)sizeThatFits:(CGSize)size
 {
-    DLog();
+    //DLog();
     const UIControlState state = self.state;
     
     const CGSize imageSize = _UIButtonImageSizeForState(self, state);
