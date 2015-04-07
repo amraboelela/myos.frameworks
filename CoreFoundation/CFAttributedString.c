@@ -676,7 +676,7 @@ CFAttributedStringCreateMutable (CFAllocatorRef alloc, CFIndex maxLength)
       new->_attribs = (Attr*)CFAllocatorAllocate (alloc, sizeof(Attr) * 8, 0);
       new->_attribCount = 1;
       new->_attribs[0].index = 0;
-      new->_attribs[0].attrib = CFDictionaryCreateMutable ( allocator,16,&kCFTypeDictionaryValueCallBacks,NULL);
+      new->_attribs[0].attrib = CFDictionaryCreateMutable (alloc, 16, &kCFTypeDictionaryValueCallBacks,NULL);
       
       CFAttributedStringSetMutable ((CFAttributedStringRef)new);
     }
