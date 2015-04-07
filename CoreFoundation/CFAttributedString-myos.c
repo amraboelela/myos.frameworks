@@ -201,7 +201,7 @@ CFAttributedStringFinalize (CFTypeRef cf)
 {
     CFIndex idx;
     CFAttributedStringRef str = (CFAttributedStringRef)cf;
-    printf("CFAttributedStringFinalize str->_string: %@\n", str->_string);
+    printf("CFAttributedStringFinalize str: %@\n", str);
     printf("CFAttributedStringFinalize str->_string: %p\n", str->_string);
     CFRelease(str->_string);
     printf("CFAttributedStringFinalize 2\n");
@@ -302,8 +302,8 @@ CFAttributedStringCreateInlined (CFAllocatorRef alloc, CFStringRef str,
         CFIndex idx;
         
         new->_string = CFStringCreateCopy (alloc, str);
-        printf("CFAttributedStringCreateInlined new->_string: %@\n", new->_string);
-        printf("CFAttributedStringCreateInlined new->_string: %p\n", new->_string);
+        printf("CFAttributedStringCreateInlined new: %@\n", new);
+        printf("CFAttributedStringCreateInlined new: %p\n", new);
         new->_attribCount = 1;
         new->_attribs = (Attr*)&new[1];
         
@@ -676,7 +676,7 @@ CFAttributedStringCreateMutable (CFAllocatorRef alloc, CFIndex maxLength)
       new->_attribs = (Attr*)CFAllocatorAllocate (alloc, sizeof(Attr) * 8, 0);
       new->_attribCount = 1;
       new->_attribs[0].index = 0;
-      new->_attribs[0].attrib = CFDictionaryCreateMutable ( allocator,16,&kCFTypeDictionaryValueCallBacks,NULL);//CFAttributedStringGetBlankAttribute ();
+      new->_attribs[0].attrib = CFDictionaryCreateMutable (alloc, 16, &kCFTypeDictionaryValueCallBacks,NULL);//CFAttributedStringGetBlankAttribute ();
       
       CFAttributedStringSetMutable ((CFAttributedStringRef)new);
     }

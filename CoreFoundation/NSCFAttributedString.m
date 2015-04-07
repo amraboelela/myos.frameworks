@@ -247,7 +247,8 @@
 
 - (NSString *)description
 {
-    return @"NSCFAttributedString";
+    //return @"NSCFAttributedString";
+    return [NSString stringWithFormat:@"<%@: %p; string: %@>", [self className], self, [self string]];
     //return [NSString stringWithFormat:@"<%@: %p; string: %@; attributes: %@>", [self className], self, [self string], (NSDictionary *)CFAttributedStringGetAttributes(self,0,NULL)];
 }
 
