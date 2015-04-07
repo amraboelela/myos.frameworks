@@ -86,16 +86,18 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
   
   OPSimpleLayoutEngine * layoutEngine = [[[OPSimpleLayoutEngine alloc] init] autorelease];
   NSUInteger index = range.location;
-  DLog(@"range.location: %d", range.location);
-  DLog(@"range.length: %d", range.length);
+  //DLog(@"range.location: %d", range.location);
+  //DLog(@"range.length: %d", range.length);
   while (index < range.length) {
     CFRange runRange; 
     NSDictionary * runAttributes = CFAttributedStringGetAttributesAndLongestEffectiveRange(_as, index, CFRangeMake(index, range.length - index), &runRange);
-  DLog();
+  //DLog();
     CFAttributedStringRef runAttributedString = CFAttributedStringCreateWithSubstring(NULL, _as, runRange);
-  DLog();
+  //DLog();
     NSString * runString = CFAttributedStringGetString(runAttributedString);
-  DLog();
+  DLog(@"runAttributedString: %p", runAttributedString);
+  DLog(@"runAttributedString: %@", runAttributedString);
+  DLog(@"runAttributedString retainCount: %d", [runAttributedString retainCount]);
     CFRelease(runAttributedString);
   DLog();
     CTRun * run = [layoutEngine layoutString:runString withAttributes:runAttributes];
