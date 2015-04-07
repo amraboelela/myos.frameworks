@@ -62,6 +62,7 @@
     return self;
 }
 
+#pragma mark - Accessors
 
 - (NSString *)string
 {
@@ -242,6 +243,12 @@
 - (void)setAttributes:(NSDictionary *)attributes range:(NSRange)aRange
 {
     CFAttributedStringSetAttributes (self,CFRangeMake(aRange.location,aRange.length),attributes,true);
+}
+
+- (NSString *)description
+{
+    return @"NSCFAttributedString";
+    //return [NSString stringWithFormat:@"<%@: %p; string: %@; attributes: %@>", [self className], self, [self string], (NSDictionary *)CFAttributedStringGetAttributes(self,0,NULL)];
 }
 
 - (void)addAttribute:(NSString *)name value:(id)value range:(NSRange)aRange
