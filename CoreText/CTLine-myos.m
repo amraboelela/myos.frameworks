@@ -180,11 +180,11 @@ CTLineRef CTLineCreateWithAttributedString(CFAttributedStringRef string)
 {
   DLog();
   CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
-  DLog();
+  //DLog();
   CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));
-  DLog();
+  //DLog();
   [ts release];
-  DLog();
+  //DLog();
   return line;
 }
 
