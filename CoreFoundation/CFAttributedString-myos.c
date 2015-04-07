@@ -26,20 +26,6 @@
 
 #import <CoreFoundation/CoreFoundation-private.h>
 
-/*#include "CoreFoundation/CFRuntime.h"
-#include "CoreFoundation/CFAttributedString.h"
-#include "CoreFoundation/CFBag.h"
-#include "CoreFoundation/CFBase.h"
-#include "CoreFoundation/CFArray.h"
-#include "CoreFoundation/CFDictionary.h"
-#include "CoreFoundation/CFString.h"
-*/
-
-//#include "GSPrivate.h"
-//#include "GSObjCRuntime.h"
-
-//#include <string.h>
-
 static CFTypeID _kCFAttributedStringTypeID = 0;
 static CFDictionaryRef _kCFAttributedStringBlankAttribute = NULL;
 static CFMutableBagRef _kCFAttributedStringCache = NULL;
@@ -102,7 +88,7 @@ CFAttributedStringSetMutable (CFAttributedStringRef str)
   ((CFRuntimeBase *)str)->_flags.info |= _kCFAttributedStringIsMutable;
 }
 
-static CFDictionaryRef
+/*static CFDictionaryRef
 CFAttributedStringCacheAttribute (CFDictionaryRef attribs)
 {
   CFDictionaryRef cachedAttr = NULL;
@@ -156,7 +142,7 @@ CFAttributedStringGetBlankAttribute (void)
             NULL, NULL, 0,
             &kCFCopyStringDictionaryKeyCallBacks,
             &kCFTypeDictionaryValueCallBacks);
-          /* Cache the blank attribute in case anyone wants to use it. */
+          Cache the blank attribute in case anyone wants to use it.
           CFAttributedStringCacheAttribute (_kCFAttributedStringBlankAttribute);
           CFRelease (_kCFAttributedStringBlankAttribute);
         }
@@ -164,7 +150,7 @@ CFAttributedStringGetBlankAttribute (void)
     }
   
   return CFAttributedStringCacheAttribute (_kCFAttributedStringBlankAttribute);
-}
+}*/
 
 static CFComparisonResult
 CFAttributedStringCompareAttribute (const void *v1, const void *v2, void *ctxt)
@@ -679,7 +665,7 @@ CFAttributedStringCreateMutable (CFAllocatorRef alloc, CFIndex maxLength)
       new->_attribs = (Attr*)CFAllocatorAllocate (alloc, sizeof(Attr) * 8, 0);
       new->_attribCount = 1;
       new->_attribs[0].index = 0;
-      new->_attribs[0].attrib = CFAttributedStringGetBlankAttribute ();
+      new->_attribs[0].attrib = CFDictionaryCreateMutable ( allocator,16,&CFIndexDictionaryKeyCallbacks,NULL);//CFAttributedStringGetBlankAttribute ();
       
       CFAttributedStringSetMutable ((CFAttributedStringRef)new);
     }
