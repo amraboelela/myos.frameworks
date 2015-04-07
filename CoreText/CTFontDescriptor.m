@@ -82,13 +82,15 @@ CTFontDescriptorRef CTFontDescriptorCreateCopyWithVariation(
   CFNumberRef variationIdentifier,
   CGFloat variationValue)
 {
-  NSMutableDictionary *newVariation = [[original objectForKey: kCTFontVariationAttribute] mutableCopy];
+  NSMutableDictionary *newVariation = [[original->_attributes objectForKey: kCTFontVariationAttribute] mutableCopy];
+   
   if (nil == newVariation)
   {
     newVariation = [[NSMutableDictionary alloc] init];
   }
+  //TODO ALI: check if CFNumberRef TDF NSNumber
   [newVariation setObject: [NSNumber numberWithDouble: variationValue]
-                   forKey: variationIdentifier];
+                   forKey: (NSNumber *)variationIdentifier];
 
   NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:
     newVariation, kCTFontVariationAttribute,
@@ -111,7 +113,7 @@ CTFontDescriptorRef CTFontDescriptorCreateCopyWithFeature(
   }
   [newFeatureSettings addObject:
     [NSDictionary dictionaryWithObjectsAndKeys:
-      featureTypeIdentifier, kCTFontFeatureTypeIdentifierKey,
+      (NSNumber *)featureTypeIdentifier, kCTFontFeatureTypeIdentifierKey,
       featureSelectorIdentifier, kCTFontFeatureSelectorIdentifierKey,
       nil]];
 

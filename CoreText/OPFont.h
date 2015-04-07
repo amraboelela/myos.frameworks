@@ -31,7 +31,7 @@
 #ifndef _GNUstep_H_OPFont
 #define _GNUstep_H_OPFont
 
-#include <CoreText/CTFont.h>
+#import "CTFont.h"
 #import <Foundation/NSObject.h>
 #import <Foundation/NSGeometry.h>
 
@@ -97,9 +97,22 @@ typedef union _OPAffineTransform
 {
   OPFontDescriptor *_descriptor;
   OPAffineTransform _matrix;
+  BOOL isFixedPitch;
+  CGFloat ascender;
+  CGFloat descender;
+  CGFloat capHeight;
+  CGFloat italicAngle;
+  CGFloat leading;
+  CGFloat underlinePosition;
+  CGFloat underlineThickness;
+  CGFloat xHeight;
+  NSUInteger numberOfGlyphs;
+  NSStringEncoding mostCompatibleStringEncoding;
+  NSString* fontName;
+  NSString* familyName;
 }
 
-//
+//2
 // Querying the Font
 //
 - (NSRect) boundingRectForFont;
@@ -137,25 +150,25 @@ typedef union _OPAffineTransform
 //
 // Manipulating Glyphs
 //
-- (NSSize) advancementForGlyph: (NSGlyph)aGlyph;
-- (NSRect) boundingRectForGlyph: (NSGlyph)aGlyph;
-- (void) getAdvancements: (NSSizeArray)advancements
-               forGlyphs: (const NSGlyph*)glyphs
+- (CGSize) advancementForGlyph: (CGGlyph)aGlyph;
+- (CGRect) boundingRectForGlyph: (CGGlyph)aGlyph;
+- (void) getAdvancements: (CGSize [])advancements
+               forGlyphs: (const CGGlyph [])glyphs
                    count: (NSUInteger)count;
-- (void) getAdvancements: (NSSizeArray)advancements
+- (void) getAdvancements: (CGSize [])advancements
          forPackedGlyphs: (const void*)packedGlyphs
                   length: (NSUInteger)count;
-- (void) getBoundingRects: (NSRectArray)advancements
-                forGlyphs: (const NSGlyph*)glyphs
+- (void) getBoundingRects: (CGRect [])advancements
+                forGlyphs: (const CGGlyph*)glyphs
                     count: (NSUInteger)count;
-- (NSGlyph) glyphWithName: (NSString*)glyphName;
+- (CGGlyph) glyphWithName: (NSString*)glyphName;
 - (NSStringEncoding) mostCompatibleStringEncoding;
 
 //
 // CTFont private
 //
 + (OPFont*) fontWithDescriptor: (OPFontDescriptor*)descriptor
-                       options: (CTFontOptions)options;
+                       	options: (CTFontOptions)options;
 + (OPFont*) UIFontWithType: (CTFontUIFontType)type
                       size: (CGFloat)size
                forLanguage: (NSString*)languageCode;

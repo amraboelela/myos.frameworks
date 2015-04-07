@@ -40,6 +40,9 @@
   CGAffineTransform _matrix;
 }
 
+@property (nonatomic, assign) CFRange range;
+
+- (id)initWithGlyphs:(CGGlyph *)glyphs advances:(CGSize *)advances range:(CFRange)range attributes:(NSDictionary *)attributes;
 - (CFIndex)glyphCount;
 - (NSDictionary*)attributes;
 - (CTRunStatus)status;
@@ -56,5 +59,6 @@
                   withContext: (CGContextRef)context;
 - (CGAffineTransform)matrix;
 - (void)drawRange: (CFRange)range onContext: (CGContextRef)ctx;
+- (CTRun *)runInRange:(CFRange)range;
 
 @end

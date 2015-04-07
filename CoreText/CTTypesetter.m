@@ -25,6 +25,7 @@
 #include <CoreText/CTTypesetter.h>
 
 #import "CTLine-private.h"
+#import "CTRun-private.h"
 // FIXME: use advanced layout engines if available
 #import "OPSimpleLayoutEngine.h"
 
@@ -79,10 +80,40 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
 {
   // FIXME: This should do the core typesetting stuff:
   // - divide the attributed string into runs with the same attributes.
+  
+  DLog(@"");
+  NSMutableArray *runs = [NSMutableArray array];
+  
+  OPSimpleLayoutEngine * layoutEngine = [[[OPSimpleLayoutEngine alloc] init] autorelease];
+  NSUInteger index = range.location;
+  //DLog(@"range.location: %d", range.location);
+  //DLog(@"range.length: %d", range.length);
+  while (index < range.length) {
+    CFRange runRange; 
+    NSDictionary * runAttributes = CFAttributedStringGetAttributesAndLongestEffectiveRange(_as, index, CFRangeMake(index, range.length - index), &runRange);
+  //DLog();
+    CFAttributedStringRef runAttributedString = CFAttributedStringCreateWithSubstring(NULL, _as, runRange);
+  //DLog();
+    NSString * runString = CFAttributedStringGetString(runAttributedString);
+  DLog(@"runAttributedString: %p", runAttributedString);
+  DLog(@"runAttributedString: %@", runAttributedString);
+  DLog(@"runAttributedString retainCount: %d", [runAttributedString retainCount]);
+    CFRelease(runAttributedString);
+  DLog();
+    CTRun * run = [layoutEngine layoutString:runString withAttributes:runAttributes];
+  DLog();
+    run.range = runRange;
+    [runs addObject:run];
+    index += runRange.length;
+  }
+  DLog();
+
+
+
   // - run the bidirectional algorithm if needed
   // - call the shaper on each run
   
-  NSArray *runs = [NSMutableArray array];
+  
   
   CTLineRef line = [[CTLine alloc] initWithRuns: runs];
   
@@ -119,7 +150,9 @@ CTTypesetterRef CTTypesetterCreateWithAttributedStringAndOptions(
 
 CTLineRef CTTypesetterCreateLine(CTTypesetterRef ts, CFRange range)
 {
-  return [ts createLineWithRange: range];
+    DLog(@"range.location: %d", range.location);
+    DLog(@"range.length: %d", range.length);
+    return [ts createLineWithRange: range];
 }
 
 CFIndex CTTypesetterSuggestClusterBreak(

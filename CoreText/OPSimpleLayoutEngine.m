@@ -24,6 +24,7 @@
 
 
 #import "OPSimpleLayoutEngine.h"
+#import "CTRun-private.h"
 #import <CoreText/CTFont.h>
 #import <CoreText/CTStringAttributes.h>
 
@@ -44,23 +45,28 @@
   }
   else
   {
-    bool success = CTFontGetGlyphsForCharacters(font,
-						characters,
-						glyphs,
-						length);
+    [chars getCharacters:characters range:NSMakeRange(0, length)];
+    int len = [chars length];
+    for (int i=0; i<len; i++) {
+      CFStringRef chr = CFStringCreateWithBytes (NULL, (unsigned char*)(&characters[i]), 1, kCFStringEncodingUTF8, false);
+      glyphs[i] = CTFontGetGlyphWithName(font, chr);
+      CFRelease(chr);
+    }
 
-    double total = CTFontGetAdvancesForGlyphs(font,
+    CTFontGetAdvancesForGlyphs(font,
 					      kCTFontDefaultOrientation,
 					      glyphs, 
 					      advances,
 					      length);
   }
+
+  CTRunRef run = [[[CTRun alloc ] initWithGlyphs:glyphs advances:advances range:CFRangeMake(0, length) attributes:attribs] autorelease];
+
   free(glyphs);
   free(characters);
   free(advances);
 
-  // FIXME: create a CTRun with the glyphs & advances
-  return nil;
+  return run;
 }
 
 @end
