@@ -27,7 +27,7 @@ OBJECTS = \
     NSCallBacks.o \
     NSMapTable.o \
     NSConcreteMapTable.o \
-    GSObjCRuntime-myos.o \
+    GSObjCRuntime.o \
     NSObjCRuntime.o \
     NSLog.o \
     NSPage.o \
@@ -65,7 +65,7 @@ OBJECTS = \
     NSDistributedLock.o \
     GSMime.o \
     NSTimeZone.o \
-    NSValue-myos.o \
+    NSValue.o \
     NSPointerFunctions.o \
     NSConcretePointerFunctions.o \
     NSInvocation.o \

@@ -162,6 +162,7 @@ CTFontRef CTFontCreateWithName(
   CGFloat size,
   const CGAffineTransform *matrixPtr)
 {
+    //DLog(@"name: %@", name);
     return CTFontCreateWithNameAndOptions(name, size, matrixPtr, kCTFontOptionsDefault);
 }
 
@@ -174,9 +175,9 @@ CTFontRef CTFontCreateWithNameAndOptions(
     NSDictionary *attrs = [NSDictionary dictionaryWithObjectsAndKeys:
                            name, kCTFontNameAttribute,
                            nil];
-
+    //DLog(@"attrs: %@", attrs);
     OPFontDescriptor *descriptor = [OPFontDescriptor fontDescriptorWithFontAttributes:attrs];
-
+    DLog(@"descriptor: %@", descriptor);
     return CTFontCreateWithFontDescriptorAndOptions(descriptor, size, matrixPtr, opts);
 }
 
@@ -499,7 +500,10 @@ CFStringRef CTFontCopyName(
   CTFontRef font,
   CFStringRef key)
 {
-  return [[font nameForKey: key] retain];
+    //DLog(@"key: %@", key);
+    //DLog(@"font.fontName: %@", font.fontName);
+    return ([font.fontName copy]);
+    //return [[font nameForKey:key] retain];
 }
 
 CFStringRef CTFontCopyLocalizedName(

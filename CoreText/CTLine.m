@@ -30,8 +30,8 @@
 
 - (id)initWithRuns: (NSArray*)runs
 {
-  if ((self = [super init]))
-  {
+  self = [super init];
+  if (self) {
     _runs = [runs retain];
   }
   return self;
@@ -48,7 +48,7 @@
   for (NSUInteger i=0; i<runsCount; i++)
   {
     CTRunRef run = [_runs objectAtIndex: i];
-    CTRunDraw(run, ctx, CFRangeMake(0, 0));
+    CTRunDraw(run, ctx, CFRangeMake(0, CTRunGetGlyphCount(run)));
   }
 }
 
@@ -73,16 +73,102 @@
                     truncationType: (CTLineTruncationType)truncationType
                    truncationToken:	(CTLineRef)truncationToken
 {
-  return nil;
+  double lineWidth = CTLineGetTypographicBounds(self, NULL, NULL, NULL);
+  if (width < lineWidth) {
+    double tokenWidth = CTLineGetTypographicBounds(truncationToken, NULL, NULL, NULL);
+    double widthToRemove = lineWidth - width + tokenWidth;
+    const NSUInteger runsCount = [_runs count];
+    NSMutableArray *newRuns = [NSMutableArray arrayWithCapacity:0];
+    switch(truncationType) {
+      case kCTLineTruncationStart: {
+        [newRuns addObjectsFromArray:truncationToken->_runs];
+        for (int i = 0; i < runsCount; ++i) {
+          CTRunRef run = [self->_runs objectAtIndex: i];
+          double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), NULL, NULL, NULL);
+          if (widthToRemove >= runWidth) {
+            widthToRemove -= runWidth; //truncate the whole run
+          } else if (widthToRemove == 0) {
+            [newRuns addObject:run]; //truncation finished
+          } else {
+            //truncate fraction of the run
+            CFIndex runCount = CTRunGetGlyphCount(run);
+            CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runCount));
+            //rough calculation, not considering the difference between glyphs width.
+            CFRange truncatedRunRange = CFRangeMake(runRemovedGlyphsCount, CTRunGetGlyphCount(run) - runRemovedGlyphsCount);
+            [newRuns addObject:[run runInRange:truncatedRunRange]];
+
+            widthToRemove = 0;
+          }
+        }
+      }
+      break;
+      case kCTLineTruncationEnd: {
+        [newRuns addObjectsFromArray:truncationToken->_runs];
+        for (int i = runsCount-1; i > -1; --i) {
+          CTRunRef run = [self->_runs objectAtIndex: i];
+          double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), NULL, NULL, NULL);
+          if (widthToRemove >= runWidth) {
+            widthToRemove -= runWidth; //truncate the whole run
+          } else if (widthToRemove == 0) {
+            [newRuns insertObject:run atIndex:0]; //truncation finished
+          } else {
+            //truncate fraction of the run
+            CFIndex runCount = CTRunGetGlyphCount(run);
+            CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runCount));
+            //rough calculation, not considering the difference between glyphs width.
+            CFRange truncatedRunRange = CFRangeMake(0, CTRunGetGlyphCount(run) - runRemovedGlyphsCount);
+            [newRuns insertObject:[run runInRange:truncatedRunRange] atIndex:0];
+
+            widthToRemove = 0;
+          }
+        }
+      }
+      break;
+      case kCTLineTruncationMiddle:
+      default: {
+        double sideWidth = (lineWidth - widthToRemove) / 2;
+        for (int i = 0; i < runsCount; ++i) {
+          CTRunRef run = [self->_runs objectAtIndex: i];
+          CFIndex runGlyphCount = CTRunGetGlyphCount(run);
+          double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, runGlyphCount), NULL, NULL, NULL);
+          if (sideWidth > runWidth) {
+            [newRuns addObject:run]; // Keep the whole run.
+            sideWidth -= runWidth;
+          } else if (widthToRemove == 0) {
+            [newRuns addObject:run]; // Keep the whole run.
+          } else if (widthToRemove >= runWidth) {
+            widthToRemove -= runWidth; //truncate the whole run
+          } else {
+            //truncate fraction of the run
+            CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runGlyphCount));
+            //rough calculation, not considering the difference between glyphs width.
+            CFIndex startTruncationIndex = (runGlyphCount - runRemovedGlyphsCount) / 2.0;
+            CFIndex endTruncationIndex = startTruncationIndex + runRemovedGlyphsCount;
+            
+            [newRuns addObject:[run runInRange:CFRangeMake(0, startTruncationIndex)]];
+
+            [newRuns addObjectsFromArray:truncationToken->_runs];
+
+            [newRuns addObject:[run runInRange:CFRangeMake(endTruncationIndex, runGlyphCount - endTruncationIndex)]];
+
+            widthToRemove = 0;
+          }
+        }
+      }
+      break;
+    }
+    return [[[CTLine alloc] initWithRuns:newRuns] autorelease];
+  }
+  return self;
 }
 
 - (double)penOffset
 {
-  return 0;
+  return penOffset;
 }
 
 - (CFRange)stringRange
-{
+{//TODO
   return CFRangeMake(0,0);
 }
 @end
@@ -92,9 +178,13 @@
 
 CTLineRef CTLineCreateWithAttributedString(CFAttributedStringRef string)
 {
+  DLog();
   CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
-  CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, 0));
+  //DLog();
+  CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));
+  //DLog();
   [ts release];
+  //DLog();
   return line;
 }
 
@@ -113,8 +203,8 @@ CTLineRef CTLineCreateJustifiedLine(
 	CTLineRef line,
 	CGFloat justificationFactor,
 	double justificationWidth)
-{
-  return nil;
+{//TODO
+  return line;
 }
 
 CFIndex CTLineGetGlyphCount(CTLineRef line)
@@ -137,7 +227,7 @@ double CTLineGetPenOffsetForFlush(
 	CGFloat flushFactor,
 	double flushWidth)
 {
-  return [line penOffset];
+  return flushFactor * (flushWidth - CTLineGetTypographicBounds(line, NULL, NULL, NULL));
 }
 void CTLineDraw(CTLineRef line, CGContextRef context)
 {
@@ -147,7 +237,7 @@ void CTLineDraw(CTLineRef line, CGContextRef context)
 CGRect CTLineGetImageBounds(
 	CTLineRef line,
 	CGContextRef context)
-{
+{//TODO
   return CGRectMake(0,0,0,0);
 }
 
@@ -157,18 +247,24 @@ double CTLineGetTypographicBounds(
 	CGFloat* descent,
 	CGFloat* leading)
 {
-  return 0;
+  double width = 0;
+  const NSUInteger runsCount = [line->_runs count];
+  for (NSUInteger i=0; i<runsCount; i++) {
+    CTRunRef run = [line->_runs objectAtIndex: i];
+    width += CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), ascent, descent, leading);
+  }
+  return width;
 }
 
 double CTLineGetTrailingWhitespaceWidth(CTLineRef line)
-{
+{//TODO
   return 0;
 }
 
 CFIndex CTLineGetStringIndexForPosition(
 	CTLineRef line,
 	CGPoint position)
-{
+{//TODO
   return 0;
 }
 
@@ -176,7 +272,7 @@ CGFloat CTLineGetOffsetForStringIndex(
 	CTLineRef line,
 	CFIndex charIndex,
 	CGFloat* secondaryOffset)
-{
+{//TODO
   return 0;
 }
 

@@ -23,10 +23,34 @@
    */
 
 #import "CTRun-private.h"
+#import "CTFont.h"
+#import "CTStringAttributes.h"
 
 /* Classes */
 
 @implementation CTRun
+
+@synthesize range=_stringRange;
+
+- (id)initWithGlyphs:(CGGlyph *)glyphs advances:(CGSize *)advances range:(CFRange)range attributes:(NSDictionary *)attributes
+{
+  self = [super init];
+  if (self)
+  {
+    _stringRange = range;
+    _glyphs = malloc(sizeof(CGGlyph) * range.length);
+    _advances = malloc(sizeof(CGSize) * range.length);
+    _positions = malloc(sizeof(CGPoint) * range.length);
+    for (int i = 0; i < range.length; ++i) {
+      _glyphs[i] = glyphs[i];
+      _advances[i] = advances[i];
+      _positions[i] = CGPointMake(i*20,0);//TODO fix this
+    }
+    _attributes = [[NSDictionary alloc] initWithDictionary:attributes];
+    _count = range.length;
+  }
+  return self;
+}
 
 - (void)dealloc
 {
@@ -73,16 +97,42 @@
   return _stringRange;
 }
 - (double)typographicBoundsForRange: (CFRange)range
-			     ascent: (CGFloat*)ascent
-			    descent: (CGFloat*)descent
-			    leading: (CGFloat*)leading
+			     ascent: (CGFloat*)ascent//FIXME
+			    descent: (CGFloat*)descent//FIXME
+			    leading: (CGFloat*)leading//FIXME
 {
+  if (range.location < _count && (range.location + range.length) <= _count) {
+    CGFloat width = 0;
+    CGSize* currentAdvance = _advances;
+    if (range.length == 0) {
+      range.length = _count;
+    }
+    for (int i = range.location; i < range.length; ++i, ++currentAdvance) {
+      width += (*currentAdvance).width;
+    }
+    return width;
+  }
+
   return 0;
 }
 - (CGRect)imageBoundsForRange: (CFRange)range
 		  withContext: (CGContextRef)context
 {
-  return CGRectMake(0,0,0,0);
+  if (context != NULL && range.location < _count && (range.location + range.length) <= _count) {
+    CGPoint origin = CGContextGetTextPosition(context);
+    CGFloat height = 0;
+    CGFloat width = 0;
+    CGSize* currentAdvance = _advances;
+    for (int i = range.location; i < range.length; ++i, ++currentAdvance) {
+      if ((*currentAdvance).height > height) {
+        height = (*currentAdvance).height;
+      }
+      width += (*currentAdvance).width;
+    }
+
+    return CGRectMake(origin.x, origin.y, width, height);
+  }
+  return CGRectNull; //invalid parameter
 }
 
 - (CGAffineTransform)matrix
@@ -103,7 +153,60 @@
     return;
   }
 
-  CGContextShowGlyphsAtPositions(ctx, _glyphs + range.location, _positions, range.length);
+// TODO check for each attribute and apply the effect
+//kCTKernAttributeName;
+//kCTLigatureAttributeName;
+//kCTParagraphStyleAttributeName;
+//kCTStrokeWidthAttributeName;
+//kCTUnderlineStyleAttributeName;
+//kCTSuperscriptAttributeName;
+//kCTUnderlineColorAttributeName;
+//kCTVerticalFormsAttributeName;
+//kCTGlyphInfoAttributeName;
+//kCTCharacterShapeAttributeName;
+  
+
+  CTFontRef font = [_attributes objectForKey:kCTFontAttributeName];
+  CGFloat  size = CTFontGetSize(font);
+  CFStringRef fontName = CTFontCopyPostScriptName(font);
+  //DLog(@"Drawing with %@, %f", fontName, size);
+  
+  // Set color
+  CFBooleanRef getForegroundColorFromContext = (CFBooleanRef)[_attributes objectForKey:kCTForegroundColorFromContextAttributeName];
+  if (!CFBooleanGetValue(getForegroundColorFromContext)) {
+    CGColorRef foregroundColor = [_attributes objectForKey:kCTForegroundColorAttributeName];
+    CGContextSetFillColorWithColor(ctx, foregroundColor);
+    CGColorRef strokeColor = [_attributes objectForKey:kCTStrokeColorAttributeName];
+    CGContextSetStrokeColorWithColor(ctx, strokeColor);
+  }
+  // Set font
+  CGFontRef f = CGFontCreateWithFontName(fontName);
+  CGContextSetFont(ctx, f);
+  // Set font size
+  CGContextSetFontSize(ctx, size);
+
+  // Draw
+  CGContextShowGlyphs(ctx, _glyphs, range.length);
+  //CGContextShowGlyphsWithAdvances(ctx, _glyphs, _advances, range.length);
+}
+
+- (CTRun *)runInRange:(CFRange)range
+{
+  CTRun * subRun = nil;
+  if (range.location < _count && (range.location + range.length) <= _count)
+  {
+    CFRange  stringRange = CFRangeMake(_stringRange.location + range.location, range.length);
+    CGGlyph * glyphs = malloc(sizeof(CGGlyph) * range.length);
+    CGSize * advances = malloc(sizeof(CGSize) * range.length);
+    for (int i = 0; i < range.length; ++i) {
+      glyphs[i] = _glyphs[i+range.location];
+      advances[i] = _advances[i+range.location];
+    }
+    subRun = [[[CTRun alloc] initWithGlyphs:glyphs advances:advances range:stringRange attributes:_attributes] autorelease];
+    free(glyphs);
+    free(advances);
+  }
+  return subRun;
 }
 
 @end

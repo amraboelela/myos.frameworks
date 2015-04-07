@@ -28,21 +28,21 @@ endif
 
 OBJECTS = \
 	CTFontCollection.o \
-	CTFontDescriptor-myos.o \
-	CTFont-myos.o \
+	CTFontDescriptor.o \
+	CTFont.o \
 	CTFontTraits.o \
 	CTFrame.o \
 	CTFramesetter.o \
 	CTGlyphInfo.o \
-	CTLine-myos.o \
-	OPFontconfigFontDescriptor-myos.o \
-	OPFontDescriptor-myos.o \
-	OPFont-myos.o \
+	CTLine.o \
+	OPFontconfigFontDescriptor.o \
+	OPFontDescriptor.o \
+	OPFont.o \
 	CTParagraphStyle.o \
-	CTRun-myos.o \
+	CTRun.o \
 	CTStringAttributes.o \
 	CTTextTab.o \
-	CTTypesetter-myos.o \
-	OPSimpleLayoutEngine-myos.o \
+	CTTypesetter.o \
+	OPSimpleLayoutEngine.o \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

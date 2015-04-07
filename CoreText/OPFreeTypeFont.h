@@ -26,7 +26,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#import "../OPFont.h"
+#import "OPFont.h"
 #include <stdint.h>
 @interface OPFreeTypeFont: OPFont
 {

@@ -27,7 +27,7 @@ endif
 
 OBJECTS = \
     CFArray.o \
-    CFAttributedString-myos.o \
+    CFAttributedString.o \
     CFBag.o \
     CFBase.o \
     CFBinaryHeap.o \
@@ -63,7 +63,7 @@ OBJECTS = \
     NSCFData.o \
     NSCFDictionary.o \
     NSCFError.o \
-    NSCFSet-myos.o \
+    NSCFSet.o \
     NSCFString.o \
     NSCFType.o \
     GSCArray.o \
