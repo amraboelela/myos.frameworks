@@ -309,7 +309,7 @@ CFAttributedStringCreateInlined (CFAllocatorRef alloc, CFStringRef str,
         
         for (idx = 0 ; idx < count ; ++idx)
         {
-            new->_attribs[idx].index = idx;
+            new->_attribs[idx].index = attribs[idx].attrib.index;
             printf("CFAttributedStringCreateInlined attribs[idx].attrib: %p\n", attribs[idx].attrib);
             printf("CFAttributedStringCreateInlined CFGetRetainCount(attribs[idx].attrib): %d\n", CFGetRetainCount(attribs[idx].attrib));
             printf("CFAttributedStringCreateInlined CFGetTypeID(attribs[idx].attrib): %d\n", CFGetTypeID(attribs[idx].attrib));
