@@ -207,6 +207,19 @@ static NSStringEncoding *nsencodings = NULL;
   CFStringGetCharacters (self, cfRange, buffer);
 }
 
+- (char *)cString
+{
+    return CFStringGetCStringPtr(self, kCFStringEncodingASCII);
+}
+
+- (NSString *)description
+{
+    return self;
+    //return [NSString stringWithFormat:@"<%@: %p; %@>", [self className], self, [super description]];
+   //NSString *superDesc = [super description]; 
+   //return [NSString stringWithFormat:@"<%@: %p %s>", [self className], self, [self cString]];
+}
+
 - (NSArray*) componentsSeparatedByString: (NSString*) separator
 {
   return (NSArray*)

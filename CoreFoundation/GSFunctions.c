@@ -37,7 +37,10 @@ GSBSearch (const void *array, const void *key, CFRange range, CFIndex size,
   
   min = range.location;
   max = min + range.length;
-  
+  //printf("GSBSearch range.location: %d\n", range.location);  
+  //printf("GSBSearch range.length: %d\n", range.length);  
+  //printf("GSBSearch min: %d\n", min);  
+  //printf("GSBSearch max: %d\n", max);  
   while (max > min)
     {
       CFComparisonResult r;
