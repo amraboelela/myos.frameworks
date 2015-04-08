@@ -18,7 +18,7 @@
 #import <CoreFoundation/CFAttributedString.h>
 #import <CoreFoundation/CFString.h>
 #import <CoreFoundation/CFArray.h>
-
+#import <GNUstepBase/NSDebug+GNUstepBase.h>
 
 
 @interface NSCFAttributedString : NSMutableAttributedString
@@ -65,7 +65,8 @@
 
 - (NSString *)string
 {
-	return (NSString*)CFAttributedStringGetString(self);
+    //DLog(@"string: %@",(NSString*)CFAttributedStringGetString(self));   
+    return (NSString*)CFAttributedStringGetString(self);
 }
 
 

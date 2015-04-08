@@ -214,9 +214,7 @@ static NSStringEncoding *nsencodings = NULL;
 
 - (NSString *)description
 {
-    return self;
-    //return [NSString stringWithFormat:@"<%@: %p; %@>", [self className], self, [super description]];
-   //NSString *superDesc = [super description]; 
+    return (NSString *)self;
    //return [NSString stringWithFormat:@"<%@: %p %s>", [self className], self, [self cString]];
 }
 
