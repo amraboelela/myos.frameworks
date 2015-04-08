@@ -3,11 +3,13 @@
 
    Holds an image to use as a cursor
 
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006-2015 Free Software Foundation, Inc.
 
    Author:  Dr. H. Nikolaus Schaller <hns@computer.org>
    Date: 2006
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
+ 
    This file is part of the GNUstep GUI Library.
 
    This library is free software; you can redistribute it and/or

@@ -2,12 +2,14 @@
 
    <abstract>The font descriptor class</abstract>
 
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007-2015 Free Software Foundation, Inc.
 
    Author: H. Nikolaus Schaller <hns@computer.org>
    Date: 2006
    Extracted from OPFont: Fred Kiefer <fredkiefer@gmx.de>
    Date August 2007
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
 
    This file is part of the GNUstep GUI Library.
 

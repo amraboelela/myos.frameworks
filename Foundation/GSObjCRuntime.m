@@ -1,5 +1,5 @@
 /** Implementation of ObjC runtime additions for GNUStep
- Copyright (C) 1995-2010 Free Software Foundation, Inc.
+ Copyright (C) 1995-2015 Free Software Foundation, Inc.
  
  Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
  Date: Aug 1995
@@ -7,6 +7,8 @@
  Date: Nov 2002
  Written by:  Manuel Guesdon <mguesdon@orange-concept.com>
  Date: Nov 2002
+ Modified by: Amr Aboelela <amraboelela@gmail.com>
+ Date: Mar 2015
  
  This file is part of the GNUstep Base Library.
  

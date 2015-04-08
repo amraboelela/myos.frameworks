@@ -7,7 +7,9 @@
    Author: Ovidiu Predescu <ovidiu@net-community.com>
    Date: February 1997
    A completely rewritten version of the original source by Scott Christley.
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
+ 
    This file is part of the GNUstep GUI Library.
 
    This library is free software; you can redistribute it and/or

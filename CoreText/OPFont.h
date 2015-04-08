@@ -3,11 +3,13 @@
 
    The font class
 
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996-2015 Free Software Foundation, Inc.
 
    Author:  Scott Christley <scottc@net-community.com>
    Author:  Ovidiu Predescu <ovidiu@net-community.com>
    Date: 1996, 1997
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
 
    This file is part of the GNUstep GUI Library.
 

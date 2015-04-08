@@ -1,10 +1,12 @@
 /** NSValue.m - Object encapsulation for C types.
-   Copyright (C) 1993, 1994, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993-2015 Free Software Foundation, Inc.
 
    Written by:  Adam Fedor <fedor@boulder.colorado.edu>
    Date: Mar 1995
    Updated by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: Jan 2001
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
 
    This file is part of the GNUstep Base Library.
 
