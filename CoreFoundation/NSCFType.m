@@ -126,5 +126,15 @@ void NSCFInitialize (void)
   return (CFTypeID)_typeID;
 }
 
+- (NSString *)description
+{
+    if (self == kCFBooleanTrue) {
+        return @"kCFBooleanTrue";
+    }
+    return [super description];
+    //return [NSString stringWithFormat:@"<%@: %p; string: %@>", [self className], self, [self string]];
+    //return [NSString stringWithFormat:@"<%@: %p; string: %@; attributes: %@>", [self className], self, [self string], (NSDictionary *)CFAttributedStringGetAttributes(self,0,NULL)];
+}
+
 @end
 

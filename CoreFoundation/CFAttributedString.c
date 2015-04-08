@@ -176,7 +176,7 @@ CFAttributedStringArrayGetIndex (CFAttributedStringRef str, CFIndex loc,
   attr.index = loc;
   idx = GSBSearch (str->_attribs, &attr, CFRangeMake(0, str->_attribCount),
                    sizeof(Attr), CFAttributedStringCompareAttribute, NULL);
-  
+  //printf("CFAttributedStringArrayGetIndex idx: %d\n", idx);  
   if (effRange)
     {
       CFIndex start;
@@ -201,17 +201,17 @@ CFAttributedStringFinalize (CFTypeRef cf)
 {
     CFIndex idx;
     CFAttributedStringRef str = (CFAttributedStringRef)cf;
-    printf("CFAttributedStringFinalize str->_string: %@\n", str->_string);
-    printf("CFAttributedStringFinalize str->_string: %p\n", str->_string);
+    printf("CFAttributedStringFinalize str: %@\n", str);
+    //printf("CFAttributedStringFinalize str: %p\n", str);
     CFRelease(str->_string);
-    printf("CFAttributedStringFinalize 2\n");
-    printf("CFAttributedStringFinalize str->_attribCount: %d\n", str->_attribCount);
+    //printf("CFAttributedStringFinalize 2\n");
+    //printf("CFAttributedStringFinalize str->_attribCount: %d\n", str->_attribCount);
     for (idx = 0; idx < str->_attribCount; ++idx) {
         printf("CFAttributedStringFinalize idx: %d\n", idx);
-        printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %p\n", str->_attribs[idx].attrib);
-        printf("CFAttributedStringFinalize CFGetRetainCount(str->_attribs[idx].attrib): %d\n", CFGetRetainCount(str->_attribs[idx].attrib));
-        printf("CFAttributedStringFinalize CFGetTypeID(str->_attribs[idx].attrib): %d\n", CFGetTypeID(str->_attribs[idx].attrib));
-        printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %@\n", str->_attribs[idx].attrib);
+        //printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %p\n", str->_attribs[idx].attrib);
+        //printf("CFAttributedStringFinalize CFGetRetainCount(str->_attribs[idx].attrib): %d\n", CFGetRetainCount(str->_attribs[idx].attrib));
+        //printf("CFAttributedStringFinalize CFGetTypeID(str->_attribs[idx].attrib): %d\n", CFGetTypeID(str->_attribs[idx].attrib));
+        //printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %@\n", str->_attribs[idx].attrib);
         CFRelease(str->_attribs[idx].attrib);// CFAttributedStringUncacheAttribute (str->_attribs[idx].attrib);
         printf("CFAttributedStringFinalize 2 idx: %d\n", idx);
     }
@@ -219,7 +219,7 @@ CFAttributedStringFinalize (CFTypeRef cf)
     if (!CFAttributedStringIsInline(str)) {
         CFAllocatorDeallocate (CFGetAllocator(str), str->_attribs);
     }
-    printf("CFAttributedStringFinalize 4\n");
+    //printf("CFAttributedStringFinalize 4\n");
 }
 
 static Boolean
@@ -302,23 +302,23 @@ CFAttributedStringCreateInlined (CFAllocatorRef alloc, CFStringRef str,
         CFIndex idx;
         
         new->_string = CFStringCreateCopy (alloc, str);
-        printf("CFAttributedStringCreateInlined new->_string: %@\n", new->_string);
-        printf("CFAttributedStringCreateInlined new->_string: %p\n", new->_string);
+        //printf("CFAttributedStringCreateInlined new: %p\n", new->_string);
         new->_attribCount = 1;
         new->_attribs = (Attr*)&new[1];
         
         for (idx = 0 ; idx < count ; ++idx)
         {
             new->_attribs[idx].index = idx;
-            printf("CFAttributedStringCreateInlined attribs[idx].attrib: %p\n", attribs[idx].attrib);
-            printf("CFAttributedStringCreateInlined CFGetRetainCount(attribs[idx].attrib): %d\n", CFGetRetainCount(attribs[idx].attrib));
-            printf("CFAttributedStringCreateInlined CFGetTypeID(attribs[idx].attrib): %d\n", CFGetTypeID(attribs[idx].attrib));
-            printf("CFAttributedStringCreateInlined attribs[idx].attrib: %@\n", attribs[idx].attrib);
+            //printf("CFAttributedStringCreateInlined attribs[idx].attrib: %p\n", attribs[idx].attrib);
+            //printf("CFAttributedStringCreateInlined CFGetRetainCount(attribs[idx].attrib): %d\n", CFGetRetainCount(attribs[idx].attrib));
+            //printf("CFAttributedStringCreateInlined CFGetTypeID(attribs[idx].attrib): %d\n", CFGetTypeID(attribs[idx].attrib));
+            //printf("CFAttributedStringCreateInlined attribs[idx].attrib: %@\n", attribs[idx].attrib);
             new->_attribs[idx].attrib = CFRetain(attribs[idx].attrib);// CFAttributedStringCacheAttribute (attribs[idx].attrib);
         }
         
         CFAttributedStringSetInline (new);
     }
+    printf("CFAttributedStringCreateInlined new: %@\n", new);
     
     return new;
 }
@@ -356,20 +356,22 @@ CFAttributedStringCreateWithSubstring (CFAllocatorRef alloc,
   CFMutableAttributedStringRef tmp;
   CFRange r;
   CFIndex cur;
-  printf("CFAttributedStringCreateWithSubstring 1\n");  
-  //printf("CFAttributedStringCreateWithSubstring range.location: %d\n", range.location);  
-  //printf("CFAttributedStringCreateWithSubstring range.length: %d\n", range.length);  
+  printf("CFAttributedStringCreateWithSubstring str: %@\n", str);  
+  printf("CFAttributedStringCreateWithSubstring range.location: %d\n", range.location);  
+  printf("CFAttributedStringCreateWithSubstring range.length: %d\n", range.length);  
   tmp = CFAttributedStringCreateMutable (alloc, range.length);
   
   /* We do not need to protect this with beging and end editing because
    * we will be adding attributes in the order they appear.  Using
    * the being/end editing functions would actually slow things down.
    */
-  CFAttributedStringReplaceString (tmp, range,
+  r = range;
+  r.length = 0;
+  CFAttributedStringReplaceString (tmp, r,
                                    CFAttributedStringGetString (str));
   
   cur = range.location;
-  //printf("CFAttributedStringCreateWithSubstring 3.1\n");  
+  printf("CFAttributedStringCreateWithSubstring tmp: %@\n", tmp);  
   do
     {
       CFDictionaryRef attribs;
@@ -379,6 +381,7 @@ CFAttributedStringCreateWithSubstring (CFAllocatorRef alloc,
       
       cur = r.location + r.length;
     } while (cur < range.length);
+  printf("CFAttributedStringCreateWithSubstring 4.1\n");  
   
   new = CFAttributedStringCreateCopy (alloc, tmp);
   CFRelease (tmp);
@@ -418,12 +421,15 @@ CFAttributedStringGetAttributes (CFAttributedStringRef str, CFIndex loc,
                                  CFRange *effRange)
 {
   CFIndex idx;
-  
+  //printf("CFAttributedStringGetAttributes 1\n");  
   CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, CFDictionaryRef, str,
                          "attributesAtIndex:effectiveRange:", loc, effRange);
   
+  //printf("CFAttributedStringGetAttributes str->_string: %@\n", str->_string);  
+  //printf("CFAttributedStringGetAttributes loc: %d\n", loc);  
   idx = CFAttributedStringArrayGetIndex (str, loc, effRange);
   
+  //printf("CFAttributedStringGetAttributes idx: %d\n", idx);  
   return str->_attribs[idx].attrib;
 }
 
@@ -441,7 +447,10 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
   CFRange *longestEffectiveRange)
 {
     CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFAttributedStringRef, aStr, "attributesAtIndex:longestEffectiveRange:inRange");
-    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange 1\n");
+    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange aStr: %@\n", aStr);
+    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange loc: %d\n", loc);
+    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange inRange.location: %d\n", inRange.location);
+    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange inRange.length: %d\n", inRange.length);
     
     
     CFDictionaryRef attrDictionary;
@@ -479,6 +488,9 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
         }
     }
     *longestEffectiveRange = CFRangeIntersection(*longestEffectiveRange,inRange);//Clip to rangeLimit
+    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange longestEffectiveRange->location: %d\n", longestEffectiveRange->location);
+    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange longestEffectiveRange->length: %d\n", longestEffectiveRange->length);
+    printf("CFAttributedStringGetAttributesAndLongestEffectiveRange attrDictionary: %@\n", attrDictionary);
     return attrDictionary;
     
     
@@ -771,14 +783,17 @@ CFAttributedStringReplaceString (CFMutableAttributedStringRef str,
   CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
                          "replaceCharactersInRange:withString:", range, repl);
   
-  printf("CFAttributedStringReplaceString 2\n");  
+  //printf("CFAttributedStringReplaceString 2\n");  
   if (!CFAttributedStringIsMutable(str))
     return;
   
-  printf("CFAttributedStringReplaceString repl: %p\n", repl);  
+  //printf("CFAttributedStringReplaceString repl: %p\n", repl);  
   printf("CFAttributedStringReplaceString range.location: %d\n", range.location);  
   printf("CFAttributedStringReplaceString range.length: %d\n", range.length);  
+  printf("CFAttributedStringReplaceString str->_string: %@\n", str->_string);  
+  printf("CFAttributedStringReplaceString CFStringGetLength(str->_string): %d\n", CFStringGetLength(str->_string));  
   CFStringReplace ((CFMutableStringRef)str->_string, range, repl);
+  printf("CFAttributedStringReplaceString 2 str->_string: %@\n", str->_string);  
   idxS = CFAttributedStringArrayGetIndex (str, range.location, NULL);
   idxE = CFAttributedStringArrayGetIndex (str,
                                           range.location + range.length,
@@ -795,6 +810,7 @@ CFAttributedStringReplaceString (CFMutableAttributedStringRef str,
   
   printf("CFAttributedStringReplaceString 7\n");  
   CFAttributedStringCoalesce (str, CFRangeMake (idxS, idxE - idxS));
+  printf("CFAttributedStringReplaceString str: %@\n", str);  
 }
 
 void

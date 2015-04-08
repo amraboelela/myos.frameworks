@@ -157,6 +157,12 @@ NSCFTYPE_VARS
 {
   CFDictionaryRemoveAllValues((CFMutableDictionaryRef) self);
 }
+
+- (NSString *)description
+{
+    return [super description];
+}
+
 @end
 
 @implementation NSDictionary (CoreBaseAdditions)

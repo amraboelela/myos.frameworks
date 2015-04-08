@@ -32,7 +32,6 @@
   NSCFInitialize ();
 }
 
-
 - (id)initWithString:(NSString *)aString
 {
 
@@ -248,8 +247,8 @@
 - (NSString *)description
 {
     //return @"NSCFAttributedString";
-    return [NSString stringWithFormat:@"<%@: %p; string: %@>", [self className], self, [self string]];
-    //return [NSString stringWithFormat:@"<%@: %p; string: %@; attributes: %@>", [self className], self, [self string], (NSDictionary *)CFAttributedStringGetAttributes(self,0,NULL)];
+    //return [NSString stringWithFormat:@"<%@: %p; string: %@>", [self className], self, [self string]];
+    return [NSString stringWithFormat:@"<%@: %p; string: %@; attributes: %@>", [self className], self, [self string], (NSDictionary *)CFAttributedStringGetAttributes(self,0,NULL)];
 }
 
 - (void)addAttribute:(NSString *)name value:(id)value range:(NSRange)aRange
