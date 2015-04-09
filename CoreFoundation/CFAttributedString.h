@@ -1,10 +1,12 @@
 /* CFAttributedString.h
    
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2015 Free Software Foundation, Inc.
    
    Written by: Stefan Bidigaray
    Date: April, 2012
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
+ 
    This file is part of the GNUstep CoreBase Library.
    
    This library is free software; you can redistribute it and/or

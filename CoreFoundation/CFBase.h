@@ -47,8 +47,7 @@
 # endif
 #endif
 
-#import <GNUstepBase/GSVersionMacros.h>
-//#import <GNUstepBase/NSDebug+GNUstepBase.h>
+#include <GNUstepBase/GSVersionMacros.h>
 
 /*
  * CoreFoundation types

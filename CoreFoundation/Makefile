@@ -71,8 +71,6 @@ OBJECTS = \
     CFStream.o \
     GSUnicode.o \
     GSFunctions.o \
-    CFArray-private.o \
-    CFBase-private.o \
     CFPropertyList.o \
     NSCFDate.o \
     NSCFLocale.o \

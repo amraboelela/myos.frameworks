@@ -1,10 +1,12 @@
 /* NSCFType.m
    
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    
    Written by: Stefan Bidigaray
    Date: March, 2011
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
+ 
    This file is part of GNUstep CoreBase library.
    
    This library is free software; you can redistribute it and/or

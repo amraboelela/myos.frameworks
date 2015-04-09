@@ -1,10 +1,12 @@
 /* CFArray.c
    
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    
    Written by: Stefan Bidigaray
    Date: October, 2011
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
+ 
    This file is part of GNUstep CoreBase Library.
    
    This library is free software; you can redistribute it and/or
@@ -25,7 +27,7 @@
 */
 
 #include "CoreFoundation/CFRuntime.h"
-#include "CoreFoundation/CFArray.h"
+#include "CoreFoundation/CFArray-private.h"
 #include "CoreFoundation/CFBase.h"
 #include "CoreFoundation/CFString.h"
 
@@ -33,6 +35,9 @@
 #include "GSObjCRuntime.h"
 
 #include <string.h>
+#import <stdio.h>
+#import <CoreFoundation/GSPrivate.h>
+#import "GSObjCRuntime.h"
 
 struct __CFArray
 {
@@ -709,4 +714,46 @@ CFArraySortValues (CFMutableArrayRef array, CFRange range,
 
   GSCArrayQuickSort (array->_contents + range.location, range.length,
                      comparator, context);
+}
+
+CFIndex _CFArrayGetIndexOfValue(CFArrayRef array, const void *value)
+{
+    CFRange range = {0, CFArrayGetCount(array)};
+    return CFArrayGetFirstIndexOfValue(array, range, value);
+}
+
+void _CFArrayRemoveValue(CFMutableArrayRef array, const void *value)
+{
+    CF_OBJC_FUNCDISPATCHV(_kCFArrayTypeID, void, array, "removeObject:", value);
+    //loop on the array to delete values equal to the element
+    CFIndex idx;
+    const void **contents;
+    CFArrayEqualCallBack equal = array->_callBacks->equal;
+    contents = array->_contents;
+    if (equal) {
+        for (idx = 0; idx < array->_count ;++idx) {
+            if (equal (value, contents[idx])) {
+                CFArrayReplaceValues(array, CFRangeMake(idx, 1), NULL, 0);
+            }
+        }
+    } else {
+        for (idx = 0 ; idx < array->_count ;++idx) {
+            if (value == contents[idx]) {
+                CFArrayReplaceValues (array, CFRangeMake(idx, 1), NULL, 0);
+            }
+        }
+    }
+}
+
+void _CFArrayMoveValueToTop(CFMutableArrayRef array, const void *value)
+{
+    CFRetain(value);
+    _CFArrayRemoveValue(array, value);
+    CFArrayAppendValue(array, value);
+    CFRelease(value);
+}
+
+const void *_CFArrayGetLastValue(CFMutableArrayRef array)
+{
+    return (array->_contents)[array->_count-1];
 }

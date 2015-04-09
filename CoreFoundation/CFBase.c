@@ -1,10 +1,12 @@
 /* CFBase.c
    
-   Copyright (C) 2010-2011 Free Software Foundation, Inc.
+   Copyright (C) 2010-2015 Free Software Foundation, Inc.
    
    Written by: Stefan Bidigaray
    Date: January, 2010
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
+ 
    This file is part of GNUstep CoreBase Library.
    
    This library is free software; you can redistribute it and/or
@@ -266,3 +268,25 @@ CFNullGetTypeID (void)
   return _kCFNullTypeID;
 }
 
+long CFGetFreeMemory()
+{
+    FILE *fp = fopen("/proc/meminfo", "r");
+    if (fp!=NULL) {
+        size_t bufsize = 1024 * sizeof(char);
+        char *buf = (char *)malloc(bufsize);
+        long value = -1L;
+//#ifdef NATIVE_APP
+        while (getline(&buf, &bufsize, fp) >= 0) {
+            if (strncmp(buf, "MemFree", 7) != 0) {
+                continue;
+            }
+            sscanf(buf, "MemFree: %ld", &value);
+            break;
+        }
+        fclose(fp);
+        free((void *)buf);
+//#endif
+        return value;
+    }
+    return 0;
+}

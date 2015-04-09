@@ -1,16 +1,23 @@
 /* NSCFAttributedString.m
-   
-   Copyright (C) 2012 MyUIKit.
-   
-   Written by: Mohamed Abdelsalam
-   Date: Novamber, 2012
-   
-   This file is part of MyUIKit Library.
+ 
+ Copyright © 2012-2015 myOS Group.
+ 
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+ 
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ Lesser General Public License for more details.
+ 
+ Contributor(s):
+ Mohamed Abdelsalam
+ Amr Aboelela <amraboelela@gmail.com>
 */
 
-
 #import <Foundation/NSString.h>
-
 #import <Foundation/NSAttributedString.h>
 #import "NSCFType.h"
 
@@ -20,16 +27,14 @@
 #import <CoreFoundation/CFArray.h>
 #import <GNUstepBase/NSDebug+GNUstepBase.h>
 
-
 @interface NSCFAttributedString : NSMutableAttributedString
 @end
 
-
-
 @implementation NSCFAttributedString
-+ (void) load
+
++ (void)load
 {
-  NSCFInitialize ();
+    NSCFInitialize();
 }
 
 - (id)initWithString:(NSString *)aString
@@ -42,6 +47,7 @@
     return self;
 
 }
+
 - (id)initWithString:(NSString *)aString attributes:(NSDictionary *)attributes
 {
     CFAttributedStringRef new;
@@ -69,52 +75,43 @@
     return (NSString*)CFAttributedStringGetString(self);
 }
 
-
-- (NSUInteger) length
+- (NSUInteger)length
 {
 	return (NSUInteger)CFAttributedStringGetLength(self);
 }
--(BOOL)isEqualToAttributedString:(NSAttributedString *)otherString
+
+- (BOOL)isEqualToAttributedString:(NSAttributedString *)otherString
 {
 	return CFEqual(self,otherString);
 }
 
-- (NSDictionary*)attributesAtIndex:(NSUInteger)index effectiveRange:(NSRangePointer)aRange
+- (NSDictionary *)attributesAtIndex:(NSUInteger)index effectiveRange:(NSRangePointer)aRange
 {
     CFIndex length = CFAttributedStringGetLength(self);
-
-    if (index >= length )
-    {
+    if (index >= length ) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException
-                                reason: @"index lies beyond the out of the receiver’s characters"
-                              userInfo: self];
-
+                                    reason: @"index lies beyond the out of the receiver’s characters"
+                                  userInfo: self];
+        
         [e raise];
     }
-
-	 
-
-	NSDictionary* dic =  NULL;
-	if(aRange != nil)	{
-	 	CFRange range = CFRangeMake(aRange->location,aRange->length);
-		dic = (NSDictionary*)CFAttributedStringGetAttributes(self,index,&range);
-		aRange->location = range.location;
-		aRange->length = range.length;	
-	}
-	else
-		dic = (NSDictionary*)CFAttributedStringGetAttributes(self,index,NULL);
-
-	return  dic;
+    NSDictionary *dic =  NULL;
+    if (aRange != nil){
+        CFRange range = CFRangeMake(aRange->location,aRange->length);
+        dic = (NSDictionary*)CFAttributedStringGetAttributes(self,index,&range);
+        aRange->location = range.location;
+        aRange->length = range.length;
+    } else {
+        dic = (NSDictionary*)CFAttributedStringGetAttributes(self,index,NULL);
+    }
+    return  dic;
 }
-
 
 - (id)attribute:(NSString *)attributeName atIndex:(NSUInteger)index effectiveRange:(NSRangePointer)aRange
 {
     CFIndex length = CFAttributedStringGetLength(self);
-
-    if (index >= length )
-    {
+    if (index >= length ) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException
                                     reason: @"index lies beyond the out of the receiver’s characters"
@@ -123,8 +120,7 @@
     }
     CFRange range = CFRangeMake(0,0);
 	id obj = CFAttributedStringGetAttribute (self,index,attributeName, &range);
-	if(aRange != nil)
-	{
+	if (aRange != nil) {
 		aRange->location = range.location;
 		aRange->length = range.length;
 	}	
@@ -134,9 +130,8 @@
 - (id)attribute:(NSString *)attributeName atIndex:(NSUInteger)index longestEffectiveRange:(NSRangePointer)aRange inRange:(NSRange)rangeLimit
 {
     CFIndex length = CFAttributedStringGetLength(self);
-
-    if (index >= length )
-    {
+    
+    if (index >= length) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException
                                     reason: @"index lies beyond the out of the receiver’s characters"
@@ -144,23 +139,19 @@
         [e raise];
     }
     CFRange range = CFRangeMake(0,0);
-	id obj = CFAttributedStringGetAttributeAndLongestEffectiveRange (self,index,attributeName,CFRangeMake(rangeLimit.location,rangeLimit.length),&range);
-	if(aRange != nil){
-	aRange->location = range.location;
-	aRange->length = range.length;
-	}
-	return obj;
-
+    id obj = CFAttributedStringGetAttributeAndLongestEffectiveRange (self,index,attributeName,CFRangeMake(rangeLimit.location,rangeLimit.length),&range);
+    if (aRange != nil) {
+        aRange->location = range.location;
+        aRange->length = range.length;
+    }
+    return obj;
 }
-
-
 
 - (NSDictionary *)attributesAtIndex:(NSUInteger)index longestEffectiveRange:(NSRangePointer)aRange inRange:(NSRange)rangeLimit
 {
     CFIndex length = CFAttributedStringGetLength(self);
 
-    if (index >= length )
-    {
+    if (index >= length) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException
                                     reason: @"index lies beyond the out of the receiver's characters"
@@ -180,8 +171,7 @@
 - (NSAttributedString *)attributedSubstringFromRange:(NSRange)aRange
 {
     CFIndex length = CFAttributedStringGetLength(self);
-    if (aRange.location < 0 || aRange.location + aRange.length >= length )
-    {
+    if (aRange.location < 0 || aRange.location + aRange.length >= length) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException
                                     reason: @"index lies beyond the out of the receiver's characters"
@@ -198,8 +188,7 @@
 
 	CFMutableAttributedStringRef mutable = CFAttributedStringCreateMutable(NULL,0);
 	CFAttributedStringReplaceString (mutable,CFRangeMake(0,0),sub);
-	for(; i < length ; ++i)
-	{
+	for (; i < length ; ++i) {
 		dic = CFAttributedStringGetAttributes(self,i,NULL);
 		if(dic != NULL )
 			CFAttributedStringSetAttributes ( mutable, CFRangeMake(i-aRange.location,1), CFDictionaryCreateCopy(NULL,dic), true);
@@ -207,11 +196,8 @@
 
 	CFAttributedStringRef attributedString = CFAttributedStringCreateCopy(NULL,mutable);
 	CFRelease(mutable);
-	
-
-	return attributedString;
+    return attributedString;
 }
-
 
 - (NSMutableString *)mutableString
 {
@@ -223,14 +209,10 @@
     CFAttributedStringReplaceString (self,CFRangeMake(aRange.location,aRange.length),aString);
 }
 
-
 - (void)deleteCharactersInRange:(NSRange)aRange
 {
-
     CFIndex length = CFAttributedStringGetLength(self);
-    
-    if (aRange.location < 0 ||aRange.location + aRange.length >= length )
-    {
+    if (aRange.location < 0 ||aRange.location + aRange.length >= length) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException 
                                     reason: @"aRange lies beyond the end of the receiver’s characters."
@@ -254,49 +236,35 @@
 
 - (void)addAttribute:(NSString *)name value:(id)value range:(NSRange)aRange
 {
-    
-    if(name == nil)
-    {
+    if (name == nil) {
         NSException *e;
         e = [NSException exceptionWithName:  NSInvalidArgumentException
                                     reason: @"name or value is nil "
                                   userInfo: self];
         [e raise];
-        
-        
     }
-    
     CFIndex length = CFAttributedStringGetLength(self);
-    
-    if (aRange.location < 0 || aRange.location + aRange.length >= length )
-    {
+    if (aRange.location < 0 || aRange.location + aRange.length >= length ) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException 
                                     reason: @"aRange lies beyond the end of the receiver’s characters."
                                   userInfo: self];
         [e raise];
     }
-
     CFAttributedStringSetAttribute (self,CFRangeMake(aRange.location,aRange.length),name,value);
 }
 
 - (void)addAttributes:(NSDictionary *)attributes range:(NSRange)aRange
 {
-    if(attributes == nil)
-    {
+    if (attributes == nil) {
         NSException *e;
         e = [NSException exceptionWithName:  NSInvalidArgumentException
                                     reason: @"attributes is nil "
                                   userInfo: self];
         [e raise];
-        
-        
     }
-    
     CFIndex length = CFAttributedStringGetLength(self);
-    
-    if (aRange.location < 0 || aRange.location + aRange.length >= length )
-    {
+    if (aRange.location < 0 || aRange.location + aRange.length >= length ) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException 
                                     reason: @"aRange lies beyond the end of the receiver’s characters."
@@ -309,21 +277,15 @@
 - (void)removeAttribute:(NSString *)name range:(NSRange)aRange
 {
     
-    if(name == nil)
-    {
+    if (name == nil) {
         NSException *e;
         e = [NSException exceptionWithName:  NSInvalidArgumentException
                                     reason: @"name or value is nil "
                                   userInfo: self];
         [e raise];
-        
-        
     }
-    
     CFIndex length = CFAttributedStringGetLength(self);
-    
-    if (aRange.location < 0 || aRange.location + aRange.length >= length )
-    {
+    if (aRange.location < 0 || aRange.location + aRange.length >= length ) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException 
                                     reason: @"aRange lies beyond the end of the receiver’s characters."
@@ -332,7 +294,6 @@
     }
     CFAttributedStringRemoveAttribute (self,CFRangeMake(aRange.location,aRange.length),name);
 }
-
 
 - (void)appendAttributedString:(NSAttributedString *)attributedString
 {
@@ -343,17 +304,13 @@
     CFRange range = CFRangeMake(location,length);
     CFStringAppend (str1,str2);
     CFAttributedStringReplaceAttributedString (self,range,attributedString);
-
 }
 
 - (void)insertAttributedString:(NSAttributedString *)attributedString atIndex:(NSUInteger)index
 {
-    
-       
     CFIndex length = CFAttributedStringGetLength(self);
     
-    if (index < 0 || index >= length )
-    {
+    if (index < 0 || index >= length) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException 
                                     reason: @"index lies beyond the end of the receiver’s characters."
@@ -365,12 +322,9 @@
     CFIndex lengthThis = CFStringGetLength(strThis);
     length = CFStringGetLength(str);
         
-    CFMutableArrayRef arr =  CFArrayCreateMutable (NULL,lengthThis,NULL );
-   
+    CFMutableArrayRef arr =  CFArrayCreateMutable (NULL,lengthThis,NULL);
     CFIndex i = index + 1;
-    
-    for(; i < lengthThis; ++i)
-    {
+    for(; i < lengthThis; ++i) {
         CFArraySetValueAtIndex (arr,i,CFAttributedStringGetAttributes(self,i,NULL));
     }
     
@@ -378,11 +332,9 @@
     lengthThis = CFStringGetLength(strThis);
     
     i = index + length+1;
-    for(; i < lengthThis; ++i)
-    {
+    for (; i < lengthThis; ++i) {
         CFDictionaryRef dic = CFArrayGetValueAtIndex (arr,i);
-        if(dic != NULL)
-        {
+        if (dic != NULL) {
              CFAttributedStringSetAttributes (self ,CFRangeMake(i,1),dic,true);
         }
     }
@@ -398,27 +350,17 @@
     CFRelease(arr);
 }
 
-
-
-
 - (void)replaceCharactersInRange:(NSRange)aRange withAttributedString:(NSAttributedString *)attributedString
 {
-    
-    if(attributedString == nil)
-    {
+    if (attributedString == nil) {
         NSException *e;
         e = [NSException exceptionWithName:  NSInvalidArgumentException
                                     reason: @"attributedString parameter  is nil "
                                   userInfo: self];
         [e raise];
-        
-        
     }
-    
     CFIndex length = CFAttributedStringGetLength(self);
-    
-    if (aRange.location < 0 || aRange.location + aRange.length >= length )
-    {
+    if (aRange.location < 0 || aRange.location + aRange.length >= length ) {
         NSException *e;
         e = [NSException exceptionWithName:  NSRangeException 
                                     reason: @"aRange lies beyond the end of the receiver’s characters."
@@ -431,16 +373,13 @@
 
 - (void)setAttributedString:(NSAttributedString *)attributedString
 {
-	//[self release];
+    //[self release];
     self = CFAttributedStringCreateMutableCopy (NULL,0,attributedString);
 }
 
-
 - (void) dealloc
 {
-  CFRelease(self);
+    CFRelease(self);
 }
 
 @end
-
-
