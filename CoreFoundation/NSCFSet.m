@@ -44,9 +44,40 @@
     NSCFInitialize ();
 }
 
++ (void) initialize
+{
+    GSObjCAddClassBehavior (self, [NSCFType class]);
+}
+
+- (id) initWithObjects: (const id[])objects
+                 count: (NSUInteger)count
+{
+    RELEASE(self);
+    
+    self = (NSCFSet*) CFSetCreate(NULL, (const void**)objects, count,
+                                  &kCFTypeSetCallBacks);
+    
+    return self;
+}
+
 - (NSUInteger) count
 {
     return CFSetGetCount(self);
+}
+
+- (id) member: (id)anObject
+{
+    id retval;
+    
+    if (CFSetGetValueIfPresent((CFSetRef)self, anObject,
+                               (const void **)&retval))
+    {
+        return retval;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 - (NSArray *)allObjects
@@ -210,4 +241,21 @@
     [super dealloc];
 }
 
+@end
+
+@implementation NSMutableSet (CoreBaseAdditions)
+- (void) _cfReplaceValue: (id) value
+{
+    if ([self containsObject: value])
+    {
+        [self removeObject: value];
+        [self addObject: value];
+    }
+}
+
+- (void) _cfSetValue: (id) value
+{
+    [self removeObject: value];
+    [self addObject: value];
+}
 @end

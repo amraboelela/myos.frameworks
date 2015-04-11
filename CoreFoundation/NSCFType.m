@@ -5,7 +5,7 @@
    Written by: Stefan Bidigaray
    Date: March, 2011
    Modified by: Amr Aboelela <amraboelela@gmail.com>
-   Date: Mar 2015
+   Date: March 2015
  
    This file is part of GNUstep CoreBase library.
    
