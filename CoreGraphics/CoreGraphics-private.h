@@ -35,6 +35,6 @@
 #ifdef ANDROID
 #import <rd_app_glue.h>
 void _CoreGraphicsInitialize(struct android_app *app);
-#endif
 
 extern struct android_app *_app;
+#endif

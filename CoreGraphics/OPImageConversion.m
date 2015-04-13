@@ -6,7 +6,9 @@
 
    Author: Eric Wasylishen <ewasylishen@gmail.com>
    Date: July, 2010
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Mar 2015
+ 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
