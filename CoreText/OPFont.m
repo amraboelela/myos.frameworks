@@ -2,7 +2,7 @@
 
    <abstract>The font class</abstract>
 
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996-2015 Free Software Foundation, Inc.
 
    Author: Ovidiu Predescu <ovidiu@net-community.com>
    Date: February 1997

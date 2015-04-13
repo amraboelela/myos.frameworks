@@ -2,7 +2,7 @@
 
    <abstract>C Interface to text layout library</abstract>
 
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.</copy>
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
 
    Author: Eric Wasylishen
    Date: Mar 2011
@@ -44,9 +44,9 @@
   if (font == nil)
   {
     NSLog(@"OPSimpleLayoutEngine: Error, layoutString:withAttributes: called without a font");
-  }
-  else
-  {
+        DLog(@"attribs: %@", attribs);
+        return nil;
+    } else {
     [chars getCharacters:characters range:NSMakeRange(0, length)];
     int len = [chars length];
     for (int i=0; i<len; i++) {

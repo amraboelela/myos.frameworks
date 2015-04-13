@@ -34,6 +34,8 @@
 
 @synthesize range=_stringRange;
 
+#pragma mark - Life cycle
+
 - (id)initWithGlyphs:(CGGlyph *)glyphs advances:(CGSize *)advances range:(CFRange)range attributes:(NSDictionary *)attributes
 {
   self = [super init];
@@ -63,6 +65,8 @@
   [super dealloc];
 }
 
+#pragma mark - Accessors
+
 - (CFIndex)glyphCount
 {
   return _count;
@@ -82,22 +86,32 @@
 {
   return _glyphs;
 }
+
 - (const CGPoint *)positions
 {
   return _positions;
 }
+
 - (const CGSize *)advances
 {
   return _advances;
 }
+
 - (const CFIndex *)stringIndices
 {
   return _stringIndices;
 }
+
 - (CFRange)stringRange
 {
   return _stringRange;
 }
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p; count: %d; stringRange: %d, %d>", [self className], self, _count, _stringRange.location, _stringRange.length];
+}
+
 - (double)typographicBoundsForRange: (CFRange)range
 			     ascent: (CGFloat*)ascent//FIXME
 			    descent: (CGFloat*)descent//FIXME
@@ -117,6 +131,7 @@
 
   return 0;
 }
+
 - (CGRect)imageBoundsForRange: (CFRange)range
 		  withContext: (CGContextRef)context
 {
@@ -212,7 +227,6 @@
 }
 
 @end
-
 
 /* Functions */
  

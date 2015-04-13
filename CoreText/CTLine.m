@@ -30,6 +30,8 @@
 
 @implementation CTLine
 
+#pragma mark - Life cycle
+
 - (id)initWithRuns: (NSArray*)runs
 {
   self = [super init];
@@ -39,10 +41,19 @@
   return self;
 }
 
+#pragma mark - Accessors
+
 - (NSArray*)runs
 {
   return _runs;
 }
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p; runs: %@; penOffset: %0.0f>", [self className], self, _runs, penOffset];
+}
+
+#pragma mark - Private methods
 
 - (void)drawOnContext: (CGContextRef)ctx
 {
@@ -76,6 +87,7 @@
                    truncationToken:	(CTLineRef)truncationToken
 {
   double lineWidth = CTLineGetTypographicBounds(self, NULL, NULL, NULL);
+    //DLog(@"lineWidth: %f", lineWidth);
   if (width < lineWidth) {
     double tokenWidth = CTLineGetTypographicBounds(truncationToken, NULL, NULL, NULL);
     double widthToRemove = lineWidth - width + tokenWidth;
@@ -180,14 +192,14 @@
 
 CTLineRef CTLineCreateWithAttributedString(CFAttributedStringRef string)
 {
-  DLog();
-  CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
-  //DLog();
-  CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));
-  //DLog();
-  [ts release];
-  //DLog();
-  return line;
+    DLog();
+    CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
+    //DLog();
+    CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));
+    //DLog();
+    [ts release];
+    //DLog();
+    return line;
 }
 
 CTLineRef CTLineCreateTruncatedLine(
@@ -196,9 +208,11 @@ CTLineRef CTLineCreateTruncatedLine(
 	CTLineTruncationType truncationType,
 	CTLineRef truncationToken)
 {
-  return [[line truncatedLineWithWidth: width
-                        truncationType: truncationType
-                       truncationToken: truncationToken] retain];
+    DLog(@"line: %@", line);
+    DLog(@"width: %f", width);
+    return [[line truncatedLineWithWidth: width
+                          truncationType: truncationType
+                         truncationToken: truncationToken] retain];
 }
 
 CTLineRef CTLineCreateJustifiedLine(
@@ -231,8 +245,10 @@ double CTLineGetPenOffsetForFlush(
 {
   return flushFactor * (flushWidth - CTLineGetTypographicBounds(line, NULL, NULL, NULL));
 }
+
 void CTLineDraw(CTLineRef line, CGContextRef context)
 {
+    //DLog();
   return [line drawOnContext: context];
 }
 
@@ -249,13 +265,15 @@ double CTLineGetTypographicBounds(
 	CGFloat* descent,
 	CGFloat* leading)
 {
-  double width = 0;
-  const NSUInteger runsCount = [line->_runs count];
-  for (NSUInteger i=0; i<runsCount; i++) {
-    CTRunRef run = [line->_runs objectAtIndex: i];
-    width += CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), ascent, descent, leading);
-  }
-  return width;
+    double width = 0;
+    const NSUInteger runsCount = [line->_runs count];
+    DLog(@"runsCount: %d", runsCount);
+    for (NSUInteger i=0; i<runsCount; i++) {
+        CTRunRef run = [line->_runs objectAtIndex: i];
+        width += CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), ascent, descent, leading);
+        DLog(@"width: %0.0f", runsCount);
+    }
+    return width;
 }
 
 double CTLineGetTrailingWhitespaceWidth(CTLineRef line)

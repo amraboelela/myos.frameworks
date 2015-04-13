@@ -24,8 +24,11 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
    */
 
-
+#ifdef ANDROID
+#include <freetype/ft2build.h>
+#else
 #include <ft2build.h>
+#endif
 #include FT_FREETYPE_H
 
 #import "OPFont.h"

@@ -2,7 +2,7 @@
 
    <abstract>Utility functions for FreeType</abstract>
 
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.</copy>
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
 
    Author: Niels Grewe
    Date: Feb 2011

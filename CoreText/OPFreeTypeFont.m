@@ -2,7 +2,7 @@
 
    <abstract>Font Handling Class using FreeType2</abstract>
 
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.</copy>
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
 
    Author: Niels Grewe
    Date: Feb 2011
