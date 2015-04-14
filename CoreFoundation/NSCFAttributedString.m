@@ -19,7 +19,7 @@
 
 #import <Foundation/NSString.h>
 #import <Foundation/NSAttributedString.h>
-#import "NSCFType.h"
+#import <CoreFoundation/NSCFType.h>
 
 #import <Foundation/NSException.h>
 #import <CoreFoundation/CFAttributedString.h>

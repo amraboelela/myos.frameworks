@@ -28,7 +28,7 @@
 
 #import <Foundation/NSArray.h>
 
-#import <Foundation/NSCFType.h>
+#import <CoreFoundation/NSCFType.h>
 #import <Foundation/NSEnumerator.h>
 #import <CoreFoundation/CFArray.h>
 
