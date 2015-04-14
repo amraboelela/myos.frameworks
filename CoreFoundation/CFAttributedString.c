@@ -479,8 +479,8 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
     }
     while (longestEffectiveRange->location > inRange.location) {
         //Check extend range backwards
-        tmpDictionary = CFAttributedStringGetAttributes(aStr, longestEffectiveRange->location-1, &tmpRange);//(*getImp)(self, getSel, aRange->location-1, &tmpRange);
-        if (CFDictionaryEqual(tmpDictionary, attrDictionary)) {
+        tmpDictionary = CFAttributedStringGetAttributes(aStr, longestEffectiveRange->location-1, &tmpRange);
+        if (GSHashTableEqual((GSHashTableRef)tmpDictionary, (GSHashTableRef)attrDictionary)) {
             longestEffectiveRange->length = CFRangeMaxRange(*longestEffectiveRange) - tmpRange.location;
             longestEffectiveRange->location = tmpRange.location;
         } else {
@@ -489,8 +489,8 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
     }
     while (CFRangeMaxRange(*longestEffectiveRange) < CFRangeMaxRange(inRange)) {
         //Check extend range forwards
-        tmpDictionary = CFAttributedStringGetAttributes(aStr, CFRangeMaxRange(*longestEffectiveRange), &tmpRange);//(*getImp)(self, getSel, CFRangeMaxRange(*aRange), &tmpRange);
-        if (CFDictionaryEqual(tmpDictionary, attrDictionary)) {
+        tmpDictionary = CFAttributedStringGetAttributes(aStr, CFRangeMaxRange(*longestEffectiveRange), &tmpRange);
+        if (GSHashTableEqual((GSHashTableRef)tmpDictionary, (GSHashTableRef)attrDictionary)) {
             longestEffectiveRange->length = CFRangeMaxRange(tmpRange) - longestEffectiveRange->location;
         } else {
             break;
