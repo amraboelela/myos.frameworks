@@ -28,6 +28,7 @@
 
 #import <Foundation/NSDictionary.h>
 #import <Foundation/NSArray.h>
+#import <Foundation/NSException.h>
 
 #include "NSCFType.h"
 #include "CoreFoundation/CFDictionary.h"
