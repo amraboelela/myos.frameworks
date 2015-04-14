@@ -29,9 +29,11 @@
 #import <Foundation/NSDictionary.h>
 #import <Foundation/NSArray.h>
 #import <Foundation/NSException.h>
+#import <CoreFoundation/CFArray.h>
 
 #include "NSCFType.h"
 #include "CoreFoundation/CFDictionary.h"
+
 
 @interface NSCFDictionary : NSMutableDictionary
 NSCFTYPE_VARS
