@@ -110,11 +110,6 @@
     return CFSetContainsValue(self, (const void*)anObject);
 }
 
-- (id)member:(id)object
-{
-    return (id) CFSetGetValue(self, (const void*)object);
-}
-
 /**
  * Returns an enumerator describing the array sequentially
  * from the first to the last element.<br/>
