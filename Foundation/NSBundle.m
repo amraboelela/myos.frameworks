@@ -1522,7 +1522,17 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
     }
 
   [load_lock lock];
-    bundle = nil;
+  /* Try lookup ... if not found, make sure that all loaded bundles have
+   * class->bundle mapp entries set up and check again.
+   */
+  bundle = (NSBundle *)NSMapGet(_byClass, aClass);
+  if ((id)bundle == (id)[NSNull null])
+    {
+      [load_lock unlock];
+      return nil;
+    }
+  if (nil == bundle)
+    {
       enumerate = NSEnumerateMapTable(_bundles);
       while (NSNextMapEnumeratorPair(&enumerate, &key, (void **)&bundle))
         {
