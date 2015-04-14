@@ -1,5 +1,5 @@
 /** Control of executable units within a shared virtual memory space
-   Copyright (C) 1996-2000 Free Software Foundation, Inc.
+   Copyright (C) 1996-2015 Free Software Foundation, Inc.
 
    Original Author:  Scott Christley <scottc@net-community.com>
    Rewritten by: Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
@@ -9,7 +9,9 @@
    Modified by: Nicola Pero <n.pero@mi.flashnet.it>
    to add GNUstep extensions allowing to interact with threads created
    by external libraries/code (eg, a Java Virtual Machine).
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2015
+ 
    This file is part of the GNUstep Objective-C Library.
 
    This library is free software; you can redistribute it and/or
@@ -856,6 +858,11 @@ unregisterActiveThread(NSThread *thread)
   return _stackSize;
 }
 
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p; name:%@; process ID: %d; thread ID: %d>", [self className], self, _name, getpid(), _threadID];
+}
+
 /**
  * Trampoline function called to launch the thread
  */
@@ -1060,37 +1067,29 @@ static void *nsthreadLauncher(void* thread)
 
       inputFd = fd[0];
       outputFd = fd[1];
-      if ((e = fcntl(inputFd, F_GETFL, 0)) >= 0)
-	{
-	  e |= NBLK_OPT;
-	  if (fcntl(inputFd, F_SETFL, e) < 0)
-	    {
-	      [NSException raise: NSInternalInconsistencyException
-		format: @"Failed to set non block flag for perform in thread"];
-	    }
-	}
-      else
-	{
-	  [NSException raise: NSInternalInconsistencyException
-	    format: @"Failed to get non block flag for perform in thread"];
-	}
-      if ((e = fcntl(outputFd, F_GETFL, 0)) >= 0)
-	{
-	  e |= NBLK_OPT;
-	  if (fcntl(outputFd, F_SETFL, e) < 0)
-	    {
-	      [NSException raise: NSInternalInconsistencyException
-		format: @"Failed to set non block flag for perform in thread"];
-	    }
-	}
-      else
-	{
-	  [NSException raise: NSInternalInconsistencyException
-	    format: @"Failed to get non block flag for perform in thread"];
-	}
-    }
-  else
-    {
+        //DLog(@"inputFd: %d", inputFd);
+        //DLog(@"outputFd: %d", outputFd);
+        
+        long flags = fcntl(inputFd, F_GETFL);
+        fcntl(inputFd, F_SETFL, flags | O_NONBLOCK);
+        /*
+        if ((e = fcntl(inputFd, F_GETFL, 0)) >= 0) {
+            e |= NBLK_OPT;
+            if (fcntl(inputFd, F_SETFL, e) < 0) {
+                [NSException raise:NSInternalInconsistencyException format:@"Failed to set non block flag for perform in thread"];
+            }
+        } else {
+            [NSException raise:NSInternalInconsistencyException format:@"Failed to get non block flag for perform in thread"];
+        }
+        if ((e = fcntl(outputFd, F_GETFL, 0)) >= 0) {
+            e |= NBLK_OPT;
+            if (fcntl(outputFd, F_SETFL, e) < 0) {
+                [NSException raise:NSInternalInconsistencyException format:@"Failed to set non block flag for perform in thread"];
+            }
+        } else {
+            [NSException raise:NSInternalInconsistencyException format:@"Failed to get non block flag for perform in thread"];
+        }*/
+    } else {
       DESTROY(self);
       [NSException raise: NSInternalInconsistencyException
         format: @"Failed to create pipe to handle perform in thread"];
@@ -1135,7 +1134,7 @@ static void *nsthreadLauncher(void* thread)
   NSArray	*toDo;
   unsigned int	i;
   unsigned int	c;
-
+    //DLog();
   [lock lock];
 #if defined(__MINGW__)
   if (event != INVALID_HANDLE_VALUE)
@@ -1146,8 +1145,8 @@ static void *nsthreadLauncher(void* thread)
         }
     }
 #else
-  if (inputFd >= 0)
-    {
+    if (inputFd >= 0) {
+        //DLog(@"inputFd: %d", inputFd);
       char	buf[BUFSIZ];
 
       /* We don't care how much we read.  If there have been multiple
@@ -1207,6 +1206,7 @@ GSRunLoopInfoForThread(NSThread *aThread)
 	}
       [gnustep_global_lock unlock];
     }
+    //DLog();
   info = aThread->_runLoopInfo;
   return info;
 }
@@ -1313,6 +1313,7 @@ GSRunLoopInfoForThread(NSThread *aThread)
     {
       [NSThread currentThread];
     }
+    //DLog(@"defaultThread: %@", defaultThread);
   [self performSelector: aSelector
                onThread: defaultThread
              withObject: anObject
@@ -1381,8 +1382,8 @@ GSRunLoopInfoForThread(NSThread *aThread)
           [NSException raise: NSInternalInconsistencyException
                       format: @"perform on finished thread"];
         }
-      if (aFlag == YES)
-	{
+        if (aFlag == YES) {
+            //DLog(@"aFlag == YES");
 	  l = [[NSConditionLock alloc] init];
 	}
 
@@ -1392,8 +1393,8 @@ GSRunLoopInfoForThread(NSThread *aThread)
 				    modes: anArray
 				     lock: l];
       [info addPerformer: h];
-      if (l != nil)
-	{
+        //DLog(@"info: %@", info);
+        if (l != nil) {
           [l lockWhenCondition: 1];
 	  [l unlock];
 	  RELEASE(l);

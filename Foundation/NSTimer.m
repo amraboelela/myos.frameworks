@@ -230,7 +230,7 @@ static Class	NSDate_class;
    * (if this timer gets invalidated while we are firing).
    */
   target = [_target retain];
-
+    //DLog(@"target: %@", target);
   /* We check that we have not been invalidated before we fire.
    */
   if (NO == _invalidated)
