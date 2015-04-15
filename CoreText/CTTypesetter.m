@@ -63,7 +63,7 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
 - (id)initWithAttributedString: (NSAttributedString*)string
                        options: (NSDictionary*)options
 {
-    DLog(@"string: %@", string);
+    //DLog(@"string: %@", string);
     if ((self = [super init])) {
         _as = [string retain];
         _options = [options retain];
@@ -73,16 +73,21 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
 
 - (void) dealloc
 {
+  DLog(@"self: %@", self);
   [_as release];
+  DLog();
   [_options release];
+  DLog();
   [super dealloc];
+  DLog();
 }
 
 #pragma mark - Accessors
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@: %p; as: %@; options: %@>", [self className], self, _as, _options];
+    return [NSString stringWithFormat:@"<%@: %p; attributedString: %@>", [self className], self, _as];
+    //return [NSString stringWithFormat:@"<%@: %p; as: %@; options: %@>", [self className], self, _as, _options];
 }
 
 #pragma mark - Private methods
@@ -92,23 +97,28 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
     // FIXME: This should do the core typesetting stuff:
     // - divide the attributed string into runs with the same attributes.
     
-    DLog(@"range: %d, %d", range.location, range.length);
+    //DLog(@"range: %d, %d", range.location, range.length);
     NSMutableArray *runs = [NSMutableArray array];
     
-    OPSimpleLayoutEngine * layoutEngine = [[[OPSimpleLayoutEngine alloc] init] autorelease];
+    OPSimpleLayoutEngine *layoutEngine = [[[OPSimpleLayoutEngine alloc] init] autorelease];
     NSUInteger index = range.location;
     
     while (index < range.length) {
         CFRange runRange;
-        NSDictionary * runAttributes = CFAttributedStringGetAttributesAndLongestEffectiveRange(_as, index, CFRangeMake(index, range.length - index), &runRange);
+        NSDictionary *runAttributes = CFAttributedStringGetAttributesAndLongestEffectiveRange(_as, index, CFRangeMake(index, range.length - index), &runRange);
+        //DLog(@"runAttributes: %@", runAttributes);
         CFAttributedStringRef runAttributedString = CFAttributedStringCreateWithSubstring(NULL, _as, runRange);
-        NSString * runString = CFAttributedStringGetString(runAttributedString);
-        CFRelease(runAttributedString);
-        DLog(@"self: %@", self);
-        CTRun * run = [layoutEngine layoutString:runString withAttributes:runAttributes];
+        //DLog(@"runAttributedString: %@", runAttributedString);
+        NSString *runString = CFAttributedStringGetString(runAttributedString);
+        //DLog(@"runString: %@", runString);
+        //DLog(@"self: %@", self);
+        CTRun *run = [layoutEngine layoutString:runString withAttributes:runAttributes];
         run.range = runRange;
+        //DLog();
         [runs addObject:run];
+        DLog(@"runs: %@", runs);
         index += runRange.length;
+        CFRelease(runAttributedString);
     }
     // - run the bidirectional algorithm if needed
     // - call the shaper on each run
@@ -182,8 +192,8 @@ CTTypesetterRef CTTypesetterCreateWithAttributedStringAndOptions(
 CTLineRef CTTypesetterCreateLine(CTTypesetterRef ts, CFRange range)
 {
     DLog(@"ts: %@", ts);
-    DLog(@"range.location: %d", range.location);
-    DLog(@"range.length: %d", range.length);
+    //DLog(@"range.location: %d", range.location);
+    //DLog(@"range.length: %d", range.length);
     return [ts createLineWithRange: range];
 }
 

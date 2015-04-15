@@ -179,7 +179,7 @@ CTFontRef CTFontCreateWithNameAndOptions(
                            nil];
     //DLog(@"attrs: %@", attrs);
     OPFontDescriptor *descriptor = [OPFontDescriptor fontDescriptorWithFontAttributes:attrs];
-    DLog(@"descriptor: %@", descriptor);
+    //DLog(@"descriptor: %@", descriptor);
     return CTFontCreateWithFontDescriptorAndOptions(descriptor, size, matrixPtr, opts);
 }
 

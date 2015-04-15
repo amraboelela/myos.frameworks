@@ -164,17 +164,14 @@
                 }
                 cairo_matrix_t ident;
                 cairo_matrix_init_identity(&ident);
-                DLog(@"1");
                 cairo_font_options_t *opts = cairo_font_options_create();
-                //DLog(@"2");
                 cairo_font_options_set_hint_metrics(opts, CAIRO_HINT_METRICS_OFF);
-                //DLog(@"3");
                 cairo_font_options_set_hint_style(opts, CAIRO_HINT_STYLE_NONE);
-                DLog(@"4");
+                //DLog(@"4");
                 self->cairofont = cairo_scaled_font_create(unscaled, &ident, &ident, opts);
                 //DLog(@"5");
                 cairo_font_options_destroy(opts);
-                DLog(@"6");
+                //DLog(@"6");
             }
         } else
             _attributes = [NSDictionary new];
