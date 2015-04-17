@@ -26,10 +26,22 @@
 #import <CoreFoundation/GSHashTable.h>
 
 @interface NSCFSet : NSMutableSet
+NSCFTYPE_VARS
 @end
 
-@interface NSCFSetEnumerator : NSEnumerator
-{
+@interface NSSet (CoreBaseAdditions)
+- (CFTypeID) _cfTypeID;
+
+- (id) _cfGetValue: (id) value;
+- (void) _cfGetValues: (id[]) values;
+@end
+
+@interface NSMutableSet (CoreBaseAdditions)
+- (void) _cfReplaceValue: (id) value;
+- (void) _cfSetValue: (id) value;
+@end
+
+@interface NSCFSetEnumerator : NSEnumerator {
     CFArrayRef set;
     unsigned  pos;
 }
