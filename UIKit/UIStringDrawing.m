@@ -85,24 +85,24 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
                     }
                     usedCharacters = stringLength - start;
                     //DLog(@"usedCharacters: %d", usedCharacters);
-                    DLog(@"typesetter 1: %@", typesetter);
+                    //DLog(@"typesetter 1: %@", typesetter);
                     NSAttributedString *ellipsisString = CFAttributedStringCreate(NULL, CFSTR("..."), attributes);
-                    DLog(@"ellipsisString: %@", ellipsisString);
+                    //DLog(@"ellipsisString: %@", ellipsisString);
                     CTLineRef ellipsisLine = CTLineCreateWithAttributedString(ellipsisString);
                     //DLog(@"ellipsisLine: %@", ellipsisLine);
-                    DLog(@"typesetter 2: %@", typesetter);
+                    //DLog(@"typesetter 2: %@", typesetter);
                     CTLineRef tempLine = CTTypesetterCreateLine(typesetter, CFRangeMake(start, usedCharacters));
-                    DLog(@"typesetter 3: %@", typesetter);
+                    //DLog(@"typesetter 3: %@", typesetter);
                     line = CTLineCreateTruncatedLine(tempLine, constrainedToSize.width, truncType, ellipsisLine);
-                    DLog(@"typesetter 3.0.1: %@", typesetter);
+                    //DLog(@"typesetter 3.0.1: %@", typesetter);
                     CFRelease(tempLine);
-                    DLog(@"typesetter 3.0.2: %@", typesetter);
+                    //DLog(@"typesetter 3.0.2: %@", typesetter);
                     CFRelease(ellipsisLine);
-                    DLog(@"typesetter 3.0.3: %@", typesetter);
+                    //DLog(@"typesetter 3.0.3: %@", typesetter);
                     //DLog(@"line: %@", line);
                     CFRelease(ellipsisString);
-                    DLog(@"typesetter 3.1: %@", typesetter);
-                    DLog(@"typesetter 3.1.1: %p", typesetter);
+                    //DLog(@"typesetter 3.1: %@", typesetter);
+                    //DLog(@"typesetter 3.1.1: %p", typesetter);
                 }
             } else {
                 if (lineBreakMode == UILineBreakModeCharacterWrap) {
@@ -116,11 +116,11 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
                     usedCharacters = 7;
                     break;
                 }
-                DLog(@"start: %d, usedCharacters: %d", start, usedCharacters);
+                //DLog(@"start: %d, usedCharacters: %d", start, usedCharacters);
                 line = CTTypesetterCreateLine(typesetter, CFRangeMake(start, usedCharacters));
             }
-            DLog(@"typesetter 3.2: %p", typesetter);
-            DLog(@"line: %@", line);
+            //DLog(@"typesetter 3.2: %p", typesetter);
+            //DLog(@"line: %@", line);
             if (line) {
                 drawSize.width = MAX(drawSize.width, ceilf(CTLineGetTypographicBounds(line,NULL,NULL,NULL)));
                 CFArrayAppendValue(lines, line);
@@ -128,7 +128,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
             }
             start += usedCharacters;
         }
-        DLog();
+        //DLog();
         //CFRelease(typesetter);
         //DLog();
         //CFRelease(attributedString);
@@ -136,19 +136,19 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
         //return nil; 
  
         //DLog(@"6");
-        DLog(@"typesetter 4: %@", typesetter);
+        //DLog(@"typesetter 4: %@", typesetter);
         CFRelease(typesetter);
-        DLog(@"attributedString: %@", attributedString);
+        //DLog(@"attributedString: %@", attributedString);
         CFRelease(attributedString);
         //DLog(@"6.2");
         CFRelease(attributes);
-        DLog(@"6.3");
+        //DLog(@"6.3");
     }
-    DLog(@"7");
+    //DLog(@"7");
     if (renderSize) {
         *renderSize = drawSize;
     }
-    DLog(@"8");
+    //DLog(@"8");
     return lines;
 }
 
@@ -156,7 +156,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
 
 - (CGSize)sizeWithFont:(UIFont *)font
 {
-    DLog();
+    //DLog();
     return [self sizeWithFont:font constrainedToSize:CGSizeMake(CGFLOAT_MAX,font.lineHeight)];
 }
 
