@@ -85,16 +85,20 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
                     }
                     usedCharacters = stringLength - start;
                     //DLog(@"usedCharacters: %d", usedCharacters);
+                    DLog(@"typesetter 1: %@", typesetter);
                     NSAttributedString *ellipsisString = CFAttributedStringCreate(NULL, CFSTR("..."), attributes);
-                    //DLog(@"ellipsisString: %@", ellipsisString);
+                    DLog(@"ellipsisString: %@", ellipsisString);
                     CTLineRef ellipsisLine = CTLineCreateWithAttributedString(ellipsisString);
                     //DLog(@"ellipsisLine: %@", ellipsisLine);
                     DLog(@"typesetter 2: %@", typesetter);
                     CTLineRef tempLine = CTTypesetterCreateLine(typesetter, CFRangeMake(start, usedCharacters));
                     DLog(@"typesetter 3: %@", typesetter);
                     line = CTLineCreateTruncatedLine(tempLine, constrainedToSize.width, truncType, ellipsisLine);
+                    DLog(@"typesetter 3.0.1: %@", typesetter);
                     CFRelease(tempLine);
+                    DLog(@"typesetter 3.0.2: %@", typesetter);
                     CFRelease(ellipsisLine);
+                    DLog(@"typesetter 3.0.3: %@", typesetter);
                     //DLog(@"line: %@", line);
                     CFRelease(ellipsisString);
                     DLog(@"typesetter 3.1: %@", typesetter);

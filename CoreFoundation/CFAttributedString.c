@@ -210,12 +210,13 @@ CFAttributedStringFinalize (CFTypeRef cf)
     for (idx = 0; idx < str->_attribCount; ++idx) {
         //printf("CFAttributedStringFinalize idx: %d\n", idx);
         //printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %p\n", str->_attribs[idx].attrib);
-        //printf("CFAttributedStringFinalize CFGetRetainCount(str->_attribs[idx].attrib): %d\n", CFGetRetainCount(str->_attribs[idx].attrib));
+        printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %p, CFGetRetainCount(str->_attribs[idx].attrib): %d\n", str->_attribs[idx].attrib, CFGetRetainCount(str->_attribs[idx].attrib));
         CFRelease(str->_attribs[idx].attrib);// CFAttributedStringUncacheAttribute (str->_attribs[idx].attrib);
     }
     if (!CFAttributedStringIsInline(str)) {
         CFAllocatorDeallocate (CFGetAllocator(str), str->_attribs);
     }
+    //printf("CFAttributedStringFinalize str: %@\n", str);
     //printf("CFAttributedStringFinalize 4\n");
 }
 
@@ -314,7 +315,7 @@ CFAttributedStringCreateInlined (CFAllocatorRef alloc, CFStringRef str,
         
         CFAttributedStringSetInline (new);
     }
-    //printf("CFAttributedStringCreateInlined new: %@\n", new);
+    printf("CFAttributedStringCreateInlined new: %@\n", new);
     
     return new;
 }
@@ -335,6 +336,7 @@ CFAttributedStringCreateCopy (CFAllocatorRef alloc, CFAttributedStringRef str)
 {
   if (CF_IS_OBJC(_kCFAttributedStringTypeID, str))
     {
+      printf("CFAttributedStringCreateCopy CF_IS_OBJC\n");
       CFIndex len = CFAttributedStringGetLength (str);
       return CFAttributedStringCreateWithSubstring (alloc, str,
                                                     CFRangeMake (0, len));
@@ -425,7 +427,7 @@ CFAttributedStringGetAttributes (CFAttributedStringRef str, CFIndex loc,
   //printf("CFAttributedStringGetAttributes str->_string: %@\n", str->_string);  
   //printf("CFAttributedStringGetAttributes loc: %d\n", loc);  
   idx = CFAttributedStringArrayGetIndex (str, loc, effRange);
-  
+  printf("CFAttributedStringGetAttributes str->_attribs[idx].attrib: %p; CFGetRetainCount(str->_attribs[idx].attrib): %d\n", str->_attribs[idx].attrib, CFGetRetainCount(str->_attribs[idx].attrib)); 
   return str->_attribs[idx].attrib;
 }
 
@@ -527,7 +529,7 @@ ReplaceAttributesAtIndex (CFMutableAttributedStringRef str, CFIndex idx,
                           CFDictionaryRef repl)
 {
     CFRelease(str->_attribs[idx].attrib);//CFAttributedStringUncacheAttribute (str->_attribs[idx].attrib);
-    str->_attribs[idx].attrib = repl;//CFRetain(str->_attribs[idx].attrib);//CFAttributedStringCacheAttribute (str->_attribs[idx].attrib);
+    str->_attribs[idx].attrib = CFRetain(repl);//CFRetain(str->_attribs[idx].attrib);//CFAttributedStringCacheAttribute (str->_attribs[idx].attrib);
 }
 
 static void

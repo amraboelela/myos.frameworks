@@ -194,8 +194,9 @@ CTLineRef CTLineCreateWithAttributedString(CFAttributedStringRef string)
 {
     //DLog();
     CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
+    DLog(@"ts: %@", ts);
     CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));
-    //DLog();
+    DLog(@"line: %@", line);
     [ts release];
     return line;
 }
@@ -207,7 +208,7 @@ CTLineRef CTLineCreateTruncatedLine(
 	CTLineRef truncationToken)
 {
     //DLog(@"line: %@", line);
-    DLog(@"width: %f", width);
+    //DLog(@"width: %f", width);
     return [[line truncatedLineWithWidth: width
                           truncationType: truncationType
                          truncationToken: truncationToken] retain];
@@ -269,7 +270,7 @@ double CTLineGetTypographicBounds(
     for (NSUInteger i=0; i<runsCount; i++) {
         CTRunRef run = [line->_runs objectAtIndex: i];
         width += CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), ascent, descent, leading);
-        DLog(@"width: %0.0f", runsCount);
+        //DLog(@"width: %0.0f", runsCount);
     }
     return width;
 }
