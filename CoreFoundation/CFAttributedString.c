@@ -206,7 +206,6 @@ CFAttributedStringFinalize (CFTypeRef cf)
     //printf("CFAttributedStringFinalize str: %@\n", str);
     //printf("CFAttributedStringFinalize str: %p\n", str);
     CFRelease(str->_string);
-    //printf("CFAttributedStringFinalize 2\n");
     for (idx = 0; idx < str->_attribCount; ++idx) {
         //printf("CFAttributedStringFinalize idx: %d\n", idx);
         //printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %p\n", str->_attribs[idx].attrib);
@@ -217,7 +216,6 @@ CFAttributedStringFinalize (CFTypeRef cf)
         CFAllocatorDeallocate (CFGetAllocator(str), str->_attribs);
     }
     //printf("CFAttributedStringFinalize str: %@\n", str);
-    //printf("CFAttributedStringFinalize 4\n");
 }
 
 static Boolean
@@ -290,7 +288,6 @@ CFAttributedStringCreateInlined (CFAllocatorRef alloc, CFStringRef str,
                                  CFIndex count, Attr *attribs)
 {
     struct __CFAttributedString *new;
-    //printf("CFAttributedStringCreateInlined 1\n");
     //printf("CFAttributedStringCreateInlined str: %@\n", str);
     new = (struct __CFAttributedString *)_CFRuntimeCreateInstance (alloc,
                                                                    _kCFAttributedStringTypeID,
@@ -355,31 +352,28 @@ CFAttributedStringCreateWithSubstring (CFAllocatorRef alloc,
   CFRange r;
   CFIndex cur;
   tmp = CFAttributedStringCreateMutable (alloc, range.length);
+  //printf("CFAttributedStringCreateWithSubstring tmp: %@\n", tmp);  
   
   /* We do not need to protect this with beging and end editing because
    * we will be adding attributes in the order they appear.  Using
    * the being/end editing functions would actually slow things down.
    */
-  r = range;
-  r.length = 0;
-  CFAttributedStringReplaceString (tmp, r,
-                                   CFAttributedStringGetString (str));
+  CFRelease(tmp->_string);
+  tmp->_string = CFStringCreateWithSubstring(alloc, str->_string, range);
+  //CFAttributedStringReplaceString(tmp, r, subStr);
   
   cur = range.location;
-  //printf("CFAttributedStringCreateWithSubstring tmp: %@\n", tmp);  
+  //printf("CFAttributedStringCreateWithSubstring tmp 2: %@\n", tmp);  
   //printf("CFAttributedStringCreateWithSubstring 2 range.location: %d\n", range.location);  
   //printf("CFAttributedStringCreateWithSubstring 2 range.length: %d\n", range.length);  
-  do
-    {
-      CFDictionaryRef attribs;
-      
+  do {
       //printf("CFAttributedStringCreateWithSubstring cur: %d\n", cur);  
-      attribs = CFAttributedStringGetAttributes (str, cur, &r);
-      //printf("CFAttributedStringCreateWithSubstring attribs: %@\n", attribs);  
-      CFAttributedStringSetAttributes (tmp, r, attribs, true);
-      //printf("CFAttributedStringCreateWithSubstring 2 tmp: %@\n", tmp);  
-      
+      CFDictionaryRef attribs = CFAttributedStringGetAttributes(str, cur, &r);
       cur = r.location + r.length;
+      //printf("CFAttributedStringCreateWithSubstring attribs: %@\n", attribs);  
+      r.location -= range.location;
+      CFAttributedStringSetAttributes (tmp, r, attribs, true);
+      //printf("CFAttributedStringCreateWithSubstring 2 tmp: %@\n", tmp); 
     } while (cur < range.length);
   
   new = CFAttributedStringCreateCopy (alloc, tmp);
@@ -716,10 +710,12 @@ CFAttributedStringEndEditing (CFMutableAttributedStringRef str)
 CFMutableStringRef
 CFAttributedStringGetMutableString (CFMutableAttributedStringRef str)
 {
-  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, CFMutableStringRef, str,
-                         "mutableString");
-  
-  return NULL; /* FIXME */
+    CF_OBJC_FUNCDISPATCHV(_kCFAttributedStringTypeID, CFMutableStringRef, str, "mutableString");
+    if (str->_string == NULL) {
+        return NULL;
+    }
+    return str->_string;
+  //return NULL; /* FIXME */
 }
 
 void
@@ -749,7 +745,9 @@ CFAttributedStringReplaceString (CFMutableAttributedStringRef str,
   if (!CFAttributedStringIsMutable(str))
     return;
   
-  //printf("CFAttributedStringReplaceString repl: %p\n", repl);  
+  //printf("CFAttributedStringReplaceString repl: %@\n", repl);  
+  //printf("CFAttributedStringReplaceString str: %@\n", str);  
+  //printf("CFAttributedStringReplaceString str->_string: %@\n", str->_string);  
   //printf("CFAttributedStringReplaceString CFStringGetLength(str->_string): %d\n", CFStringGetLength(str->_string));  
   CFStringReplace ((CFMutableStringRef)str->_string, range, repl);
   //printf("CFAttributedStringReplaceString 2 str: %@\n", str);  
@@ -765,23 +763,36 @@ CFAttributedStringReplaceString (CFMutableAttributedStringRef str,
   while (cur < str->_attribCount)
     str->_attribs[cur++].index += moveAmount;
   
-  //printf("CFAttributedStringReplaceString 7\n");  
   CFAttributedStringCoalesce (str, CFRangeMake (idxS, idxE - idxS));
-  //printf("CFAttributedStringReplaceString 2 str: %@\n", str);  
-  //printf("CFAttributedStringReplaceString 3 str->_string: %@\n", str->_string);  
 }
 
 void
-CFAttributedStringReplaceAttributedString (CFMutableAttributedStringRef str,
+CFAttributedStringReplaceAttributedString (CFMutableAttributedStringRef aStr,
                                            CFRange range,
-                                           CFAttributedStringRef repl)
+                                           CFAttributedStringRef replacement)
 {
-  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+    CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, aStr,
                          "replaceCharactersInRange:withAttributeString:",
-                         range, repl);
+                         range, replacement);
   
-  if (!CFAttributedStringIsMutable(str))
-    return;
+    if (!CFAttributedStringIsMutable(aStr)) {
+        return;
+    }
+    CFStringReplace(aStr->_string, range, replacement->_string);
+    int cur = range.location;
+    CFRange r;
+    printf("CFAttributedStringReplaceAttributedString aStr: %@\n", aStr);  
+    printf("CFAttributedStringReplaceAttributedString range.location: %d\n", range.location);  
+    printf("CFAttributedStringReplaceAttributedString range.length: %d\n", range.length);  
+    do {
+        printf("CFAttributedStringReplaceAttributedString cur: %d\n", cur);  
+        CFDictionaryRef attribs = CFAttributedStringGetAttributes(replacement, cur, &r);
+        cur = r.location + r.length;
+        printf("CFAttributedStringReplaceAttributedString attribs: %@\n", attribs);  
+        r.location += range.location;
+        CFAttributedStringSetAttributes(aStr, r, attribs, true);
+        printf("CFAttributedStringReplaceAttributedString 2 aStr: %@\n", aStr);  
+    } while (cur < range.length);
 }
 
 void

@@ -263,6 +263,7 @@ CFEqual (CFTypeRef cf1, CFTypeRef cf2)
   CFRuntimeClass *cls;
   CFTypeID tID1, tID2;
 
+  //printf("cf1: %@, cf2: %@\n", cf1, cf2);
   if (cf1 == cf2)
     return true;
 
@@ -359,11 +360,9 @@ CFRelease (CFTypeRef cf)
 
       if (!((CFRuntimeBase *) cf)->_flags.ro)
         {
-          //printf("CFRelease 3\n");
           CFIndex result = GSAtomicDecrementCFIndex (&(((obj) cf)[-1].retained));
           if (result < 0)
             {
-              //printf("CFRelease 4\n");
               assert (result == -1);
               GSRuntimeDeallocateInstance (cf);
             }
