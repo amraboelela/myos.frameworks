@@ -19,12 +19,12 @@
 
 #import <Foundation/NSString.h>
 #import <Foundation/NSAttributedString.h>
-#import <CoreFoundation/NSCFType.h>
+#import <CoreFoundation/CoreFoundation-private.h>
 
 #import <Foundation/NSException.h>
-#import <CoreFoundation/CFAttributedString.h>
-#import <CoreFoundation/CFString.h>
-#import <CoreFoundation/CFArray.h>
+//#import <CoreFoundation/CFAttributedString.h>
+//#import <CoreFoundation/CFString.h>
+//#import <CoreFoundation/CFArray.h>
 #import <GNUstepBase/NSDebug+GNUstepBase.h>
 
 @interface NSCFAttributedString : NSMutableAttributedString
@@ -229,9 +229,15 @@
 
 - (NSString *)description
 {
-    //return @"NSCFAttributedString";
-    //return [NSString stringWithFormat:@"<%@: %p; string: %@>", [self className], self, [self string]];
-    return [NSString stringWithFormat:@"<%@: %p; string: %@; attributes: %@>", [self className], self, [self string], (NSDictionary *)CFAttributedStringGetAttributes(self,0,NULL)];
+    (__CFAttributedString *)aStr = self;
+    NSMutableString *attribs = [NSMutableString stringWithString:@"<"];
+    int i;
+    for (i=0; i < aStr->_attribCount-1, i++) {
+        [attribs appendFormat:@"%d: %@, ", aStr->_attribs[i].index, aStr->_attribs[i].attrib];
+    }
+    i = aStr->_attribCount-1;
+    [attribs appendFormat:@"%d: %@>", aStr->_attribs[i].index, aStr->_attribs[i].attrib];
+    return [NSString stringWithFormat:@"<%@: %p; string: %@; attribCount: %d; attributes: %@>", [self className], self, aStr->_string, aStr->__attribCount, attribs];
 }
 
 - (void)addAttribute:(NSString *)name value:(id)value range:(NSRange)aRange

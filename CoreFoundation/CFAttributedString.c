@@ -35,30 +35,6 @@ static CFMutableBagRef _kCFAttributedStringCache = NULL;
 static GSMutex _kCFAttributedStringCacheLock;
 static GSMutex _kCFAttributedStringBlankAttributeLock;
 
-typedef struct
-{
-  CFIndex         index;
-  CFDictionaryRef attrib;
-} Attr;
-
-struct __CFAttributedString
-{
-  CFRuntimeBase parent;
-  CFStringRef   _string;
-  Attr         *_attribs;
-  CFIndex       _attribCount;
-};
-
-struct __CFMutableAttributedString
-{
-  CFRuntimeBase parent;
-  CFMutableStringRef _string;
-  Attr         *_attribs;
-  CFIndex       _attribCount;
-  CFIndex       _attribCap;
-  CFIndex       _isEditing;
-};
-
 enum
 {
   _kCFAttributedStringIsInline =  (1<<0),
@@ -943,4 +919,3 @@ CFAttributedStringSetAttributes (CFMutableAttributedStringRef str,
   //printf("CFAttributedStringSetAttributes 9\n"); 
   CFAttributedStringCoalesce (str, CFRangeMake (idxS, cur));
 }
-
