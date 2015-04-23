@@ -729,6 +729,7 @@ CFAttributedStringRemoveAttribute(CFMutableAttributedStringRef aStr, CFRange ran
     int tmpLength;
     //IMP			getImp;
     
+    printf("CFAttributedStringRemoveAttribute aStr: %@\n", aStr); 
     tmpLength = CFAttributedStringGetLength(aStr);//[self length];
     //GS_RANGE_CHECK(range, tmpLength);
     
@@ -739,7 +740,7 @@ CFAttributedStringRemoveAttribute(CFMutableAttributedStringRef aStr, CFRange ran
     
     //getImp = [self methodForSelector: getSel];
     attrDict = CFAttributedStringGetAttributes(aStr, range.location, &effectiveRange); //(*getImp)(self, getSel, aRange.location, &effectiveRange);
-    
+    printf("CFAttributedStringRemoveAttribute attrDict: %@\n", attrDict); 
     if (effectiveRange.location < CFRangeMaxRange(range)) {
         //IMP	setImp;
         
@@ -748,16 +749,19 @@ CFAttributedStringRemoveAttribute(CFMutableAttributedStringRef aStr, CFRange ran
         //[self beginEditing];
         while (effectiveRange.location < CFRangeMaxRange(range)) {
             effectiveRange = CFRangeIntersection(range, effectiveRange);
+            printf("CFAttributedStringRemoveAttribute effectiveRange: {%d, %d}\n", effectiveRange.location, effectiveRange.length); 
             
             //newDict = (*allocDictImp)(dictionaryClass, allocDictSel, NSDefaultMallocZone());
             //newDict = (*initDictImp)(newDict, initDictSel, attrDict);
             
             newDict = CFDictionaryCreateMutableCopy(NULL, 0, attrDict);
             CFDictionaryRemoveValue(newDict, attrName);
+            printf("CFAttributedStringRemoveAttribute newDict: %@\n", newDict); 
             
             //(*remDictImp)(newDict, remDictSel, name);
             //(*setImp)(self, setSel, newDict, effectiveRange);
             CFAttributedStringSetAttributes(aStr, effectiveRange, newDict, false);
+            printf("CFAttributedStringRemoveAttribute aStr 2: %@\n", aStr); 
             
             //IF_NO_GC((*relDictImp)(newDict, relDictSel));
             
