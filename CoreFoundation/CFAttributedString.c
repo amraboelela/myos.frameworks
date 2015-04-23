@@ -27,6 +27,7 @@
 */
 
 #import <CoreFoundation/CoreFoundation-private.h>
+//#import	"GNUstepBase/GNUstep.h"
 
 static CFTypeID _kCFAttributedStringTypeID = 0;
 static CFDictionaryRef _kCFAttributedStringBlankAttribute = NULL;
@@ -451,6 +452,7 @@ CFAttributedStringGetAttributesAndLongestEffectiveRange (
     if (CFRangeMaxRange(inRange) > CFAttributedStringGetLength(aStr)) {
         //[NSException raise: NSRangeException
         //            format: @"RangeError in method -attributesAtIndex:longestEffectiveRange:inRange: in class NSAttributedString"];
+        printf("CFAttributedStringGetAttributesAndLongestEffectiveRange RangeError\n");
         return nil;
     }
     //getImp = [self methodForSelector: getSel];
@@ -719,15 +721,60 @@ CFAttributedStringGetMutableString (CFMutableAttributedStringRef str)
 }
 
 void
-CFAttributedStringRemoveAttribute (CFMutableAttributedStringRef str,
-                                   CFRange range, CFStringRef attrName)
+CFAttributedStringRemoveAttribute(CFMutableAttributedStringRef aStr, CFRange range, CFStringRef attrName)
 {
-  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
-                         "removeAttribute:range:", attrName, range);
-  
-  if (!CFAttributedStringIsMutable(str))
-    return;
-  /* FIXME */
+    CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, aStr, "removeAttribute:range:", attrName, range);
+    
+    if (!CFAttributedStringIsMutable(aStr)) {
+        printf("CFAttributedStringRemoveAttribute Error: aStr is not CFMutableAttributedString \n");
+        return;
+    }
+    CFRange effectiveRange;
+    CFDictionaryRef attrDict;
+    CFMutableDictionaryRef newDict;
+    int tmpLength;
+    //IMP			getImp;
+    
+    tmpLength = CFAttributedStringGetLength(aStr);//[self length];
+    //GS_RANGE_CHECK(range, tmpLength);
+    
+    if (range.location > tmpLength || range.length > (tmpLength - range.location)) {
+        printf("CFAttributedStringRemoveAttribute Error: range {%d, %d} extends beyond size (%d) \n", range.location, range.length, tmpLength);
+        return;
+    }
+    
+    //getImp = [self methodForSelector: getSel];
+    attrDict = CFAttributedStringGetAttributes(aStr, range.location, &effectiveRange); //(*getImp)(self, getSel, aRange.location, &effectiveRange);
+    
+    if (effectiveRange.location < CFRangeMaxRange(range)) {
+        //IMP	setImp;
+        
+        //setImp = [self methodForSelector: setSel];
+        
+        //[self beginEditing];
+        while (effectiveRange.location < CFRangeMaxRange(range)) {
+            effectiveRange = CFRangeIntersection(range, effectiveRange);
+            
+            //newDict = (*allocDictImp)(dictionaryClass, allocDictSel, NSDefaultMallocZone());
+            //newDict = (*initDictImp)(newDict, initDictSel, attrDict);
+            
+            newDict = CFDictionaryCreateMutableCopy(NULL, 0, attrDict);
+            CFDictionaryRemoveValue(newDict, attrName);
+            
+            //(*remDictImp)(newDict, remDictSel, name);
+            //(*setImp)(self, setSel, newDict, effectiveRange);
+            CFAttributedStringSetAttributes(aStr, effectiveRange, newDict, false);
+            
+            //IF_NO_GC((*relDictImp)(newDict, relDictSel));
+            
+            if (CFRangeMaxRange(effectiveRange) >= CFRangeMaxRange(range)) {
+                effectiveRange.location = CFRangeMaxRange(range);// stop the loop...
+            } else if (CFRangeMaxRange(effectiveRange) < tmpLength) {
+                attrDict = CFAttributedStringGetAttributes(aStr, CFRangeMaxRange(effectiveRange), &effectiveRange);//(*getImp)(self, getSel, CFRangeMaxRange(effectiveRange), &effectiveRange);
+            }
+        }
+        //[self endEditing];
+    }
 }
 
 void
