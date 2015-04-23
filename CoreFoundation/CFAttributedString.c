@@ -718,11 +718,6 @@ CFAttributedStringRemoveAttribute(CFMutableAttributedStringRef aStr, CFRange ran
     attrDict = CFAttributedStringGetAttributes(aStr, range.location, &effectiveRange); //(*getImp)(self, getSel, aRange.location, &effectiveRange);
     printf("CFAttributedStringRemoveAttribute attrDict: %@\n", attrDict); 
     if (effectiveRange.location < CFRangeMaxRange(range)) {
-        //IMP	setImp;
-        
-        //setImp = [self methodForSelector: setSel];
-        
-        //[self beginEditing];
         while (effectiveRange.location < CFRangeMaxRange(range)) {
             effectiveRange = CFRangeIntersection(range, effectiveRange);
             printf("CFAttributedStringRemoveAttribute effectiveRange: {%d, %d}\n", effectiveRange.location, effectiveRange.length); 
@@ -736,7 +731,7 @@ CFAttributedStringRemoveAttribute(CFMutableAttributedStringRef aStr, CFRange ran
             
             //(*remDictImp)(newDict, remDictSel, name);
             //(*setImp)(self, setSel, newDict, effectiveRange);
-            CFAttributedStringSetAttributes(aStr, effectiveRange, newDict, false);
+            CFAttributedStringSetAttributes(aStr, effectiveRange, newDict, true);
             printf("CFAttributedStringRemoveAttribute aStr 2: %@\n", aStr); 
             
             //IF_NO_GC((*relDictImp)(newDict, relDictSel));
@@ -747,7 +742,6 @@ CFAttributedStringRemoveAttribute(CFMutableAttributedStringRef aStr, CFRange ran
                 attrDict = CFAttributedStringGetAttributes(aStr, CFRangeMaxRange(effectiveRange), &effectiveRange);//(*getImp)(self, getSel, CFRangeMaxRange(effectiveRange), &effectiveRange);
             }
         }
-        //[self endEditing];
     }
 }
 
