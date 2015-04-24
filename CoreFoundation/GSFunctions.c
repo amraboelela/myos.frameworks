@@ -1,10 +1,12 @@
 /* GSFunctions.c
    
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    
    Written by: Stefan Bidigaray
    Date: April, 2012
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: April 2015
+
    This file is part of the GNUstep CoreBase Library.
    
    This library is free software; you can redistribute it and/or
@@ -36,12 +38,12 @@ GSBSearch (const void *array, const void *key, CFRange range, CFIndex size,
   const void *cur;
   
   min = range.location;
-  max = min + range.length;
+  max = min + range.length - 1;
   //printf("GSBSearch range.location: %d\n", range.location);  
   //printf("GSBSearch range.length: %d\n", range.length);  
   //printf("GSBSearch min: %d\n", min);  
   //printf("GSBSearch max: %d\n", max);  
-  while (max > min)
+  while (max >= min)
     {
       CFComparisonResult r;
       
@@ -62,7 +64,6 @@ GSBSearch (const void *array, const void *key, CFRange range, CFIndex size,
           break;
         }
     }
-  
-  return min - 1;
+    return min - 1;
 }
 
