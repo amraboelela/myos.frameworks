@@ -329,16 +329,16 @@ CFHashCode
 CFHash (CFTypeRef cf)
 {
   CFRuntimeClass *cls;
-  printf("CFHash 1\n");
+  //printf("CFHash 1\n");
   CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf), CFHashCode, cf, "hash");
 
-  printf("CFHash 2\n");
+  //printf("CFHash 2\n");
   cls = __CFRuntimeClassTable[CFGetTypeID (cf)];
   if (cls->hash) {
-    printf("CFHash 3\n");
+    //printf("CFHash 3\n");
     return cls->hash (cf);
   }
-  printf("CFHash 4\n");
+  //printf("CFHash 4\n");
   return (CFHashCode) ((uintptr_t) cf >> 3);
 }
 
@@ -354,7 +354,6 @@ CFRelease (CFTypeRef cf)
 {
   //printf("CFRelease cf: %x\n", cf);
 #if defined (OBJC_SMALL_OBJECT_MASK)
-//  printf("CFRelease 1\n");
   if (((unsigned long)cf & OBJC_SMALL_OBJECT_MASK) == 0)
 #endif
     {
