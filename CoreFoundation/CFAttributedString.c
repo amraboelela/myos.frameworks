@@ -683,35 +683,36 @@ void
 CFAttributedStringReplaceString (CFMutableAttributedStringRef str,
                                  CFRange range, CFStringRef repl)
 {
-  CFIndex idxS;
-  CFIndex idxE;
-  CFIndex cur;
-  CFIndex moveAmount;
-  
-  CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
-                         "replaceCharactersInRange:withString:", range, repl);
-  
-  if (!CFAttributedStringIsMutable(str))
-    return;
-  
-  //printf("CFAttributedStringReplaceString repl: %@\n", repl);  
-  //printf("CFAttributedStringReplaceString str: %@\n", str);  
-  //printf("CFAttributedStringReplaceString CFStringGetLength(str->_string): %d\n", CFStringGetLength(str->_string));  
-  CFStringReplace ((CFMutableStringRef)str->_string, range, repl);
-  //printf("CFAttributedStringReplaceString 2 str: %@\n", str);  
-  idxS = CFAttributedStringArrayGetIndex (str, range.location, NULL);
-  idxE = CFAttributedStringArrayGetIndex (str,
-                                          range.location + range.length,
-                                          NULL);
-  RemoveAttributesAtIndex (str, CFRangeMake (idxS, idxE - idxS));
-  
-  /* Need to move the attributes */
-  moveAmount = CFStringGetLength (repl) - range.length;
-  cur = idxS + 1;
-  while (cur < str->_attribCount)
-    str->_attribs[cur++].index += moveAmount;
-  
-  CFAttributedStringCoalesce (str, CFRangeMake (idxS, idxE - idxS));
+    CFIndex idxS;
+    CFIndex idxE;
+    CFIndex cur;
+    CFIndex moveAmount;
+    
+    CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, str,
+                           "replaceCharactersInRange:withString:", range, repl);
+    
+    if (!CFAttributedStringIsMutable(str))
+        return;
+    
+    //printf("CFAttributedStringReplaceString repl: %@\n", repl);
+    //printf("CFAttributedStringReplaceString str: %@\n", str);
+    //printf("CFAttributedStringReplaceString CFStringGetLength(str->_string): %d\n", CFStringGetLength(str->_string));
+    CFStringReplace ((CFMutableStringRef)str->_string, range, repl);
+    //printf("CFAttributedStringReplaceString 2 str: %@\n", str);
+    idxS = CFAttributedStringArrayGetIndex (str, range.location, NULL);
+    idxE = CFAttributedStringArrayGetIndex (str,
+                                            range.location + range.length,
+                                            NULL);
+    //RemoveAttributesAtIndex (str, CFRangeMake (idxS, idxE - idxS));
+    CFDictionaryRef emptyAttributes =  CFDictionaryCreateMutable(NULL, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFAttributedStringSetAttributes(str, range, emptyAttributes, true);
+    /* Need to move the attributes */
+    moveAmount = CFStringGetLength (repl) - range.length;
+    cur = idxS + 1;
+    while (cur < str->_attribCount)
+        str->_attribs[cur++].index += moveAmount;
+    
+    CFAttributedStringCoalesce (str, CFRangeMake (idxS, idxE - idxS));
 }
 
 void
@@ -749,7 +750,7 @@ CFAttributedStringReplaceAttributedString (CFMutableAttributedStringRef aStr,
             printf("CFAttributedStringReplaceAttributedString attrDict: %@\n", attrDict);
             printf("CFAttributedStringReplaceAttributedString ownRange: {%d,%d}\n", ownRange.location, ownRange.length);
             printf("CFAttributedStringReplaceAttributedString 2 aStr: %@\n", aStr);
-            
+
         }
     }
 }
