@@ -37,7 +37,6 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
     CGSize drawSize = CGSizeZero;
     if (font) {
         CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(NULL, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        //CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(NULL, 2, &kCFCopyStringDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         CFDictionarySetValue(attributes, kCTFontAttributeName, font->_font);
         CFDictionarySetValue(attributes, kCTForegroundColorFromContextAttributeName, kCFBooleanTrue);
         

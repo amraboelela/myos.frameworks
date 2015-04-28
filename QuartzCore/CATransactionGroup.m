@@ -38,9 +38,6 @@
         //DLog(@"CFRetain(number): %@", CFRetain(number));
         //DLog(@"[number retainCount]: %d", [number retainCount]);
         //DLog(@"_values: %@", _values);
-        //fprintf(stderr, "stderr\n");
-        //printf("Hello World1\n");
-        //fprintf(stdout, "stdout");
         //GSHashTableSetValue(_values, kCATransactionAnimationDuration, number);
         //DLog(@"_values: %@", _values);
         //DLog();

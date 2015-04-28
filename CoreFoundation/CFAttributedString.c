@@ -67,70 +67,6 @@ CFAttributedStringSetMutable (CFAttributedStringRef str)
   ((CFRuntimeBase *)str)->_flags.info |= _kCFAttributedStringIsMutable;
 }
 
-/*static CFDictionaryRef
-CFAttributedStringCacheAttribute (CFDictionaryRef attribs)
-{
-  CFDictionaryRef cachedAttr = NULL;
-  
-  GSMutexLock (&_kCFAttributedStringCacheLock);
-  
-  if (_kCFAttributedStringCache == NULL)
-    {
-      _kCFAttributedStringCache =
-        CFBagCreateMutable (kCFAllocatorSystemDefault, 0, &kCFTypeBagCallBacks);
-    }
-  else
-    {
-      cachedAttr = CFBagGetValue (_kCFAttributedStringCache, attribs);
-    }
-  
-  if (cachedAttr == NULL)
-    {
-      CFDictionaryRef insert;
-      
-      insert = CFDictionaryCreateCopy (NULL, attribs);
-      CFBagAddValue (_kCFAttributedStringCache, insert);
-      cachedAttr = insert;
-      CFRelease (insert);
-    }
-  
-  GSMutexUnlock (&_kCFAttributedStringCacheLock);
-  
-  return cachedAttr;
-}
-
-static void
-CFAttributedStringUncacheAttribute (CFDictionaryRef attribs)
-{
-    GSMutexLock (&_kCFAttributedStringCacheLock);
-    
-    CFBagRemoveValue (_kCFAttributedStringCache, attribs);
-    
-    GSMutexUnlock (&_kCFAttributedStringCacheLock);
-}
-
-static CFDictionaryRef
-CFAttributedStringGetBlankAttribute (void)
-{
-  if (_kCFAttributedStringBlankAttribute == NULL)
-    {
-      GSMutexLock (&_kCFAttributedStringBlankAttributeLock);
-      if (_kCFAttributedStringBlankAttribute == NULL)
-        {
-          _kCFAttributedStringBlankAttribute = CFDictionaryCreate (NULL,
-            NULL, NULL, 0,
-            &kCFCopyStringDictionaryKeyCallBacks,
-            &kCFTypeDictionaryValueCallBacks);
-          Cache the blank attribute in case anyone wants to use it.
-          CFAttributedStringCacheAttribute (_kCFAttributedStringBlankAttribute);
-          CFRelease (_kCFAttributedStringBlankAttribute);
-        }
-      GSMutexUnlock (&_kCFAttributedStringBlankAttributeLock);
-    }
-  
-  return CFAttributedStringCacheAttribute (_kCFAttributedStringBlankAttribute);
-}*/
-
 static CFComparisonResult
 CFAttributedStringCompareAttribute (const void *v1, const void *v2, void *ctxt)
 {
@@ -611,24 +547,24 @@ CFAttributedStringCoalesce (CFMutableAttributedStringRef str, CFRange range)
 CFMutableAttributedStringRef
 CFAttributedStringCreateMutable (CFAllocatorRef alloc, CFIndex maxLength)
 {
-  struct __CFMutableAttributedString *new;
-  
-  new = (struct __CFMutableAttributedString*)_CFRuntimeCreateInstance (alloc,
-    _kCFAttributedStringTypeID, CFMUTABLEATTRIBUTESTRING_SIZE, 0);
-  if (new)
+    struct __CFMutableAttributedString *new;
+    
+    new = (struct __CFMutableAttributedString*)_CFRuntimeCreateInstance (alloc,
+                                                                         _kCFAttributedStringTypeID, CFMUTABLEATTRIBUTESTRING_SIZE, 0);
+    if (new)
     {
-      new->_string = CFStringCreateMutable (alloc, maxLength);
-      /* Minimum size is 8 */
-      new->_attribCap = 8;
-      new->_attribs = (Attr*)CFAllocatorAllocate (alloc, sizeof(Attr) * 8, 0);
-      new->_attribCount = 1;
-      new->_attribs[0].index = 0;
-      new->_attribs[0].attrib = CFDictionaryCreateMutable (alloc, 16, &kCFTypeDictionaryValueCallBacks,NULL);
-      
-      CFAttributedStringSetMutable ((CFAttributedStringRef)new);
+        new->_string = CFStringCreateMutable (alloc, maxLength);
+        /* Minimum size is 8 */
+        new->_attribCap = 8;
+        new->_attribs = (Attr*)CFAllocatorAllocate (alloc, sizeof(Attr) * 8, 0);
+        new->_attribCount = 1;
+        new->_attribs[0].index = 0;
+        new->_attribs[0].attrib = CFDictionaryCreateMutable(alloc, 16, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks); // CFDictionaryCreateMutable (alloc, 16, &kCFTypeDictionaryValueCallBacks,NULL);
+        
+        CFAttributedStringSetMutable ((CFAttributedStringRef)new);
     }
-  
-  return (CFMutableAttributedStringRef)new;
+    
+    return (CFMutableAttributedStringRef)new;
 }
 
 CFMutableAttributedStringRef
