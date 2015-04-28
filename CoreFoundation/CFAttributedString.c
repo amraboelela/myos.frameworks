@@ -290,7 +290,7 @@ CFAttributedStringGetLength (CFAttributedStringRef str)
 {
   CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, CFIndex, str, "length");
   
-  return CFStringGetLength (str->_string);
+  return CFStringGetLength(str->_string);
 }
 
 CFStringRef
@@ -718,30 +718,35 @@ CFAttributedStringReplaceAttributedString (CFMutableAttributedStringRef aStr,
     CF_OBJC_FUNCDISPATCHV (_kCFAttributedStringTypeID, void, aStr,
                          "replaceCharactersInRange:withAttributeString:",
                          range, replacement);
-  
-    if (!CFAttributedStringIsMutable(aStr)) {
+    
+    printf("CFAttributedStringReplaceAttributedString aStr: %@\n", aStr);
+    if (replacement == nil) {
+        CFAttributedStringReplaceString(self, range, nil);
         return;
     }
-    int cur = 0;
-    CFRange ra;
-    CFRange r;
-    printf("CFAttributedStringReplaceAttributedString aStr: %@\n", aStr);  
-    printf("CFAttributedStringReplaceAttributedString range.location: %d\n", range.location);  
-    CFDictionaryRef attribsa = CFAttributedStringGetAttributes(aStr, range.location, &ra);
-    printf("CFAttributedStringReplaceAttributedString attribsa: %@\n", attribsa);  
-    printf("CFAttributedStringReplaceAttributedString ra.location: %d\n", ra.location);  
-    CFStringReplace(aStr->_string, range, replacement->_string);
-    do {
-        printf("CFAttributedStringReplaceAttributedString cur: %d\n", cur);  
-        CFDictionaryRef attribs = CFAttributedStringGetAttributes(replacement, cur, &r);
-        cur = r.location + r.length;
-        printf("CFAttributedStringReplaceAttributedString attribs: %@\n", attribs);  
-        r.location += range.location;
-        r.length += ra.length - (range.location - ra.location);
-        printf("CFAttributedStringReplaceAttributedString r: {%d,%d}\n", r.location, r.length);  
-        CFAttributedStringSetAttributes(aStr, r, attribs, true);
-        printf("CFAttributedStringReplaceAttributedString 2 aStr: %@\n", aStr);  
-    } while (cur < range.length);
+    CFStringRef tmpStr = replacement->_string;
+    CFAttributedStringReplaceString(self, range, tmpStr);
+    int max = CFStringGetLength(tmpStr);// [tmpStr length];
+    
+    if (max > 0) {
+        unsigned loc = 0;
+        CFRange	effectiveRange = CFRangeMake(0, loc);
+        CFRange	clipRange = CFRangeMake(0, max);
+        
+        while (loc < max) {
+            CFDictionaryRef attrDict = CFAttributedStringGetAttributes(replacement, loc, &effectiveRange);//(*getImp)(attributedString, getSel, loc, &effectiveRange);
+            CFRange ownRange = CFRangeIntersection(clipRange, effectiveRange);
+            ownRange.location += aRange.location;
+            CFAttributedStringSetAttributes(aStr, ownRange, attrDict, true);
+            loc = CFRangeMaxRange(effectiveRange);
+            
+            printf("CFAttributedStringReplaceAttributedString loc: %d\n", loc);
+            printf("CFAttributedStringReplaceAttributedString attrDict: %@\n", attrDict);
+            printf("CFAttributedStringReplaceAttributedString ownRange: {%d,%d}\n", ownRange.location, ownRange.length);
+            printf("CFAttributedStringReplaceAttributedString 2 aStr: %@\n", aStr);
+            
+        }
+    }
 }
 
 void
