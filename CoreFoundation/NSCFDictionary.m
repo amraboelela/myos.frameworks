@@ -162,6 +162,7 @@ NSCFTYPE_VARS
 
 - (id)valueForKey:(NSString *)key
 {
+  NSLog(@"key: %@", key);
   return (id) CFDictionaryGetValue(self, (const void*) key);
 }
 
