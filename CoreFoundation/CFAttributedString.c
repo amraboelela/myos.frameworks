@@ -691,15 +691,16 @@ CFAttributedStringReplaceString (CFMutableAttributedStringRef str,
     return;
   
   //printf("CFAttributedStringReplaceString repl: %@\n", repl);  
-  //printf("CFAttributedStringReplaceString str: %@\n", str);  
-  //printf("CFAttributedStringReplaceString CFStringGetLength(str->_string): %d\n", CFStringGetLength(str->_string));  
+  printf("CFAttributedStringReplaceString str: %@\n", str);  
+  //printf("CFAttributedStringReplaceString range: {%d,%d}\n", range.location, range.length);  
   CFStringReplace ((CFMutableStringRef)str->_string, range, repl);
-  //printf("CFAttributedStringReplaceString 2 str: %@\n", str);  
+  printf("CFAttributedStringReplaceString 2 str: %@\n", str);  
   idxS = CFAttributedStringArrayGetIndex (str, range.location, NULL);
   idxE = CFAttributedStringArrayGetIndex (str,
                                           range.location + range.length,
                                           NULL);
   RemoveAttributesAtIndex (str, CFRangeMake (idxS, idxE - idxS));
+  printf("CFAttributedStringReplaceString 3 str: %@\n", str);  
   
   /* Need to move the attributes */
   moveAmount = CFStringGetLength (repl) - range.length;
@@ -720,13 +721,16 @@ CFAttributedStringReplaceAttributedString (CFMutableAttributedStringRef aStr,
                          range, replacement);
     
     printf("CFAttributedStringReplaceAttributedString aStr: %@\n", aStr);
+    printf("CFAttributedStringReplaceAttributedString range: {%d,%d}\n", range.location, range.length);  
+    printf("CFAttributedStringReplaceAttributedString replacement: %@\n", replacement);
     if (replacement == nil) {
-        CFAttributedStringReplaceString(self, range, nil);
+        CFAttributedStringReplaceString(aStr, range, nil);
         return;
     }
     CFStringRef tmpStr = replacement->_string;
-    CFAttributedStringReplaceString(self, range, tmpStr);
-    int max = CFStringGetLength(tmpStr);// [tmpStr length];
+    CFAttributedStringReplaceString(aStr, range, tmpStr);
+    printf("CFAttributedStringReplaceAttributedString 2 aStr: %@\n", aStr);
+    int max = CFStringGetLength(tmpStr);
     
     if (max > 0) {
         unsigned loc = 0;
@@ -734,17 +738,16 @@ CFAttributedStringReplaceAttributedString (CFMutableAttributedStringRef aStr,
         CFRange	clipRange = CFRangeMake(0, max);
         
         while (loc < max) {
-            CFDictionaryRef attrDict = CFAttributedStringGetAttributes(replacement, loc, &effectiveRange);//(*getImp)(attributedString, getSel, loc, &effectiveRange);
+            CFDictionaryRef attrDict = CFAttributedStringGetAttributes(replacement, loc, &effectiveRange);
             CFRange ownRange = CFRangeIntersection(clipRange, effectiveRange);
-            ownRange.location += aRange.location;
+            ownRange.location += range.location;
             CFAttributedStringSetAttributes(aStr, ownRange, attrDict, true);
             loc = CFRangeMaxRange(effectiveRange);
             
             printf("CFAttributedStringReplaceAttributedString loc: %d\n", loc);
             printf("CFAttributedStringReplaceAttributedString attrDict: %@\n", attrDict);
             printf("CFAttributedStringReplaceAttributedString ownRange: {%d,%d}\n", ownRange.location, ownRange.length);
-            printf("CFAttributedStringReplaceAttributedString 2 aStr: %@\n", aStr);
-            
+            printf("CFAttributedStringReplaceAttributedString 3 aStr: %@\n", aStr);
         }
     }
 }

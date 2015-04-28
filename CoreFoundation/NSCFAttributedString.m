@@ -369,6 +369,7 @@
                                   userInfo: self];
         [e raise];
     }
+    //DLog(@"aRange: {%d,%d}", aRange.location, aRange.length);
     CFAttributedStringReplaceAttributedString (self, CFRangeMake(aRange.location,aRange.length),attributedString);
     
 }
