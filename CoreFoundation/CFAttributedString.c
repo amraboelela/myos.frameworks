@@ -73,7 +73,6 @@ CFAttributedStringCompareAttribute (const void *v1, const void *v2, void *ctxt)
   Attr *attr1 = (Attr*)v1;
   Attr *attr2 = (Attr*)v2;
   //printf("CFAttributedStringCompareAttribute attr1: {%d: %p}\n", attr1->index, attr1->attrib); 
-  //printf("CFAttributedStringCompareAttribute attr2: {%d: %p}\n", attr2->index, attr2->attrib); 
   return attr1->index < attr2->index ? kCFCompareLessThan :
     (attr1->index == attr2->index ? kCFCompareEqualTo : kCFCompareGreaterThan);
 }
@@ -117,12 +116,10 @@ CFAttributedStringFinalize (CFTypeRef cf)
 {
     CFIndex idx;
     CFAttributedStringRef str = (CFAttributedStringRef)cf;
-    //printf("CFAttributedStringFinalize str: %@\n", str);
     CFRelease(str->_string);
     for (idx = 0; idx < str->_attribCount; ++idx) {
         //printf("CFAttributedStringFinalize idx: %d\n", idx);
         //printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %p\n", str->_attribs[idx].attrib);
-        //printf("CFAttributedStringFinalize str->_attribs[idx].attrib: %p, CFGetRetainCount(str->_attribs[idx].attrib): %d\n", str->_attribs[idx].attrib, CFGetRetainCount(str->_attribs[idx].attrib));
         CFRelease(str->_attribs[idx].attrib);// CFAttributedStringUncacheAttribute (str->_attribs[idx].attrib);
     }
     if (!CFAttributedStringIsInline(str)) {
@@ -312,7 +309,7 @@ CFAttributedStringGetAttribute (CFAttributedStringRef str, CFIndex loc,
     CFDictionaryRef attribs;
   
     attribs = CFAttributedStringGetAttributes(str, loc, effRange);
-    printf("CFAttributedStringGetAttribute attribs: %@\n", attribs);
+    //printf("CFAttributedStringGetAttribute attribs: %@\n", attribs);
     return CFDictionaryGetValue(attribs, attrName);
 }
 
@@ -328,7 +325,6 @@ CFAttributedStringGetAttributes (CFAttributedStringRef str, CFIndex loc,
   //printf("CFAttributedStringGetAttributes str->_string: %@\n", str->_string);  
   //printf("CFAttributedStringGetAttributes loc: %d\n", loc);  
   idx = CFAttributedStringArrayGetIndex (str, loc, effRange);
-  //printf("CFAttributedStringGetAttributes idx: %d\n", idx);  
   //printf("CFAttributedStringGetAttributes str->_attribs[idx].attrib: %p; CFGetRetainCount(str->_attribs[idx].attrib): %d\n", str->_attribs[idx].attrib, CFGetRetainCount(str->_attribs[idx].attrib)); 
   return str->_attribs[idx].attrib;
 }
@@ -731,7 +727,6 @@ CFAttributedStringReplaceAttributedString (CFMutableAttributedStringRef aStr,
     }
     CFStringRef tmpStr = replacement->_string;
     CFAttributedStringReplaceString(self, range, tmpStr);
-    //[self replaceCharactersInRange: aRange withString: tmpStr];
     int max = CFStringGetLength(tmpStr);// [tmpStr length];
     
     if (max > 0) {

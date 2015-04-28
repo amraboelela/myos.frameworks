@@ -380,7 +380,7 @@
     CFAttributedStringReplaceAttributedString(self, CFRangeMake(0,CFAttributedStringGetLength(self)),attributedString);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
     CFRelease(self);
 }
