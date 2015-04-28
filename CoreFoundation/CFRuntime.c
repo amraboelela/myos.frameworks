@@ -329,13 +329,16 @@ CFHashCode
 CFHash (CFTypeRef cf)
 {
   CFRuntimeClass *cls;
-
+  printf("CFHash 1\n");
   CF_OBJC_FUNCDISPATCHV (CFGetTypeID (cf), CFHashCode, cf, "hash");
 
+  printf("CFHash 2\n");
   cls = __CFRuntimeClassTable[CFGetTypeID (cf)];
-  if (cls->hash)
+  if (cls->hash) {
+    printf("CFHash 3\n");
     return cls->hash (cf);
-
+  }
+  printf("CFHash 4\n");
   return (CFHashCode) ((uintptr_t) cf >> 3);
 }
 
