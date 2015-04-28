@@ -376,7 +376,8 @@
 - (void)setAttributedString:(NSAttributedString *)attributedString
 {
     //[self release];
-    self = CFAttributedStringCreateMutableCopy (NULL,0,attributedString);
+    //self = CFAttributedStringCreateMutableCopy (NULL,0,attributedString);
+    CFAttributedStringReplaceAttributedString(self, CFRangeMake(0,CFAttributedStringGetLength(self)),attributedString);
 }
 
 - (void) dealloc
