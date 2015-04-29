@@ -30,6 +30,7 @@
 #import <Foundation/NSArray.h>
 #import <Foundation/NSException.h>
 #import <CoreFoundation/CFArray.h>
+#import <GNUstepBase/NSDebug+GNUstepBase.h>
 
 #include "NSCFType.h"
 #include "CoreFoundation/CFDictionary.h"
@@ -272,9 +273,20 @@ NSCFTYPE_VARS
   CFDictionaryRemoveAllValues((CFMutableDictionaryRef) self);
 }
 
-- (NSString *)description
+- (NSString *)descriptionWithLocale:(id)local indent:(NSUInteger)level
 {
-    return [super description];
+    //return [super description];
+    int count = CFDictionaryGetCount(self);
+    NSMutableString *attribs = [NSMutableString stringWithString:@"{"];
+    for (id key in [self allKeys]) {
+        if (count==1) {
+            [attribs appendFormat:@"%@: %@}", key, [self objectForKey:key]];
+        } else {
+            [attribs appendFormat:@"%@: %@, ", key, [self objectForKey:key]];
+        }
+        count--;
+    }
+    return [NSString stringWithFormat:@"%@", attribs];
 }
 
 @end

@@ -135,6 +135,7 @@ void NSCFInitialize (void)
     }
     return [super description];
     //return [NSString stringWithFormat:@"<%@: %p; string: %@>", [self className], self, [self string]];
+    //return [NSString stringWithFormat:@"<%@>", [self className]];
     //return [NSString stringWithFormat:@"<%@: %p; string: %@; attributes: %@>", [self className], self, [self string], (NSDictionary *)CFAttributedStringGetAttributes(self,0,NULL)];
 }
 

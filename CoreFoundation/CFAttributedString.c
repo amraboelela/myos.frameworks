@@ -480,6 +480,7 @@ RemoveAttributesAtIndex (CFMutableAttributedStringRef str, CFRange range)
         
         cur = &working->_attribs[range.location];
         next = cur + range.length;
+        //printf("RemoveAttributesAtIndex cur2, next, stop2: %d, %d, %d\n", cur2, next, stop2);
         stop = cur + (working->_attribCount - (range.location + range.length) - 1);
         //printf("RemoveAttributesAtIndex cur, next, stop: %d, %d, %d\n", cur, next, stop);
         //printf("RemoveAttributesAtIndex 4 str: %@\n", str);
