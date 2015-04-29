@@ -1,9 +1,11 @@
 /** NSDictionary - Dictionary object to store key/value pairs
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-2015 Free Software Foundation, Inc.
 
    Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
    From skeleton by:  Adam Fedor <fedor@boulder.colorado.edu>
    Date: Mar 1995
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2015
 
    This file is part of the GNUstep Base Library.
 
@@ -1196,10 +1198,26 @@ compareIt(id o1, id o2, void* context)
 - (NSString*) descriptionWithLocale: (id)locale
 			     indent: (NSUInteger)level
 {
-  NSMutableString	*result = nil;
+//  NSMutableString	*result = nil;
 
-  GSPropertyListMake(self, locale, NO, YES, level == 1 ? 3 : 2, &result);
-  return result;
+//  GSPropertyListMake(self, locale, NO, YES, level == 1 ? 3 : 2, &result);
+//  return result;
+
+    int count = [self count];
+    NSMutableString *attribs = [NSMutableString stringWithString:@"{"];
+    if (count==0) {
+        [attribs appendFormat:@"}"];
+    } else {
+        for (id key in [self allKeys]) {
+            if (count==1) {
+                [attribs appendFormat:@"%@: %@}", key, [self objectForKey:key]];
+            } else {
+                [attribs appendFormat:@"%@: %@, ", key, [self objectForKey:key]];
+            }
+            count--;
+        }
+    }
+    return [NSString stringWithFormat:@"%@", attribs];
 }
 
 /**
