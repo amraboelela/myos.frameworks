@@ -275,16 +275,19 @@ NSCFTYPE_VARS
 
 - (NSString *)descriptionWithLocale:(id)local indent:(NSUInteger)level
 {
-    //return [super description];
     int count = CFDictionaryGetCount(self);
     NSMutableString *attribs = [NSMutableString stringWithString:@"{"];
-    for (id key in [self allKeys]) {
-        if (count==1) {
-            [attribs appendFormat:@"%@: %@}", key, [self objectForKey:key]];
-        } else {
-            [attribs appendFormat:@"%@: %@, ", key, [self objectForKey:key]];
+    if (count==0) {
+        [attribs appendFormat:@"}"];
+    } else {
+        for (id key in [self allKeys]) {
+            if (count==1) {
+                [attribs appendFormat:@"%@: %@}", key, [self objectForKey:key]];
+            } else {
+                [attribs appendFormat:@"%@: %@, ", key, [self objectForKey:key]];
+            }
+            count--;
         }
-        count--;
     }
     return [NSString stringWithFormat:@"%@", attribs];
 }
