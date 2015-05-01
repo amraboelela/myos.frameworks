@@ -1,20 +1,32 @@
-/*
- Copyright © 2012-2015 myOS Group.
- 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2 of the License, or (at your option) any later version.
- 
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- Lesser General Public License for more details.
- 
- Contributor(s):
- Ahmed Elmorsy <ahmedelmorsy89@gmail.com>
- Amr Aboelela <amraboelela@gmail.com>
- */
+/* NSCFSet.m
+   
+   Copyright (C) 2012-2015 Free Software Foundation, Inc.
+   
+   Written by: Ahmed Elmorsy <ahmedelmorsy89@gmail.com>
+   Date: August, 2012
+   Modified by: Lubos Dolezel
+   Date: March, 2013
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: April, 2015
+   
+   This file is part of GNUstep CoreBase Library.
+   
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; see the file COPYING.LIB.
+   If not, see <http://www.gnu.org/licenses/> or write to the 
+   Free Software Foundation, 51 Franklin Street, Fifth Floor, 
+   Boston, MA 02110-1301, USA.
+*/
 
 #import <Foundation/NSSet.h>
 #import <Foundation/NSArray.h>
@@ -246,6 +258,35 @@ NSCFTYPE_VARS
 {
     RELEASE(set);
     [super dealloc];
+}
+
+@end
+
+@implementation NSSet (CoreBaseAdditions)
+- (CFTypeID) _cfTypeID
+{
+  return CFSetGetTypeID();
+}
+
+- (id) _cfGetValue: (id) value
+{
+  NSEnumerator *enuM = [self objectEnumerator];
+  id elem;
+  
+  while ((elem = [enuM nextObject]))
+    {
+      if ([elem isEqual: value])
+        return elem;
+    }
+    
+  return NULL;
+}
+
+- (void) _cfGetValues: (id[]) values
+{
+  NSArray *array = [self allObjects];
+  [array getObjects: values
+              range: NSMakeRange(0, [self count])];
 }
 
 @end
