@@ -4,7 +4,7 @@
    
    Written by: Ahmed Elmorsy <ahmedelmorsy89@gmail.com>
    Date: August, 2012
-   Modified by: Lubos Dolezel
+   Rewritten by: Lubos Dolezel
    Date: March, 2013
    Modified by: Amr Aboelela <amraboelela@gmail.com>
    Date: April, 2015
