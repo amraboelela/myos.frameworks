@@ -1,9 +1,11 @@
 /* CFSet.c
    
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011-2015 Free Software Foundation, Inc.
    
    Written by: Stefan Bidigaray
    Date: November, 2011
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: April, 2015
    
    This file is part of GNUstep CoreBase Library.
    
@@ -116,17 +118,23 @@ CFSetCreateCopy (CFAllocatorRef allocator, CFSetRef set)
 {
   if (CF_IS_OBJC (_kCFSetTypeID, set))
     {
+      //printf("CFSetCreateCopy 1\n");
       CFSetRef result;
+      //printf("CFSetCreateCopy 2\n");
       const CFIndex count = CFSetGetCount (set);
       void **values =
         (void **) CFAllocatorAllocate (allocator, sizeof (void *) * count, 0);
+      //printf("CFSetCreateCopy 3\n");
 
       CFSetGetValues (set, (const void **) values);
+      //printf("CFSetCreateCopy 3.1\n");
       result =
         CFSetCreate (allocator, (const void **) values, count,
                      &kCFTypeSetCallBacks);
+      //printf("CFSetCreateCopy 4\n");
 
       CFAllocatorDeallocate (allocator, (void *) values);
+      //printf("CFSetCreateCopy 5\n");
       return result;
     }
 
@@ -179,8 +187,10 @@ CFSetGetCountOfValue (CFSetRef set, const void *value)
 void
 CFSetGetValues (CFSetRef set, const void **values)
 {
+  //printf("CFSetGetValues 1\n");
   CF_OBJC_FUNCDISPATCHV (_kCFSetTypeID, void, set, "_cfGetValues:", values);
 
+  //printf("CFSetGetValues 2\n");
   GSHashTableGetKeysAndValues ((GSHashTableRef) set, values, NULL);
 }
 
