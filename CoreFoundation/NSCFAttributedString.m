@@ -86,9 +86,9 @@
     CFIndex length = CFAttributedStringGetLength(self);
     if (index >= length ) {
         NSException *e;
-        e = [NSException exceptionWithName:  NSRangeException
-                                    reason: @"index lies beyond the out of the receiver’s characters"
-                                  userInfo: self];
+        e = [NSException exceptionWithName:NSRangeException
+                                    reason:@"index is out of range of the receiver’s characters in method attributesAtIndex:effectiveRange:"
+                                  userInfo:self];
         
         [e raise];
     }
@@ -109,9 +109,9 @@
     CFIndex length = CFAttributedStringGetLength(self);
     if (index >= length ) {
         NSException *e;
-        e = [NSException exceptionWithName:  NSRangeException
-                                    reason: @"index lies beyond the out of the receiver’s characters"
-                                  userInfo: self];
+        e = [NSException exceptionWithName:NSRangeException
+                                    reason:@"index is out of range of the receiver’s characters in method attribute:atIndex:effectiveRange:"
+                                  userInfo:self];
         [e raise];
     }
     CFRange range = CFRangeMake(0,0);
@@ -129,9 +129,9 @@
     
     if (index >= length) {
         NSException *e;
-        e = [NSException exceptionWithName:  NSRangeException
-                                    reason: @"index lies beyond the out of the receiver’s characters"
-                                  userInfo: self];
+        e = [NSException exceptionWithName:NSRangeException
+                                    reason:@"index is out of range of the receiver’s characters in method attribute:atIndex:longestEffectiveRange:inRange:"
+                                  userInfo:self];
         [e raise];
     }
     CFRange range = CFRangeMake(0,0);
@@ -149,9 +149,9 @@
 
     if (index >= length) {
         NSException *e;
-        e = [NSException exceptionWithName:  NSRangeException
-                                    reason: @"index lies beyond the out of the receiver's characters"
-                                  userInfo: self];
+        e = [NSException exceptionWithName:NSRangeException
+                                    reason:@"index is out of range of the receiver’s characters in method attributesAtIndex:longestEffectiveRange:inRange:"
+                                  userInfo:self];
         [e raise];
     }
 
@@ -169,9 +169,9 @@
     CFIndex length = CFAttributedStringGetLength(self);
     if (aRange.location < 0 || aRange.location + aRange.length >= length) {
         NSException *e;
-        e = [NSException exceptionWithName:  NSRangeException
-                                    reason: @"index lies beyond the out of the receiver's characters"
-                                  userInfo: self];
+        e = [NSException exceptionWithName:NSRangeException
+                                    reason:@"index is out of range of the receiver's characters"
+                                  userInfo:self];
         [e raise];
     }
     
@@ -210,9 +210,9 @@
     CFIndex length = CFAttributedStringGetLength(self);
     if (aRange.location < 0 ||aRange.location + aRange.length >= length) {
         NSException *e;
-        e = [NSException exceptionWithName:  NSRangeException 
-                                    reason: @"aRange lies beyond the end of the receiver’s characters."
-                                  userInfo: self];
+        e = [NSException exceptionWithName:NSRangeException
+                                    reason:@"aRange lies beyond the end of the receiver’s characters."
+                                  userInfo:self];
         [e raise];
     }
      CFAttributedStringReplaceString (self,CFRangeMake(aRange.location,aRange.length),@"");
