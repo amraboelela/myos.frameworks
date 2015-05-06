@@ -194,9 +194,9 @@ CTLineRef CTLineCreateWithAttributedString(CFAttributedStringRef string)
 {
     //DLog();
     CTTypesetterRef ts = CTTypesetterCreateWithAttributedString(string);
-    DLog(@"ts: %@", ts);
+    //DLog(@"ts: %@", ts);
     CTLineRef line = CTTypesetterCreateLine(ts, CFRangeMake(0, CFAttributedStringGetLength(string)));
-    DLog(@"line: %@", line);
+    //DLog(@"line: %@", line);
     [ts release];
     return line;
 }
