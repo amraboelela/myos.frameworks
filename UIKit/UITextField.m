@@ -34,12 +34,6 @@ NSString *const UITextFieldTextDidBeginEditingNotification = @"UITextFieldTextDi
 NSString *const UITextFieldTextDidChangeNotification = @"UITextFieldTextDidChangeNotification";
 NSString *const UITextFieldTextDidEndEditingNotification = @"UITextFieldTextDidEndEditingNotification";
 
-//@interface UIControl () <UITextLayerContainerViewProtocol>
-//@end
-
-//@interface UITextField () <UITextLayerTextDelegate>
-//@end
-
 @implementation UITextField
 
 @synthesize delegate=_delegate, background=_background, disabledBackground=_disabledBackground, editing=_editing, clearsOnBeginEditing=_clearsOnBeginEditing;

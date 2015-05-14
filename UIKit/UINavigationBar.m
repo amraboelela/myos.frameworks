@@ -31,17 +31,12 @@
 #import <QuartzCore/QuartzCore-private.h>
 
 static const UIEdgeInsets kButtonEdgeInsets = {0,0,0,3};
-//static const CGFloat kMinButtonWidth = 30;
-//static const CGFloat kMaxButtonWidth = 200;
-//static const CGFloat kMaxButtonHeight = 24;
 
 #define kMinButtonWidth     30
 #define kMaxButtonWidth     200
 #define kMinButtonHeight    20
 #define kMaxButtonHeight    24
 #define kAnimationDuration  0.33
-
-//static const NSTimeInterval kAnimationDuration = 0.33;
 
 typedef enum {
     _UINavigationBarTransitionPush,
