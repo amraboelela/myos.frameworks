@@ -30,6 +30,7 @@
 #import <UIKit/UIKit-private.h>
 #import <UIKit/UIScreenMode.h>
 #import <UIKit/UIViewController.h>
+#import <QuartzCore/QuartzCore-private.h>
 //#import <UIKit/UIGestureRecognizerSubclass.h>
 
 const UIWindowLevel UIWindowLevelNormal = 0;

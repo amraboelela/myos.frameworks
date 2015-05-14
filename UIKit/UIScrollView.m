@@ -29,6 +29,7 @@
 
 #import <UIKit/UIKit-private.h>
 #import <CoreGraphics/CoreGraphics-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 
 static const NSTimeInterval UIScrollViewAnimationDuration = 0.33;
 static const NSTimeInterval UIScrollViewQuickAnimationDuration = 0.22;

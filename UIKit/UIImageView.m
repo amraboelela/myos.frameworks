@@ -32,6 +32,7 @@
 #import <UIKit/UIGraphics.h>
 #import <UIKit/UIColor.h>
 #import <CoreGraphics/CoreGraphics-private.h>
+#import <QuartzCore/QuartzCore-private.h>
 
 static NSArray *CGImagesWithUIImages(NSArray *images)
 {

@@ -50,6 +50,7 @@ typedef enum {
 } UITextFieldViewMode;
 
 @class UIFont, UIColor, UITextField, UIImage;
+@class CATextLayer;
 
 @protocol UITextFieldDelegate <NSObject>
 @optional

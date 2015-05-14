@@ -29,6 +29,8 @@
 
 #import <UIKit/UIView.h>
 
+@class CAAnimationGroup;
+
 @interface UIViewAnimationGroup : NSObject {
 @package
     NSString *_name;

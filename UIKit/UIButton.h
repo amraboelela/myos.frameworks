@@ -39,6 +39,7 @@ typedef enum {
 } UIButtonType;
 
 @class UILabel, UIImageView, UIImage;
+@class CAGradientLayer;
 
 @interface UIButton : UIControl {
 @protected
