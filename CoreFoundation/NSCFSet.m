@@ -4,7 +4,7 @@
    
    Written by: Ahmed Elmorsy <ahmedelmorsy89@gmail.com>
    Date: August, 2012
-   Modified by: Lubos Dolezel
+   Rewritten by: Lubos Dolezel
    Date: March, 2013
    Modified by: Amr Aboelela <amraboelela@gmail.com>
    Date: April, 2015
@@ -142,7 +142,7 @@ NSCFTYPE_VARS
  */
 - (NSEnumerator *)objectEnumerator
 {
-    DLog(@"objectEnumerator");
+    //DLog(@"objectEnumerator");
     id  e;
     e = [NSCFSetEnumerator allocWithZone: NSDefaultMallocZone()];
     e = [e initWithSet: self];
@@ -229,7 +229,7 @@ NSCFTYPE_VARS
         //DLog();
         const void** values;
         int length = CFSetGetCount(aSet);
-        DLog(@"length: %d", length);
+        //DLog(@"length: %d", length);
         values = malloc(length * sizeof(const void*));
         CFSetGetValues(aSet, values);
         set = CFArrayCreate(NULL, values, length, NULL);
@@ -250,7 +250,7 @@ NSCFTYPE_VARS
     if (pos >= CFArrayGetCount(set)) {
         return nil;
     }
-    DLog(@"CFArrayGetValueAtIndex(set, pos): %p", CFArrayGetValueAtIndex(set, pos));
+    //DLog(@"CFArrayGetValueAtIndex(set, pos): %p", CFArrayGetValueAtIndex(set, pos));
     return CFArrayGetValueAtIndex(set, pos++);
 }
 

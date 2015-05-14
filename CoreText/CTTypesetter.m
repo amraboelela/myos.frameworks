@@ -105,7 +105,7 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
         NSDictionary *runAttributes = CFAttributedStringGetAttributesAndLongestEffectiveRange(_as, index, CFRangeMake(index, range.length - index), &runRange);
         //DLog(@"runAttributes: %@", runAttributes);
         CFAttributedStringRef runAttributedString = CFAttributedStringCreateWithSubstring(NULL, _as, runRange);
-        DLog(@"runAttributedString: %@", runAttributedString);
+        //DLog(@"runAttributedString: %@", runAttributedString);
         NSString *runString = CFAttributedStringGetString(runAttributedString);
         //DLog(@"runString: %@", runString);
         //DLog(@"self: %@", self);
@@ -125,7 +125,7 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
 - (CFIndex)suggestClusterBreakAtIndex: (CFIndex)start
                                 width: (double)width
 {
-    DLog();
+    //DLog();
   return 0;
 }
 

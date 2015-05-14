@@ -217,7 +217,6 @@ CFStringCompareWithOptionsAndLocale (CFStringRef str1,
   length1 = rangeToCompare.length;
   string1 = CFAllocatorAllocate (alloc, (length1) * sizeof(UniChar), 0);
   CFStringGetCharacters (str1, rangeToCompare, string1);
-  
   length2 = CFStringGetLength (str2);
   string2 = CFAllocatorAllocate (alloc, (length2) * sizeof(UniChar), 0);
   CFStringGetCharacters (str2, CFRangeMake(0, length2), string2);

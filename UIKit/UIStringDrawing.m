@@ -48,7 +48,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
         //////////////Work around
 
         CTTypesetterRef typesetter = CTTypesetterCreateWithAttributedString(attributedString);
-        DLog(@"typesetter: %@", typesetter);
+        //DLog(@"typesetter: %@", typesetter);
         
         const CFIndex stringLength = CFAttributedStringGetLength(attributedString);
         const CGFloat lineHeight = font.lineHeight;
@@ -127,27 +127,19 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
             }
             start += usedCharacters;
         }
-        //DLog();
         //CFRelease(typesetter);
         //DLog();
         //CFRelease(attributedString);
-        //DLog();
         //return nil; 
  
-        //DLog(@"6");
         //DLog(@"typesetter 4: %@", typesetter);
         CFRelease(typesetter);
-        //DLog(@"attributedString: %@", attributedString);
         CFRelease(attributedString);
-        //DLog(@"6.2");
         CFRelease(attributes);
-        //DLog(@"6.3");
     }
-    //DLog(@"7");
     if (renderSize) {
         *renderSize = drawSize;
     }
-    //DLog(@"8");
     return lines;
 }
 
@@ -155,7 +147,6 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
 
 - (CGSize)sizeWithFont:(UIFont *)font
 {
-    //DLog();
     return [self sizeWithFont:font constrainedToSize:CGSizeMake(CGFLOAT_MAX,font.lineHeight)];
 }
 
@@ -166,26 +157,26 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
 
 - (CGSize)sizeWithFont:(UIFont *)font minFontSize:(CGFloat)minFontSize actualFontSize:(CGFloat *)actualFontSize forWidth:(CGFloat)width lineBreakMode:(UILineBreakMode)lineBreakMode
 {
-    DLog();
+    //DLog();
     return CGSizeZero;
 }
 
 - (CGSize)sizeWithFont:(UIFont *)font constrainedToSize:(CGSize)size lineBreakMode:(UILineBreakMode)lineBreakMode
 {
     CGSize resultingSize = CGSizeZero;
-    DLog(@"size: %@", NSStringFromCGSize(size));
+    //DLog(@"size: %@", NSStringFromCGSize(size));
     CFArrayRef lines = CreateCTLinesForString(self, size, font, lineBreakMode, &resultingSize);
     //DLog(@"2");
     if (lines) {
         CFRelease(lines);
     }
-    DLog(@"resultingSize: %@", NSStringFromCGSize(resultingSize));
+    //DLog(@"resultingSize: %@", NSStringFromCGSize(resultingSize));
     return resultingSize;
 }
 
 - (CGSize)sizeWithFont:(UIFont *)font constrainedToSize:(CGSize)size
 {
-    DLog(@"size: %@", NSStringFromCGSize(size));
+    //DLog(@"size: %@", NSStringFromCGSize(size));
     return [self sizeWithFont:font constrainedToSize:size lineBreakMode:UILineBreakModeWordWrap];
 }
 
@@ -201,7 +192,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
 
 - (CGSize)drawAtPoint:(CGPoint)point forWidth:(CGFloat)width withFont:(UIFont *)font fontSize:(CGFloat)fontSize lineBreakMode:(UILineBreakMode)lineBreakMode baselineAdjustment:(UIBaselineAdjustment)baselineAdjustment
 {
-    DLog();
+    //DLog();
     UIFont *adjustedFont = ([font pointSize] != fontSize)? [font fontWithSize:fontSize] : font;
     return [self drawInRect:CGRectMake(point.x,point.y,width,adjustedFont.lineHeight) withFont:adjustedFont lineBreakMode:lineBreakMode];
 }
@@ -213,7 +204,6 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
  
 - (CGSize)drawInRect:(CGRect)rect withFont:(UIFont *)font lineBreakMode:(UILineBreakMode)lineBreakMode alignment:(UITextAlignment)alignment
 {
-    //DLog();
     CGSize actualSize = CGSizeZero;
     CFArrayRef lines = CreateCTLinesForString(self,rect.size,font,lineBreakMode,&actualSize);
     if (lines) {
@@ -255,13 +245,11 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
 
 - (CGSize)drawInRect:(CGRect)rect withFont:(UIFont *)font
 {
-    //DLog();
     return [self drawInRect:rect withFont:font lineBreakMode:UILineBreakModeWordWrap alignment:UITextAlignmentLeft];
 }
 
 - (CGSize)drawInRect:(CGRect)rect withFont:(UIFont *)font lineBreakMode:(UILineBreakMode)lineBreakMode
 {
-    //DLog();
     return [self drawInRect:rect withFont:font lineBreakMode:lineBreakMode alignment:UITextAlignmentLeft];
 }
 
