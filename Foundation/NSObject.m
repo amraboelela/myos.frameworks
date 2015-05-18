@@ -1,8 +1,10 @@
 /** Implementation of NSObject for GNUStep
-   Copyright (C) 1994-2010 Free Software Foundation, Inc.
+   Copyright (C) 1994-2015 Free Software Foundation, Inc.
 
    Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
    Date: August 1994
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: May 2015
 
    This file is part of the GNUstep Base Library.
 
@@ -1117,7 +1119,9 @@ static id gs_weak_load(id obj)
       /* Determine zombie management flags and set up a map to store
        * information about zombie objects.
        */
-      NSZombieEnabled = GSPrivateEnvironmentFlag("NSZombieEnabled", NO);
+        NSZombieEnabled = YES;//GSPrivateEnvironmentFlag("NSZombieEnabled", NO);
+        printf("============================== NSZombieEnabled ==============================");
+        
       NSDeallocateZombies = GSPrivateEnvironmentFlag("NSDeallocateZombies", NO);
       zombieMap = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,
 	NSNonOwnedPointerMapValueCallBacks, 0);
