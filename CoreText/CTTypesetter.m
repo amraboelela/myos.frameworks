@@ -125,7 +125,6 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
 - (CFIndex)suggestClusterBreakAtIndex: (CFIndex)start
                                 width: (double)width
 {
-    //DLog();
   return 0;
 }
 
@@ -136,15 +135,21 @@ const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel = @"kCTTypesetterOptio
     if (numberOfChars > 10) {
         numberOfChars = 10;
     }
-    //DLog(@"start: %d, width: %0.2f, numberOfChars: %d", start, width, numberOfChars);
+    //DLog(@"start: %d, width: %f, numberOfChars: %d", start, width, numberOfChars);
     CTLineRef line = [self createLineWithRange:CFRangeMake(start, numberOfChars)];
     double lineWidth = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
+    //DLog(@"lineWidth: %f", lineWidth);
     float charAverageWidth = lineWidth / numberOfChars;
-    int suggestedLength = width / charAverageWidth;
+    //DLog(@"charAverageWidth: %f", charAverageWidth);
+    double suggestedLength = width / charAverageWidth;
+    //DLog(@"suggestedLength: %d", suggestedLength);
     if (suggestedLength + start > stringLength) {
         suggestedLength = stringLength - start;
+        //DLog(@"suggestedLength: %d", suggestedLength);
     }
+    //DLog(@"suggestedLength: %d", suggestedLength);
     line = [self createLineWithRange:CFRangeMake(start, suggestedLength)];
+    //DLog(@"line: %@", line);
     lineWidth = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
     if (lineWidth > width) {
         while (lineWidth > width) {
@@ -187,7 +192,6 @@ CTTypesetterRef CTTypesetterCreateWithAttributedStringAndOptions(
 
 CTLineRef CTTypesetterCreateLine(CTTypesetterRef ts, CFRange range)
 {
-    //DLog(@"ts: %@", ts);
     //DLog(@"range.location: %d", range.location);
     //DLog(@"range.length: %d", range.length);
     return [ts createLineWithRange: range];
