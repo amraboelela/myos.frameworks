@@ -1119,8 +1119,8 @@ static id gs_weak_load(id obj)
       /* Determine zombie management flags and set up a map to store
        * information about zombie objects.
        */
-        NSZombieEnabled = YES;//GSPrivateEnvironmentFlag("NSZombieEnabled", NO);
-        printf("============================== NSZombieEnabled ==============================");
+        NSZombieEnabled = GSPrivateEnvironmentFlag("NSZombieEnabled", NO);
+        //printf("============================== NSZombieEnabled ==============================");
         
       NSDeallocateZombies = GSPrivateEnvironmentFlag("NSDeallocateZombies", NO);
       zombieMap = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks,

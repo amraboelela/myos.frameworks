@@ -98,8 +98,8 @@ static float _CAAnimationGetProgress(CABasicAnimation *animation, CFTimeInterval
 static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float progress)
 {
     //DLog(@"animation: %@", animation);
-    float fromValue = [animation->fromValue floatValue];
-    float toValue = [animation->toValue floatValue];
+    float fromValue = [animation->_fromValue floatValue];
+    float toValue = [animation->_toValue floatValue];
     float result = fromValue + (toValue - fromValue) * progress;
     //DLog(@"result: %0.1f", result);
     return [NSNumber numberWithFloat:result];
@@ -108,8 +108,8 @@ static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float prog
 static id _CAAnimationPointProgressValue(CABasicAnimation *animation, float progress)
 {
     //DLog();
-    CGPoint fromPoint = [animation->fromValue CGPointValue];
-    CGPoint toPoint = [animation->toValue CGPointValue];
+    CGPoint fromPoint = [animation->_fromValue CGPointValue];
+    CGPoint toPoint = [animation->_toValue CGPointValue];
     //DLog(@"toPoint: %@", NSStringFromPoint(NSPointFromCGPoint(toPoint)));
 
     float resultX = fromPoint.x + (toPoint.x - fromPoint.x) * progress;
@@ -123,8 +123,8 @@ static id _CAAnimationPointProgressValue(CABasicAnimation *animation, float prog
 static id _CAAnimationRectProgressValue(CABasicAnimation *animation, float progress)
 {
     //DLog();
-    CGRect fromRect = [animation->fromValue CGRectValue];
-    CGRect toRect = [animation->toValue CGRectValue];
+    CGRect fromRect = [animation->_fromValue CGRectValue];
+    CGRect toRect = [animation->_toValue CGRectValue];
     float resultX = fromRect.origin.x + (toRect.origin.x - fromRect.origin.x) * progress;
     float resultY = fromRect.origin.y + (toRect.origin.y - fromRect.origin.y) * progress;
     float resultWidth =  fromRect.size.width + (toRect.size.width - fromRect.size.width) * progress;
@@ -137,8 +137,8 @@ static id _CAAnimationRectProgressValue(CABasicAnimation *animation, float progr
 static id _CAAnimationTransformProgressValue(CABasicAnimation *animation, float progress)
 {
     //DLog();
-    CATransform3D fromTransform = [animation->fromValue CATransform3DValue];
-    CATransform3D toTransform = [animation->toValue CATransform3DValue];
+    CATransform3D fromTransform = [animation->_fromValue CATransform3DValue];
+    CATransform3D toTransform = [animation->_toValue CATransform3DValue];
     CGFloat m11 = fromTransform.m11 + (toTransform.m11 - fromTransform.m11) * progress;
     CGFloat m12 = fromTransform.m12 + (toTransform.m12 - fromTransform.m12) * progress;
     CGFloat m13 = fromTransform.m13 + (toTransform.m13 - fromTransform.m13) * progress;
@@ -167,8 +167,8 @@ static id _CAAnimationTransformProgressValue(CABasicAnimation *animation, float 
 
 static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float progress)
 {
-    CGColorRef fromColor = animation->fromValue;
-    CGColorRef toColor = animation->toValue;
+    CGColorRef fromColor = animation->_fromValue;
+    CGColorRef toColor = animation->_toValue;
     
     const CGFloat *fromComponents = CGColorGetComponents(fromColor);
     const CGFloat *toComponents = CGColorGetComponents(toColor);
@@ -342,9 +342,9 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (NSString *)description
 {
-    //return [NSString stringWithFormat:@"<%@: %p; duration: %0.1f; fromValue: %@; toValue: %@>", [self className], self, duration, fromValue, toValue];
+    //return [NSString stringWithFormat:@"<%@: %p; duration: %0.1f; fromValue: %@; toValue: %@>", [self className], self, _duration, _fromValue, _toValue];
     //return [NSString stringWithFormat:@"<%@: %p; beginTime: %f>", [self className], self, _beginTime];
-    //return [NSString stringWithFormat:@"<%@: %p; timingFunction: %@>", [self className], self, timingFunction];
+    //return [NSString stringWithFormat:@"<%@: %p; timingFunction: %@>", [self className], self, _timingFunction];
     return [super description];
 }
 
@@ -476,7 +476,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
     float progress = _CAAnimationGetProgress(animation, progressTime);
     //DLog(@"progress: %0.1f", progress);
     if ([theAnimation isKindOfClass:[CABasicAnimation class]]) {
-        id localValue = [layer valueForKeyPath:animation->keyPath];
+        id localValue = [layer valueForKeyPath:animation->_keyPath];
         //DLog(@"localValue: %@", localValue);
         if ([localValue isKindOfClass:[NSNumber class]]) {
             result = _CAAnimationFloatProgressValue(animation, progress);
@@ -494,11 +494,11 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
             result = _CAAnimationColorProgressValue(animation, progress);
         }
         if (result) {
-            [layer setValue:result forKeyPath:animation->keyPath];
+            [layer setValue:result forKeyPath:animation->_keyPath];
         }
         //DLog(@"animation: %@", animation);
         //DLog(@"result: %@", result);
-        if ([animation->keyPath isEqualToString:@"contents"]) {
+        if ([animation->_keyPath isEqualToString:@"contents"]) {
             //DLog(@"[animation->keyPath isEqualToString:contents]");
             layer->_contentsTransitionProgress = progress;
             if (animation->_remove) {
@@ -507,7 +507,7 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         }
     } else if ([theAnimation isKindOfClass:[CAKeyframeAnimation class]]) {
         //DLog(@"[theAnimation isKindOfClass:[CAKeyframeAnimation class]]");
-        if ([animation->keyPath isEqualToString:@"contents"]) {
+        if ([animation->_keyPath isEqualToString:@"contents"]) {
             layer->_keyframesProgress = progress;
             //DLog(@"layer->_keyframesProgress: %0.2f", layer->_keyframesProgress);
             if (animation->_remove) {
@@ -522,7 +522,6 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
         [animation removeFromLayer:layer];
         
         //_CAAnimationRemove(animation, layer);
-        //[layer removeAnimationForKey:animation->keyPath];
         //DLog(@"animation2: %@", animation);
     }
 }

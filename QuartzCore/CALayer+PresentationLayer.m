@@ -85,7 +85,7 @@ void _CALayerCopyAnimations(CALayer *layer)
                 if (basicAnimation->_beginFromCurrentState) {
                     basicAnimation.fromValue = [layer valueForKey:basicAnimation->_keyPath];
                 }
-                if (!basicAnimation->toValue) {
+                if (!basicAnimation->_toValue) {
                     basicAnimation.toValue = [modelLayer valueForKeyPath:basicAnimation->_keyPath];
                 }
             } /*else if ([animation isKindOfClass:[CAKeyframeAnimation class]]) {

@@ -414,6 +414,7 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
     //DLog(@"animationID: %@", animationID);
     [CATransaction begin];
     [_animationGroups addObject:[UIViewAnimationGroup animationGroupWithName:animationID context:context]];
+    DLog(@"_animationGroups: %d", [_animationGroups count]);
 }
 
 + (void)setAnimationBeginsFromCurrentState:(BOOL)beginFromCurrentState
