@@ -275,9 +275,9 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 @implementation CAPropertyAnimation
 
-@synthesize keyPath;
-@synthesize additive;
-@synthesize cumulative;
+@synthesize keyPath=_keyPath;
+@synthesize additive=_additive;
+@synthesize cumulative=_cumulative;
 
 #pragma mark - Life cycle
 
@@ -286,7 +286,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
     //DLog();
     self = [super init];
     if (self) {
-        keyPath = [aKeyPath copy];
+        _keyPath = [aKeyPath copy];
     }
     return self;
 }
@@ -299,7 +299,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (void)dealloc
 {
-    [keyPath release];
+    [_keyPath release];
     [super dealloc];
 }
 
@@ -324,17 +324,17 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 @implementation CABasicAnimation
 
-@synthesize fromValue;
-@synthesize toValue;
-@synthesize byValue;
+@synthesize fromValue=_fromValue;
+@synthesize toValue=_toValue;
+@synthesize byValue=_byValue;
 
 #pragma mark - Life cycle
 
 - (void)dealloc
 {
-    [fromValue release];
-    [toValue release];
-    [byValue release];
+    [_fromValue release];
+    [_toValue release];
+    [_byValue release];
     [super dealloc];
 }
 
@@ -357,7 +357,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
         [_delegate performSelectorOnMainThread:@selector(animationDidStop) withObject:nil waitUntilDone:YES];
         //[_delegate animationDidStop:self finished:YES];
     }
-    [layer removeAnimationForKey:keyPath];
+    [layer removeAnimationForKey:_keyPath];
     _CAAnimationGroupRemoveAnimation(_animationGroup, self);
 }
 
@@ -405,17 +405,17 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 @implementation CATransition
 
-@synthesize type;
-@synthesize subtype;
-@synthesize startProgress;
-@synthesize endProgress;
+@synthesize type=_type;
+@synthesize subtype=_subtype;
+@synthesize startProgress=_startProgress;
+@synthesize endProgress=_endProgress;
 
 #pragma mark - Life cycle
 
 - (void)dealloc
 {
-    [type release];
-    [subtype release];
+    [_type release];
+    [_subtype release];
     [super dealloc];
 }
 
@@ -433,7 +433,6 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
     if (self) {
         //DLog();
         _animations = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
-        //_committed = NO;
     }
     return self;
 }

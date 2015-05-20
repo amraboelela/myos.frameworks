@@ -66,30 +66,33 @@ void _CALayerAddSublayer(CALayer *layer, CALayer *sublayer, CFIndex index)
 void _CALayerCopyAnimations(CALayer *layer)
 {
     //DLog();
-    if ([layer->_modelLayer->_animations count]) {
+    CALayer *modelLayer = layer->_modelLayer;
+    if ([modelLayer->_animations count]) {
         //DLog(@"");
-        if (layer->_animations) {
-            [layer->_animations release];
+        if (!layer->_animations) {
+            layer->_animations = [[NSMutableDictionary alloc] initWithDictionary:modelLayer->_animations];
         }
-        layer->_animations = [[NSMutableDictionary alloc] initWithDictionary:layer->_modelLayer->_animations];
-        //CFArrayRef keys = [layer animationKeys];
-        //DLog(@"layer->_animations: %@", layer->_animations);
-        for (NSString *key in [layer animationKeys]) {
-            //DLog(@"key: %@", key);
-            CAAnimation *theAnimation = [layer animationForKey:key];
-            if ([theAnimation isKindOfClass:[CABasicAnimation class]]) {
-                CABasicAnimation *animation = (CABasicAnimation *)theAnimation;
-                if (animation->_beginFromCurrentState) {
-                    animation.fromValue = [layer valueForKey:animation->keyPath];
+        for (NSString *key in [modelLayer animationKeys]) {
+            CAAnimation *animation = CFDictionaryGetValue(layer->_animations, key);
+            CAAnimation *modelAnimation = CFDictionaryGetValue(modelLayer->_animations, key);
+            if (animation && animation != modelAnimation) {
+                [animation removeFromLayer:layer];
+            } //else {
+            //animation = CFDictionaryGetValue(modelLayer->_animations, key);
+            CFDictionarySetValue(layer->_animations, key, modelAnimation);
+            if ([modelAnimation isKindOfClass:[CABasicAnimation class]]) {
+                CABasicAnimation *basicAnimation = (CABasicAnimation *)modelAnimation;
+                if (basicAnimation->_beginFromCurrentState) {
+                    basicAnimation.fromValue = [layer valueForKey:basicAnimation->_keyPath];
                 }
-                if (!animation->toValue) {
-                    animation.toValue = [layer->_modelLayer valueForKeyPath:animation->keyPath];
+                if (!basicAnimation->toValue) {
+                    basicAnimation.toValue = [modelLayer valueForKeyPath:basicAnimation->_keyPath];
                 }
-            } else if ([theAnimation isKindOfClass:[CAKeyframeAnimation class]]) {
-                //DLog(@"[theAnimation isKindOfClass:[CAKeyframeAnimation class]]");
-            }
+            } /*else if ([animation isKindOfClass:[CAKeyframeAnimation class]]) {
+               //DLog(@"[theAnimation isKindOfClass:[CAKeyframeAnimation class]]");
+               }*/
+            //}
         }
-        //DLog(@"_animations: %@", layer->_animations);
     }
 }
 
@@ -110,4 +113,3 @@ void _CALayerApplyAnimations(CALayer *layer)
         //DLog(@"keys: %@", keys);
     }
 }
-

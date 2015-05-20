@@ -55,9 +55,9 @@
 
 @interface CAPropertyAnimation : CAAnimation {
 @package
-    NSString *keyPath;
-    BOOL additive;
-    BOOL cumulative;
+    NSString *_keyPath;
+    BOOL _additive;
+    BOOL _cumulative;
 }
 
 + (id)animationWithKeyPath:(NSString *)path;
@@ -70,9 +70,9 @@
 
 @interface CABasicAnimation : CAPropertyAnimation {
 @package
-    id fromValue;
-    id toValue;
-    id byValue;
+    id _fromValue;
+    id _toValue;
+    id _byValue;
 }
 
 @property(retain) id fromValue;
@@ -108,10 +108,10 @@ extern NSString *const kCATransitionFromRight;
 
 @interface CATransition : CAAnimation {
 @package
-    NSString *type;
-    NSString *subtype;
-    float startProgress;
-    float endProgress;
+    NSString *_type;
+    NSString *_subtype;
+    float _startProgress;
+    float _endProgress;
 }
 
 @property(copy) NSString *type;

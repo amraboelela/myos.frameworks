@@ -151,42 +151,6 @@ static NSArray *CGImagesWithUIImages(NSArray *images)
 
 #pragma mark - Public methods
 
-/*
-- (void)displayLayer:(CALayer *)theLayer
-{
-    UIImage *displayImage = (_highlighted && _highlightedImage)? _highlightedImage : _image;
-    const CGRect bounds = self.bounds;
-    
-    if (displayImage && _UIImageViewHasResizableImage(self) && bounds.size.width > 0 && bounds.size.height > 0) {
-        UIGraphicsBeginImageContext(bounds.size);
-        [displayImage drawInRect:bounds];
-        displayImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-    }
-    // adjust the image if required.
-    // this will likely only ever be used UIButton, but it seemed a good place for it.
-    // I wonder how the real UIKit does this...
-    if (displayImage && (_drawMode != _UIImageViewDrawModeNormal)) {
-        CGRect imageBounds;
-        imageBounds.origin = CGPointZero;
-        imageBounds.size = displayImage.size;
-        UIGraphicsBeginImageContext(imageBounds.size);
-        CGBlendMode blendMode = kCGBlendModeNormal;
-        CGFloat alpha = 1;
-        if (_drawMode == _UIImageViewDrawModeDisabled) {
-            alpha = 0.5;
-        } else if (_drawMode == _UIImageViewDrawModeHighlighted) {
-            [[[UIColor greenColor] colorWithAlphaComponent:0.4] setFill];
-            UIRectFill(imageBounds);
-            blendMode = kCGBlendModeDestinationAtop;
-        }
-        [displayImage drawInRect:imageBounds blendMode:blendMode alpha:alpha];
-        displayImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-    }
-    theLayer.contents = (__bridge id)[displayImage CGImage];
-}*/
-
 - (void)startAnimating
 {
     NSArray *images = _highlighted? _highlightedAnimationImages : _animationImages;

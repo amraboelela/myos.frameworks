@@ -27,7 +27,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//#import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIResponder.h>
 #import <UIKit/UIGeometry.h>
 
