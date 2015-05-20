@@ -125,6 +125,7 @@ extern NSString *const kCATransitionFromRight;
 @public
     NSMutableArray *_animations;
     BOOL _committed;
+    NSLock *_lock;
 }
 
 @property(copy) NSArray *animations;

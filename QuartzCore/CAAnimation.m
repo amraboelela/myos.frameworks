@@ -433,6 +433,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
     if (self) {
         //DLog();
         _animations = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
+        _lock = [[NSLock alloc] init];
     }
     return self;
 }
@@ -440,6 +441,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 - (void)dealloc
 {
     [_animations release];
+    [_lock release];
     [super dealloc];
 }
 
@@ -549,11 +551,13 @@ CAAnimationGroup *_CAAnimationGroupGetCurrent()
 
 void _CAAnimationGroupAddAnimation(CAAnimationGroup *animationGroup, CAAnimation *animation)
 {
+    [animationGroup->_lock lock];
     //DLog(@"animation: %@", animation);
     //CAAnimationGroup *animationGroup = _CAAnimationCurrentActiveAnimationGroup();
     CFArrayAppendValue((CFMutableArrayRef)animationGroup->_animations, animation);
     animation->_animationGroup = animationGroup;
     //DLog(@"animationGroup: %@", animationGroup);
+    [animationGroup->_lock unlock];
 }
 
 void _CAAnimationGroupCommit()
@@ -569,6 +573,7 @@ void _CAAnimationGroupCommit()
 
 void _CAAnimationGroupRemoveAnimation(CAAnimationGroup *animationGroup, CAAnimation *animation)
 {
+    [animationGroup->_lock lock];
     //DLog(@"animation: %@", animation);
     //CAAnimationGroup *animationGroup = _CAAnimationCurrentActiveAnimationGroup();
     animation->_animationGroup = nil;
@@ -582,6 +587,7 @@ void _CAAnimationGroupRemoveAnimation(CAAnimationGroup *animationGroup, CAAnimat
         _CFArrayRemoveValue(_animationGroups, animationGroup);
         //DLog(@"_animationGroups2: %@", _animationGroups);
     }
+    [animationGroup->_lock unlock];
 }
 
 #pragma mark - Public methods
