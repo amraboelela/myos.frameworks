@@ -76,9 +76,12 @@ void _CALayerCopyAnimations(CALayer *layer)
             CAAnimation *animation = CFDictionaryGetValue(layer->_animations, key);
             CAAnimation *modelAnimation = CFDictionaryGetValue(modelLayer->_animations, key);
             if (animation && animation != modelAnimation) {
+                //DLog();
                 [animation removeFromLayer:layer];
+                //DLog();
             } //else {
             //animation = CFDictionaryGetValue(modelLayer->_animations, key);
+            //DLog();
             CFDictionarySetValue(layer->_animations, key, modelAnimation);
             if ([modelAnimation isKindOfClass:[CABasicAnimation class]]) {
                 CABasicAnimation *basicAnimation = (CABasicAnimation *)modelAnimation;

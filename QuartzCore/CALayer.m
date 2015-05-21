@@ -823,13 +823,13 @@ static NSString *_NSStringFromCGPoint(CGPoint p)
     animation->_startTime = [self convertTime:CACurrentMediaTime() fromLayer:nil];
     if ([animation isKindOfClass:[CABasicAnimation class]]) {
         CABasicAnimation *basicAnimation = (CABasicAnimation *)animation;
-        if (!basicAnimation->fromValue) {
-            basicAnimation.fromValue = [self valueForKeyPath:basicAnimation->keyPath];
+        if (!basicAnimation->_fromValue) {
+            basicAnimation.fromValue = [self valueForKeyPath:basicAnimation->_keyPath];
         }
     } else if ([animation isKindOfClass:[CAKeyframeAnimation class]]) {
         //DLog(@"[animation isKindOfClass:[CAKeyframeAnimation class]]");
         CAKeyframeAnimation *keyframeAnimation = (CAKeyframeAnimation *)animation;
-        if ([keyframeAnimation->keyPath isEqualToString:@"contents"]) {
+        if ([keyframeAnimation->_keyPath isEqualToString:@"contents"]) {
             if (_keyframesContents) {
                 [_keyframesContents release];
             }

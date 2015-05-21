@@ -730,10 +730,13 @@ void _CFArrayRemoveValue(CFMutableArrayRef array, const void *value)
     const void **contents;
     CFArrayEqualCallBack equal = array->_callBacks->equal;
     contents = array->_contents;
+    CFRetain(value);
     if (equal) {
         for (idx = 0; idx < array->_count ;++idx) {
             if (equal (value, contents[idx])) {
+                //printf("_CFArrayRemoveValue value: %@ \n", value);
                 CFArrayReplaceValues(array, CFRangeMake(idx, 1), NULL, 0);
+                //printf("_CFArrayRemoveValue 2\n");
             }
         }
     } else {
@@ -743,6 +746,8 @@ void _CFArrayRemoveValue(CFMutableArrayRef array, const void *value)
             }
         }
     }
+    CFRelease(value);
+    //printf("_CFArrayRemoveValue 3\n");
 }
 
 void _CFArrayMoveValueToTop(CFMutableArrayRef array, const void *value)

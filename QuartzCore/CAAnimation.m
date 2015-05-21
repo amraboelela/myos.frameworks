@@ -230,6 +230,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (void)dealloc
 {
+    //DLog(@"self: %@", self);
     [_delegate release];
     [_timingFunction release];
     [super dealloc];
@@ -299,9 +300,18 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (void)dealloc
 {
+    //DLog(@"self: %@", self);
     [_keyPath release];
     [super dealloc];
 }
+
+#pragma mark - Accessors
+
+/*
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p; keyPath: %0.1f, retainCount: %d>", [self className], self, _keyPath, [self retainCount]];
+}*/
 
 #pragma mark - Public methods
 
@@ -332,6 +342,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (void)dealloc
 {
+    //DLog(@"self: %@", self);
     [_fromValue release];
     [_toValue release];
     [_byValue release];
@@ -345,16 +356,20 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
     //return [NSString stringWithFormat:@"<%@: %p; duration: %0.1f; fromValue: %@; toValue: %@>", [self className], self, _duration, _fromValue, _toValue];
     //return [NSString stringWithFormat:@"<%@: %p; beginTime: %f>", [self className], self, _beginTime];
     //return [NSString stringWithFormat:@"<%@: %p; timingFunction: %@>", [self className], self, _timingFunction];
-    return [super description];
+    //return [NSString stringWithFormat:@"<%@: %p; keyPath: %@, retainCount: %d>", [self className], self, _keyPath, [self retainCount]];
+    return [NSString stringWithFormat:@"<%@: %p; keyPath: %@>", [self className], self, _keyPath];
+    //return [super description];
 }
 
 #pragma mark - Delegate
 
 - (void)removeFromLayer:(CALayer *)layer
 {
+    //DLog(@"self: %@", self);
     //DLog(@"layer: %@", layer);
     if ([_delegate respondsToSelector:@selector(animationDidStop:finished:)]) {
         [_delegate performSelectorOnMainThread:@selector(animationDidStop) withObject:nil waitUntilDone:YES];
+        //DLog();
         //[_delegate animationDidStop:self finished:YES];
     }
     [layer removeAnimationForKey:_keyPath];
@@ -431,7 +446,6 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 {
     self = [super init];
     if (self) {
-        //DLog();
         _animations = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
         _lock = [[NSLock alloc] init];
     }
@@ -440,6 +454,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 - (void)dealloc
 {
+    //DLog(@"self: %@", self);
     [_animations release];
     [_lock release];
     [super dealloc];
@@ -530,7 +545,6 @@ void _CAAnimationApplyAnimationForLayer(CAAnimation *theAnimation, CALayer *laye
 
 CAAnimationGroup *_CAAnimationGroupNew()
 {
-    //DLog();
     CAAnimationGroup *animationGroup = [[CAAnimationGroup alloc] init];
     CFArrayAppendValue(_animationGroups, animationGroup);
     return animationGroup;
@@ -561,7 +575,6 @@ void _CAAnimationGroupAddAnimation(CAAnimationGroup *animationGroup, CAAnimation
 
 void _CAAnimationGroupCommit()
 {
-    //DLog();
     CAAnimationGroup *animationGroup = _CAAnimationGroupGetCurrent();
     if (animationGroup) {
         //[_animationGroups removeObject:animationGroup];
@@ -574,17 +587,19 @@ void _CAAnimationGroupRemoveAnimation(CAAnimationGroup *animationGroup, CAAnimat
 {
     [animationGroup->_lock lock];
     //DLog(@"animation: %@", animation);
+    //DLog(@"[animation retainCount]: %d", [animation retainCount]);
     //CAAnimationGroup *animationGroup = _CAAnimationCurrentActiveAnimationGroup();
     animation->_animationGroup = nil;
-    _CFArrayRemoveValue((CFMutableArrayRef)animationGroup->_animations, animation);
     //DLog(@"animationGroup: %@", animationGroup);
+    _CFArrayRemoveValue((CFMutableArrayRef)animationGroup->_animations, animation);
+    //DLog(@"animationGroup 2: %@", animationGroup);
     if (CFArrayGetCount(animationGroup->_animations) == 0) {
         if ([animationGroup->_delegate respondsToSelector:@selector(animationDidStop:finished:)]) {
             [animationGroup->_delegate animationDidStop:animationGroup finished:YES];
         }
         //DLog(@"_animationGroups: %@", _animationGroups);
         _CFArrayRemoveValue(_animationGroups, animationGroup);
-        //DLog(@"_animationGroups2: %@", _animationGroups);
+        //DLog(@"_animationGroups 3: %@", _animationGroups);
     }
     [animationGroup->_lock unlock];
 }
@@ -593,7 +608,6 @@ void _CAAnimationGroupRemoveAnimation(CAAnimationGroup *animationGroup, CAAnimat
 
 void _CAAnimationCopy(CAAnimation *toAnimation, CAAnimation *fromAnimation)
 {
-    //DLog();
     toAnimation->_beginTime = fromAnimation->_beginTime;
     toAnimation.timingFunction = fromAnimation.timingFunction;
     //DLog(@"toAnimation.timingFunction: %@", toAnimation.timingFunction);

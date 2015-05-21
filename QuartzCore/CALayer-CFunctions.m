@@ -147,7 +147,6 @@ void _CALayerSetNeedsUnload(CALayer *layer)
 
 void _CALayerSetNeedsComposite(CALayer *layer)
 {
-    //DLog();
     layer->_needsComposite = YES;
     _CATransactionCreateImplicitTransactionIfNeeded();
 }
@@ -188,16 +187,13 @@ void _CALayerDisplay(CALayer *layer)
         CGContextRef context = _CGBitmapContextCreateWithOptions(layer->_bounds.size, layer->_opaque, layer->_contentsScale);
         //DLog(@"layer->_contentsScale 2: %0.2f", layer->_contentsScale);
         CGContextScaleCTM(context, layer->_contentsScale, layer->_contentsScale);
-        //DLog();
         _CALayerSetShadow(layer, context);
-        //DLog();
         _CALayerSetClip(layer, context);
         _CALayerDrawBackground(layer, context);
         [layer drawInContext:context];
         _CALayerEndClip(layer, context);
         _CALayerDrawBorder(layer, context);
         
-        //DLog();
         CGImageRelease(layer->_displayContents);
         layer->_displayContents = CGBitmapContextCreateImage(context);
         //DLog(@"layer->_displayContents: %@", layer->_displayContents);
@@ -286,7 +282,7 @@ void _CALayerRemoveExpiredAnimations(CALayer *layer)
         if ([animation isKindOfClass:[CAPropertyAnimation class]]) {
             CAPropertyAnimation *propertyAnimation = (CAPropertyAnimation *)animation;
             if (propertyAnimation->_remove) {
-                [layer removeAnimationForKey:propertyAnimation->keyPath];
+                [layer removeAnimationForKey:propertyAnimation->_keyPath];
             }
         }
     }
