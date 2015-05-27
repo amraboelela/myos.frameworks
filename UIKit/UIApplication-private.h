@@ -30,8 +30,6 @@ typedef enum {
 
 #ifdef ANDROID
 void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *delegateClassName);
-#else
-int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName);
 #endif
 
 void _UIApplicationSetKeyWindow(UIApplication *app, UIWindow *newKeyWindow);

@@ -706,9 +706,10 @@ static int _UIApplicationHandleMessages()
 
 #ifdef ANDROID
 
-int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
-{
 #ifdef NATIVE_APP
+
+void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *delegateClassName)
+{
     _UIApplicationProcessInitialize();
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [[NSProcessInfo processInfo] setProcessName:appName];
@@ -773,7 +774,12 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     DLog(@"died");
     
     [pool release];
-#else // not NATIVE_APP
+}
+
+#else
+
+int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
+{
     _UIApplicationProcessInitialize();
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     //DLog(@"");
@@ -805,8 +811,9 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     UIChildApplicationClosePipes();
     [pool release];
     return 0;
-#endif
 }
+
+#endif
 
 #else // not ANDROID
 
