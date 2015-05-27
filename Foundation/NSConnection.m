@@ -3057,7 +3057,7 @@ static NSLock	*cached_proxies_gate = nil;
   p = [self includesLocalTarget: target];
   o = (p != nil) ? p->_object : nil;
 
-  /* xxx We should make sure that TARGET is a valid object. */
+  /* xxx We should make sure that APP_TYPE is a valid object. */
   /* Not actually a Proxy, but we avoid the warnings "id" would have made. */
   m = GSGetMethod(object_getClass(o), sel, YES, YES);
   /* Perhaps I need to be more careful in the line above to get the

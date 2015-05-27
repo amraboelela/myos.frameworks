@@ -17,7 +17,7 @@
 
 CFLAGS=-fblocks
 
-ifeq ($(TARGET),NativeApp)
+ifeq ($(APP_TYPE),NativeApp)
     LIB_NAME=NAUIKit
     LDLIBS+=-lEGL -lCoreFoundation -lFoundation -lNAIOKit -lNAOpenGLES -lNAQuartzCore -lNACoreGraphics -lNACoreText
 else
@@ -26,7 +26,7 @@ else
 endif
 
 ifeq ($(BASE_OS),android)
-    ifeq ($(TARGET),NativeApp)
+    ifeq ($(APP_TYPE),NativeApp)
         LDLIBS+=-lGLESv1_CM -lGLESv1_enc
     endif
 endif

@@ -1978,17 +1978,17 @@ main(int argc, char **argv, char **env)
                          atomically: YES];
               [gFiles addObject: gsdocFile];
               [idxIndex appendFormat:
-                  @"    <A HREF=\"%@\" TARGET=\"packageFrame\">%@</A><BR/>\n",
+                  @"    <A HREF=\"%@\" APP_TYPE=\"packageFrame\">%@</A><BR/>\n",
                         htmlFile, typeU];
             }
         }
 
       [idxIndex appendString: @"    <BR/>\n"];
       [idxIndex appendFormat:
-        @"    (<A HREF=\"%@.html\" TARGET=\"mainFrame\">intro</A>)&nbsp;",
+        @"    (<A HREF=\"%@.html\" APP_TYPE=\"mainFrame\">intro</A>)&nbsp;",
         project];
       [idxIndex appendFormat:
-        @"&nbsp;(<A HREF=\"%@.html\" TARGET=\"_top\">unframe</A>)\n",
+        @"&nbsp;(<A HREF=\"%@.html\" APP_TYPE=\"_top\">unframe</A>)\n",
         project];
       [idxIndex appendString: @"    </FONT>\n  </BODY>\n</HTML>\n"];
       [idxIndex writeToFile:

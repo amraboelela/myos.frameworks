@@ -17,7 +17,7 @@
 
 LDLIBS=-lCoreFoundation -lFoundation
 
-ifeq ($(TARGET),NativeApp)
+ifeq ($(APP_TYPE),NativeApp)
     LIB_NAME=NAQuartzCore
     LDLIBS+=-lEGL -lNAIOKit -lNAOpenGLES -lNACoreGraphics -lNACoreText
 else
@@ -26,7 +26,7 @@ else
 endif
 
 ifeq ($(BASE_OS),android)
-    ifeq ($(TARGET),NativeApp)
+    ifeq ($(APP_TYPE),NativeApp)
         LDLIBS+=-lGLESv1_CM
     endif
 endif

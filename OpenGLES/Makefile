@@ -20,7 +20,7 @@ OBJECTS = \
     EAGL.o \
     EAGLTexture.o \
 
-ifeq ($(TARGET),NativeApp)
+ifeq ($(APP_TYPE),NativeApp)
     LIB_NAME=NAOpenGLES
     LDLIBS+=-lEGL -lNAIOKit -lNACoreGraphics
     OBJECTS+=EAGLParent.o
@@ -32,7 +32,7 @@ endif
 
 ifeq ($(BASE_OS),android)
     CFLAGS=-I$(ANDROID_SOURCE_PATH)/development/tools/emulator/opengl/host/include/libOpenglRender
-    ifeq ($(TARGET),NativeApp)
+    ifeq ($(APP_TYPE),NativeApp)
         LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc
     else
         SLIBS=MAEGL MAGLESv1_enc

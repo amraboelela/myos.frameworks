@@ -18,7 +18,7 @@
 LIB_NAME=CoreText
 LDLIBS= -lCoreFoundation -lFoundation
 
-ifeq ($(TARGET),NativeApp)
+ifeq ($(APP_TYPE),NativeApp)
     LIB_NAME=NACoreText
     LDLIBS+=-lNACoreGraphics
 else

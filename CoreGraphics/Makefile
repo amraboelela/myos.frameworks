@@ -21,7 +21,7 @@ ifeq ($(BASE_OS),android)
     LDLIBS+=-lpng -llcms -lpixman -lz -lfontconfig -lexpat -lfreetype
 endif
 
-ifeq ($(TARGET),NativeApp)
+ifeq ($(APP_TYPE),NativeApp)
     LIB_NAME=NACoreGraphics
 else
     LIB_NAME=CoreGraphics

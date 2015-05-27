@@ -21,7 +21,7 @@ OBJECTS = \
     NSFileHandle+IOKit.o \
     IOPipe.o \
 
-ifeq ($(TARGET),NativeApp)
+ifeq ($(APP_TYPE),NativeApp)
     LIB_NAME=NAIOKit
     LDLIBS+=-lNACoreGraphics
 else
@@ -30,7 +30,7 @@ else
 endif
 
 ifeq ($(BASE_OS),android)
-    ifeq ($(TARGET),NativeApp)
+    ifeq ($(APP_TYPE),NativeApp)
     else
         SLIBS=MAKit
     endif

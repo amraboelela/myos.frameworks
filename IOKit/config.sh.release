@@ -20,6 +20,6 @@
 export BUILD_TYPE=Library
 
 #This means we need to generate 2 binaries, one for target NativeApp and another for target ChildApp
-export TARGET=All
+export APP_TYPE=All
 
 #export DEBUG_MODE=YES

@@ -1465,7 +1465,7 @@ _ACEOF
 System types:
   --build=BUILD     configure for building on BUILD [guessed]
   --host=HOST       cross-compile to build programs to run on HOST [BUILD]
-  --target=TARGET   configure for building compilers for TARGET [HOST]
+  --target=APP_TYPE   configure for building compilers for APP_TYPE [HOST]
 _ACEOF
 fi
 
@@ -27983,7 +27983,8 @@ $debug ||
 if test -n "$CONFIG_FILES"; then
 
 
-ac_cr=''
+ac_cr='
+'
 ac_cs_awk_cr=`$AWK 'BEGIN { print "a\rb" }' </dev/null 2>/dev/null`
 if test "$ac_cs_awk_cr" = "a${ac_cr}b"; then
   ac_cs_awk_cr='\\r'
