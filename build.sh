@@ -19,33 +19,33 @@ echo
 echo "****************************** Building frameworks ******************************"
 
 cd Foundation
-source build.sh
+myosbuild
 cd ..
 
 cd CoreFoundation
-source build.sh
+myosbuild
 cd ..
 
 cd CoreGraphics
-source build.sh
+myosbuild
 cd ..
 
 cd CoreText
-source build.sh
+myosbuild
 cd ..
 
 cd IOKit
-source build.sh
+myosbuild
 cd ..
 
 cd OpenGLES
-source build.sh
+myosbuild
 cd ..
 
 cd QuartzCore
-source build.sh
+myosbuild
 cd ..
 
 cd UIKit
-source build.sh
+myosbuild
 cd ..

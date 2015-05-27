@@ -15,5 +15,11 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-TARGET=Universal
-source ${MYOS_PATH}/sdk/library-build.sh
+# Copy this file to config.sh if you want to build it in release mode
+
+export BUILD_TYPE=Library
+
+#This means we need to generate 2 binaries, one for target NativeApp and another for target ChildApp
+export TARGET=All
+
+#export DEBUG_MODE=YES

@@ -1,7 +1,7 @@
 #
 # Copyright © 2014-2015 myOS Group.
 #
-# This file is free software; you can redistribute it and/or
+# This is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2 of the License, or (at your option) any later version.
@@ -15,5 +15,11 @@
 # Amr Aboelela <amraboelela@gmail.com>
 #
 
-source ${MYOS_PATH}/sdk/config.sh
-make clean
+# Copy this file to config.sh if you want to build it in debug mode
+
+export BUILD_TYPE=Library
+
+#This means we need to generate 2 binaries, one for target NativeApp and another for target ChildApp
+export TARGET=All
+
+export DEBUG_MODE=YES

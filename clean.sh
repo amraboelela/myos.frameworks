@@ -21,33 +21,33 @@ echo
 echo "****************************** Cleaning frameworks ******************************"
 
 cd Foundation
-source clean.sh
+myosclean
 cd ..
 
 cd CoreFoundation
-source clean.sh
+myosclean
 cd ..
 
 cd CoreGraphics
-source clean.sh
+myosclean
 cd ..
 
 cd CoreText
-source clean.sh
+myosclean
 cd ..
 
 cd IOKit
-source clean.sh
+myosclean
 cd ..
 
 cd OpenGLES
-source clean.sh
+myosclean
 cd ..
 
 cd QuartzCore
-source clean.sh
+myosclean
 cd ..
 
 cd UIKit
-source clean.sh
+myosclean
 cd ..
