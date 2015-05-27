@@ -37,13 +37,10 @@ extern NSString *const UIScreenModeDidChangeNotification;
 
 @interface UIScreen : NSObject {
 @package
-//    UIImageView *_grabber;
-//    CALayer *_layer;
     CGRect _bounds;
     CGFloat _scale;
     CGFloat _hScale;
     CGFloat _vScale;
-    //CGFloat _vScale;
     UIScreenMode *_currentMode;
     CGRect _applicationFrame;
     NSArray *_availableModes;
@@ -54,7 +51,7 @@ extern NSString *const UIScreenModeDidChangeNotification;
 @property (nonatomic, readonly) CGRect applicationFrame;
 @property (nonatomic, readonly, copy) NSArray *availableModes;	// only ever returns the currentMode
 @property (nonatomic, retain) UIScreenMode *currentMode;	// ignores any attempt to set this (for now)
-@property (nonatomic, readonly) CGFloat scale;			// always returns 1 for now
+@property (nonatomic, readonly) CGFloat scale;
 
 + (UIScreen *)mainScreen;
 + (NSArray *)screens;
