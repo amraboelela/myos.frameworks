@@ -704,12 +704,11 @@ static int _UIApplicationHandleMessages()
 
 #pragma mark - Shared functions
 
-#ifdef NATIVE_APP
-
 #ifdef ANDROID
 
-void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *delegateClassName)
+int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
 {
+#ifdef NATIVE_APP
     _UIApplicationProcessInitialize();
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [[NSProcessInfo processInfo] setProcessName:appName];
@@ -717,7 +716,7 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
     engine *myEngine;
     int events;
     struct android_poll_source *source;
-
+    
     myEngine = malloc(sizeof(engine));
     memset(myEngine, 0, sizeof(engine));
     app->userData = myEngine;
@@ -774,15 +773,49 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
     DLog(@"died");
     
     [pool release];
+#else // not NATIVE_APP
+    _UIApplicationProcessInitialize();
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    //DLog(@"");
+    _UIApplicationInitialize();
+    
+    int events;
+    
+    UIApplicationInitialize();
+    //DLog();
+    _application = [[UIApplication alloc] init];
+    Class appDelegateClass = NSClassFromString(delegateClassName);
+    
+    id appDelegate = [[appDelegateClass alloc] init];
+    _application->_delegate = appDelegate;
+    _UIApplicationInitWindow();
+    
+    while (YES) {
+        NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
+        NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
+        [[NSRunLoop currentRunLoop] runUntilDate:limit];
+        [limit release];
+        //DLog();
+        //MAPipeMessage pipeMessage = UIChildApplicationHandleMessages();
+        //if (pipeMessage) {
+        _UIApplicationHandleMessages();
+        [pool2 release];
+    }
+    DLog(@"outside. exiting");
+    UIChildApplicationClosePipes();
+    [pool release];
+    return 0;
+#endif
 }
 
 #else // not ANDROID
 
-int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
+int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
 {
+#ifdef NATIVE_APP
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-   
-    XInitThreads(); 
+    
+    XInitThreads();
     IOWindow *window = IOWindowCreateSharedWindow();
     //DLog();
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
@@ -841,76 +874,30 @@ int _UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSS
         }
         //currentTime = timestamp;
         /*if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
-            && _application->_screenMode == _UIApplicationScreenModeActive) {
-            _application->_screenMode = _UIApplicationScreenModeSleeping;
-            //[_application->_keyWindow addSubview:_application->_blackScreen];
-            //_application->_blackScreen.alpha = 0.0;
-            //[UIView beginAnimations:@"gotoSleep" context:nil];
-            //[UIView setAnimationDuration:0.5];
-            //_application->_blackScreen.alpha = 0.8;
-            //[UIView commitAnimations];
-            //[NSTimer scheduledTimerWithTimeInterval:2 target:_application selector:@selector(turnONScreen) userInfo:nil repeats:NO];
-        }
-        if (currentTime - _application->_lastActivityTime > _kLongInactiveTimeLimit
-            && _application->_screenMode == _UIApplicationScreenModeSleeping) {
-            _application->_screenMode = _UIApplicationScreenModeOff;
-            [UIView beginAnimations:@"gotoSleep" context:nil];
-            //[UIView setAnimationDuration:1.0];
-            //_application->_blackScreen.alpha = 1.0;
-            //[UIView commitAnimations];
-        }*/
+         && _application->_screenMode == _UIApplicationScreenModeActive) {
+         _application->_screenMode = _UIApplicationScreenModeSleeping;
+         //[_application->_keyWindow addSubview:_application->_blackScreen];
+         //_application->_blackScreen.alpha = 0.0;
+         //[UIView beginAnimations:@"gotoSleep" context:nil];
+         //[UIView setAnimationDuration:0.5];
+         //_application->_blackScreen.alpha = 0.8;
+         //[UIView commitAnimations];
+         //[NSTimer scheduledTimerWithTimeInterval:2 target:_application selector:@selector(turnONScreen) userInfo:nil repeats:NO];
+         }
+         if (currentTime - _application->_lastActivityTime > _kLongInactiveTimeLimit
+         && _application->_screenMode == _UIApplicationScreenModeSleeping) {
+         _application->_screenMode = _UIApplicationScreenModeOff;
+         [UIView beginAnimations:@"gotoSleep" context:nil];
+         //[UIView setAnimationDuration:1.0];
+         //_application->_blackScreen.alpha = 1.0;
+         //[UIView commitAnimations];
+         }*/
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
     //[tapGesture release];
     [pool release];
-}
-
-#endif // ANDROID
-
-#else // not NATIVE_APP
-
-#ifdef ANDROID
-
-int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
-{
-    _UIApplicationProcessInitialize();
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    //DLog(@"");
-    _UIApplicationInitialize();
-    
-    int events;
-    
-    UIApplicationInitialize();
-    //DLog();
-    _application = [[UIApplication alloc] init];
-    Class appDelegateClass = NSClassFromString(delegateClassName);
-    
-    id appDelegate = [[appDelegateClass alloc] init];
-    _application->_delegate = appDelegate;
-    _UIApplicationInitWindow();
-    
-    while (YES) {
-        NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
-        [[NSRunLoop currentRunLoop] runUntilDate:limit];
-        [limit release];
-        //DLog();
-        //MAPipeMessage pipeMessage = UIChildApplicationHandleMessages();
-        //if (pipeMessage) {
-        _UIApplicationHandleMessages();
-        [pool2 release];
-    }
-    DLog(@"outside. exiting");
-    UIChildApplicationClosePipes();
-    [pool release];
-    return 0;
-}
-
-#else // not ANDROID
-
-int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
-{
+#else
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     DLog();
     IOWindow *window = IOWindowCreateSharedWindow();
@@ -981,11 +968,10 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     }
     //[tapGesture release];
     [pool release];
+#endif
 }
 
 #endif /* ANDROID */
-
-#endif /* NATIVE_APP */
 
 void _UIApplicationSetKeyWindow(UIApplication *application, UIWindow *newKeyWindow)
 {
