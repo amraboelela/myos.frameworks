@@ -1,6 +1,6 @@
 ##myos.frameworks
 
-Frameworks for myOS applications in Android environment, using Objective-C, based on GNUstep, Chameleon and Cocotron frameworks.
+Frameworks for myOS applications in Ubuntu or Android environment, using Objective-C, based on GNUstep, Chameleon and Cocotron frameworks.
 
 * Depends on:
   * [myos.sdk](https://github.com/amraboelela/myos.sdk)
