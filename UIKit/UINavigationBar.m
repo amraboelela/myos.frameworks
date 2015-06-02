@@ -66,9 +66,8 @@ static UIButton *_UINavigationGetBarBackButtonWithBarButtonItem(UIBarButtonItem 
     [backButton setBackgroundImage:_UIImageBackButtonImage() forState:UIControlStateNormal];
     [backButton setBackgroundImage:_UIImageHighlightedBackButtonImage() forState:UIControlStateHighlighted];
     [backButton setTitle:item.title forState:UIControlStateNormal];
-    DLog();
     backButton.titleLabel.font = [UIFont systemFontOfSize:11];
-    DLog();
+    //DLog();
     backButton.contentEdgeInsets = UIEdgeInsetsMake(0,15,0,7);
     [backButton addTarget:nil action:@selector(_backButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     _UINavigationBarSetBarButtonSize(backButton);
@@ -91,7 +90,6 @@ static UIView *_UINavigationBarGetViewWithBarButtonItem(UIBarButtonItem *item)
         //[button setImage:item.image forState:UIControlStateNormal];
         //DLog();
         button.titleLabel.font = [UIFont systemFontOfSize:11];
-        //DLog();
         button.contentEdgeInsets = UIEdgeInsetsMake(0,7,0,7);
         [button addTarget:item.target action:item.action forControlEvents:UIControlEventTouchUpInside];
         //DLog(@"button: %@", button);
@@ -255,7 +253,7 @@ static void _UINavigationBarSetViewsWithTransition(UINavigationBar *navigationBa
     if ((self=[super initWithFrame:frame])) {
         _navStack = [[NSMutableArray alloc] init];
         self.tintColor = [UIColor colorWithRed:0.667 green:0.667 blue:0.667 alpha:1.0];
-        //self.backgroundColor = [UIColor greenColor];
+        self.backgroundColor = [UIColor greenColor];
         //DLog(@"self: %@", self);
     }
     return self;
@@ -295,7 +293,6 @@ static void _UINavigationBarSetViewsWithTransition(UINavigationBar *navigationBa
 
 - (void)setTintColor:(UIColor *)newColor
 {
-    //DLog();
     if (newColor != _tintColor) {
         [_tintColor release];
         _tintColor = [newColor retain];
@@ -324,7 +321,6 @@ static void _UINavigationBarSetViewsWithTransition(UINavigationBar *navigationBa
 
 - (UIBarStyle)barStyle
 {
-    //DLog();
     return UIBarStyleDefault;
 }
 
@@ -337,10 +333,11 @@ static void _UINavigationBarSetViewsWithTransition(UINavigationBar *navigationBa
 
 - (void)layoutSubviews
 {
-    //DLog();
     [super layoutSubviews];
     
+    //DLog(@"_navigationBarFlags.reloadItem: %d", _navigationBarFlags.reloadItem);
     if (_navigationBarFlags.reloadItem) {
+        //DLog();
         _navigationBarFlags.reloadItem = 0;
         _UINavigationBarSetViewsWithTransition(self, _UINavigationBarTransitionReload, NO);
     }
@@ -444,5 +441,4 @@ void _UINavigationBarUpdateNavigationItem(UINavigationBar *navigationBar, UINavi
         [navigationBar setNeedsLayout];
         //DLog();
     }
-    //DLog();
 }

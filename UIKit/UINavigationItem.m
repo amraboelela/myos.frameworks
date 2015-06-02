@@ -27,10 +27,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//#import <UIKit/UINavigationItem-private.h>
-//#import <UIKit/UIBarButtonItem.h>
-//#import <UIKit/UINavigationBar-private.h>
-
 #import <UIKit/UIKit-private.h>
 
 static void *const UINavigationItemContext = "UINavigationItemContext";
@@ -52,10 +48,10 @@ static NSSet *_keyPaths = nil;
 
 - (id)initWithTitle:(NSString *)theTitle
 {
-    //DLog(@"theTitle: %@", theTitle);
     if ((self=[super init])) {
         self.title = theTitle;
     }
+    //DLog(@"self: %@", self);
     return self;
 }
 
@@ -109,6 +105,7 @@ static NSSet *_keyPaths = nil;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
+    //DLog(@"keyPath: %@", keyPath);
     if (context != UINavigationItemContext) {
         if ([[self superclass] instancesRespondToSelector:_cmd])
             [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
@@ -134,10 +131,10 @@ static NSSet *_keyPaths = nil;
 - (void)setRightBarButtonItem:(UIBarButtonItem *)item animated:(BOOL)animated
 {
     if (item != _rightBarButtonItem) {
-        [self willChangeValueForKey: @"rightBarButtonItem"];
+        //[self willChangeValueForKey: @"rightBarButtonItem"];
         [_rightBarButtonItem release];
         _rightBarButtonItem = [item retain];
-        [self didChangeValueForKey: @"rightBarButtonItem"];
+        //[self didChangeValueForKey: @"rightBarButtonItem"];
     }
 }
 
@@ -155,6 +152,7 @@ static NSSet *_keyPaths = nil;
 void _UINavigationItemInitialize()
 {
     _keyPaths = [[NSSet alloc] initWithObjects:@"title", @"prompt", @"backBarButtonItem", @"leftBarButtonItem", @"rightBarButtonItem", @"titleView", @"hidesBackButton", nil];
+    //DLog(@"_keyPaths: %@", _keyPaths);
 }
 
 void _UINavigationItemSetNavigationBar(UINavigationItem *navigationItem, UINavigationBar *navigationBar)
@@ -176,7 +174,8 @@ void _UINavigationItemSetNavigationBar(UINavigationItem *navigationItem, UINavig
         //DLog();
     } else if (navigationBar != nil) {
         // observe property changes to notify UI element
-        for (NSString * keyPath in _keyPaths) {
+        //DLog(@"_keyPaths: %@", _keyPaths);
+        for (NSString *keyPath in _keyPaths) {
             [navigationItem addObserver:navigationItem forKeyPath:keyPath options:NSKeyValueObservingOptionNew context:UINavigationItemContext];
         }
         //DLog();

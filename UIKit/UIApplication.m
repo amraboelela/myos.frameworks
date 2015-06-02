@@ -821,6 +821,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
 {
 #ifdef NATIVE_APP
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    _UIApplicationInitialize();
     
     XInitThreads();
     IOWindow *window = IOWindowCreateSharedWindow();
@@ -906,6 +907,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     [pool release];
 #else
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    _UIApplicationInitialize();
     DLog();
     IOWindow *window = IOWindowCreateSharedWindow();
     CGRect cr = CGRectMake(0,0,640,480);
