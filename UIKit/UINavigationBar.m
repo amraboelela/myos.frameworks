@@ -253,7 +253,7 @@ static void _UINavigationBarSetViewsWithTransition(UINavigationBar *navigationBa
     if ((self=[super initWithFrame:frame])) {
         _navStack = [[NSMutableArray alloc] init];
         self.tintColor = [UIColor colorWithRed:0.667 green:0.667 blue:0.667 alpha:1.0];
-        self.backgroundColor = [UIColor greenColor];
+        //self.backgroundColor = [UIColor greenColor];
         //DLog(@"self: %@", self);
     }
     return self;
