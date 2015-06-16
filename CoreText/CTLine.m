@@ -34,18 +34,18 @@
 
 - (id)initWithRuns: (NSArray*)runs
 {
-  self = [super init];
-  if (self) {
-    _runs = [runs retain];
-  }
-  return self;
+    self = [super init];
+    if (self) {
+        _runs = [runs retain];
+    }
+    return self;
 }
 
 #pragma mark - Accessors
 
 - (NSArray*)runs
 {
-  return _runs;
+    return _runs;
 }
 
 - (NSString *)description
@@ -55,125 +55,119 @@
 
 #pragma mark - Private methods
 
-- (void)drawOnContext: (CGContextRef)ctx
+- (void)drawOnContext:(CGContextRef)ctx
 {
-  const NSUInteger runsCount = [_runs count];
-  for (NSUInteger i=0; i<runsCount; i++)
-  {
-    CTRunRef run = [_runs objectAtIndex: i];
-    CTRunDraw(run, ctx, CFRangeMake(0, CTRunGetGlyphCount(run)));
-  }
+    const NSUInteger runsCount = [_runs count];
+    for (NSUInteger i=0; i<runsCount; i++) {
+        CTRunRef run = [_runs objectAtIndex: i];
+        CTRunDraw(run, ctx, CFRangeMake(0, CTRunGetGlyphCount(run)));
+    }
 }
 
 - (CFIndex)glyphCount
 {
-  CFIndex sum = 0;
-  const NSUInteger runsCount = [_runs count];
-  for (NSUInteger i=0; i<runsCount; i++)
-  {
-    CTRunRef run = [_runs objectAtIndex: i];
-    sum += CTRunGetGlyphCount(run);
-  }
-  return sum;
-}
-
-- (NSArray*)glyphRuns
-{
-  return _runs;
-}
-
-- (CTLine*) truncatedLineWithWidth: (double)width
-                    truncationType: (CTLineTruncationType)truncationType
-                   truncationToken:	(CTLineRef)truncationToken
-{
-  double lineWidth = CTLineGetTypographicBounds(self, NULL, NULL, NULL);
-    //DLog(@"lineWidth: %f", lineWidth);
-  if (width < lineWidth) {
-    double tokenWidth = CTLineGetTypographicBounds(truncationToken, NULL, NULL, NULL);
-    double widthToRemove = lineWidth - width + tokenWidth;
+    CFIndex sum = 0;
     const NSUInteger runsCount = [_runs count];
-    NSMutableArray *newRuns = [NSMutableArray arrayWithCapacity:0];
-    switch(truncationType) {
-      case kCTLineTruncationStart: {
-        [newRuns addObjectsFromArray:truncationToken->_runs];
-        for (int i = 0; i < runsCount; ++i) {
-          CTRunRef run = [self->_runs objectAtIndex: i];
-          double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), NULL, NULL, NULL);
-          if (widthToRemove >= runWidth) {
-            widthToRemove -= runWidth; //truncate the whole run
-          } else if (widthToRemove == 0) {
-            [newRuns addObject:run]; //truncation finished
-          } else {
-            //truncate fraction of the run
-            CFIndex runCount = CTRunGetGlyphCount(run);
-            CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runCount));
-            //rough calculation, not considering the difference between glyphs width.
-            CFRange truncatedRunRange = CFRangeMake(runRemovedGlyphsCount, CTRunGetGlyphCount(run) - runRemovedGlyphsCount);
-            [newRuns addObject:[run runInRange:truncatedRunRange]];
-
-            widthToRemove = 0;
-          }
-        }
-      }
-      break;
-      case kCTLineTruncationEnd: {
-        [newRuns addObjectsFromArray:truncationToken->_runs];
-        for (int i = runsCount-1; i > -1; --i) {
-          CTRunRef run = [self->_runs objectAtIndex: i];
-          double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), NULL, NULL, NULL);
-          if (widthToRemove >= runWidth) {
-            widthToRemove -= runWidth; //truncate the whole run
-          } else if (widthToRemove == 0) {
-            [newRuns insertObject:run atIndex:0]; //truncation finished
-          } else {
-            //truncate fraction of the run
-            CFIndex runCount = CTRunGetGlyphCount(run);
-            CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runCount));
-            //rough calculation, not considering the difference between glyphs width.
-            CFRange truncatedRunRange = CFRangeMake(0, CTRunGetGlyphCount(run) - runRemovedGlyphsCount);
-            [newRuns insertObject:[run runInRange:truncatedRunRange] atIndex:0];
-
-            widthToRemove = 0;
-          }
-        }
-      }
-      break;
-      case kCTLineTruncationMiddle:
-      default: {
-        double sideWidth = (lineWidth - widthToRemove) / 2;
-        for (int i = 0; i < runsCount; ++i) {
-          CTRunRef run = [self->_runs objectAtIndex: i];
-          CFIndex runGlyphCount = CTRunGetGlyphCount(run);
-          double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, runGlyphCount), NULL, NULL, NULL);
-          if (sideWidth > runWidth) {
-            [newRuns addObject:run]; // Keep the whole run.
-            sideWidth -= runWidth;
-          } else if (widthToRemove == 0) {
-            [newRuns addObject:run]; // Keep the whole run.
-          } else if (widthToRemove >= runWidth) {
-            widthToRemove -= runWidth; //truncate the whole run
-          } else {
-            //truncate fraction of the run
-            CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runGlyphCount));
-            //rough calculation, not considering the difference between glyphs width.
-            CFIndex startTruncationIndex = (runGlyphCount - runRemovedGlyphsCount) / 2.0;
-            CFIndex endTruncationIndex = startTruncationIndex + runRemovedGlyphsCount;
-            
-            [newRuns addObject:[run runInRange:CFRangeMake(0, startTruncationIndex)]];
-
-            [newRuns addObjectsFromArray:truncationToken->_runs];
-
-            [newRuns addObject:[run runInRange:CFRangeMake(endTruncationIndex, runGlyphCount - endTruncationIndex)]];
-
-            widthToRemove = 0;
-          }
-        }
-      }
-      break;
+    for (NSUInteger i=0; i<runsCount; i++) {
+        CTRunRef run = [_runs objectAtIndex:i];
+        sum += CTRunGetGlyphCount(run);
     }
-    return [[[CTLine alloc] initWithRuns:newRuns] autorelease];
-  }
-  return self;
+    return sum;
+}
+
+- (NSArray *)glyphRuns
+{
+    return _runs;
+}
+
+- (CTLine *)truncatedLineWithWidth:(double)width
+                    truncationType:(CTLineTruncationType)truncationType
+                   truncationToken:(CTLineRef)truncationToken
+{
+    double lineWidth = CTLineGetTypographicBounds(self, NULL, NULL, NULL);
+    //DLog(@"lineWidth: %f", lineWidth);
+    if (width < lineWidth) {
+        double tokenWidth = CTLineGetTypographicBounds(truncationToken, NULL, NULL, NULL);
+        double widthToRemove = lineWidth - width + tokenWidth;
+        const NSUInteger runsCount = [_runs count];
+        NSMutableArray *newRuns = [NSMutableArray arrayWithCapacity:0];
+        switch(truncationType) {
+            case kCTLineTruncationStart: {
+                [newRuns addObjectsFromArray:truncationToken->_runs];
+                for (int i = 0; i < runsCount; ++i) {
+                    CTRunRef run = [self->_runs objectAtIndex: i];
+                    double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), NULL, NULL, NULL);
+                    if (widthToRemove >= runWidth) {
+                        widthToRemove -= runWidth; //truncate the whole run
+                    } else if (widthToRemove == 0) {
+                        [newRuns addObject:run]; //truncation finished
+                    } else {
+                    //truncate fraction of the run
+                    CFIndex runCount = CTRunGetGlyphCount(run);
+                    CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runCount));
+                    //rough calculation, not considering the difference between glyphs width.
+                    CFRange truncatedRunRange = CFRangeMake(runRemovedGlyphsCount, CTRunGetGlyphCount(run) - runRemovedGlyphsCount);
+                    [newRuns addObject:[run runInRange:truncatedRunRange]];
+  
+                    widthToRemove = 0;
+                }
+            }
+          }
+          break;
+          case kCTLineTruncationEnd: {
+            [newRuns addObjectsFromArray:truncationToken->_runs];
+            for (int i = runsCount-1; i > -1; --i) {
+              CTRunRef run = [self->_runs objectAtIndex: i];
+              double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), NULL, NULL, NULL);
+              if (widthToRemove >= runWidth) {
+                widthToRemove -= runWidth; //truncate the whole run
+              } else if (widthToRemove == 0) {
+                [newRuns insertObject:run atIndex:0]; //truncation finished
+              } else {
+                //truncate fraction of the run
+                CFIndex runCount = CTRunGetGlyphCount(run);
+                CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runCount));
+                //rough calculation, not considering the difference between glyphs width.
+                CFRange truncatedRunRange = CFRangeMake(0, CTRunGetGlyphCount(run) - runRemovedGlyphsCount);
+                [newRuns insertObject:[run runInRange:truncatedRunRange] atIndex:0];
+  
+                widthToRemove = 0;
+              }
+            }
+          }
+          break;
+          case kCTLineTruncationMiddle:
+          default: {
+            double sideWidth = (lineWidth - widthToRemove) / 2;
+            for (int i = 0; i < runsCount; ++i) {
+              CTRunRef run = [self->_runs objectAtIndex: i];
+              CFIndex runGlyphCount = CTRunGetGlyphCount(run);
+              double runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, runGlyphCount), NULL, NULL, NULL);
+              if (sideWidth > runWidth) {
+                [newRuns addObject:run]; // Keep the whole run.
+                sideWidth -= runWidth;
+              } else if (widthToRemove == 0) {
+                [newRuns addObject:run]; // Keep the whole run.
+              } else if (widthToRemove >= runWidth) {
+                widthToRemove -= runWidth; //truncate the whole run
+              } else {
+                //truncate fraction of the run
+                CFIndex runRemovedGlyphsCount = ceil(widthToRemove / (runWidth/runGlyphCount));
+                //rough calculation, not considering the difference between glyphs width.
+                CFIndex startTruncationIndex = (runGlyphCount - runRemovedGlyphsCount) / 2.0;
+                CFIndex endTruncationIndex = startTruncationIndex + runRemovedGlyphsCount;
+                [newRuns addObject:[run runInRange:CFRangeMake(0, startTruncationIndex)]];
+                [newRuns addObjectsFromArray:truncationToken->_runs];
+                [newRuns addObject:[run runInRange:CFRangeMake(endTruncationIndex, runGlyphCount - endTruncationIndex)]];
+                widthToRemove = 0;
+              }
+            }
+          }
+          break;
+        }
+        return [[[CTLine alloc] initWithRuns:newRuns] autorelease];
+    }
+    return self;
 }
 
 - (double)penOffset
@@ -260,9 +254,9 @@ CGRect CTLineGetImageBounds(
 
 double CTLineGetTypographicBounds(
 	CTLineRef line,
-	CGFloat* ascent,
-	CGFloat* descent,
-	CGFloat* leading)
+	CGFloat *ascent,
+	CGFloat *descent,
+	CGFloat *leading)
 {
     double width = 0;
     const NSUInteger runsCount = [line->_runs count];
@@ -270,7 +264,7 @@ double CTLineGetTypographicBounds(
     for (NSUInteger i=0; i<runsCount; i++) {
         CTRunRef run = [line->_runs objectAtIndex: i];
         width += CTRunGetTypographicBounds(run, CFRangeMake(0, CTRunGetGlyphCount(run)), ascent, descent, leading);
-        //DLog(@"width: %0.0f", runsCount);
+        //DLog(@"width: %0.0f", width);
     }
     return width;
 }

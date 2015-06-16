@@ -78,112 +78,112 @@ static NSDictionary * StandardGlyphNamesDictionary;
   return NSMakeRect(0,0,0,0);
 }
 
-- (NSString*) displayName
+- (NSString *)displayName
 {
-  return familyName;
+    return familyName;
 }
 
-- (NSString*) familyName
+- (NSString *)familyName
 {
-  return familyName;
+    return familyName;
 }
 
-- (NSString*) fontName
+- (NSString *)fontName
 {
-  return fontName;
+    return fontName;
 }
 
-- (BOOL) isFixedPitch
+- (BOOL)isFixedPitch
 {
-  return isFixedPitch;
+    return isFixedPitch;
 }
 
-- (const CGFloat*) matrix
+- (const CGFloat *)matrix
 {
-  return _matrix.PSMatrix;
+    return _matrix.PSMatrix;
 }
 
-- (NSAffineTransform*) textTransform
+- (NSAffineTransform *)textTransform
 {
-  // FIXME: Need to implement bridging between OPFontMatrixAttribute and kCTFontMatrixAttribute somewhere
-  NSAffineTransform *transform = [NSAffineTransform transform];
-  [transform setTransformStruct: _matrix.NSTransform];
-  return transform;
+    // FIXME: Need to implement bridging between OPFontMatrixAttribute and kCTFontMatrixAttribute somewhere
+    NSAffineTransform *transform = [NSAffineTransform transform];
+    [transform setTransformStruct: _matrix.NSTransform];
+    return transform;
 }
 
-- (CGFloat) pointSize
+- (CGFloat)pointSize
 {
-  return [[[self fontDescriptor] objectForKey: kCTFontSizeAttribute] doubleValue];
+    return [[[self fontDescriptor] objectForKey: kCTFontSizeAttribute] doubleValue];
 }
 
-- (OPFont*) printerFont
+- (OPFont *)printerFont
 {
-  return nil;
+    return nil;
 }
 
-- (OPFont*) screenFont
+- (OPFont *)screenFont
 {
-  return nil;
+    return nil;
 }
 
-- (CGFloat) ascender
+- (CGFloat)ascender
 {
-  return ascender;
+    return ascender;
 }
 
-- (CGFloat) descender
+- (CGFloat)descender
 {
-  return descender;
+    return descender;
 }
 
-- (CGFloat) capHeight
+- (CGFloat)capHeight
 {
-  return capHeight;
+    return capHeight;
 }
 
-- (CGFloat) italicAngle
+- (CGFloat)italicAngle
 {
-  return italicAngle;
+    return italicAngle;
 }
 
-- (CGFloat) leading
+- (CGFloat)leading
 {
-  return leading;
+    return leading;
 }
 
-- (NSSize) maximumAdvancement
+- (NSSize)maximumAdvancement
 {
-  return NSMakeSize(0,0);
+    return NSMakeSize(0,0);
 }
 
-- (CGFloat) underlinePosition
+- (CGFloat)underlinePosition
 {
-  return underlinePosition;
+    return underlinePosition;
 }
 
-- (CGFloat) underlineThickness
+- (CGFloat)underlineThickness
 {
-  return underlineThickness;
+    return underlineThickness;
 }
 
-- (CGFloat) xHeight
+- (CGFloat)xHeight
 {
-  return xHeight;
+    return xHeight;
 }
 
-- (NSUInteger) numberOfGlyphs
+- (NSUInteger)numberOfGlyphs
 {
-  return numberOfGlyphs;
+    return numberOfGlyphs;
 }
 
-- (NSCharacterSet*) coveredCharacterSet
+- (NSCharacterSet *)coveredCharacterSet
 {
-  return [[self fontDescriptor] objectForKey: kCTFontCharacterSetAttribute];
+    return [[self fontDescriptor] objectForKey: kCTFontCharacterSetAttribute];
 }
 
-- (OPFontDescriptor*) fontDescriptor
+- (OPFontDescriptor *)fontDescriptor
 {
-  return _descriptor;
+    return _descriptor;
 }
 
 - (NSString *)description
@@ -191,38 +191,39 @@ static NSDictionary * StandardGlyphNamesDictionary;
     return [NSString stringWithFormat:@"<%@: %p; fontName: %@; pointSize: %0.0f>", [self className], self, self.fontName, self.pointSize];
 }
 
-- (OPFontRenderingMode) renderingMode
+- (OPFontRenderingMode)renderingMode
 {
-  return 0;
+    return 0;
 }
 
-- (OPFont*) screenFontWithRenderingMode: (OPFontRenderingMode)mode
+- (OPFont *)screenFontWithRenderingMode:(OPFontRenderingMode)mode
 {
-  return nil;
+    return nil;
 }
 
 //
 // Manipulating Glyphs
 //
-- (CGSize)advancementForGlyph: (CGGlyph)glyph
+- (CGSize)advancementForGlyph:(CGGlyph)glyph
 {
-  if ((NSNullGlyph == glyph) || (NSControlGlyph == glyph)) {
-      return CGSizeMake(0,0);
-  }
+    if ((NSNullGlyph == glyph) || (NSControlGlyph == glyph)) {
+        DLog(@"(NSNullGlyph == glyph) || (NSControlGlyph == glyph)");
+        return CGSizeMake(0,0);
+    }
 
-  FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
+    FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
   
-  FT_Load_Glyph(ft_face, glyph, FT_LOAD_NO_SCALE);
-  CGSize size = CGSizeMake(REAL_SIZE(ft_face->glyph->metrics.horiAdvance),
-    REAL_SIZE(ft_face->glyph->metrics.vertAdvance));
+    FT_Load_Glyph(ft_face, glyph, FT_LOAD_NO_SCALE);
+    CGSize size = CGSizeMake(REAL_SIZE(ft_face->glyph->metrics.horiAdvance),
+      REAL_SIZE(ft_face->glyph->metrics.vertAdvance));
   
-  cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
+    cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
 
-  return size;
-  /*
-   * FIXME: Add fast path for integer rendering modes. We don't need to do
-   * so many integer->float conversions then.
-   */
+    return size;
+    /*
+     * FIXME: Add fast path for integer rendering modes. We don't need to do
+     * so many integer->float conversions then.
+     */
 }
 
 - (CGRect) boundingRectForGlyph: (CGGlyph)aGlyph
@@ -238,23 +239,26 @@ static NSDictionary * StandardGlyphNamesDictionary;
   return bbox;
 }
 
-- (void) getAdvancements: (CGSize [])advancements
-               forGlyphs: (const CGGlyph [])glyphs
-                   count: (NSUInteger)count
+- (void)getAdvancements:(CGSize [])advancements
+              forGlyphs:(const CGGlyph [])glyphs
+                  count:(NSUInteger)count
 {
-  CGSize nullSize = CGSizeMake(0,0);
-  for (int i = 0; i < count; i++)
-  {
-    if ((NSNullGlyph == glyphs[i]) || (NSControlGlyph == glyphs[i]))
-    {
-      advancements[i] = nullSize;
+    CGSize nullSize = CGSizeMake(0,0);
+    for (int i = 0; i < count; i++) {
+        if (NSNullGlyph == glyphs[i]) {
+        //if (NSControlGlyph == glyphs[i]) {
+            DLog(@"NSNullGlyph == glyphs[i]");
+        }
+        if ((NSNullGlyph == glyphs[i]) || (NSControlGlyph == glyphs[i])) {
+            DLog(@"advancements[i] = nullSize");
+            advancements[i] = nullSize;
+        } else {
+            //TODO: Optimize if too slow.
+            DLog(@"advancements[i] = [self advancementForGlyph:glyphs[i]]");
+            DLog(@"glyphs[%d]: %p", i, glyphs[i]);
+            advancements[i] = [self advancementForGlyph:glyphs[i]];
+        }
     }
-    else
-    {
-      //TODO: Optimize if too slow.
-      advancements[i] = [self advancementForGlyph: glyphs[i]];
-    }
-  }
 }
 
 - (void) getAdvancements: (CGSize [])advancements
@@ -263,68 +267,64 @@ static NSDictionary * StandardGlyphNamesDictionary;
 {
 }
 
-- (void) getBoundingRects: (CGRect [])boundingRects
-                forGlyphs: (const CGGlyph [])glyphs
-                    count: (NSUInteger)count
+- (void)getBoundingRects:(CGRect [])boundingRects
+               forGlyphs:(const CGGlyph [])glyphs
+                   count:(NSUInteger)count
 {
-  for (int i = 0; i < count; i++)
-  {
-    if ((NSNullGlyph == glyphs[i]) || (NSControlGlyph == glyphs[i]))
-    {
-      boundingRects[i] = CGRectZero;
+    for (int i = 0; i < count; i++) {
+        if ((NSNullGlyph == glyphs[i]) || (NSControlGlyph == glyphs[i])) {
+            boundingRects[i] = CGRectZero;
+        } else {
+            //TODO: Optimize if too slow.
+            boundingRects[i] = [self boundingRectForGlyph:glyphs[i]];
+        }
     }
-    else
-    {
-      //TODO: Optimize if too slow.
-      boundingRects[i] = [self boundingRectForGlyph:glyphs[i]];
-    }
-  }
 }
 
-- (FT_String*)glyphNameForKey:(NSString*)glyphKey
+- (FT_String *)glyphNameForKey:(NSString *)glyphKey
 {
-  if (!StandardGlyphNamesDictionary) {
-    NSString * _StandardGlyphNames[258] = {
-  @".notdef",
-  @".null",
-  @"nonmarkingreturn",
-  @"space",
-  @"exclam",
-  @"quotedbl",
-  @"numbersign",
-  @"dollar",
-  @"percent",
-  @"ampersand",
-  @"quotesingle",
-  @"parenleft",
-  @"parenright",
-  @"asterisk",
-  @"plus",
-  @"comma",
-  @"hyphen",
-  @"period",
-  @"slash",
-  @"zero",
-  @"one",
-  @"two",
-  @"three",
-  @"four",
-  @"five",
-  @"six",
-  @"seven",
-  @"eight",
-  @"nine",
-  @"colon",
-  @"semicolon",
-  @"less",
-  @"equal",
-  @"greater",
-  @"question",
-  @"at",
-  @"A",
-  @"B",
-  @"C",
-  @"D",
+    if (!StandardGlyphNamesDictionary) {
+      NSString * _StandardGlyphNames[258] = {
+    @".notdef",
+    @".null",
+    @"nonmarkingreturn",
+    @"space",
+    @"exclam",
+    @"quotedbl",
+    @"numbersign",
+    @"dollar",
+    @"percent",
+    @"ampersand",
+    @"quotesingle",
+    @"parenleft",
+    @"parenright",
+    @"asterisk",
+    @"plus",
+    @"comma",
+    @"hyphen",
+    @"period",
+    @"slash",
+    @"zero",
+    @"one",
+    @"two",
+    @"three",
+    @"four",
+    @"five",
+    @"six",
+    @"seven",
+    @"eight",
+    @"nine",
+    @"colon",
+    @"semicolon",
+    @"less",
+    @"equal",
+    @"greater",
+    @"question",
+    @"at",
+    @"A",
+    @"B",
+    @"C",
+    @"D",
   @"E",
   @"F",
   @"G",
@@ -809,24 +809,23 @@ static NSDictionary * StandardGlyphNamesDictionary;
   return (FT_String*)[[StandardGlyphNamesDictionary objectForKey:glyphKey] UTF8String];
 }
 
-- (CGGlyph) glyphWithName: (NSString*)glyphName
+- (CGGlyph)glyphWithName:(NSString *)glyphName
 {
-  FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
-  CGGlyph result = 0;
-  //TODO using #import <CoreGraphics/StandardGlyphNames.h>
-  result = (CGGlyph)FT_Get_Name_Index(ft_face, (FT_String*)[glyphName UTF8String]);
+    FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
+    CGGlyph result = 0;
+    //TODO using #import <CoreGraphics/StandardGlyphNames.h>
+    result = (CGGlyph)FT_Get_Name_Index(ft_face, (FT_String*)[glyphName UTF8String]);
   
-  if (result == 0) {
-    FT_String* nameFromKey = [self glyphNameForKey:glyphName];
-    if (nameFromKey != NULL) {
-      result = (CGGlyph)FT_Get_Name_Index(ft_face, nameFromKey);
+    if (result == 0) {
+        FT_String* nameFromKey = [self glyphNameForKey:glyphName];
+        if (nameFromKey != NULL) {
+            result = (CGGlyph)FT_Get_Name_Index(ft_face, nameFromKey);
+        }
     }
-  }
   
-  
-  cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
+    cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
 
-  return result;
+    return result;
 }
 
 - (NSStringEncoding) mostCompatibleStringEncoding

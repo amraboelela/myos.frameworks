@@ -32,43 +32,41 @@
 
 @implementation OPSimpleLayoutEngine
 
-- (CTRunRef) layoutString: (NSString*)chars
-	   withAttributes: (NSDictionary*)attribs
+- (CTRunRef)layoutString:(NSString *)chars
+	  withAttributes:(NSDictionary *)attribs
 {
-  const NSUInteger length = [chars length];
-  CGGlyph *glyphs = malloc(sizeof(CGGlyph) * length);
-  unichar *characters = malloc(sizeof(unichar) * length);
-  CGSize *advances = malloc(sizeof(CGSize) * length);
+    //DLog(@"chars: %@", chars);
+    const NSUInteger length = [chars length];
+    CGGlyph *glyphs = malloc(sizeof(CGGlyph) * length);
+    unichar *characters = malloc(sizeof(unichar) * length);
+    CGSize *advances = malloc(sizeof(CGSize) * length);
 
-  CTFontRef font = [attribs objectForKey: kCTFontAttributeName]; 
-  if (font == nil)
-  {
-    NSLog(@"OPSimpleLayoutEngine: Error, layoutString:withAttributes: called without a font");
+    CTFontRef font = [attribs objectForKey:kCTFontAttributeName]; 
+    DLog(@"font: %@", font);
+    if (font == nil) {
+        NSLog(@"OPSimpleLayoutEngine: Error, layoutString:withAttributes: called without a font");
         DLog(@"attribs: %@", attribs);
         return nil;
     } else {
-    [chars getCharacters:characters range:NSMakeRange(0, length)];
-    int len = [chars length];
-    for (int i=0; i<len; i++) {
-      CFStringRef chr = CFStringCreateWithBytes (NULL, (unsigned char*)(&characters[i]), 1, kCFStringEncodingUTF8, false);
-      glyphs[i] = CTFontGetGlyphWithName(font, chr);
-      CFRelease(chr);
+        [chars getCharacters:characters range:NSMakeRange(0, length)];
+        int len = [chars length];
+        for (int i=0; i<len; i++) {
+            CFStringRef chr = CFStringCreateWithBytes(NULL, (unsigned char*)(&characters[i]), 1, kCFStringEncodingUTF8, false);
+            DLog(@"chr: %@", chr);
+            glyphs[i] = CTFontGetGlyphWithName(font, chr);
+            DLog(@"glyphs[%d]: %p", i, glyphs[i]);
+            CFRelease(chr);
+        }
+        CTFontGetAdvancesForGlyphs(font, kCTFontDefaultOrientation, glyphs, advances, length);
     }
 
-    CTFontGetAdvancesForGlyphs(font,
-					      kCTFontDefaultOrientation,
-					      glyphs, 
-					      advances,
-					      length);
-  }
+    CTRunRef run = [[[CTRun alloc ] initWithGlyphs:glyphs advances:advances range:CFRangeMake(0, length) attributes:attribs] autorelease];
 
-  CTRunRef run = [[[CTRun alloc ] initWithGlyphs:glyphs advances:advances range:CFRangeMake(0, length) attributes:attribs] autorelease];
+    free(glyphs);
+    free(characters);
+    free(advances);
 
-  free(glyphs);
-  free(characters);
-  free(advances);
-
-  return run;
+    return run;
 }
 
 @end

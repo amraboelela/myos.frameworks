@@ -92,7 +92,7 @@ static void _UIButtonSetContent(UIButton *button, id value, UIControlState state
 static CGSize _UIButtonBackgroundSizeForState(UIButton *button, UIControlState state)
 {
     UIImage *backgroundImage = [button backgroundImageForState:state];
-    return backgroundImage? backgroundImage.size : CGSizeZero;
+    return backgroundImage ? backgroundImage.size : CGSizeZero;
 }
 
 static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
@@ -102,13 +102,19 @@ static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
     
     CGSize maxSize = button->_layer->_bounds.size;
     //DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
-    //DLog(@"button->_titleLabel: %@", button->_titleLabel);
-    maxSize.height = button->_titleLabel.font.lineHeight;
+    UILabel *titleLabel = button->_titleLabel;
+    //DLog(@"titleLabel: %@", titleLabel);
+    maxSize.height = titleLabel.font.lineHeight;
     //DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
-    CGSize resultSize = [title sizeWithFont:button->_titleLabel.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeTailTruncation];
-    //CGSize result = [title sizeWithFont:button->_titleLabel.font constrainedToSize:CGSizeMake(CGFLOAT_MAX,CGFLOAT_MAX)];
+    //DLog(@"titleLabel.font: %@", titleLabel.font);
+    CGSize resultSize = [title sizeWithFont:titleLabel.font constrainedToSize:maxSize lineBreakMode:titleLabel.lineBreakMode];
     //DLog(@"resultSize: %@", NSStringFromCGSize(resultSize));
-    return ([title length] > 0)? resultSize : CGSizeZero;
+    //CGSize result = [title sizeWithFont:titleLabel.font constrainedToSize:CGSizeMake(CGFLOAT_MAX,CGFLOAT_MAX)];
+    //if (resultSize.width == 0) {
+    //    resultSize.width = 10;
+    //}
+    //DLog(@"resultSize 2: %@", NSStringFromCGSize(resultSize));
+    return ([title length] > 0) ? resultSize : CGSizeZero;
 }
 
 static CGSize _UIButtonImageSizeForState(UIButton *button, UIControlState state)
@@ -225,6 +231,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
         _titleLabel.backgroundColor = [UIColor clearColor];
         _titleLabel.textAlignment = UITextAlignmentCenter;
         _titleLabel.shadowOffset = CGSizeZero;
+        //DLog(@"[UIFont buttonFontSize]: %0.1f", [UIFont buttonFontSize]);
         _titleLabel.font = [UIFont systemFontOfSize:[UIFont buttonFontSize]];
 
         //[self addSubview:_backgroundImageView];
@@ -355,7 +362,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 {
     //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     const UIControlState state = self.state;
-    //DLog(@"1");
     UIEdgeInsets inset = _titleEdgeInsets;
     CGSize imageSize = _UIButtonImageSizeForState(self, state);
     inset.left += imageSize.width;
@@ -466,13 +472,13 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     fitSize.width = _contentEdgeInsets.left + _contentEdgeInsets.right + titleSize.width + imageSize.width;
     fitSize.height = _contentEdgeInsets.top + _contentEdgeInsets.bottom + MAX(titleSize.height,imageSize.height);
     
-    UIImage* background = [self currentBackgroundImage];
+    UIImage *background = [self currentBackgroundImage];
     if (background) {
         CGSize backgroundSize = background.size;
         fitSize.width = MAX(fitSize.width, backgroundSize.width);
         fitSize.height = MAX(fitSize.height, backgroundSize.height);
     }
-    
+    //DLog(@"fitSize: %@", NSStringFromCGSize(fitSize));
     return fitSize;
 }
 
