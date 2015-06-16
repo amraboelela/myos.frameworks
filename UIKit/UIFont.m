@@ -143,7 +143,7 @@ static UIFont *_UIFontGetFontWithCTFont(CTFontRef aFont)
 
 + (CGFloat)buttonFontSize
 {
-    return 20.0;
+    return 15.0;
 }
 
 + (CGFloat)smallSystemFontSize

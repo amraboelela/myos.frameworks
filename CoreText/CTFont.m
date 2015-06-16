@@ -273,7 +273,7 @@ CGFontRef CTFontCopyGraphicsFont(
 
 CFIndex CTFontGetGlyphCount(CTFontRef font)
 {
-  return [font numberOfGlyphs];
+    return [font numberOfGlyphs];
 }
 
 CGPathRef CTFontCreatePathForGlyph(
@@ -281,7 +281,7 @@ CGPathRef CTFontCreatePathForGlyph(
   CGGlyph glyph,
   const CGAffineTransform *transform)
 {
-  return [font graphicsPathForGlyph: glyph
+    return [font graphicsPathForGlyph: glyph
                           transform: transform];
 }
 
@@ -291,16 +291,16 @@ bool CTFontGetGlyphsForCharacters(
   CGGlyph glyphs[],
   CFIndex count)
 {
-  return [font getGraphicsGlyphsForCharacters: characters
-                               graphicsGlyphs: glyphs
-                                        count: count];
+    return [font getGraphicsGlyphsForCharacters: characters
+                                 graphicsGlyphs: glyphs
+                                          count: count];
 }
 
 CGGlyph CTFontGetGlyphWithName(
   CTFontRef font,
   CFStringRef name)
 {
-  return [font glyphWithName: name];
+    return [font glyphWithName: name];
 }
 
 double CTFontGetAdvancesForGlyphs(
@@ -310,10 +310,11 @@ double CTFontGetAdvancesForGlyphs(
   CGSize advances[],
   CFIndex count)
 {
-  return [font getAdvancesForGraphicsGlyphs: glyphs
-                                   advances: advances
-                                orientation: orientation
-                                      count: count];
+    DLog();
+    return [font getAdvancesForGraphicsGlyphs:glyphs
+                                     advances:advances
+                                  orientation:orientation
+                                        count:count];
 }
 
 CGRect CTFontGetBoundingRectsForGlyphs(
