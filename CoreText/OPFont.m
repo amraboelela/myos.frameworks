@@ -1,33 +1,33 @@
 /** <title>OPFont</title>
-
-   <abstract>The font class</abstract>
-
-   Copyright (C) 1996-2015 Free Software Foundation, Inc.
-
-   Author: Ovidiu Predescu <ovidiu@net-community.com>
-   Date: February 1997
-   A completely rewritten version of the original source by Scott Christley.
-   Modified by: Amr Aboelela <amraboelela@gmail.com>
-   Date: Mar 2015
  
-   This file is part of the GNUstep GUI Library.
-
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library; see the file COPYING.LIB.
-   If not, see <http://www.gnu.org/licenses/> or write to the
-   Free Software Foundation, 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.
-*/
+ <abstract>The font class</abstract>
+ 
+ Copyright (C) 1996-2015 Free Software Foundation, Inc.
+ 
+ Author: Ovidiu Predescu <ovidiu@net-community.com>
+ Date: February 1997
+ A completely rewritten version of the original source by Scott Christley.
+ Modified by: Amr Aboelela <amraboelela@gmail.com>
+ Date: Mar 2015
+ 
+ This file is part of the GNUstep GUI Library.
+ 
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+ 
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+ Lesser General Public License for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; see the file COPYING.LIB.
+ If not, see <http://www.gnu.org/licenses/> or write to the
+ Free Software Foundation, 51 Franklin Street, Fifth Floor,
+ Boston, MA 02110-1301, USA.
+ */
 
 #import <Foundation/NSAffineTransform.h>
 #import <Foundation/NSCoder.h>
@@ -48,13 +48,13 @@
 // FIXME: This definitions need to be ammended to take vertical typesetting into
 // account.
 #define TRANSFORMED_SIZE(x,y)\
-  ((CGSize)(CGSizeApplyAffineTransform(CGSizeMake(REAL_SIZE(x), REAL_SIZE(y)), _matrix.CGTransform)))
+((CGSize)(CGSizeApplyAffineTransform(CGSizeMake(REAL_SIZE(x), REAL_SIZE(y)), _matrix.CGTransform)))
 
 #define TRANSFORMED_POINT(x,y)\
-  ((CGPoint)(CGPointApplyAffineTransform(CGPointMake(REAL_SIZE(x), REAL_SIZE(y)), _matrix.CGTransform)))
+((CGPoint)(CGPointApplyAffineTransform(CGPointMake(REAL_SIZE(x), REAL_SIZE(y)), _matrix.CGTransform)))
 
 #define TRANSFORMED_RECT(x,y,w,h)\
-  ((CGRect)(CGRectApplyAffineTransform(CGRectMake(REAL_SIZE(x), REAL_SIZE(y), REAL_SIZE(w), REAL_SIZE(h)), _matrix.CGTransform)))
+((CGRect)(CGRectApplyAffineTransform(CGRectMake(REAL_SIZE(x), REAL_SIZE(y), REAL_SIZE(w), REAL_SIZE(h)), _matrix.CGTransform)))
 
 const CGFloat *OPFontIdentityMatrix;
 
@@ -65,9 +65,9 @@ static NSDictionary * StandardGlyphNamesDictionary;
 
 + (void)load
 {
-  static CGFloat identity[6] = {1.0, 0.0, 1.0, 0.0, 0.0, 0.0};
-  OPFontIdentityMatrix = identity;
-  StandardGlyphNamesDictionary = CFDictionaryCreate (NULL, StandardGlyphNamesKeys, StandardGlyphNames, 258, NULL, NULL);
+    static CGFloat identity[6] = {1.0, 0.0, 1.0, 0.0, 0.0, 0.0};
+    OPFontIdentityMatrix = identity;
+    //StandardGlyphNamesDictionary = CFDictionaryCreate (NULL, StandardGlyphNamesKeys, StandardGlyphNames, 258, NULL, NULL);
 }
 
 //
@@ -75,7 +75,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
 //
 - (NSRect) boundingRectForFont
 {
-  return NSMakeRect(0,0,0,0);
+    return NSMakeRect(0,0,0,0);
 }
 
 - (NSString *)displayName
@@ -210,15 +210,15 @@ static NSDictionary * StandardGlyphNamesDictionary;
         DLog(@"(NSNullGlyph == glyph) || (NSControlGlyph == glyph)");
         return CGSizeMake(0,0);
     }
-
+    
     FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
-  
+    
     FT_Load_Glyph(ft_face, glyph, FT_LOAD_NO_SCALE);
     CGSize size = CGSizeMake(REAL_SIZE(ft_face->glyph->metrics.horiAdvance),
-      REAL_SIZE(ft_face->glyph->metrics.vertAdvance));
-  
+                             REAL_SIZE(ft_face->glyph->metrics.vertAdvance));
+    
     cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
-
+    
     return size;
     /*
      * FIXME: Add fast path for integer rendering modes. We don't need to do
@@ -228,15 +228,15 @@ static NSDictionary * StandardGlyphNamesDictionary;
 
 - (CGRect) boundingRectForGlyph: (CGGlyph)aGlyph
 {
-  FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
-  
-  FT_Load_Glyph(ft_face, aGlyph, FT_LOAD_NO_SCALE);
-  FT_Glyph_Metrics m = ft_face->glyph->metrics;
-  CGRect bbox = CGRectMake(m.horiBearingX, m.horiBearingY - m.height, m.width, m.height);
-
-  cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
-
-  return bbox;
+    FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
+    
+    FT_Load_Glyph(ft_face, aGlyph, FT_LOAD_NO_SCALE);
+    FT_Glyph_Metrics m = ft_face->glyph->metrics;
+    CGRect bbox = CGRectMake(m.horiBearingX, m.horiBearingY - m.height, m.width, m.height);
+    
+    cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
+    
+    return bbox;
 }
 
 - (void)getAdvancements:(CGSize [])advancements
@@ -246,7 +246,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
     CGSize nullSize = CGSizeMake(0,0);
     for (int i = 0; i < count; i++) {
         if (NSNullGlyph == glyphs[i]) {
-        //if (NSControlGlyph == glyphs[i]) {
+            //if (NSControlGlyph == glyphs[i]) {
             DLog(@"NSNullGlyph == glyphs[i]");
         }
         if ((NSNullGlyph == glyphs[i]) || (NSControlGlyph == glyphs[i])) {
@@ -283,7 +283,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
 
 - (FT_String *)glyphNameForKey:(NSString *)glyphKey
 {
-    /*if (!StandardGlyphNamesDictionary) {
+    if (!StandardGlyphNamesDictionary) {
         NSString * _StandardGlyphNames[258] = {
             @".notdef",
             @".null",
@@ -544,7 +544,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
             @"ccaron",
             @"dcroat"
         };
-        const NSString *const _StandardGlyphNamesKeys[258] = {
+        NSString * _StandardGlyphNamesKeys[258];/* = {
             @".notdef",
             @".null",
             @"nonmarkingreturn",
@@ -639,10 +639,10 @@ static NSDictionary * StandardGlyphNamesDictionary;
             @"x",
             @"y",
             @"z",
-            @"braceleft",
-            @"bar",
-            @"braceright",
-            @"asciitilde",
+            @"{",
+            @"|",
+            @"}",
+            @"~",
             @"Adieresis",
             @"Aring",
             @"Ccedilla",
@@ -803,9 +803,14 @@ static NSDictionary * StandardGlyphNamesDictionary;
             @"Ccaron",
             @"ccaron",
             @"dcroat"
-        };
+        };*/
+        //char *aChar;
+        for (int i=0; i<258; i++) {
+            //aChar = i;
+            _StandardGlyphNamesKeys[i] = [NSString stringWithFormat:@"%c", i];
+        }
         StandardGlyphNamesDictionary = [[NSDictionary dictionaryWithObjects:_StandardGlyphNames forKeys:_StandardGlyphNamesKeys count:258] retain];
-    }*/
+    }
     return (FT_String *)[[StandardGlyphNamesDictionary objectForKey:glyphKey] UTF8String];
 }
 
@@ -815,22 +820,22 @@ static NSDictionary * StandardGlyphNamesDictionary;
     CGGlyph result = 0;
     //TODO using #import <CoreGraphics/StandardGlyphNames.h>
     result = (CGGlyph)FT_Get_Name_Index(ft_face, (FT_String*)[glyphName UTF8String]);
-  
+    
     if (result == 0) {
         FT_String* nameFromKey = [self glyphNameForKey:glyphName];
         if (nameFromKey != NULL) {
             result = (CGGlyph)FT_Get_Name_Index(ft_face, nameFromKey);
         }
     }
-  
+    
     cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
-
+    
     return result;
 }
 
 - (NSStringEncoding) mostCompatibleStringEncoding
 {
-  return mostCompatibleStringEncoding;
+    return mostCompatibleStringEncoding;
 }
 
 //
@@ -839,87 +844,87 @@ static NSDictionary * StandardGlyphNamesDictionary;
 + (OPFont*) fontWithDescriptor: (OPFontDescriptor*)descriptor
                        options: (CTFontOptions)options
 {
-  // FIXME: placeholder code.
-  return [[[OPFont alloc] _initWithDescriptor: descriptor
-                                      options: options] autorelease];
+    // FIXME: placeholder code.
+    return [[[OPFont alloc] _initWithDescriptor: descriptor
+                                        options: options] autorelease];
 }
 
 + (OPFont*) fontWithGraphicsFont: (CGFontRef)graphics
             additionalDescriptor: (OPFontDescriptor*)descriptor
 {
-	return nil;
+    return nil;
 }
 
 - (id)_initWithDescriptor: (OPFontDescriptor*)aDescriptor
                   options: (CTFontOptions)options
 {
-  if (nil == (self = [super init]))
-  {
-    return nil;
-  }
-  ASSIGN(_descriptor, aDescriptor);
-  NSAffineTransform *transform = [_descriptor objectForKey: OPFontMatrixAttribute];
-  if (transform == nil)
-  {
-    _matrix.CGTransform = CGAffineTransformIdentity;
-  }
-  else
-  {
-    _matrix.NSTransform = [transform transformStruct];
-  }
-  // TODO set the rest of the attributes:
-  FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
-
-  ascender = REAL_SIZE(ft_face->ascender);
-  descender = REAL_SIZE(ft_face->descender);
-  leading = TRANSFORMED_SIZE(0, ft_face->height - (ascender - descender)).height;
-  underlinePosition = TRANSFORMED_POINT(0, ft_face->underline_position).y;
-  underlineThickness = TRANSFORMED_SIZE(0, ft_face->underline_thickness).height;
-
-  // TT_OS2* OS2Table = FT_Get_Sfnt_Table(ft_face, TTAG_OS2);
-  // if (NULL != OS2Table) {
-  //   capHeight = TRANSFORMED_SIZE(0, OS2Table->sCapHeight).height;
-  //   xHeight = = TRANSFORMED_SIZE(0, OS2Table->sxHeight).height;
-  // }
-
-  // TT_Postscript *postTable = FT_Get_Sfnt_Table(fontFace, TTAG_post);
-  // if (NULL != postTable) {
-  //   isFixedPitch = postTable->isFixedPitch;
-  //   italicAngle = CGFloatFromFT_Fixed(postTable->italicAngle);
-  // }
-
-  numberOfGlyphs = ft_face->num_glyphs;
-
-  fontName = [[[_descriptor fontAttributes] objectForKey:kCTFontNameAttribute] retain];
-  familyName = [[NSString alloc] initWithUTF8String:ft_face->family_name];
-
-  cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
-  return self;
+    if (nil == (self = [super init]))
+    {
+        return nil;
+    }
+    ASSIGN(_descriptor, aDescriptor);
+    NSAffineTransform *transform = [_descriptor objectForKey: OPFontMatrixAttribute];
+    if (transform == nil)
+    {
+        _matrix.CGTransform = CGAffineTransformIdentity;
+    }
+    else
+    {
+        _matrix.NSTransform = [transform transformStruct];
+    }
+    // TODO set the rest of the attributes:
+    FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
+    
+    ascender = REAL_SIZE(ft_face->ascender);
+    descender = REAL_SIZE(ft_face->descender);
+    leading = TRANSFORMED_SIZE(0, ft_face->height - (ascender - descender)).height;
+    underlinePosition = TRANSFORMED_POINT(0, ft_face->underline_position).y;
+    underlineThickness = TRANSFORMED_SIZE(0, ft_face->underline_thickness).height;
+    
+    // TT_OS2* OS2Table = FT_Get_Sfnt_Table(ft_face, TTAG_OS2);
+    // if (NULL != OS2Table) {
+    //   capHeight = TRANSFORMED_SIZE(0, OS2Table->sCapHeight).height;
+    //   xHeight = = TRANSFORMED_SIZE(0, OS2Table->sxHeight).height;
+    // }
+    
+    // TT_Postscript *postTable = FT_Get_Sfnt_Table(fontFace, TTAG_post);
+    // if (NULL != postTable) {
+    //   isFixedPitch = postTable->isFixedPitch;
+    //   italicAngle = CGFloatFromFT_Fixed(postTable->italicAngle);
+    // }
+    
+    numberOfGlyphs = ft_face->num_glyphs;
+    
+    fontName = [[[_descriptor fontAttributes] objectForKey:kCTFontNameAttribute] retain];
+    familyName = [[NSString alloc] initWithUTF8String:ft_face->family_name];
+    
+    cairo_ft_scaled_font_unlock_face(_descriptor->cairofont);
+    return self;
 }
 
 - (void)dealloc {
-  [fontName release];
-  [familyName release];
-  [super dealloc];
+    [fontName release];
+    [familyName release];
+    [super dealloc];
 }
 
 - (CGFloat) unitsPerEm
 {
-	return 0;
+    return 0;
 }
 
 - (NSString*) localizedNameForKey: (NSString*)nameKey
                          language: (NSString**)languageOut
 {
-	return nil;
+    return nil;
 }
 
 - (bool) getGraphicsGlyphsForCharacters: (const unichar *)characters
                          graphicsGlyphs: (const CGGlyph *)glyphs
                                   count: (CFIndex)count
 {
-  memcpy((void*)glyphs, characters, count*sizeof(unichar));
-  return true;
+    memcpy((void*)glyphs, characters, count*sizeof(unichar));
+    return true;
 }
 
 - (double) getAdvancesForGraphicsGlyphs: (const CGGlyph [])glyphs
@@ -927,10 +932,10 @@ static NSDictionary * StandardGlyphNamesDictionary;
                             orientation: (CTFontOrientation)orientation
                                   count: (CFIndex)count
 {
-  //TODO
-  [self getAdvancements:advances forGlyphs:glyphs count:count];
-
-	return 0;
+    //TODO
+    [self getAdvancements:advances forGlyphs:glyphs count:count];
+    
+    return 0;
 }
 
 - (CGRect) getBoundingRectsForGraphicsGlyphs: (const CGGlyph *)glyphs
@@ -938,8 +943,8 @@ static NSDictionary * StandardGlyphNamesDictionary;
                                  orientation: (CTFontOrientation)orientation
                                        count: (CFIndex)count
 {
-	CGRect r = {{0,0},{0,0}};
-	return r;
+    CGRect r = {{0,0},{0,0}};
+    return r;
 }
 
 - (void) getVerticalTranslationForGraphicsGlyphs: (const CGGlyph*)glyphs
@@ -951,33 +956,33 @@ static NSDictionary * StandardGlyphNamesDictionary;
 - (CGPathRef) graphicsPathForGlyph: (CGGlyph)glyph
                          transform: (const CGAffineTransform *)xform
 {
-	return nil;
+    return nil;
 }
 
 - (NSArray*) variationAxes
 {
-	return nil;
+    return nil;
 }
 
 - (NSDictionary*) variation
 {
-	return nil;
+    return nil;
 }
 
 - (CGFontRef) graphicsFontWithDescriptor: (OPFontDescriptor**)descriptorOut
 {
-	return nil;
+    return nil;
 }
 
 - (NSArray*) availableTablesWithOptions: (CTFontTableOptions)options
 {
-	return nil;
+    return nil;
 }
 
 - (NSData*) tableForTag: (CTFontTableTag)tag
             withOptions: (CTFontTableOptions)options
 {
-	return nil;
+    return nil;
 }
 
 //
@@ -985,27 +990,27 @@ static NSDictionary * StandardGlyphNamesDictionary;
 //
 - (NSString*) nameForGlyph: (CGGlyph)graphicsGlyph
 {
-	return nil;
+    return nil;
 }
 
 + (CTFontRef) fontWithData: (NSData*)fontData
                       size: (CGFloat)size
-       		          matrix: (const CGFloat*)fontMatrix
+                    matrix: (const CGFloat*)fontMatrix
       additionalDescriptor: (OPFontDescriptor*)descriptor
 {
-	return nil;
+    return nil;
 }
 
 - (NSString*) nameForKey: (NSString*)nameKey
 {
-  return nil;
+    return nil;
 }
 
 + (OPFont*) UIFontWithType: (CTFontUIFontType)type
                       size: (CGFloat)size
                forLanguage: (NSString*)languageCode
 {
-  return nil;
+    return nil;
 }
 
 @end
