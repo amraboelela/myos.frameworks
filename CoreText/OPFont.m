@@ -207,7 +207,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
 - (CGSize)advancementForGlyph:(CGGlyph)glyph
 {
     if ((NSNullGlyph == glyph) || (NSControlGlyph == glyph)) {
-        DLog(@"(NSNullGlyph == glyph) || (NSControlGlyph == glyph)");
+        //DLog(@"(NSNullGlyph == glyph) || (NSControlGlyph == glyph)");
         return CGSizeMake(0,0);
     }
     
@@ -245,17 +245,17 @@ static NSDictionary * StandardGlyphNamesDictionary;
 {
     CGSize nullSize = CGSizeMake(0,0);
     for (int i = 0; i < count; i++) {
-        if (NSNullGlyph == glyphs[i]) {
+        //if (NSNullGlyph == glyphs[i]) {
             //if (NSControlGlyph == glyphs[i]) {
-            DLog(@"NSNullGlyph == glyphs[i]");
-        }
+            //DLog(@"NSNullGlyph == glyphs[i]");
+        //}
         if ((NSNullGlyph == glyphs[i]) || (NSControlGlyph == glyphs[i])) {
-            DLog(@"advancements[i] = nullSize");
+            //DLog(@"advancements[i] = nullSize");
             advancements[i] = nullSize;
         } else {
             //TODO: Optimize if too slow.
-            DLog(@"advancements[i] = [self advancementForGlyph:glyphs[i]]");
-            DLog(@"glyphs[%d]: %p", i, glyphs[i]);
+            //DLog(@"advancements[i] = [self advancementForGlyph:glyphs[i]]");
+            //DLog(@"glyphs[%d]: %p", i, glyphs[i]);
             advancements[i] = [self advancementForGlyph:glyphs[i]];
         }
     }
@@ -805,9 +805,10 @@ static NSDictionary * StandardGlyphNamesDictionary;
             @"dcroat"
         };*/
         //char *aChar;
-        for (int i=0; i<258; i++) {
-            //aChar = i;
-            _StandardGlyphNamesKeys[i] = [NSString stringWithFormat:@"%c", i];
+        for (int i=29; i<258+29; i++) {
+            char aChar = i;
+            _StandardGlyphNamesKeys[i-29] = [NSString stringWithFormat:@"%c", aChar];
+            //DLog(@"_StandardGlyphNamesKeys[%d]: %@", i-29, _StandardGlyphNamesKeys[i-29]);
         }
         StandardGlyphNamesDictionary = [[NSDictionary dictionaryWithObjects:_StandardGlyphNames forKeys:_StandardGlyphNamesKeys count:258] retain];
     }

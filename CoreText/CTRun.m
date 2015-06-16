@@ -41,14 +41,14 @@
     self = [super init];
     if (self) {
         _stringRange = range;
-        DLog(@"range: %d, %d", range.location, range.length);
+        //DLog(@"range: %d, %d", range.location, range.length);
         _glyphs = malloc(sizeof(CGGlyph) * range.length);
         _advances = malloc(sizeof(CGSize) * range.length);
         _positions = malloc(sizeof(CGPoint) * range.length);
         for (int i = 0; i < range.length; ++i) {
             _glyphs[i] = glyphs[i];
             _advances[i] = advances[i];
-            DLog(@"_advances[%d]: %.0f, %.0f", i, _advances[i].width, _advances[i].height);
+            //DLog(@"_advances[%d]: %.0f, %.0f", i, _advances[i].width, _advances[i].height);
             _positions[i] = CGPointMake(i*20,0);//TODO fix this
         }
         _attributes = [[NSDictionary alloc] initWithDictionary:attributes];
@@ -118,21 +118,21 @@
 			    descent:(CGFloat *)descent //FIXME
 			    leading:(CGFloat *)leading //FIXME
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     if (range.location < _count && (range.location + range.length) <= _count) {
         CGFloat width = 0;
         CGSize *currentAdvance = _advances;
         if (range.length == 0) {
             range.length = _count;
         }
-        DLog(@"range: %d, %d", range.location, range.length);
+        //DLog(@"range: %d, %d", range.location, range.length);
         for (int i = range.location; i < range.length; ++i, ++currentAdvance) {
             width += (*currentAdvance).width;
-            DLog(@"width: %.0f", width);
+            //DLog(@"width: %.0f", width);
         }
         return width;
     }
-    DLog(@"return 0");
+    //DLog(@"return 0");
     return 0;
 }
 

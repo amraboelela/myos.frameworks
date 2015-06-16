@@ -310,7 +310,7 @@ double CTFontGetAdvancesForGlyphs(
   CGSize advances[],
   CFIndex count)
 {
-    DLog();
+    //DLog();
     return [font getAdvancesForGraphicsGlyphs:glyphs
                                      advances:advances
                                   orientation:orientation
