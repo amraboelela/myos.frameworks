@@ -67,7 +67,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
 {
   static CGFloat identity[6] = {1.0, 0.0, 1.0, 0.0, 0.0, 0.0};
   OPFontIdentityMatrix = identity;
-  //StandardGlyphNamesDictionary = CFDictionaryCreate (NULL, StandardGlyphNamesKeys, StandardGlyphNames, 258, NULL, NULL);
+  StandardGlyphNamesDictionary = CFDictionaryCreate (NULL, StandardGlyphNamesKeys, StandardGlyphNames, 258, NULL, NULL);
 }
 
 //
@@ -283,7 +283,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
 
 - (FT_String *)glyphNameForKey:(NSString *)glyphKey
 {
-    if (!StandardGlyphNamesDictionary) {
+    /*if (!StandardGlyphNamesDictionary) {
         NSString * _StandardGlyphNames[258] = {
             @".notdef",
             @".null",
@@ -544,7 +544,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
             @"ccaron",
             @"dcroat"
         };
-        NSString * _StandardGlyphNamesKeys[258] = {
+        const NSString *const _StandardGlyphNamesKeys[258] = {
             @".notdef",
             @".null",
             @"nonmarkingreturn",
@@ -805,7 +805,7 @@ static NSDictionary * StandardGlyphNamesDictionary;
             @"dcroat"
         };
         StandardGlyphNamesDictionary = [[NSDictionary dictionaryWithObjects:_StandardGlyphNames forKeys:_StandardGlyphNamesKeys count:258] retain];
-    }
+    }*/
     return (FT_String *)[[StandardGlyphNamesDictionary objectForKey:glyphKey] UTF8String];
 }
 
