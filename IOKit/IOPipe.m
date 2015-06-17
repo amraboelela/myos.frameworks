@@ -41,7 +41,7 @@ static void _IOPipeWriteEndOfMessageWithPipe(int writePipe)
     write(writePipe,&aChar,1);
 }
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void IOPipeSetPipes(int pipeRead, int pipeWrite)
 {

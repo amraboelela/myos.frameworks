@@ -44,6 +44,8 @@
 #import "OPFont.h"
 #import <CoreGraphics/CoreGraphics-private.h>
 
+#define _MaximumNumberOfGlyphs      258
+
 #define REAL_SIZE(x) CGFloatFromFontUnits(x, [_descriptor pointSize], ft_face->units_per_EM)
 
 // FIXME: This definitions need to be ammended to take vertical typesetting into
@@ -61,6 +63,7 @@ const CGFloat *OPFontIdentityMatrix;
 
 //static CFDictionaryRef StandardGlyphNamesDictionary;
 //static NSDictionary * StandardGlyphNamesDictionary;
+static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs];
 
 @implementation OPFont
 
@@ -815,9 +818,9 @@ const CGFloat *OPFontIdentityMatrix;
      }*/
     int glyphIndex = [glyphKey characterAtIndex:0]-29;
     DLog(@"glyphIndex: %d", glyphIndex);
-    DLog(@"StandardGlyphNames[%d]: %@", glyphIndex, StandardGlyphNames[glyphIndex]);
+    DLog(@"_StandardGlyphNames[%d]: %@", glyphIndex, _StandardGlyphNames[glyphIndex]);
     if (glyphIndex>0 && glyphIndex < _MaximumNumberOfGlyphs) {
-        return (FT_String *)[StandardGlyphNames[glyphIndex] UTF8String];
+        return (FT_String *)[_StandardGlyphNames[glyphIndex] UTF8String];
     } else {
         return NULL;
     }
@@ -948,49 +951,49 @@ const CGFloat *OPFontIdentityMatrix;
     return 0;
 }
 
-- (CGRect) getBoundingRectsForGraphicsGlyphs: (const CGGlyph *)glyphs
-                                       rects: (CGRect*)rects
-                                 orientation: (CTFontOrientation)orientation
-                                       count: (CFIndex)count
+- (CGRect)getBoundingRectsForGraphicsGlyphs:(const CGGlyph *)glyphs
+                                      rects:(CGRect *)rects
+                                orientation:(CTFontOrientation)orientation
+                                      count:(CFIndex)count
 {
     CGRect r = {{0,0},{0,0}};
     return r;
 }
 
-- (void) getVerticalTranslationForGraphicsGlyphs: (const CGGlyph*)glyphs
-                                     translation: (CGSize*)translation
-                                           count: (CFIndex)count
+- (void)getVerticalTranslationForGraphicsGlyphs:(const CGGlyph*)glyphs
+                                    translation:(CGSize *)translation
+                                          count:(CFIndex)count
 {
 }
 
-- (CGPathRef) graphicsPathForGlyph: (CGGlyph)glyph
+- (CGPathRef)graphicsPathForGlyph: (CGGlyph)glyph
                          transform: (const CGAffineTransform *)xform
 {
     return nil;
 }
 
-- (NSArray*) variationAxes
+- (NSArray *)variationAxes
 {
     return nil;
 }
 
-- (NSDictionary*) variation
+- (NSDictionary *)variation
 {
     return nil;
 }
 
-- (CGFontRef) graphicsFontWithDescriptor: (OPFontDescriptor**)descriptorOut
+- (CGFontRef)graphicsFontWithDescriptor: (OPFontDescriptor**)descriptorOut
 {
     return nil;
 }
 
-- (NSArray*) availableTablesWithOptions: (CTFontTableOptions)options
+- (NSArray *)availableTablesWithOptions: (CTFontTableOptions)options
 {
     return nil;
 }
 
-- (NSData*) tableForTag: (CTFontTableTag)tag
-            withOptions: (CTFontTableOptions)options
+- (NSData *)tableForTag:(CTFontTableTag)tag
+            withOptions:(CTFontTableOptions)options
 {
     return nil;
 }
@@ -998,15 +1001,15 @@ const CGFloat *OPFontIdentityMatrix;
 //
 // CGFont private
 //
-- (NSString*) nameForGlyph: (CGGlyph)graphicsGlyph
+- (NSString *)nameForGlyph:(CGGlyph)graphicsGlyph
 {
     return nil;
 }
 
-+ (CTFontRef) fontWithData: (NSData*)fontData
-                      size: (CGFloat)size
-                    matrix: (const CGFloat*)fontMatrix
-      additionalDescriptor: (OPFontDescriptor*)descriptor
++ (CTFontRef)fontWithData:(NSData *)fontData
+                     size:(CGFloat)size
+                   matrix:(const CGFloat *)fontMatrix
+     additionalDescriptor:(OPFontDescriptor*)descriptor
 {
     return nil;
 }
@@ -1025,3 +1028,269 @@ const CGFloat *OPFontIdentityMatrix;
 
 @end
 
+#pragma mark - Private functions
+
+void _OPFontInitialize()
+{
+    _StandardGlyphNames[_MaximumNumberOfGlyphs] =
+    {
+        ".notdef",
+        ".null",
+        "nonmarkingreturn",
+        "space",
+        "exclam",
+        "quotedbl",
+        "numbersign",
+        "dollar",
+        "percent",
+        "ampersand",
+        "quotesingle",
+        "parenleft",
+        "parenright",
+        "asterisk",
+        "plus",
+        "comma",
+        "hyphen",
+        "period",
+        "slash",
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "colon",
+        "semicolon",
+        "less",
+        "equal",
+        "greater",
+        "question",
+        "at",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "bracketleft",
+        "backslash",
+        "bracketright",
+        "asciicircum",
+        "underscore",
+        "grave",
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "j",
+        "k",
+        "l",
+        "m",
+        "n",
+        "o",
+        "p",
+        "q",
+        "r",
+        "s",
+        "t",
+        "u",
+        "v",
+        "w",
+        "x",
+        "y",
+        "z",
+        "braceleft",
+        "bar",
+        "braceright",
+        "asciitilde",
+        "Adieresis",
+        "Aring",
+        "Ccedilla",
+        "Eacute",
+        "Ntilde",
+        "Odieresis",
+        "Udieresis",
+        "aacute",
+        "agrave",
+        "acircumflex",
+        "adieresis",
+        "atilde",
+        "aring",
+        "ccedilla",
+        "eacute",
+        "egrave",
+        "ecircumflex",
+        "edieresis",
+        "iacute",
+        "igrave",
+        "icircumflex",
+        "idieresis",
+        "ntilde",
+        "oacute",
+        "ograve",
+        "ocircumflex",
+        "odieresis",
+        "otilde",
+        "uacute",
+        "ugrave",
+        "ucircumflex",
+        "udieresis",
+        "dagger",
+        "degree",
+        "cent",
+        "sterling",
+        "section",
+        "bullet",
+        "paragraph",
+        "germandbls",
+        "registered",
+        "copyright",
+        "trademark",
+        "acute",
+        "dieresis",
+        "notequal",
+        "AE",
+        "Oslash",
+        "infinity",
+        "plusminus",
+        "lessequal",
+        "greaterequal",
+        "yen",
+        "mu",
+        "partialdiff",
+        "summation",
+        "product",
+        "pi",
+        "integral",
+        "ordfeminine",
+        "ordmasculine",
+        "Omega",
+        "ae",
+        "oslash",
+        "questiondown",
+        "exclamdown",
+        "logicalnot",
+        "radical",
+        "florin",
+        "approxequal",
+        "Delta",
+        "guillemotleft",
+        "guillemotright",
+        "ellipsis",
+        "nonbreakingspace",
+        "Agrave",
+        "Atilde",
+        "Otilde",
+        "OE",
+        "oe",
+        "endash",
+        "emdash",
+        "quotedblleft",
+        "quotedblright",
+        "quoteleft",
+        "quoteright",
+        "divide",
+        "lozenge",
+        "ydieresis",
+        "Ydieresis",
+        "fraction",
+        "currency",
+        "guilsinglleft",
+        "guilsinglright",
+        "fi",
+        "fl",
+        "daggerdbl",
+        "periodcentered",
+        "quotesinglbase",
+        "quotedblbase",
+        "perthousand",
+        "Acircumflex",
+        "Ecircumflex",
+        "Aacute",
+        "Edieresis",
+        "Egrave",
+        "Iacute",
+        "Icircumflex",
+        "Idieresis",
+        "Igrave",
+        "Oacute",
+        "Ocircumflex",
+        "apple",
+        "Ograve",
+        "Uacute",
+        "Ucircumflex",
+        "Ugrave",
+        "dotlessi",
+        "circumflex",
+        "tilde",
+        "macron",
+        "breve",
+        "dotaccent",
+        "ring",
+        "cedilla",
+        "hungarumlaut",
+        "ogonek",
+        "caron",
+        "Lslash",
+        "lslash",
+        "Scaron",
+        "scaron",
+        "Zcaron",
+        "zcaron",
+        "brokenbar",
+        "Eth",
+        "eth",
+        "Yacute",
+        "yacute",
+        "Thorn",
+        "thorn",
+        "minus",
+        "multiply",
+        "onesuperior",
+        "twosuperior",
+        "threesuperior",
+        "onehalf",
+        "onequarter",
+        "threequarters",
+        "franc",
+        "Gbreve",
+        "gbreve",
+        "Idotaccent",
+        "Scedilla",
+        "scedilla",
+        "Cacute",
+        "cacute",
+        "Ccaron",
+        "ccaron",
+        "dcroat"
+    };
+}

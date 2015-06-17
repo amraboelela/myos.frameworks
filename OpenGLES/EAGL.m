@@ -370,7 +370,7 @@ static bool checkGLXExtension(const char* extName)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void EAGLGetVersion(unsigned int *major, unsigned int *minor)
 {

@@ -17,7 +17,7 @@
 
 #import <IOKit/IOKit.h>
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 NSString *_NSFileHandleReadLine(int file)
 {

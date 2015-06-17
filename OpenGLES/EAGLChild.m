@@ -22,7 +22,7 @@
 
 #define _kTimeoutLimit 5.0
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 int EAGLChildGenTexture()
 {

@@ -8,7 +8,9 @@
    Date: 2006
    Author: Eric Wasylishen <ewasylishen@gmail.com>
    Date: January, 2010
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Jun 2015
+ 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
@@ -548,7 +550,7 @@ static unsigned int hash_string(const char *str)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 FcPattern *opal_FcPatternCacheLookup(const char *name)
 {

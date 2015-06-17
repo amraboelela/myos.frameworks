@@ -248,7 +248,7 @@ static UIImage *_UIImageLoadImageNamed(NSString *name)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void UIImageWriteToSavedPhotosAlbum(UIImage *image, id completionTarget, SEL completionSelector, void *contextInfo)
 {

@@ -143,7 +143,7 @@ static NSArray *_GestureRecognizersForView(UIView *view)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _UITouchSetPhase(UITouch *touch, UITouchPhase phase, CGPoint screenLocation, NSUInteger tapCount, CGPoint delta, NSTimeInterval timestamp)
 {

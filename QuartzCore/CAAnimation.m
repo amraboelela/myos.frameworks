@@ -472,7 +472,7 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Private functions
 
 #pragma mark - Life cycle
 
@@ -604,7 +604,7 @@ void _CAAnimationGroupRemoveAnimation(CAAnimationGroup *animationGroup, CAAnimat
     [animationGroup->_lock unlock];
 }
 
-#pragma mark - Public methods
+#pragma mark - Public functions
 
 void _CAAnimationCopy(CAAnimation *toAnimation, CAAnimation *fromAnimation)
 {

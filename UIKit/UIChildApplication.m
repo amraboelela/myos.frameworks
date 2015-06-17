@@ -350,7 +350,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void UIChildApplicationSaveData(UIChildApplication *app)
 {

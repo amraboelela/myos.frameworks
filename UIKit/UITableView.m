@@ -513,7 +513,7 @@ const CGFloat _UITableViewDefaultRowHeight = 43;
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _UITableViewUpdateSectionsCache(UITableView* tableView)
 {

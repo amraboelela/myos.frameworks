@@ -47,7 +47,7 @@
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 CGFloat UILinearInterpolation(CGFloat t, CGFloat start, CGFloat end)
 {

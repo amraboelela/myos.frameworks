@@ -221,7 +221,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _CATransactionInitialize()
 {

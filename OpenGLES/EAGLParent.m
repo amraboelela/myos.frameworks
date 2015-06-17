@@ -23,7 +23,7 @@ static int _pipeRead;
 static int _pipeWrite;
 static BOOL _childAppRunning = NO;
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void EAGLParentSetChildAppIsRunning(BOOL isRunning)
 {

@@ -314,4 +314,6 @@ typedef union _OPAffineTransform
 
 @end
 
+void _OPFontInitialize();
+
 #endif // _GNUstep_H_OPFont

@@ -134,7 +134,7 @@ static void _CACompositorCleanRenderTree(CARenderLayer *layer)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _CACompositorInitialize()
 {

@@ -68,7 +68,6 @@ OBJECTS = \
     OPPostScriptContext.o \
     OPPremultiplyAlpha.o \
     OPSVGContext.o \
-    StandardGlyphNames.o \
     CairoFontX11.o \
     CoreGraphics.o \
 

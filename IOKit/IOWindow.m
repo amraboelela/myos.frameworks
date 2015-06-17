@@ -37,7 +37,7 @@ static IOWindow *_window = nil;
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 IOWindow *IOWindowCreateSharedWindow()
 {

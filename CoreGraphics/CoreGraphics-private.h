@@ -15,9 +15,16 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
+#define _MaximumNumberOfGlyphs      258
+
+/**
+ * Standatd glyph names 0-257
+ */
+static const char * const StandardGlyphNames[_MaximumNumberOfGlyphs];
+
 #import <CoreGraphics/CoreGraphics.h>
 #import <CoreGraphics/CairoFontX11-private.h>
-#import <CoreGraphics/StandardGlyphNames.h>
+//#import <CoreGraphics/StandardGlyphNames.h>
 #import <CoreGraphics/CGColorSpace-private.h>
 #import <CoreGraphics/CGDataProvider-private.h>
 #import <CoreGraphics/CGImageDestination-private.h>

@@ -53,7 +53,7 @@
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _EAGLTextureLoad(EAGLTexture *texture, NSArray *images)
 {

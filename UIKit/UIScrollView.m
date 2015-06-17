@@ -805,7 +805,7 @@ static void _UIScrollViewDragBy(UIScrollView *scrollView, CGPoint delta)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 CGPoint _UIScrollViewConfinedContentOffset(UIScrollView *scrollView, CGPoint contentOffset)
 {/*

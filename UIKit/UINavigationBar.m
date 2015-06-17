@@ -419,7 +419,7 @@ static void _UINavigationBarSetViewsWithTransition(UINavigationBar *navigationBa
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _UINavigationBarUpdateNavigationItem(UINavigationBar *navigationBar, UINavigationItem *item, BOOL animated) // ignored for now
 {

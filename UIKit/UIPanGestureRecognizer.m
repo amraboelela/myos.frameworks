@@ -216,5 +216,5 @@ BOOL _UIPanGestureRecognizerUpdate(UIPanGestureRecognizer *recognizer, CGPoint d
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 

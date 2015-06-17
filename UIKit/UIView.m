@@ -1123,7 +1123,7 @@ static void _UIViewBoundsDidChangeFrom(UIView *view, CGRect oldBounds, CGRect ne
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _UIViewWillMoveFromWindow(UIView* view, UIWindow* fromWindow, UIWindow* toWindow)
 {

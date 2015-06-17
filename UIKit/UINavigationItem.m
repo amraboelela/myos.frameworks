@@ -147,7 +147,7 @@ static NSSet *_keyPaths = nil;
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _UINavigationItemInitialize()
 {

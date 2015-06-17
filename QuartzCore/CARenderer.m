@@ -27,7 +27,7 @@ static CFMutableSetRef _needsLoadRenderLayers;
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _CARendererInitialize()
 {

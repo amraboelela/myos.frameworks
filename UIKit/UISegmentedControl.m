@@ -362,7 +362,7 @@ static NSString *const kSSSegmentedControlEnabledKey = @"enabled";
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 NSMutableDictionary* _UISegmentedControlMetaForSegmentIndex(UISegmentedControl* segmentedControl, NSUInteger index)
 {

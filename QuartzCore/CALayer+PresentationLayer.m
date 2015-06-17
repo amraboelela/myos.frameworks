@@ -39,7 +39,7 @@
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 #pragma mark - CALayer
 

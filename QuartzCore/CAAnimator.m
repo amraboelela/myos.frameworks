@@ -181,7 +181,7 @@ static void reportFPS(BOOL withCondition)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void _CAAnimatorInitialize()
 {

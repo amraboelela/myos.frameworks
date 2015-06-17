@@ -71,7 +71,7 @@ static int _freeMemoryCount = 0;
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 void UIParentApplicationInitialize()
 {

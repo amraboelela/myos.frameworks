@@ -122,6 +122,7 @@ static void _UIApplicationProcessInitialize()
 static void _UIApplicationInitialize()
 {
     _UINavigationItemInitialize();
+    _CoreTextInitialize();
 }
 
 static void _UIApplicationLaunchApplicationWithDefaultWindow(UIWindow *window)
@@ -702,7 +703,7 @@ static int _UIApplicationHandleMessages()
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 #ifdef ANDROID
 

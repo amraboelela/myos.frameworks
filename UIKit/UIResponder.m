@@ -175,7 +175,7 @@ UIWindow* _UIResponderGetResponderWindow(UIResponder *responder);
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 UIWindow* _UIResponderGetResponderWindow(UIResponder* responder)
 {

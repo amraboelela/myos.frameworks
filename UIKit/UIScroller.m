@@ -346,7 +346,7 @@ static void _UIScrollerFadeIn(UIScroller *scroller)
 
 @end
 
-#pragma mark - Shared functions
+#pragma mark - Public functions
 
 CGFloat UIScrollerWidthForBoundsSize(CGSize boundsSize)
 {
