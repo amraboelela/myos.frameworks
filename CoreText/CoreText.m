@@ -19,5 +19,5 @@
 
 void _CoreTextInitialize()
 {
-    _OPFontInitialize();
+    //_OPFontInitialize();
 }
