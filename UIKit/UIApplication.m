@@ -122,7 +122,7 @@ static void _UIApplicationProcessInitialize()
 static void _UIApplicationInitialize()
 {
     _UINavigationItemInitialize();
-    _CoreTextInitialize();
+    //_CoreTextInitialize();
 }
 
 static void _UIApplicationLaunchApplicationWithDefaultWindow(UIWindow *window)
