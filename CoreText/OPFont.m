@@ -42,7 +42,7 @@
 
 #import "OPFreeTypeUtil.h"
 #import "OPFont.h"
-#import <CoreGraphics-private.h>
+#import <CoreGraphics/CoreGraphics-private.h>
 
 #define REAL_SIZE(x) CGFloatFromFontUnits(x, [_descriptor pointSize], ft_face->units_per_EM)
 
@@ -813,9 +813,11 @@ const CGFloat *OPFontIdentityMatrix;
      }
      StandardGlyphNamesDictionary = [[NSDictionary dictionaryWithObjects:_StandardGlyphNames forKeys:_StandardGlyphNamesKeys count:258] retain];
      }*/
-    int theChar = [glyphKey characterAtIndex:0]-29;
-    if (theChar>0 && theChar < _MaximumNumberOfGlyphs) {
-        return (FT_String *)[StandardGlyphNames[theChar] UTF8String];
+    int glyphIndex = [glyphKey characterAtIndex:0]-29;
+    DLog(@"glyphIndex: %d", glyphIndex);
+    DLog(@"StandardGlyphNames[%d]: %@", glyphIndex, StandardGlyphNames[glyphIndex]);
+    if (glyphIndex>0 && glyphIndex < _MaximumNumberOfGlyphs) {
+        return (FT_String *)[StandardGlyphNames[glyphIndex] UTF8String];
     } else {
         return NULL;
     }
