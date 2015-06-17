@@ -22,8 +22,10 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
    */
 
+#define _MaximumNumberOfGlyphs      258
+
 /**
  * Standatd glyph names 0-257
  */   
-const char * const StandardGlyphNames[258];
-const char * const StandardGlyphNamesKeys[258];
+extern const char * const StandardGlyphNames[_MaximumNumberOfGlyphs];
+//const char * const StandardGlyphNamesKeys[258];

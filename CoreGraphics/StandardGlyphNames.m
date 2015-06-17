@@ -2,11 +2,13 @@
 
    <abstract>C Interface to graphics drawing library</abstract>
 
-   Copyright <copy>(C) 2010 Free Software Foundation, Inc.</copy>
+   Copyright <copy>(C) 2010-2015 Free Software Foundation, Inc.</copy>
 
    Author: Eric Wasylishen <ewasylishen@gmail.com>
    Date: June 2010
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Jun 2015
+ 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
@@ -288,7 +290,7 @@ const char * const StandardGlyphNames[258] =
   "ccaron",
   "dcroat"
 };
-
+/*
 const char * const StandardGlyphNamesKeys[258] =
 {
   ".notdef",
@@ -549,4 +551,4 @@ const char * const StandardGlyphNamesKeys[258] =
   "Ccaron",
   "ccaron",
   "dcroat"
-};
+};*/
