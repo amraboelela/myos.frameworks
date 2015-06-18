@@ -63,8 +63,6 @@ const CGFloat *OPFontIdentityMatrix;
 
 //static CFDictionaryRef StandardGlyphNamesDictionary;
 //static NSDictionary * StandardGlyphNamesDictionary;
-//static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs];
-
 static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
 {
     ".notdef",
@@ -327,7 +325,6 @@ static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
     "dcroat"
 };
 
-
 @implementation OPFont
 
 + (void)load
@@ -550,7 +547,6 @@ static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
 
 - (FT_String *)glyphNameForKey:(NSString *)glyphKey
 {
-    
     /*if (!StandardGlyphNamesDictionary) {
      NSString * _StandardGlyphNames[258] = {
      @".notdef",
@@ -1082,9 +1078,9 @@ static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
      }*/
     int glyphIndex = [glyphKey characterAtIndex:0]-29;
     DLog(@"glyphIndex: %d", glyphIndex);
-    DLog(@"_StandardGlyphNames[%d]: %@", glyphIndex, _StandardGlyphNames[glyphIndex]);
+    DLog(@"_StandardGlyphNames[%d]: %s", glyphIndex, _StandardGlyphNames[glyphIndex]);
     if (glyphIndex>0 && glyphIndex < _MaximumNumberOfGlyphs) {
-        return (FT_String *)[_StandardGlyphNames[glyphIndex] UTF8String];
+        return (FT_String *)_StandardGlyphNames[glyphIndex];
     } else {
         return NULL;
     }
