@@ -1077,8 +1077,8 @@ static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
      StandardGlyphNamesDictionary = [[NSDictionary dictionaryWithObjects:_StandardGlyphNames forKeys:_StandardGlyphNamesKeys count:258] retain];
      }*/
     int glyphIndex = [glyphKey characterAtIndex:0]-29;
-    DLog(@"glyphIndex: %d", glyphIndex);
-    DLog(@"_StandardGlyphNames[%d]: %s", glyphIndex, _StandardGlyphNames[glyphIndex]);
+    //DLog(@"glyphIndex: %d", glyphIndex);
+    //DLog(@"_StandardGlyphNames[%d]: %s", glyphIndex, _StandardGlyphNames[glyphIndex]);
     if (glyphIndex>0 && glyphIndex < _MaximumNumberOfGlyphs) {
         return (FT_String *)_StandardGlyphNames[glyphIndex];
     } else {
