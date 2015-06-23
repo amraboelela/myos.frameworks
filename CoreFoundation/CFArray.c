@@ -444,21 +444,20 @@ CFArrayGetValues (CFArrayRef array, CFRange range, const void **values)
 #define DEFAULT_ARRAY_CAPACITY 16
 #define CFMUTABLEARRAY_SIZE sizeof(struct __CFMutableArray) - sizeof(CFRuntimeBase)
 
-CF_INLINE void
+CF_INLINE int
 CFArrayCheckCapacityAndGrow (CFMutableArrayRef array, CFIndex newCapacity)
 {
   struct __CFMutableArray *mArray = (struct __CFMutableArray *) array;
-
-  if (mArray->_capacity < newCapacity)
-    {
+    if (mArray->_capacity < newCapacity) {
+        //printf("CFArrayCheckCapacityAndGrow");
       newCapacity = mArray->_capacity + DEFAULT_ARRAY_CAPACITY;
-
+        //printf("newCapacity: %d", newCapacity);
       mArray->_contents = CFAllocatorReallocate (CFGetAllocator (mArray),
-                                                 mArray->_contents,
-                                                 (newCapacity *
-                                                  sizeof (const void *)), 0);
+                                                   mArray->_contents, (newCapacity * sizeof(const void *)), 0);
       mArray->_capacity = newCapacity;
+        return 1;
     }
+    return 0;
 }
 
 CFMutableArrayRef
