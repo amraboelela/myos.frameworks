@@ -627,72 +627,69 @@ void
 CFArrayReplaceValues (CFMutableArrayRef array, CFRange range,
                       const void **newValues, CFIndex newCount)
 {
-  if (CF_IS_OBJC (_kCFArrayTypeID, array))
+    if (CF_IS_OBJC (_kCFArrayTypeID, array))
     {
-      CFArrayRef temp;
-
-      temp = CFArrayCreate (kCFAllocatorDefault, newValues,
-                            newCount, &kCFTypeArrayCallBacks);
-
-      CF_OBJC_VOIDCALLV (array,
-                         "replaceObjectsInRange:withObjectsFromArray:", range,
-                         temp);
-
-      CFRelease (temp);
-      return;
+        CFArrayRef temp;
+        
+        temp = CFArrayCreate (kCFAllocatorDefault, newValues,
+                              newCount, &kCFTypeArrayCallBacks);
+        
+        CF_OBJC_VOIDCALLV (array,
+                           "replaceObjectsInRange:withObjectsFromArray:", range,
+                           temp);
+        
+        CFRelease (temp);
+        return;
     }
-
-  const void **start;
-  const void **end;
-  CFAllocatorRef alloc;
-
-  start = array->_contents + range.location;
-  end = start + range.length;
-  alloc = CFGetAllocator (array);
-
-  /* Release values if needed */
-  if (range.length > 0)
-    {
-      CFArrayReleaseCallBack release = array->_callBacks->release;
-      if (release)
-        {
-          const void **current = start;
-          while (current < end)
-            release (alloc, *(current++));
+    
+    const void **start;
+    const void **end;
+    CFAllocatorRef alloc;
+    printf("CFArrayReplaceValues");
+    start = array->_contents + range.location;
+    end = start + range.length;
+    alloc = CFGetAllocator (array);
+    
+    CFIndex oldCount = array->_count;
+    /* Release values if needed */
+    if (range.length > 0) {
+        CFArrayReleaseCallBack release = array->_callBacks->release;
+        if (release) {
+            const void **current = start;
+            while (current < end)
+                release (alloc, *(current++));
         }
-      array->_count -= range.length;
+        array->_count -= range.length;
+        printf("array->_count: %d \n", array->_count);
     }
-
-  /* Move remaining values if required */
-  if (range.length != newCount)
-    {
-      CFIndex newSize;
-
-      newSize = array->_count - range.length + newCount;
-      CFArrayCheckCapacityAndGrow (array, newSize);
-
-      memmove (start + newCount, end,
-               (array->_count - range.location +
-                range.length) * sizeof (void *));
+    /* Move remaining values if required */
+    if (range.length != newCount) {
+        CFIndex newSize;
+        
+        newSize = oldCount - range.length + newCount;
+        //printf("newSize: %d \n", newSize);
+        if (CFArrayCheckCapacityAndGrow (array, newSize)) {
+            start = array->_contents + range.location;
+            end = start + range.length;
+        }
+        memmove (start + newCount, end,
+                 (array->_count - range.location + range.length) * sizeof(void*));
     }
-
-  /* Insert new values */
-  if (newCount > 0)
-    {
-      CFArrayRetainCallBack retain = array->_callBacks->retain;
-      const void **current = start;
-      end = current + newCount; /* New end... */
-      if (retain)
-        {
-          while (current < end)
-            *(current++) = retain (alloc, *(newValues++));
+    /* Insert new values */
+    if (newCount > 0) {
+        CFArrayRetainCallBack retain = array->_callBacks->retain;
+        const void **current = start;
+        end = current + newCount; /* New end... */
+        if (retain) {
+            while (current < end) {
+                *(current++) = retain (alloc, *(newValues++));
+            }
+        } else {
+            while (current < end) {
+                *(current++) = *(newValues++);
+            }
         }
-      else
-        {
-          while (current < end)
-            *(current++) = *(newValues++);
-        }
-      array->_count += newCount;
+        array->_count += newCount;
     }
 }
 
