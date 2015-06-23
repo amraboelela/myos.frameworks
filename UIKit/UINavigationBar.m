@@ -83,7 +83,7 @@ static UIView *_UINavigationBarGetViewWithBarButtonItem(UIBarButtonItem *item)
         _UINavigationBarSetBarButtonSize(item.customView);
         return item.customView;
     } else {
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];//UIButtonTypeCustom];
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];//UIButtonTypeCustom];
         //[button setBackgroundImage:_UIImageToolbarButtonImage() forState:UIControlStateNormal];
         //[button setBackgroundImage:_UIImageHighlightedToolbarButtonImage() forState:UIControlStateHighlighted];
         [button setTitle:item.title forState:UIControlStateNormal];

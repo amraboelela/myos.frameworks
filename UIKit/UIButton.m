@@ -42,14 +42,28 @@ static NSString *const UIButtonContentTypeImage = @"UIButtonContentTypeImage";
 
 static UIColor *_UIButtonDefaultTitleColor(UIButton *button, UIControlState state)
 {
-    switch (state) {
-        case UIControlStateNormal:
-            return [UIColor blueColor];
-        case UIControlStateHighlighted:
-            return [UIColor whiteColor];
+    switch (button->_buttonType) {
+        case UIButtonTypeCustom:
+            return button->_titleLabel.textColor;
+        case UIButtonTypeSystem:
+            switch (state) {
+                case UIControlStateNormal:
+                    return [UIColor blueColor];
+                case UIControlStateHighlighted:
+                    return [UIColor whiteColor];
+                default:
+                    return [UIColor blueColor];
+            }
+        case UIButtonTypeDetailDisclosure:
+        case UIButtonTypeInfoLight:
+        case UIButtonTypeInfoDark:
+        case UIButtonTypeContactAdd:
+            return button->_titleLabel.textColor;
         default:
-            return [UIColor blueColor];
+            return button->_titleLabel.textColor;
     }
+    
+
     
 }
 
@@ -184,9 +198,9 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 + (id)buttonWithType:(UIButtonType)buttonType
 {
     UIButton *button = [[[self alloc] initWithFrame:CGRectZero] autorelease];
-    button->_buttonType = buttonType;
+    //button->_buttonType = buttonType;
    // button->_layer.backgroundColor = [[UIColor whiteColor] CGColor];
-    if (buttonType==UIButtonTypeRoundedRect) {
+    /*if (buttonType==UIButtonTypeSystem) {
         button->_layer.borderColor = [[UIColor whiteColor] CGColor];
         button->_layer.borderWidth = 2;
         button->_layer.cornerRadius = 10;
@@ -197,19 +211,25 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
                                                                  (id)[_kEndBlueGradientColor CGColor], nil];
         button->_gradientLayer.cornerRadius = 10;
         button->_gradientLayer.borderWidth = 0;
-    }
+    }*/
 
-   /*switch (buttonType) {
-        case UIButtonTypeRoundedRect:
+   switch (button->_buttonType) {
+       case UIButtonTypeCustom:
+           button->_titleLabel.textColor = [UIColor whiteColor];
+           break;
+        case UIButtonTypeSystem:
+           button->_titleLabel.textColor = [UIColor blueColor];
+           break;
         case UIButtonTypeDetailDisclosure:
         case UIButtonTypeInfoLight:
         case UIButtonTypeInfoDark:
         case UIButtonTypeContactAdd:
             //return [[[UIRoundedRectButton alloc] init] autorelease];
-        case UIButtonTypeCustom:    
+           break;
         default:
-            return [[[self alloc] init] autorelease];
-    }*/
+        //return [[[self alloc] init] autorelease];
+           break;
+    }
     return button;
 }
  
