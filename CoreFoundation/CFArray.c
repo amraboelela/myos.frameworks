@@ -644,7 +644,7 @@ CFArrayReplaceValues (CFMutableArrayRef array, CFRange range,
     const void **start;
     const void **end;
     CFAllocatorRef alloc;
-    printf("CFArrayReplaceValues");
+    //printf("CFArrayReplaceValues");
     start = array->_contents + range.location;
     end = start + range.length;
     alloc = CFGetAllocator (array);
@@ -659,7 +659,7 @@ CFArrayReplaceValues (CFMutableArrayRef array, CFRange range,
                 release (alloc, *(current++));
         }
         array->_count -= range.length;
-        printf("array->_count: %d \n", array->_count);
+        //printf("array->_count: %d \n", array->_count);
     }
     /* Move remaining values if required */
     if (range.length != newCount) {

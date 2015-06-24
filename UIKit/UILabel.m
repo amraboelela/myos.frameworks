@@ -266,7 +266,7 @@
     //DLog(@"_lineBreakMode: %d", _lineBreakMode);
     //DLog(@"size: %@", NSStringFromCGSize(size));
     CGSize result = [_text sizeWithFont:_font constrainedToSize:size lineBreakMode:_lineBreakMode];
-    return CGSizeMake(result.width+2, result.height+2);
+    return CGSizeMake(result.width, result.height * 1.1);
 }
 
 @end
