@@ -300,6 +300,7 @@ CGGlyph CTFontGetGlyphWithName(
   CTFontRef font,
   CFStringRef name)
 {
+    //DLog(@"name: %@", name);
     return [font glyphWithName: name];
 }
 

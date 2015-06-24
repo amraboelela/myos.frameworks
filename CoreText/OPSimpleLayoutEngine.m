@@ -51,7 +51,9 @@
         [chars getCharacters:characters range:NSMakeRange(0, length)];
         int len = [chars length];
         for (int i=0; i<len; i++) {
-            CFStringRef chr = CFStringCreateWithBytes(NULL, (unsigned char*)(&characters[i]), 1, kCFStringEncodingUTF8, false);
+            //CFStringRef chr = [NSString stringWithFormat:@"%c", characters[i]];//CFStringCreateWithBytes(NULL, (unsigned char*)(&characters[i]), 1, kCFStringEncodingUTF8, false);
+            CFStringRef chr = CFStringCreateWithBytes(NULL, (unsigned char*)(&characters[i]), 1, kCFStringEncodingASCII, false);
+            //DLog(@"characters: %c", characters[i]);
             //DLog(@"chr: %@", chr);
             glyphs[i] = CTFontGetGlyphWithName(font, chr);
             //DLog(@"glyphs[%d]: %p", i, glyphs[i]);
