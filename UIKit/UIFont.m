@@ -194,7 +194,10 @@ static UIFont *_UIFontGetFontWithCTFont(CTFontRef aFont)
     // the same point sizes. however there's still subtle differences between fonts on the two
     // platforms (iOS and Mac) and I don't know if it's ever going to be possible to make things
     // return exactly the same values in all cases.
-    return [self pointSize];
+    //return [self pointSize];
+    DLog(@"CTFontGetAscent(_font): %0.2f", CTFontGetAscent(_font));
+    DLog(@"CTFontGetDescent(_font): %0.2f", CTFontGetDescent(_font));
+    return CTFontGetAscent(_font) + CTFontGetDescent(_font);
 }
 
 - (NSString *)familyName

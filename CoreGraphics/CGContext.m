@@ -22,7 +22,7 @@
      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
      */
 
-#import <IOKit/IOFont.h>
+//#import <IOKit/IOFont.h>
 #import <CoreGraphics/CoreGraphics-private.h>
 
 
@@ -1205,7 +1205,7 @@ void CGContextSetFont(CGContextRef ctx, CGFontRef font)
         NSLog(@" CGContextSetFont got NULL");
         return;
     }
-    cairo_set_font_face(ctx->ct, cairo_scaled_font_get_font_face(((IOFont*)font)->cairofont));
+    cairo_set_font_face(ctx->ct, cairo_scaled_font_get_font_face(((CairoFont *)font)->cairofont));
     ctx->add->font = CGFontRetain(font);
 }
 

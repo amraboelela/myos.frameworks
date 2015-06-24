@@ -37,7 +37,6 @@ ifeq ($(BASE_OS),android)
 else
     OBJECTS+= \
         IOEvent.o \
-        IOFont.o \
         opal-x11.o \
 
 endif
