@@ -42,9 +42,8 @@ typedef enum {
 @class CAGradientLayer;
 
 @interface UIButton : UIControl {
-@protected
-    UIButtonType _buttonType;
 @public
+    UIButtonType _buttonType;
     UILabel *_titleLabel;
     UIImageView *_imageView;
     UIImageView *_backgroundImageView;

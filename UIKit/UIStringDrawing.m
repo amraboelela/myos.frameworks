@@ -164,6 +164,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
     }
     //DLog(@"resultingSize: %@", NSStringFromCGSize(resultingSize));
     return resultingSize;
+    //return CGSizeMake(resultingSize.width, resultingSize.height*1.1);
 }
 
 - (CGSize)sizeWithFont:(UIFont *)font constrainedToSize:(CGSize)size
@@ -204,7 +205,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
 
         CGContextRef ctx = UIGraphicsGetCurrentContext();
         CGContextSaveGState(ctx);
-        CGContextTranslateCTM(ctx, rect.origin.x, rect.origin.y+font.ascender);
+        CGContextTranslateCTM(ctx, rect.origin.x, rect.origin.y+font.ascender*0.83);
         CGContextSetTextMatrix(ctx, CGAffineTransformMakeScale(1,-1));
         
         for (CFIndex lineNumber=0; lineNumber<numberOfLines; lineNumber++) {
