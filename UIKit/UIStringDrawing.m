@@ -205,7 +205,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
 
         CGContextRef ctx = UIGraphicsGetCurrentContext();
         CGContextSaveGState(ctx);
-        CGContextTranslateCTM(ctx, rect.origin.x, rect.origin.y+font.ascender*0.83);
+        CGContextTranslateCTM(ctx, rect.origin.x, rect.origin.y+font.ascender);
         CGContextSetTextMatrix(ctx, CGAffineTransformMakeScale(1,-1));
         
         for (CFIndex lineNumber=0; lineNumber<numberOfLines; lineNumber++) {
