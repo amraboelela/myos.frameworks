@@ -501,7 +501,7 @@ CFInitialize (void)
   CFCalendarInitialize ();
   CFCharacterSetInitialize ();
   CFDataInitialize ();
-  CFBundleInitialize ();
+//  CFBundleInitialize ();
   CFDateInitialize ();
   CFDateFormatterInitialize ();
   CFDictionaryInitialize ();
