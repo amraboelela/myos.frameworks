@@ -580,6 +580,7 @@ static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
 
 - (FT_String *)glyphNameForKey:(NSString *)glyphKey
 {
+    //DLog();
     int glyphIndex = [glyphKey characterAtIndex:0]-29;
     //DLog(@"glyphIndex: %d", glyphIndex);
     //DLog(@"_StandardGlyphNames[%d]: %s", glyphIndex, _StandardGlyphNames[glyphIndex]);
@@ -593,12 +594,15 @@ static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
 
 - (CGGlyph)glyphWithName:(NSString *)glyphName
 {
+    //DLog();
     FT_Face ft_face = cairo_ft_scaled_font_lock_face(_descriptor->cairofont);
     CGGlyph result = 0;
     //TODO using #import <CoreGraphics/StandardGlyphNames.h>
     result = (CGGlyph)FT_Get_Name_Index(ft_face, (FT_String*)[glyphName UTF8String]);
     
+    //DLog(@"result: %p", result);
     if (result == 0) {
+        //DLog(@"result == 0");
         FT_String* nameFromKey = [self glyphNameForKey:glyphName];
         if (nameFromKey != NULL) {
             result = (CGGlyph)FT_Get_Name_Index(ft_face, nameFromKey);
