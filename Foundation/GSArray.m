@@ -637,6 +637,38 @@ static Class	GSInlineArrayClass;
   return self;
 }
 
+- (void) removeAllObjects
+{
+  NSUInteger    pos;
+
+  if ((pos = _count) > 0)
+    {
+#if	GS_WITH_GC == 0
+      IMP       rel = 0;
+      Class    last = Nil;
+#endif
+
+      _version++;
+      _count = 0;
+      while (pos-- > 0)
+        {
+#if	GS_WITH_GC == 0
+          id    o = _contents_array[pos];
+          Class c = object_getClass(o);
+
+          if (c != last)
+            {
+              last = c;
+              rel = [o methodForSelector: @selector(release)];
+            }
+          (*rel)(o, @selector(release));
+#endif
+          _contents_array[pos] = nil;
+        }
+      _version++;
+    }
+}
+
 - (void) removeLastObject
 {
   _version++;
@@ -755,6 +787,60 @@ static Class	GSInlineArrayClass;
 	}
     }
   _version++;
+}
+
+- (void) removeObjectsInRange: (NSRange)aRange
+{
+  GS_RANGE_CHECK(aRange, _count);
+
+  if (aRange.length > 0)
+    {
+      NSUInteger        index;
+      NSUInteger        tail;
+      NSUInteger        end;
+#if	GS_WITH_GC == 0
+      IMP       rel = 0;
+      Class    last = Nil;
+#endif
+
+      _version++;
+      index = aRange.location;
+
+#if	GS_WITH_GC == 0
+      /* Release all the objects we are removing.
+       */
+      end = NSMaxRange(aRange);
+      while (end-- > index)
+        {
+          id    o = _contents_array[end];
+          Class c = object_getClass(o);
+
+          if (c != last)
+            {
+              last = c;
+              rel = [o methodForSelector: @selector(release)];
+            }
+          (*rel)(o, @selector(release));
+          _contents_array[end] = nil;
+        }
+#endif
+      /* Move any trailing objects to fill the hole we made.
+       */
+      end = NSMaxRange(aRange);
+      tail = _count - end;
+      if (tail > 0)
+        {
+          memmove(_contents_array + index, _contents_array + end,
+            tail * sizeof(id));
+          index += tail;
+        }
+      _count = index;
+
+      /* Clear emptied part of buffer.
+       */
+      memset(_contents_array + _count, 0, aRange.length * sizeof(id));
+      _version++;
+    }
 }
 
 - (void) replaceObjectAtIndex: (NSUInteger)index withObject: (id)anObject

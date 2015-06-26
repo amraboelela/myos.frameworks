@@ -21,7 +21,7 @@
    Boston, MA 02111 USA.
 
    <title>NSKeyValueCoding informal protocol reference</title>
-   $Date: 2014-04-26 11:39:34 -0700 (Sat, 26 Apr 2014) $ $Revision: 37814 $
+   $Date: 2015-05-22 08:34:25 -0700 (Fri, 22 May 2015) $ $Revision: 38524 $
    */
 
 #import "common.h"
@@ -80,152 +80,160 @@ static inline void setupCompat()
 static void
 SetValueForKey(NSObject *self, id anObject, const char *key, unsigned size)
 {
-    SEL		sel = 0;
-    const char	*type = 0;
-    int		off = 0;
-    
-    if (size > 0)
+  SEL		sel = 0;
+  const char	*type = 0;
+  int		off = 0;
+
+  if (size > 0)
     {
-        const char	*name;
-        char		buf[size + 6];
-        char		lo;
-        char		hi;
-        
-        strncpy(buf, "_set", 4);
-        strncpy(&buf[4], key, size);
-        lo = buf[4];
-        hi = islower(lo) ? toupper(lo) : lo;
-        buf[4] = hi;
-        buf[size + 4] = ':';
-        buf[size + 5] = '\0';
-        
-        name = &buf[1];	// setKey:
-        type = NULL;
-        sel = sel_getUid(name);
-        if (sel == 0 || [self respondsToSelector: sel] == NO)
-        {
-            name = buf;	// _setKey:
-            sel = sel_getUid(name);
-            if (sel == 0 || [self respondsToSelector: sel] == NO)
-            {
-                sel = 0;
-                if ([[self class] accessInstanceVariablesDirectly] == YES)
-                {
-                    buf[size + 4] = '\0';
-                    buf[3] = '_';
-                    buf[4] = lo;
-                    name = &buf[3];	// _key
-                    if (GSObjCFindVariable(self, name, &type, &size, &off) == NO)
-                    {
-                        buf[4] = hi;
-                        buf[3] = 's';
-                        buf[2] = 'i';
-                        buf[1] = '_';
-                        name = &buf[1];	// _isKey
-                        if (GSObjCFindVariable(self,
-                                               name, &type, &size, &off) == NO)
-                        {
-                            buf[4] = lo;
-                            name = &buf[4];	// key
-                            if (GSObjCFindVariable(self,
-                                                   name, &type, &size, &off) == NO)
-                            {
-                                buf[4] = hi;
-                                buf[3] = 's';
-                                buf[2] = 'i';
-                                name = &buf[2];	// isKey
-                                GSObjCFindVariable(self,
-                                                   name, &type, &size, &off);
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                GSOnceFLog(@"Key-value access using _setKey: is deprecated:");
-            }
-        }
+      const char	*name;
+      char		buf[size + 6];
+      char		lo;
+      char		hi;
+
+      strncpy(buf, "_set", 4);
+      strncpy(&buf[4], key, size);
+      lo = buf[4];
+      hi = islower(lo) ? toupper(lo) : lo;
+      buf[4] = hi;
+      buf[size + 4] = ':';
+      buf[size + 5] = '\0';
+
+      name = &buf[1];	// setKey:
+      type = NULL;
+      sel = sel_getUid(name);
+      if (sel == 0 || [self respondsToSelector: sel] == NO)
+	{
+	  name = buf;	// _setKey:
+	  sel = sel_getUid(name);
+	  if (sel == 0 || [self respondsToSelector: sel] == NO)
+	    {
+	      sel = 0;
+	      if ([[self class] accessInstanceVariablesDirectly] == YES)
+		{
+		  buf[size + 4] = '\0';
+		  buf[3] = '_';
+		  buf[4] = lo;
+		  name = &buf[3];	// _key
+		  if (GSObjCFindVariable(self, name, &type, &size, &off) == NO)
+		    {
+		      buf[4] = hi;
+		      buf[3] = 's';
+		      buf[2] = 'i';
+		      buf[1] = '_';
+		      name = &buf[1];	// _isKey
+		      if (GSObjCFindVariable(self,
+			name, &type, &size, &off) == NO)
+			{
+			  buf[4] = lo;
+			  name = &buf[4];	// key
+			  if (GSObjCFindVariable(self,
+			    name, &type, &size, &off) == NO)
+			    {
+			      buf[4] = hi;
+			      buf[3] = 's';
+			      buf[2] = 'i';
+			      name = &buf[2];	// isKey
+			      GSObjCFindVariable(self,
+				name, &type, &size, &off);
+			    }
+			}
+		    }
+		}
+	    }
+	  else
+	    {
+	      GSOnceFLog(@"Key-value access using _setKey: is deprecated:");
+	    }
+	}
     }
-    GSObjCSetVal(self, key, anObject, sel, type, size, off);
+  GSObjCSetVal(self, key, anObject, sel, type, size, off);
 }
 
 static id ValueForKey(NSObject *self, const char *key, unsigned size)
 {
-    SEL		sel = 0;
-    int		off = 0;
-    const char	*type = NULL;
-    
-    if (size > 0) {
-        const char	*name;
-        char		buf[size + 5];
-        char		lo;
-        char		hi;
-        
-        strncpy(buf, "_get", 4);
-        strncpy(&buf[4], key, size);
-        buf[size + 4] = '\0';
-        lo = buf[4];
-        hi = islower(lo) ? toupper(lo) : lo;
-        buf[4] = hi;
-        
-        name = &buf[1];	// getKey
-        sel = sel_getUid(name);
-        if (sel == 0 || [self respondsToSelector: sel] == NO) {
-            buf[4] = lo;
-            name = &buf[4];	// key
-            sel = sel_getUid(name);
-            if (sel == 0 || [self respondsToSelector: sel] == NO) {
-                buf[4] = hi;
-                buf[3] = 's';
-                buf[2] = 'i';
-                name = &buf[2];	// isKey
-                sel = sel_getUid(name);
-                if (sel == 0 || [self respondsToSelector: sel] == NO) {
-                    sel = 0;
-                }
-            }
-        }
-        if (sel == 0 && [[self class] accessInstanceVariablesDirectly] == YES) {
-            buf[4] = hi;
-            name = buf;	// _getKey
-            sel = sel_getUid(name);
-            if (sel == 0 || [self respondsToSelector: sel] == NO)
-            {
-                buf[4] = lo;
-                buf[3] = '_';
-                name = &buf[3];	// _key
-                sel = sel_getUid(name);
-                if (sel == 0 || [self respondsToSelector: sel] == NO)
+  SEL		sel = 0;
+  int		off = 0;
+  const char	*type = NULL;
+
+  if (size > 0)
+    {
+      const char	*name;
+      char		buf[size + 5];
+      char		lo;
+      char		hi;
+
+      strncpy(buf, "_get", 4);
+      strncpy(&buf[4], key, size);
+      buf[size + 4] = '\0';
+      lo = buf[4];
+      hi = islower(lo) ? toupper(lo) : lo;
+      buf[4] = hi;
+
+      name = &buf[1];	// getKey
+      sel = sel_getUid(name);
+      if (sel == 0 || [self respondsToSelector: sel] == NO)
+	{
+	  buf[4] = lo;
+	  name = &buf[4];	// key
+	  sel = sel_getUid(name);
+	  if (sel == 0 || [self respondsToSelector: sel] == NO)
+	    {
+              buf[4] = hi;
+              buf[3] = 's';
+              buf[2] = 'i';
+              name = &buf[2];	// isKey
+              sel = sel_getUid(name);
+              if (sel == 0 || [self respondsToSelector: sel] == NO)
                 {
-                    sel = 0;
+                  sel = 0;
                 }
-            }
-            if (sel == 0) {
-                if (GSObjCFindVariable(self, name, &type, &size, &off) == NO) {
-                    buf[4] = hi;
-                    buf[3] = 's';
-                    buf[2] = 'i';
-                    buf[1] = '_';
-                    name = &buf[1];	// _isKey
-                    if (!GSObjCFindVariable(self, name, &type, &size, &off))
+	    }
+	}
+
+      if (sel == 0 && [[self class] accessInstanceVariablesDirectly] == YES)
+	{
+	  buf[4] = hi;
+	  name = buf;	// _getKey
+	  sel = sel_getUid(name);
+	  if (sel == 0 || [self respondsToSelector: sel] == NO)
+	    {
+	      buf[4] = lo;
+	      buf[3] = '_';
+	      name = &buf[3];	// _key
+	      sel = sel_getUid(name);
+	      if (sel == 0 || [self respondsToSelector: sel] == NO)
+		{
+		  sel = 0;
+		}
+	    }
+	  if (sel == 0)
+	    {
+	      if (GSObjCFindVariable(self, name, &type, &size, &off) == NO)
+		{
+                  buf[4] = hi;
+                  buf[3] = 's';
+                  buf[2] = 'i';
+                  buf[1] = '_';
+                  name = &buf[1];	// _isKey
+		  if (!GSObjCFindVariable(self, name, &type, &size, &off))
                     {
-                        buf[4] = lo;
-                        name = &buf[4];		// key
-                        if (!GSObjCFindVariable(self, name, &type, &size, &off))
-                        {
+                       buf[4] = lo;
+                       name = &buf[4];		// key
+		       if (!GSObjCFindVariable(self, name, &type, &size, &off))
+                         {
                             buf[4] = hi;
                             buf[3] = 's';
                             buf[2] = 'i';
                             name = &buf[2];	// isKey
                             GSObjCFindVariable(self, name, &type, &size, &off);
-                        }
+                         }
                     }
-                }
-            }
-        }
+		}
+	    }
+	}
     }
-    return GSObjCGetVal(self, key, sel, type, size, off);
+  return GSObjCGetVal(self, key, sel, type, size, off);
 }
 
 
@@ -279,7 +287,7 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
 
 - (NSMutableSet*) mutableSetValueForKeyPath: (NSString*)aKey
 {
-  NSRange       r = [aKey rangeOfString: @"."];
+  NSRange       r = [aKey rangeOfString: @"." options: NSLiteralSearch];
 
   if (r.length == 0)
     {
@@ -301,7 +309,7 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
 
 - (NSMutableArray*) mutableArrayValueForKeyPath: (NSString*)aKey
 {
-  NSRange       r = [aKey rangeOfString: @"."];
+  NSRange       r = [aKey rangeOfString: @"." options: NSLiteralSearch];
 
   if (r.length == 0)
     {
@@ -365,7 +373,7 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
 
 - (void) setValue: (id)anObject forKeyPath: (NSString*)aKey
 {
-  NSRange       r = [aKey rangeOfString: @"."];
+  NSRange       r = [aKey rangeOfString: @"." options: NSLiteralSearch];
 #ifdef WANT_DEPRECATED_KVC_COMPAT
   IMP	        o = [self methodForSelector: @selector(takeValue:forKeyPath:)];
 
@@ -491,7 +499,7 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
             forKeyPath: (NSString*)aKey
                  error: (NSError**)anError
 {
-  NSRange       r = [aKey rangeOfString: @"."];
+  NSRange       r = [aKey rangeOfString: @"." options: NSLiteralSearch];
 
   if (r.length == 0)
     {
@@ -524,7 +532,7 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
 
 - (id) valueForKeyPath: (NSString*)aKey
 {
-  NSRange       r = [aKey rangeOfString: @"."];
+  NSRange       r = [aKey rangeOfString: @"." options: NSLiteralSearch];
 
   if (r.length == 0)
     {
@@ -850,7 +858,7 @@ static id ValueForKey(NSObject *self, const char *key, unsigned size)
 
 - (void) takeValue: (id)anObject forKeyPath: (NSString*)aKey
 {
-  NSRange	r = [aKey rangeOfString: @"."];
+  NSRange	r = [aKey rangeOfString: @"." options: NSLiteralSearch];
 
   GSOnceMLog(@"This method is deprecated, use -setValue:forKeyPath:");
   if (r.length == 0)

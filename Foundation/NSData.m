@@ -1,5 +1,5 @@
 /**
-   Copyright (C) 1995, 1996, 1997, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995-2015 Free Software Foundation, Inc.
 
    Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
    Date: March 1995
@@ -139,6 +139,96 @@ static Class	mutableDataFinalized;
 static SEL	appendSel;
 static IMP	appendImp;
 
+static inline void
+decodebase64(unsigned char *dst, const unsigned char *src)
+{
+  dst[0] =  (src[0]         << 2) | ((src[1] & 0x30) >> 4);
+  dst[1] = ((src[1] & 0x0F) << 4) | ((src[2] & 0x3C) >> 2);
+  dst[2] = ((src[2] & 0x03) << 6) |  (src[3] & 0x3F);
+}
+
+static char b64[]
+  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static NSUInteger
+encodebase64(unsigned char **dstRef, const unsigned char *src, NSUInteger length, NSDataBase64EncodingOptions options)
+{
+  unsigned char *dst;
+  NSUInteger dIndex = 0;
+  NSUInteger dIndexNoNewLines = 0;
+  NSUInteger sIndex;
+  NSUInteger lineLength;
+  NSUInteger destLen;
+
+  lineLength = 0;  
+  if (options & NSDataBase64Encoding64CharacterLineLength)
+    lineLength = 64;
+  else if (options & NSDataBase64Encoding76CharacterLineLength)
+    lineLength = 76;
+
+  /* if no EndLine options are set but a line length is given, CR+LF is implied */
+  if (lineLength && !(options & NSDataBase64EncodingEndLineWithCarriageReturn) && !(options & NSDataBase64EncodingEndLineWithLineFeed))
+    {
+      options |= NSDataBase64EncodingEndLineWithCarriageReturn;
+      options |= NSDataBase64EncodingEndLineWithLineFeed;
+    }
+
+  /* estimate destination length */
+  destLen = 4 * ((length + 2) / 3);
+  /* we need to take in account line-endings */
+  if (lineLength)
+    {
+      if (options & (NSDataBase64EncodingEndLineWithCarriageReturn | NSDataBase64EncodingEndLineWithLineFeed))
+        destLen += (destLen / lineLength)*2;
+      else
+        destLen += (destLen / lineLength);
+    }
+
+#if	GS_WITH_GC
+  dst = NSAllocateCollectable(destLen, 0);
+#else
+  dst = NSZoneMalloc(NSDefaultMallocZone(), destLen);
+#endif
+
+  for (sIndex = 0; sIndex < length; sIndex += 3)
+    {
+      int	c0 = src[sIndex];
+      int	c1 = (sIndex+1 < length) ? src[sIndex+1] : 0;
+      int	c2 = (sIndex+2 < length) ? src[sIndex+2] : 0;
+
+      dst[dIndex++] = b64[(c0 >> 2) & 077];
+      dst[dIndex++] = b64[((c0 << 4) & 060) | ((c1 >> 4) & 017)];
+      dst[dIndex++] = b64[((c1 << 2) & 074) | ((c2 >> 6) & 03)];
+      dst[dIndex++] = b64[c2 & 077];
+      dIndexNoNewLines += 4;
+      if (lineLength && !(dIndexNoNewLines % lineLength) )
+        {
+          if (options & NSDataBase64EncodingEndLineWithCarriageReturn)
+            dst[dIndex++] = '\r';
+          if (options & NSDataBase64EncodingEndLineWithLineFeed)
+            dst[dIndex++] = '\n';
+        }
+    }
+
+   /* If len was not a multiple of 3, then we have encoded too
+    * many characters.  Adjust appropriately.
+    */
+   if (sIndex == length + 1)
+     {
+       /* There were only 2 bytes in that last group */
+       dst[dIndex - 1] = '=';
+     }
+   else if (sIndex == length + 2)
+     {
+       /* There was only 1 byte in that last group */
+       dst[dIndex - 1] = '=';
+       dst[dIndex - 2] = '=';
+     }
+
+  *dstRef = dst;
+  return dIndex;
+}
+
 static BOOL
 readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
 {
@@ -213,7 +303,7 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
   if (fileLength == 0)
     {
       unsigned char	buf[BUFSIZ];
-      
+     
       /*
        * Special case ... a file of length zero may be a named pipe or some
        * file in the /proc filesystem, which will return us data if we read
@@ -555,7 +645,156 @@ failure:
 
 - (id) init
 {
-   return [self initWithBytesNoCopy: 0 length: 0 freeWhenDone: YES];
+  return [self initWithBytesNoCopy: 0 length: 0 freeWhenDone: YES];
+}
+
+- (id) initWithBase64EncodedData: (NSData*)base64Data
+                         options: (NSDataBase64DecodingOptions)options
+{
+  NSUInteger	length;
+  NSUInteger	declen;
+  const unsigned char	*src;
+  const unsigned char	*end;
+  unsigned char *result;
+  unsigned char	*dst;
+  unsigned char	buf[4];
+  unsigned	pos = 0;
+
+  if (nil == base64Data)
+    {
+      AUTORELEASE(self);
+      [NSException raise: NSInvalidArgumentException
+	format: @"[%@-initWithBase64EncodedData:options:] called with "
+	@"nil data", NSStringFromClass([self class])];
+      return nil;
+    }
+  length = [base64Data length];
+  if (length == 0)
+    {
+      return [self initWithBytesNoCopy: 0 length: 0 freeWhenDone: YES];
+    }
+  declen = ((length + 3) * 3)/4;
+  src = (const unsigned char*)[base64Data bytes];
+  end = &src[length];
+
+  result = (unsigned char*)malloc(declen);
+  dst = result;
+
+  while (src != end)
+    {
+      int	c = *src++;
+
+      if (isupper(c))
+	{
+	  c -= 'A';
+	}
+      else if (islower(c))
+	{
+	  c = c - 'a' + 26;
+	}
+      else if (isdigit(c))
+	{
+	  c = c - '0' + 52;
+	}
+      else if (c == '/')
+	{
+	  c = 63;
+	}
+      else if (c == '+')
+	{
+	  c = 62;
+	}
+      else if  (c == '=')
+        {
+          /* Only legal as padding at end of string */
+          while (src != end)
+            {
+              c = *src++;
+              if (c != '=')
+                {
+                  free(result);
+                  DESTROY(self);
+                  return nil;
+                }
+            }
+          /* For OSX compatibility, if we have unnecessary padding at the
+           * end of a string, we treat it as representing a zero byte.
+           */
+          if (0 == pos)
+            {
+              *dst++ = '\0';
+            }
+          c = -1;
+        }
+      else if (options & NSDataBase64DecodingIgnoreUnknownCharacters)
+        {
+          c = -1;               /* ignore */
+        }
+      else
+        {
+          free(result);
+          DESTROY(self);
+          return nil;
+        }
+
+      if (c >= 0)
+	{
+	  buf[pos++] = c;
+	  if (pos == 4)
+	    {
+	      pos = 0;
+	      decodebase64(dst, buf);
+	      dst += 3;
+	    }
+	}
+    }
+
+  if (pos > 0)
+    {
+      unsigned	i;
+
+      for (i = pos; i < 4; i++)
+	{
+	  buf[i] = '\0';
+	}
+      pos--;
+      if (pos > 0)
+	{
+	  unsigned char	tail[3];
+	  decodebase64(tail, buf);
+	  memcpy(dst, tail, pos);
+	  dst += pos;
+	}
+    }
+  length = dst - result;
+  if (options & NSDataBase64DecodingIgnoreUnknownCharacters)
+    {
+      /* If the decoded length is a lot shorter than expected (because we
+       * ignored a lot of characters), reallocate to get smaller memory.
+       */
+      if ((((declen - length) * 100) / declen) > 5)
+        {
+          result = realloc(result, length);
+        }
+    }
+  return [self initWithBytesNoCopy: result length: length freeWhenDone: YES];
+}
+
+- (id) initWithBase64EncodedString: (NSString*)base64String
+                           options: (NSDataBase64DecodingOptions)options
+{
+  NSData        *data;
+
+  if (nil == base64String)
+    {
+      AUTORELEASE(self);
+      [NSException raise: NSInvalidArgumentException
+	format: @"[%@-initWithBase64EncodedString:options:] called with "
+	@"nil string", NSStringFromClass([self class])];
+      return nil;
+    }
+  data = [base64String dataUsingEncoding: NSUTF8StringEncoding];
+  return [self initWithBase64EncodedData: data options: options];
 }
 
 /**
@@ -801,6 +1040,29 @@ failure:
 
   return [NSData dataWithBytesNoCopy: buffer length: aRange.length];
 }
+
+- (NSData *)base64EncodedDataWithOptions:(NSDataBase64EncodingOptions)options
+{
+  void *srcBytes = (void*)[self bytes];
+  NSUInteger length = [self length];
+  NSUInteger resLen;
+  unsigned char *resBytes;
+
+  resLen = encodebase64(&resBytes, srcBytes, length, options);
+  return AUTORELEASE([[NSData alloc] initWithBytesNoCopy: resBytes length: resLen freeWhenDone: YES]);
+}
+
+- (NSString *)base64EncodedStringWithOptions:(NSDataBase64EncodingOptions)options
+{
+  void *srcBytes = (void*)[self bytes];
+  NSUInteger length = [self length];
+  NSUInteger resLen;
+  unsigned char *resBytes;
+
+  resLen = encodebase64(&resBytes, srcBytes, length, options);
+  return AUTORELEASE([[NSString alloc] initWithBytesNoCopy: resBytes length: resLen encoding: NSASCIIStringEncoding freeWhenDone: YES]);
+}
+
 
 - (NSUInteger) hash
 {

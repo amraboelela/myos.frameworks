@@ -458,6 +458,7 @@ literalIsEqualInternal(NXConstantString *s, GSStr o)
  */
 @interface GSPlaceholderString : NSString
 {
+  NSZone        *myZone;
 }
 @end
 
@@ -749,6 +750,38 @@ static BOOL useTinyStrings;
 #define TINY_STRING_CHAR(s, x) ((s & (0xFE00000000000000 >> (x*7))) >> (57-(x*7)))
 #define TINY_STRING_LENGTH_MASK 0x1f
 #define TINY_STRING_LENGTH_SHIFT OBJC_SMALL_OBJECT_SHIFT
+
+static BOOL
+tinyEqualToString(uintptr_t s, NSString *aString)
+{
+  NSUInteger    l;
+
+  if ((NSString*)s == aString)
+    {
+      return YES;
+    }
+  
+  l = (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+  if ([aString length] != l)
+    {
+      return NO;
+    }
+  else if (l > 0)
+    {
+      unichar   buf[8];
+
+      [aString getCharacters: buf range: NSMakeRange(0, l)];
+      while (l-- > 0)
+        {
+          if ((unichar)TINY_STRING_CHAR(s, l) != buf[l])
+            {
+              return NO;
+            }
+        }
+    }
+  return YES;
+}
+
 @interface GSTinyString : NSString
 @end
 
@@ -759,11 +792,43 @@ static void logTinyStringCount(void)
   fprintf(stderr, "%d tiny strings created\n", tinyStrings);
 }
 #endif
-@implementation GSTinyString
-- (NSUInteger) length
+
+static int
+tsbytes(uintptr_t s, char *buf)
 {
-  uintptr_t s = (uintptr_t)self;
-  return (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+  int   length = (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+  int   index;
+ 
+  for (index = 0; index < length; index++)
+    {
+      buf[index] = (char)TINY_STRING_CHAR(s, index);
+    }
+  buf[index] = 0;
+  return index;
+}
+
+@implementation GSTinyString
+
+- (BOOL) boolValue
+{
+  char  buf[9];
+  int   count =  tsbytes((uintptr_t)self, buf);
+  int   i;
+
+  for (i = 0; i < count; i++)
+    {
+      char	c = buf[i];
+
+      if (strchr("123456789yYtT", c) != 0)
+        {
+          return YES;
+        }
+      if (!isspace(c) && c != '0' && c != '-' && c != '+')
+	{
+	  break;
+	}
+    }
+  return NO;
 }
 
 - (unichar) characterAtIndex: (NSUInteger)anIndex
@@ -782,6 +847,197 @@ static void logTinyStringCount(void)
       return '\0';
     }
   return TINY_STRING_CHAR(s, anIndex);
+}
+
+- (void) getCharacters: (unichar*)buffer
+{
+  uintptr_t s = (uintptr_t)self;
+  int   length = (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+  int   index;
+ 
+  for (index = 0; index < length; index++)
+    {
+      buffer[index] = (unichar)TINY_STRING_CHAR(s, index);
+    }
+}
+
+- (void) getCharacters: (unichar*)buffer range: (NSRange)aRange
+{
+  uintptr_t s = (uintptr_t)self;
+  int   length = (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+  int   index;
+  int   offset;
+
+  GS_RANGE_CHECK(aRange, length);
+  length = NSMaxRange(aRange);
+  offset = 0;
+  for (index = aRange.location; index < length; index++)
+    {
+      buffer[offset++] = (unichar)TINY_STRING_CHAR(s, index);
+    }
+}
+
+- (BOOL) getCString: (char*)buffer
+	  maxLength: (NSUInteger)maxLength
+	   encoding: (NSStringEncoding)encoding
+{
+  uintptr_t s = (uintptr_t)self;
+  int   length = (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+  int   index;
+
+  if (buffer == 0)
+    {
+      return NO;	// Can't fit in here
+    }
+  if (NSUnicodeStringEncoding == encoding)
+    {
+      maxLength /= 2;
+      if (maxLength > 1)
+	{
+          unichar       *buf = (unichar*)buffer;
+
+          if (maxLength <= length)
+            {
+              length = maxLength - 1;
+            }
+          for (index = 0; index < length; index++)
+            {
+              buf[index] = (unichar)TINY_STRING_CHAR(s, index);
+            }
+          buf[index] = 0;
+          return YES;
+	}
+      return NO;
+    }
+  else if (isByteEncoding(encoding))
+    {
+      if (maxLength > 0)
+	{
+          if (maxLength <= length)
+            {
+              length = maxLength - 1;
+            }
+          for (index = 0; index < length; index++)
+            {
+              buffer[index] = (char)TINY_STRING_CHAR(s, index);
+            }
+          buffer[index] = 0;
+          return YES;
+        }
+      return NO;
+    }
+  return [super getCString: buffer maxLength: maxLength encoding: encoding];
+}
+
+- (NSUInteger) hash
+{
+  uintptr_t s = (uintptr_t)self;
+  int   length = (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+  uint32_t	ret = 0;
+
+  if (length > 0)
+    {
+      unichar   buf[10];
+      int	index;
+
+      for (index = 0; index < length; index++)
+        {
+          buf[index] = (char)TINY_STRING_CHAR(s, index);
+        }
+      ret = GSPrivateHash(0, buf, length * sizeof(unichar));
+
+      /*
+       * The hash caching in our concrete string classes uses zero to denote
+       * an empty cache value, so we MUST NOT return a hash of zero.
+       */
+      ret &= 0x0fffffff;
+      if (ret == 0)
+        {
+          ret = 0x0fffffff;
+        }
+    }
+  else
+    {
+      ret = 0x0ffffffe;	/* Hash for an empty string.	*/
+    }
+  return ret;
+}
+
+- (int) intValue
+{
+  char  buf[9];
+ 
+  tsbytes((uintptr_t)self, buf);
+  return strtol(buf, 0, 10);
+}
+
+- (NSInteger) integerValue
+{
+  char  buf[9];
+
+  tsbytes((uintptr_t)self, buf);
+#if GS_SIZEOF_VOIDP == GS_SIZEOF_LONG
+  return strtol(buf, 0, 10);
+#else
+  return strtoll(buf, 0, 10);
+#endif
+}
+
+- (BOOL) isEqualToString: (NSString*)aString
+{
+  return tinyEqualToString((uintptr_t)self, aString);
+}
+
+- (NSUInteger) length
+{
+  uintptr_t s = (uintptr_t)self;
+  return (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+}
+
+- (long long) longLongValue
+{
+  char  buf[9];
+
+  tsbytes((uintptr_t)self, buf);
+  return strtoll(buf, 0, 10);
+}
+
+- (id) mutableCopyWithZone: (NSZone*)z
+{
+  uintptr_t             s = (uintptr_t)self;
+  NSUInteger            i;
+  NSUInteger            l;
+  GSMutableString	*obj;
+  char                  bytes[8];
+
+  l = (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+  for (i = 0; i < l; i++)
+    {
+      bytes[i] = (unichar)TINY_STRING_CHAR(s, i);
+    }
+  obj = (GSMutableString*)NSAllocateObject(GSMutableStringClass, 0, z);
+  obj = [obj initWithBytes: bytes
+		    length: l
+		  encoding: internalEncoding];
+  return obj;
+}
+
+- (NSRange) rangeOfComposedCharacterSequenceAtIndex: (NSUInteger)anIndex
+{
+  uintptr_t s = (uintptr_t)self;
+  NSUInteger    l = (s >> TINY_STRING_LENGTH_SHIFT) & TINY_STRING_LENGTH_MASK;
+
+  if (anIndex >= l)
+    [NSException raise: NSRangeException format:@"Invalid location."];
+  return NSMakeRange(anIndex, 1);
+}
+
+- (const char*) UTF8String
+{
+  char  *buf = GSAutoreleasedBuffer(9);
+
+  tsbytes((uintptr_t)self, buf);
+  return buf;
 }
 
 + (void) load
@@ -816,6 +1072,7 @@ static void logTinyStringCount(void)
 {
   return self;
 }
+
 - (NSUInteger) retainCount
 {
   return UINT_MAX;
@@ -835,7 +1092,7 @@ static void logTinyStringCount(void)
 /**
  * Constructs a tiny string.
  */
-static id
+static inline id
 createTinyString(const char *str, int length)
 {
   unsigned int i;
@@ -875,7 +1132,7 @@ createTinyString(const char *str, int length)
   return (id)s;
 }
 #else
-static id
+static inline id
 createTinyString(const char *str, int length)
 {
   return nil;
@@ -889,6 +1146,13 @@ createTinyString(const char *str, int length)
  * on the initialisation method used.
  */
 @implementation GSPlaceholderString
++ (id) allocWithZone: (NSZone*)z
+{
+  GSPlaceholderString   *o = NSAllocateObject(self, 0, z);
+  o->myZone = z;
+  return o;
+}
+
 + (void) initialize
 {
   setup(NO);
@@ -1025,36 +1289,37 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
 	      length: (NSUInteger)length
 	    encoding: (NSStringEncoding)encoding
 {
+  const void	*original;
   void		*chars = 0;
   BOOL		flag = NO;
   
-  if (GSPrivateIsEncodingSupported(encoding) == NO)
+  if (0 == length)
     {
-      return nil;	// Invalid encoding
+      return (id)@"";
     }
-  if (length > 0)
+
+  if (0 == bytes)
     {
-      const void	*original;
+      [NSException raise: NSInvalidArgumentException
+                  format: @"-initWithBytes:lenth:encoding given nul bytes"];
+    }
 
-      if (0 == bytes)
-	{
-	  [NSException raise: NSInvalidArgumentException
-		      format: @"-initWithBytes:lenth:encoding given nul bytes"];
-	}
-      original = bytes;
 #if defined(OBJC_SMALL_OBJECT_SHIFT) && (OBJC_SMALL_OBJECT_SHIFT == 3)
-      if (useTinyStrings)
+  if (useTinyStrings)
+    {
+      if (NSASCIIStringEncoding == encoding)
         {
-          if (NSASCIIStringEncoding == encoding)
-            {
-              id tinyString = createTinyString(bytes, length);
+          id tinyString = createTinyString(bytes, length);
 
-              if (tinyString)
-                {
-                  return tinyString;
-                }
+          if (tinyString)
+            {
+              return tinyString;
             }
-          if (NSUTF8StringEncoding == encoding && (length < 9))
+        }
+      if (length < 9)
+        {
+          if (NSUTF8StringEncoding == encoding
+            || GSPrivateIsByteEncoding(encoding))
             {
               NSUInteger i;
 
@@ -1076,31 +1341,33 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
                 }
             }
         }
+    }
 #endif
 
-      fixBOM((unsigned char**)&bytes, &length, &flag, encoding);
-      /*
-       * We need to copy the data if there is any, unless fixBOM()
-       * has already done it for us.
-       */
-      if (original == bytes)
-	{
+  original = bytes;
+  fixBOM((unsigned char**)&bytes, &length, &flag, encoding);
+  /*
+   * We need to copy the data if there is any, unless fixBOM()
+   * has already done it for us.
+   */
+  if (original == bytes)
+    {
 #if	GS_WITH_GC
-	  chars = NSAllocateCollectable(length, 0);
+      chars = NSAllocateCollectable(length, 0);
 #else
-	  chars = NSZoneMalloc([self zone], length);
+      chars = NSZoneMalloc(myZone, length);
 #endif
-	  memcpy(chars, bytes, length);
-	}
-      else
-	{
-	  /*
-	   * The fixBOM() function has already copied the data and allocated
-	   * new memory, so we can just pass that to the designated initialiser
-	   */
-	  chars = (void*)bytes;
-	}
+      memcpy(chars, bytes, length);
     }
+  else
+    {
+      /*
+       * The fixBOM() function has already copied the data and allocated
+       * new memory, so we can just pass that to the designated initialiser
+       */
+      chars = (void*)bytes;
+    }
+
   return [self initWithBytesNoCopy: chars
 			    length: length
 			  encoding: encoding
@@ -1117,49 +1384,27 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
   BOOL		isLatin1 = NO;
   GSStr		me;
 
-  if (GSPrivateIsEncodingSupported(encoding) == NO)
+  if (0 == length)
     {
-      if (flag == YES && bytes != 0)
-	{
-	  NSZoneFree(NSZoneFromPointer(bytes), bytes);
-	}
-      return nil;	// Invalid encoding
-    }
-
-  if (length > 0)
-    {
-      fixBOM((unsigned char**)&bytes, &length, &flag, encoding);
-      if (encoding == NSUnicodeStringEncoding)
-	{
-	  chars.u = bytes;
-	}
-      else
-	{
-	  chars.c = bytes;
-	}
-    }
-
-  if (encoding == NSUTF8StringEncoding)
-    {
-      unsigned i;
-
-      for (i = 0; i < length; i++)
+      if (YES == flag && 0 != bytes)
         {
-	  if ((chars.c)[i] > 127)
-	    {
-	      break;
-	    }
+          NSZoneFree(NSZoneFromPointer(bytes), bytes);
         }
-      if (i == length)
-	{
-	  /*
-	   * This is actually ASCII data ... so we can just store it as if
-	   * in the internal 8bit encoding scheme.
-	   */
-	  encoding = internalEncoding;
-	}
+      return (id)@"";
     }
-  else if (encoding != internalEncoding && isByteEncoding(encoding) == YES)
+
+  fixBOM((unsigned char**)&bytes, &length, &flag, encoding);
+  if (encoding == NSUnicodeStringEncoding)
+    {
+      chars.u = bytes;
+    }
+  else
+    {
+      chars.c = bytes;
+    }
+
+  if (encoding == NSUTF8StringEncoding
+    || (encoding != internalEncoding && isByteEncoding(encoding) == YES))
     {
       unsigned i;
 
@@ -1188,7 +1433,6 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
 	}
     }
 
-
   if (encoding == internalEncoding)
     {
 #if	GS_WITH_GC
@@ -1197,13 +1441,13 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
        */
       if (GSPrivateIsCollectable(chars.c) == NO)
 	{
-          me = newCInline(length, [self zone]);
+          me = newCInline(length, myZone);
 	  memcpy(me->_contents.c, chars.c, length);
 	  NSZoneFree(NSZoneFromPointer(chars.c), chars.c);
           return (id)me;
 	}
 #endif
-      me = (GSStr)NSAllocateObject(GSCBufferStringClass, 0, [self zone]);
+      me = (GSStr)NSAllocateObject(GSCBufferStringClass, 0, myZone);
       me->_contents.c = chars.c;
       me->_count = length;
       me->_flags.wide = 0;
@@ -1219,8 +1463,16 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
       unichar	*u = 0;
       unsigned	l = 0;
 
-      if (GSToUnicode(&u, &l, chars.c, length, encoding,
-	[self zone], 0) == NO)
+      if (GSPrivateIsEncodingSupported(encoding) == NO)
+        {
+          if (flag == YES && bytes != 0)
+            {
+              NSZoneFree(NSZoneFromPointer(bytes), bytes);
+            }
+          return nil;	// Invalid encoding
+        }
+
+      if (GSToUnicode(&u, &l, chars.c, length, encoding, myZone, 0) == NO)
 	{
 	  if (flag == YES && chars.c != 0)
 	    {
@@ -1250,7 +1502,7 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
   if (isASCII == YES
     || (internalEncoding == NSISOLatin1StringEncoding && isLatin1 == YES))
     {
-      me = (GSStr)newCInline(length, [self zone]);
+      me = (GSStr)newCInline(length, myZone);
       while (length-- > 0)
         {
 	  me->_contents.c[length] = chars.u[length];
@@ -1268,14 +1520,13 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
        */
       if (GSPrivateIsCollectable(chars.u) == NO)
 	{
-          me = newUInline(length, [self zone]);
+          me = newUInline(length, myZone);
 	  memcpy(me->_contents.u, chars.u, length * sizeof(unichar));
 	  NSZoneFree(NSZoneFromPointer(chars.u), chars.u);
           return (id)me;
 	}
 #endif
-      me = (GSStr)NSAllocateObject(GSUnicodeBufferStringClass,
-	0, [self zone]);
+      me = (GSStr)NSAllocateObject(GSUnicodeBufferStringClass, 0, myZone);
       me->_contents.u = chars.u;
       me->_count = length;
       me->_flags.wide = 1;
@@ -1373,12 +1624,12 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
    */
   if (f->_flags.wide == 1)
     {
-      me = (GSStr)newUInline(f->_count, [self zone]);
+      me = (GSStr)newUInline(f->_count, myZone);
       memcpy(me->_contents.u, f->_contents.u, f->_count*sizeof(unichar));
     }
   else
     {
-      me = (GSStr)newCInline(f->_count, [self zone]);
+      me = (GSStr)newCInline(f->_count, myZone);
       memcpy(me->_contents.c, f->_contents.c, f->_count);
     }
 
@@ -1420,7 +1671,7 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
        * For a GSCString subclass, or an 8-bit GSMutableString,
        * we can copy the bytes directly into an inline string.
        */
-      me = (GSStr)newCInline(length, [self zone]);
+      me = (GSStr)newCInline(length, myZone);
       memcpy(me->_contents.c, ((GSStr)string)->_contents.c, length);
     }
   else if (GSObjCIsKindOf(c, GSUnicodeStringClass) == YES
@@ -1430,7 +1681,7 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
        * For a GSUnicodeString subclass, or a 16-bit GSMutableString,
        * we can copy the bytes directly into an inline string.
        */
-      me = (GSStr)newUInline(length, [self zone]);
+      me = (GSStr)newUInline(length, myZone);
       memcpy(me->_contents.u, ((GSStr)string)->_contents.u,
 	length*sizeof(unichar));
     }
@@ -1440,8 +1691,72 @@ fixBOM(unsigned char **bytes, NSUInteger*length, BOOL *owned,
        * For a string with an unknown class, we can initialise by
        * having the string copy its content directly into our buffer.
        */
-      me = (GSStr)newUInline(length, [self zone]);
+      me = (GSStr)newUInline(length, myZone);
       [string getCharacters: me->_contents.u];
+    }
+  return (id)me;
+}
+
+- (id) initWithUTF8String: (const char*)bytes
+{
+  const uint8_t *b = (const uint8_t*)bytes;
+  BOOL		ascii = YES;
+  NSUInteger    length;
+  GSStr		me;
+  uint8_t       c;
+
+  if (0 == bytes)
+    {
+      return (id)@"";
+    }
+  /* Skip leading BOM
+   */
+  if (b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF)
+    {
+      b = &b[3];
+    }
+
+  length = 0;
+  while ((c = b[length]))
+    {
+      length++;
+      if (c > 127)
+        {
+          ascii = NO;
+          while (b[length])
+            {
+              length++;
+            }
+          break;
+        }
+    }
+
+  if (YES == ascii)
+    {
+      id        o = createTinyString((const char*)b, length);
+
+      if (nil == o)
+        {
+          me = (GSStr)newCInline(length, myZone);
+          memcpy(me->_contents.c, b, length);
+          o = (id)me;
+        }
+      return o;
+    }
+  else
+    {
+      unichar	                *u = 0;
+      unsigned	                l = 0;
+
+      if (GSToUnicode(&u, &l, b, length, NSUTF8StringEncoding, myZone, 0) == NO)
+	{
+	  return nil;	// Invalid data
+	}
+      me = (GSStr)NSAllocateObject(GSUnicodeBufferStringClass, 0, myZone);
+      me->_contents.u = u;
+      me->_count = l;
+      me->_flags.wide = 1;
+      me->_flags.owned = YES;
     }
   return (id)me;
 }
@@ -1557,10 +1872,10 @@ UTF8String_u(GSStr self)
 static inline BOOL
 boolValue_c(GSStr self)
 {
-  unsigned  c = self->_count;
+  unsigned  count = self->_count;
   unsigned  i;
 
-  for (i = 0; i < c; i++)
+  for (i = 0; i < count; i++)
     {
       char	c = self->_contents.c[i];
 
@@ -1579,10 +1894,10 @@ boolValue_c(GSStr self)
 static inline BOOL
 boolValue_u(GSStr self)
 {
-  unsigned  c = self->_count;
+  unsigned  count = self->_count;
   unsigned  i;
 
-  for (i = 0; i < c; i++)
+  for (i = 0; i < count; i++)
     {
       unichar	c = self->_contents.u[i];
 
@@ -1600,6 +1915,62 @@ boolValue_u(GSStr self)
 	}
     }
   return NO;
+}
+
+static inline void
+intBuf_c(GSStr self, char *buf)
+{
+  unsigned  c = self->_count;
+  unsigned  i = 0;
+  unsigned  j = 0;
+
+  while (i < c && isspace(self->_contents.c[i]))
+    {
+      i++;
+    }
+  if (i < c)
+    {
+      char      sign = self->_contents.c[i];
+
+      if ('+' == sign || '-' == sign)
+        {
+          buf[j++] = sign;
+          i++;
+        }
+    }
+  while (i < c && j < 20 && isdigit(self->_contents.c[i]))
+    {
+      buf[j++] = self->_contents.c[i++];
+    }
+  buf[j] = '\0';
+}
+
+static inline void
+intBuf_u(GSStr self, char *buf)
+{
+  unsigned  c = self->_count;
+  unsigned  i = 0;
+  unsigned  j = 0;
+
+  while (i < c && isspace(self->_contents.u[i]))
+    {
+      i++;
+    }
+  if (i < c)
+    {
+      unichar   sign = self->_contents.u[i];
+
+      if ('+' == sign || '-' == sign)
+        {
+          buf[j++] = (char)sign;
+          i++;
+        }
+    }
+  while (i < c && j < 20 && isdigit(self->_contents.u[i]))
+    {
+      buf[j++] = (char)self->_contents.u[i++];
+    }
+  buf[j] = '\0';
 }
 
 static inline BOOL
@@ -2183,16 +2554,29 @@ fillHole(GSStr self, unsigned index, unsigned size)
 static inline void
 getCharacters_c(GSStr self, unichar *buffer, NSRange aRange)
 {
-  unsigned	len = aRange.length;
+  if (aRange.length)
+    { 
+      if (NSISOLatin1StringEncoding == internalEncoding)
+        {
+          register NSUInteger   count = aRange.length;
+          register NSUInteger   base = aRange.location;
 
-  if (!len)
-    return;
+          while (count-- > 0)
+            {
+              buffer[count] = self->_contents.c[base + count];
+            }
+        }
+      else
+        {
+          unsigned      len = aRange.length;
 
-  if (!GSToUnicode(&buffer, &len, self->_contents.c + aRange.location,
-    aRange.length, internalEncoding, 0, 0))
-    {
-      [NSException raise: NSInternalInconsistencyException
-		  format: @"Can't convert to Unicode."];
+          if (!GSToUnicode(&buffer, &len, self->_contents.c + aRange.location,
+            aRange.length, internalEncoding, 0, 0))
+            {
+              [NSException raise: NSInternalInconsistencyException
+                          format: @"Can't convert to Unicode."];
+            }
+        }
     }
 }
 
@@ -2621,56 +3005,6 @@ getCStringE_u(GSStr self, char *buffer, unsigned int maxLength,
     }
 }
 
-static inline int
-intValue_c(GSStr self)
-{
-  const char	*ptr = (const char*)self->_contents.c;
-  const char	*end = ptr + self->_count;
-
-  while (ptr < end && isspace(*ptr))
-    {
-      ptr++;
-    }
-  if (ptr == end)
-    {
-      return 0;
-    }
-  else
-    {
-      unsigned int	l = (end - ptr) < 32 ? (end - ptr) : 31;
-      char		buf[32];
-
-      memcpy(buf, ptr, l);
-      buf[l] = '\0';
-      return atol((const char*)buf);
-    }
-}
-
-static inline int
-intValue_u(GSStr self)
-{
-  const unichar	*ptr = self->_contents.u;
-  const unichar	*end = ptr + self->_count;
-
-  while (ptr < end && isspace(*ptr))
-    {
-      ptr++;
-    }
-  if (ptr == end)
-    {
-      return 0;
-    }
-  else
-    {
-      unsigned int	l = (end - ptr) < 32 ? (end - ptr) : 31;
-      unsigned char	buf[32];
-      unsigned char	*b = buf;
-
-      GSFromUnicode(&b, &l, ptr, l, internalEncoding, 0, GSUniTerminate);
-      return atol((const char*)buf);
-    }
-}
-
 static inline BOOL
 isEqual_c(GSStr self, id anObject)
 {
@@ -2684,11 +3018,11 @@ isEqual_c(GSStr self, id anObject)
     {
       return NO;
     }
-  if (GSObjCIsInstance(anObject) == NO)
+  c = object_getClass(anObject);
+  if (class_isMetaClass(c) == YES)
     {
       return NO;
     }
-  c = object_getClass(anObject);
   if (c == NSConstantStringClass)
     {
       return literalIsEqualInternal((NXConstantString*)anObject, (GSStr)self);
@@ -2698,15 +3032,24 @@ isEqual_c(GSStr self, id anObject)
       GSStr	other = (GSStr)anObject;
       NSRange	r = {0, self->_count};
 
-      /*
-       * First see if the hash is the same - if not, we can't be equal.
+      /* First see if the hash is the same - if not, we can't be equal.
+       * However, it's not worth calculating hashes unless the strings
+       * are fairly long.
        */
-      if (self->_flags.hash == 0)
-        self->_flags.hash = (*hashImp)((id)self, hashSel);
-      if (other->_flags.hash == 0)
-        other->_flags.hash = (*hashImp)((id)other, hashSel);
-      if (self->_flags.hash != other->_flags.hash)
-	return NO;
+      if (self->_count > 15)
+        {
+          if (self->_flags.hash == 0)
+            self->_flags.hash = (*hashImp)((id)self, hashSel);
+          if (other->_flags.hash == 0)
+            other->_flags.hash = (*hashImp)((id)other, hashSel);
+          if (self->_flags.hash != other->_flags.hash)
+            return NO;
+        }
+      else if (self->_flags.hash && other->_flags.hash)
+        {
+          if (self->_flags.hash != other->_flags.hash)
+            return NO;
+        }
 
       /*
        * Do a compare depending on the type of the other string.
@@ -2747,11 +3090,11 @@ isEqual_u(GSStr self, id anObject)
     {
       return NO;
     }
-  if (GSObjCIsInstance(anObject) == NO)
+  c = object_getClass(anObject);
+  if (class_isMetaClass(c) == YES)
     {
       return NO;
     }
-  c = object_getClass(anObject);
   if (c == NSConstantStringClass)
     {
       return literalIsEqualInternal((NXConstantString*)anObject, (GSStr)self);
@@ -2761,15 +3104,24 @@ isEqual_u(GSStr self, id anObject)
       GSStr	other = (GSStr)anObject;
       NSRange	r = {0, self->_count};
 
-      /*
-       * First see if the hash is the same - if not, we can't be equal.
+      /* First see if the hash is the same - if not, we can't be equal.
+       * However, it's not worth calculating hashes unless the strings
+       * are fairly long.
        */
-      if (self->_flags.hash == 0)
-        self->_flags.hash = (*hashImp)((id)self, hashSel);
-      if (other->_flags.hash == 0)
-        other->_flags.hash = (*hashImp)((id)other, hashSel);
-      if (self->_flags.hash != other->_flags.hash)
-	return NO;
+      if (self->_count > 15)
+        {
+          if (self->_flags.hash == 0)
+            self->_flags.hash = (*hashImp)((id)self, hashSel);
+          if (other->_flags.hash == 0)
+            other->_flags.hash = (*hashImp)((id)other, hashSel);
+          if (self->_flags.hash != other->_flags.hash)
+            return NO;
+        }
+      else if (self->_flags.hash && other->_flags.hash)
+        {
+          if (self->_flags.hash != other->_flags.hash)
+            return NO;
+        }
 
       /*
        * Do a compare depending on the type of the other string.
@@ -3179,38 +3531,6 @@ GSPrivateRangeOfString(NSString *receiver, NSString *target)
     {
       return (GSRSFunc)strRangeNsNs;
     }
-}
-
-static inline NSRange
-rangeOfString_c(GSStr self, NSString *aString, unsigned mask, NSRange aRange)
-{
-  Class	c;
-
-  c = object_getClass(aString);
-  if (GSObjCIsKindOf(c, GSUnicodeStringClass) == YES
-    || (c == GSMutableStringClass && ((GSStr)aString)->_flags.wide == 1))
-    return strRangeCsUs((id)self, aString, mask, aRange);
-  else if (GSObjCIsKindOf(c, GSCStringClass) == YES
-    || (c == GSMutableStringClass && ((GSStr)aString)->_flags.wide == 0))
-    return strRangeCsCs((id)self, aString, mask, aRange);
-  else
-    return strRangeCsNs((id)self, aString, mask, aRange);
-}
-
-static inline NSRange
-rangeOfString_u(GSStr self, NSString *aString, unsigned mask, NSRange aRange)
-{
-  Class	c;
-
-  c = object_getClass(aString);
-  if (GSObjCIsKindOf(c, GSUnicodeStringClass) == YES
-    || (c == GSMutableStringClass && ((GSStr)aString)->_flags.wide == 1))
-    return strRangeUsUs((id)self, aString, mask, aRange);
-  else if (GSObjCIsKindOf(c, GSCStringClass) == YES
-    || (c == GSMutableStringClass && ((GSStr)aString)->_flags.wide == 0))
-    return strRangeUsCs((id)self, aString, mask, aRange);
-  else
-    return strRangeUsNs((id)self, aString, mask, aRange);
 }
 
 static inline NSString*
@@ -3666,7 +3986,22 @@ agree, create a new GSCInlineString otherwise.
 
 - (int) intValue
 {
-  return intValue_c((GSStr)self);
+  char  buf[24];
+
+  intBuf_c((GSStr)self, buf);
+  return strtol(buf, 0, 10);
+}
+
+- (NSInteger) integerValue
+{
+  char  buf[24];
+
+  intBuf_c((GSStr)self, buf);
+#if GS_SIZEOF_VOIDP == GS_SIZEOF_LONG
+  return strtol(buf, 0, 10);
+#else
+  return strtoll(buf, 0, 10);
+#endif
 }
 
 - (BOOL) isEqual: (id)anObject
@@ -3687,6 +4022,14 @@ agree, create a new GSCInlineString otherwise.
 - (NSUInteger) lengthOfBytesUsingEncoding: (NSStringEncoding)encoding
 {
   return cStringLength_c((GSStr)self, encoding);
+}
+
+- (long long) longLongValue
+{
+  char  buf[24];
+
+  intBuf_c((GSStr)self, buf);
+  return strtoll(buf, 0, 10);
 }
 
 - (const char*) lossyCString
@@ -3728,26 +4071,6 @@ agree, create a new GSCInlineString otherwise.
 {
   GS_RANGE_CHECK(aRange, _count);
   return rangeOfCharacter_c((GSStr)self, aSet, mask, aRange);
-}
-
-- (NSRange) rangeOfString: (NSString*)aString
-		  options: (NSUInteger)mask
-		    range: (NSRange)aRange
-{
-  GS_RANGE_CHECK(aRange, _count);
-  if (aString == nil)
-    [NSException raise: NSInvalidArgumentException
-		format: @"[%@ -%@] nil string argument",
-      NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
-  if (GSObjCIsInstance(aString) == NO)
-    [NSException raise: NSInvalidArgumentException
-		format: @"[%@ -%@] not a string argument",
-      NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
-  if ((mask & NSRegularExpressionSearch) == NSRegularExpressionSearch)
-    {
-      return [super rangeOfString: aString options: mask range: aRange];
-    }
-  return rangeOfString_c((GSStr)self, aString, mask, aRange);
 }
 
 - (NSStringEncoding) smallestEncoding
@@ -4020,7 +4343,22 @@ agree, create a new GSCInlineString otherwise.
 
 - (int) intValue
 {
-  return intValue_u((GSStr)self);
+  char  buf[24];
+
+  intBuf_u((GSStr)self, buf);
+  return strtol(buf, 0, 10);
+}
+
+- (NSInteger) integerValue
+{
+  char  buf[24];
+
+  intBuf_u((GSStr)self, buf);
+#if GS_SIZEOF_VOIDP == GS_SIZEOF_LONG
+  return strtol(buf, 0, 10);
+#else
+  return strtoll(buf, 0, 10);
+#endif
 }
 
 - (BOOL) isEqual: (id)anObject
@@ -4041,6 +4379,14 @@ agree, create a new GSCInlineString otherwise.
 - (NSUInteger) lengthOfBytesUsingEncoding: (NSStringEncoding)encoding
 {
   return cStringLength_u((GSStr)self, encoding);
+}
+
+- (long long) longLongValue
+{
+  char  buf[24];
+
+  intBuf_u((GSStr)self, buf);
+  return strtoll(buf, 0, 10);
 }
 
 - (const char*) lossyCString
@@ -4098,6 +4444,7 @@ agree, create a new GSCInlineString otherwise.
   return rangeOfCharacter_u((GSStr)self, aSet, mask, aRange);
 }
 
+/*
 - (NSRange) rangeOfString: (NSString*)aString
 		  options: (NSUInteger)mask
 		    range: (NSRange)aRange
@@ -4117,6 +4464,7 @@ agree, create a new GSCInlineString otherwise.
     }
   return rangeOfString_u((GSStr)self, aString, mask, aRange);
 }
+*/
 
 - (NSStringEncoding) smallestEncoding
 {
@@ -4832,10 +5180,28 @@ NSAssert(_flags.owned == 1 && _zone != 0, NSInternalInconsistencyException);
 
 - (int) intValue
 {
+  char  buf[24];
+
   if (_flags.wide == 1)
-    return intValue_u((GSStr)self);
+    intBuf_u((GSStr)self, buf);
   else
-    return intValue_c((GSStr)self);
+    intBuf_c((GSStr)self, buf);
+  return strtol(buf, 0, 10);
+}
+
+- (NSInteger) integerValue
+{
+  char  buf[24];
+
+  if (_flags.wide == 1)
+    intBuf_u((GSStr)self, buf);
+  else
+    intBuf_c((GSStr)self, buf);
+#if GS_SIZEOF_VOIDP == GS_SIZEOF_LONG
+  return strtol(buf, 0, 10);
+#else
+  return strtoll(buf, 0, 10);
+#endif
 }
 
 - (BOOL) isEqual: (id)anObject
@@ -4865,6 +5231,17 @@ NSAssert(_flags.owned == 1 && _zone != 0, NSInternalInconsistencyException);
     return cStringLength_u((GSStr)self, encoding);
   else
     return cStringLength_c((GSStr)self, encoding);
+}
+
+- (long long) longLongValue
+{
+  char  buf[24];
+
+  if (_flags.wide == 1)
+    intBuf_u((GSStr)self, buf);
+  else
+    intBuf_c((GSStr)self, buf);
+  return strtoll(buf, 0, 10);
 }
 
 - (const char*) lossyCString
@@ -4959,29 +5336,6 @@ NSAssert(_flags.owned == 1 && _zone != 0, NSInternalInconsistencyException);
     return rangeOfCharacter_u((GSStr)self, aSet, mask, aRange);
   else
     return rangeOfCharacter_c((GSStr)self, aSet, mask, aRange);
-}
-
-- (NSRange) rangeOfString: (NSString*)aString
-		  options: (NSUInteger)mask
-		    range: (NSRange)aRange
-{
-  GS_RANGE_CHECK(aRange, _count);
-  if (aString == nil)
-    [NSException raise: NSInvalidArgumentException
-		format: @"[%@ -%@] nil string argument",
-      NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
-  if (GSObjCIsInstance(aString) == NO)
-    [NSException raise: NSInvalidArgumentException
-		format: @"[%@ -%@] not a string argument",
-      NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
-  if ((mask & NSRegularExpressionSearch) == NSRegularExpressionSearch)
-    {
-      return [super rangeOfString: aString options: mask range: aRange];
-    }
-  if (_flags.wide == 1)
-    return rangeOfString_u((GSStr)self, aString, mask, aRange);
-  else
-    return rangeOfString_c((GSStr)self, aString, mask, aRange);
 }
 
 - (void) replaceCharactersInRange: (NSRange)aRange
@@ -5262,6 +5616,13 @@ NSAssert(_flags.owned == 1 && _zone != 0, NSInternalInconsistencyException);
   return [super uppercaseString];
 }
 
+- (const char *) UTF8String
+{
+  if (_flags.wide == 1)
+    return UTF8String_u((GSStr)self);
+  return UTF8String_c((GSStr)self);
+}
+
 // private method for Unicode level 3 implementation
 - (int) _baseLength
 {
@@ -5296,6 +5657,17 @@ literalIsEqual(NXConstantString *self, id anObject)
     {
       return NO;
     }
+#if defined(OBJC_SMALL_OBJECT_SHIFT) && (OBJC_SMALL_OBJECT_SHIFT == 3)
+  if (useTinyStrings)
+    {
+      uintptr_t s = (uintptr_t)anObject;
+
+      if (s & TINY_STRING_MASK)
+        {
+          return tinyEqualToString((uintptr_t)anObject, self);
+        }
+    }
+#endif
   if (GSObjCIsInstance(anObject) == NO)
     {
       return NO;
@@ -5619,9 +5991,28 @@ literalIsEqual(NXConstantString *self, id anObject)
   return literalIsEqual(self, other);
 }
 
+- (int) intValue
+{
+  return strtol((const char*)nxcsptr, 0, 10);
+}
+
+- (NSInteger) integerValue
+{
+#if GS_SIZEOF_VOIDP == GS_SIZEOF_LONG
+  return strtol((const char*)nxcsptr, 0, 10);
+#else
+  return strtoll((const char*)nxcsptr, 0, 10);
+#endif
+}
+
 - (NSUInteger) length
 {
   return lengthUTF8((const uint8_t*)nxcsptr, nxcslen, 0, 0);
+}
+
+- (long long) longLongValue
+{
+  return strtoll((const char*)nxcsptr, 0, 10);
 }
 
 - (NSRange) rangeOfCharacterFromSet: (NSCharacterSet*)aSet
