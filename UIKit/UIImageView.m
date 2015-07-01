@@ -78,15 +78,10 @@ static NSArray *CGImagesWithUIImages(NSArray *images)
 
 - (void)dealloc
 {
-    //DLog();
     [_animationImages release];
-    //DLog();
     [_image release];
-    //DLog();
     [_highlightedImage release];
-    //DLog();
     [_highlightedAnimationImages release];
-    //DLog();
     [super dealloc];
 }
 
@@ -112,9 +107,11 @@ static NSArray *CGImagesWithUIImages(NSArray *images)
 - (void)setImage:(UIImage *)newImage
 {
     if (_image != newImage) {
+        //DLog();
         [_image release];
         _image = [newImage retain];
         if (!_highlighted || !_highlightedImage) {
+            //DLog();
             [self _updateContent];
         }
     }
@@ -122,6 +119,7 @@ static NSArray *CGImagesWithUIImages(NSArray *images)
 
 - (void)_updateContent
 {
+    //DLog();
     _UIImageViewUpdateContent(self);
     [super _updateContent];
 }
@@ -201,6 +199,7 @@ void _UIImageViewDisplayIfNeededChangingFromOldSize(UIImageView *imageView, CGSi
 
 void _UIImageViewUpdateContent(UIImageView *imageView)
 {
+    //DLog();
     UIImage *contentImage = imageView->_highlighted ? imageView->_highlightedImage : imageView->_image;
     if (contentImage) {
         //DLog();
@@ -217,6 +216,8 @@ void _UIImageViewUpdateContent(UIImageView *imageView)
         imageView->_layer.contents = CGBitmapContextCreateImage(ctx);
         [imageView->_layer->_contents release];
         CGContextRelease(ctx);
+    } else {
+        imageView->_layer.contents = nil;
     }
 }
 

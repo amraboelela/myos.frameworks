@@ -241,7 +241,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
         _content = [[NSMutableDictionary alloc] init];
         _titleLabel = [[UILabel alloc] initWithFrame:self.bounds];
         //_imageView = [[UIImageView alloc] init];
-        //_backgroundImageView = [[UIImageView alloc] init];
+        _backgroundImageView = [[UIImageView alloc] init];
         _adjustsImageWhenHighlighted = YES;
         _adjustsImageWhenDisabled = YES;
         _showsTouchWhenHighlighted = NO;
@@ -254,7 +254,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
         //DLog(@"[UIFont buttonFontSize]: %0.1f", [UIFont buttonFontSize]);
         _titleLabel.font = [UIFont systemFontOfSize:[UIFont buttonFontSize]];
 
-        //[self addSubview:_backgroundImageView];
+        [self addSubview:_backgroundImageView];
         //[self addSubview:_imageView];
         [self addSubview:_titleLabel];
     }
@@ -415,7 +415,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 {
     //_UIButtonUpdateContent(self);
     //[super _updateContent];
-    
+    //DLog();
     UIControlState state = self.state;
     _titleLabel.text = [self titleForState:state];
     _titleLabel.textColor = [self titleColorForState:state] ?: _UIButtonDefaultTitleColor(self, state);
@@ -423,7 +423,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     
     UIImage *image = _UIButtonContentForState(self, state, UIButtonContentTypeImage);
     UIImage *backgroundImage = _UIButtonContentForState(self, state, UIButtonContentTypeBackgroundImage);
-    
+    //DLog(@"image: %@", image); 
     if (!image) {
         image = [self imageForState:state];	// find the correct default image to show
         if (_adjustsImageWhenDisabled && state & UIControlStateDisabled) {
@@ -448,17 +448,18 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     } else {
         _UIImageViewSetDrawMode(_backgroundImageView, _UIImageViewDrawModeNormal);
     }
+    //DLog(@"backgroundImage: %@", backgroundImage); 
     _imageView.image = image;
     _backgroundImageView.image = backgroundImage;
     if (_highlighted) {
         //DLog(@"[_registeredActions count]: %d", [_registeredActions count]);
         //if ([_registeredActions count]==0) {
         //_gradientLayer.frame = button.bounds;
-        [_layer insertSublayer:_gradientLayer atIndex:0];
+        //[_layer insertSublayer:_gradientLayer atIndex:0];
         //}
     } else {
         //if ([_registeredActions count]==0) {
-        [_gradientLayer removeFromSuperlayer];
+        //[_gradientLayer removeFromSuperlayer];
         //}
     }
     //[self setNeedsLayout];
