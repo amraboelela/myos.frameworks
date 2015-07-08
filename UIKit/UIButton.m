@@ -62,9 +62,6 @@ static UIColor *_UIButtonDefaultTitleColor(UIButton *button, UIControlState stat
         default:
             return button->_titleLabel.textColor;
     }
-    
-
-    
 }
 
 static UIColor *_UIButtonDefaultTitleShadowColor(UIButton *button)
@@ -236,7 +233,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 - (id)initWithFrame:(CGRect)frame
 {
     if ((self=[super initWithFrame:frame])) {
-        self.backgroundColor = [UIColor whiteColor];
+        self.backgroundColor = [UIColor clearColor];
         _buttonType = UIButtonTypeCustom;
         _content = [[NSMutableDictionary alloc] init];
         _titleLabel = [[UILabel alloc] initWithFrame:self.bounds];
