@@ -82,7 +82,7 @@ static CFArrayRef CreateCTLinesForString(NSString *string, CGSize constrainedToS
                     usedCharacters = stringLength - start;
                     //DLog(@"usedCharacters: %d", usedCharacters);
                     //DLog(@"typesetter 1: %@", typesetter);
-                    NSAttributedString *ellipsisString = CFAttributedStringCreate(NULL, CFSTR("ABC"), attributes);
+                    NSAttributedString *ellipsisString = CFAttributedStringCreate(NULL, CFSTR("..."), attributes);
                     //DLog(@"ellipsisString: %@", ellipsisString);
                     CTLineRef ellipsisLine = CTLineCreateWithAttributedString(ellipsisString);
                     //DLog(@"typesetter 2: %@", typesetter);
