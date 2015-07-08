@@ -61,43 +61,8 @@
 
 const CGFloat *OPFontIdentityMatrix;
 
-//static CFDictionaryRef StandardGlyphNamesDictionary;
-//static NSDictionary * StandardGlyphNamesDictionary;
 static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
 {
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     ".notdef",
     ".null",
     "nonmarkingreturn",
