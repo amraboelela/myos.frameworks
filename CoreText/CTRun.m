@@ -224,7 +224,7 @@
         free(glyphs);
         free(advances);
     }
-    DLog(@"subRun: %@", subRun);
+    //DLog(@"subRun: %@", subRun);
     return subRun;
 }
 
