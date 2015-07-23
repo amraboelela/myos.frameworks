@@ -140,11 +140,11 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 {
     CGRect rect;
     
-    DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
+    //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     rect.origin = contentRect.origin;
     rect.size = size;
     
-    DLog(@"rect: %@", NSStringFromCGRect(rect));
+    //DLog(@"rect: %@", NSStringFromCGRect(rect));
     // clamp the right edge of the rect to the contentRect - this is what the real UIButton appears to do.
     if (CGRectGetMaxX(rect) > CGRectGetMaxX(contentRect)) {
         rect.size.width -= CGRectGetMaxX(rect) - CGRectGetMaxX(contentRect);
@@ -165,9 +165,9 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     }
     switch (button.contentVerticalAlignment) {
         case UIControlContentVerticalAlignmentCenter:
-            DLog(@"rect 2: %@", NSStringFromCGRect(rect));
+            //DLog(@"rect 2: %@", NSStringFromCGRect(rect));
             rect.origin.y += ceil((contentRect.size.height - rect.size.height) / 2.f);
-            DLog(@"rect 3: %@", NSStringFromCGRect(rect));
+            //DLog(@"rect 3: %@", NSStringFromCGRect(rect));
             break;
         case UIControlContentVerticalAlignmentBottom:
             rect.origin.y += contentRect.size.height - rect.size.height;
@@ -238,7 +238,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 - (id)initWithFrame:(CGRect)frame
 {
     if ((self=[super initWithFrame:frame])) {
-        //DLog();
         self.backgroundColor = [UIColor clearColor];
         _buttonType = UIButtonTypeCustom;
         _content = [[NSMutableDictionary alloc] init];
@@ -391,7 +390,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     //DLog(@"self: %@", self);
     //DLog(@"_UIButtonTitleSizeForState(self, state): %@", NSStringFromCGSize(_UIButtonTitleSizeForState(self, state)));
     //DLog(@"UIEdgeInsetsInsetRect(contentRect,inset): %@", NSStringFromCGRect(UIEdgeInsetsInsetRect(contentRect,inset)));
-    //DLog(@"state: %d", state);
     return _UIButtonComponentRectForSize(self, _UIButtonTitleSizeForState(self, state), UIEdgeInsetsInsetRect(contentRect,inset), state);
 }
 
@@ -418,7 +416,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 {
     //_UIButtonUpdateContent(self);
     //[super _updateContent];
-    //DLog();
     UIControlState state = self.state;
     _titleLabel.text = [self titleForState:state];
     _titleLabel.textColor = [self titleColorForState:state] ?: _UIButtonDefaultTitleColor(self, state);
@@ -426,7 +423,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     
     UIImage *image = _UIButtonContentForState(self, state, UIButtonContentTypeImage);
     UIImage *backgroundImage = _UIButtonContentForState(self, state, UIButtonContentTypeBackgroundImage);
-    //DLog(@"image: %@", image); 
     if (!image) {
         image = [self imageForState:state];	// find the correct default image to show
         if (_adjustsImageWhenDisabled && state & UIControlStateDisabled) {
@@ -477,9 +473,9 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     const CGRect contentRect = [self contentRectForBounds:bounds];
 
     _backgroundImageView.frame = [self backgroundRectForBounds:bounds];
-    DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
+    //DLog(@"contentRect: %@", NSStringFromCGRect(contentRect));
     _titleLabel.frame = [self titleRectForContentRect:contentRect];
-    DLog(@"_titleLabel: %@", _titleLabel);
+    //DLog(@"_titleLabel: %@", _titleLabel);
     _imageView.frame = [self imageRectForContentRect:contentRect];
 }
 

@@ -698,6 +698,8 @@ static NSStringEncoding	defaultEncoding;
   NSArray       *result;
 
   DESTROY(_lastError);
+  //DLog();
+  //printf("path: %@\n", path);
   result = [self directoryContentsAtPath: path];
 
   if (error != NULL)
@@ -1506,13 +1508,16 @@ static NSStringEncoding	defaultEncoding;
 {
   const _CHAR *lpath = [self fileSystemRepresentationWithPath: path];
 
+  //printf("lpath: %s\n", lpath);
   if (isDirectory != 0)
     {
       *isDirectory = NO;
     }
 
+  //printf("*isDirectory: %d\n", *isDirectory);
   if (lpath == 0 || *lpath == _NUL)
     {
+      //printf("fileExistsAtPath 1\n");
       ASSIGN(_lastError, @"no path given");
       return NO;
     }
@@ -1538,20 +1543,26 @@ static NSStringEncoding	defaultEncoding;
     }
 #else
     {
+      //printf("fileExistsAtPath 2\n");
       struct _STATB statbuf;
 
       if (_STAT(lpath, &statbuf) != 0)
 	{
+          //printf("_STAT(lpath, &statbuf): %d\n", _STAT(lpath, &statbuf));
 	  return NO;
 	}
 
+      //printf("*isDirectory 2: %d\n", *isDirectory);
       if (isDirectory)
 	{
+          //printf("fileExistsAtPath 4\n");
 	  if ((statbuf.st_mode & S_IFMT) == S_IFDIR)
 	    {
 	      *isDirectory = YES;
+              //printf("*isDirectory = YES\n");
 	    }
 	}
+        //printf("*isDirectory 3: %d\n", *isDirectory);
 
       return YES;
     }
@@ -2056,12 +2067,14 @@ static NSStringEncoding	defaultEncoding;
   NSDirectoryEnumerator	*direnum;
   NSMutableArray	*content;
   BOOL			is_dir;
-
+  //printf("is_dir: %d\n", is_dir);
   /*
    * See if this is a directory (don't follow links).
    */
   if ([self fileExistsAtPath: path isDirectory: &is_dir] == NO || is_dir == NO)
     {
+      //printf("is_dir: %d\n", is_dir);
+      //printf("[self fileExistsAtPath: path isDirectory: &is_dir] == NO\n");//@"[self fileExistsAtPath: path isDirectory: &is_dir] == NO");
       return nil;
     }
   content = [NSMutableArray arrayWithCapacity: 128];
