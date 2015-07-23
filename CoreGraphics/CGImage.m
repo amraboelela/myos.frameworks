@@ -39,7 +39,7 @@
 #import <android/asset_manager.h>
 #endif
 
-#pragma mark - static functions
+#pragma mark - Static functions
 
 #if defined(ANDROID) && defined(NATIVE_APP)
 static void stream_read_func(png_structp png, png_bytep data, png_size_t size)

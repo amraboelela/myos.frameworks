@@ -219,7 +219,7 @@ NSString *IOPipeRunCommand(NSString *command, BOOL usingPipe)
         // Grab data from process execution
         while (fgets(data, kDataSize , pf)) {
             // Print grabbed data to the screen.
-            NSLog(@"data: %s", data);
+            //NSLog(@"data: %s", data);
             [commandOutput appendString:[NSString stringWithFormat:@"%s", data]];
         }
         pclose(pf);
