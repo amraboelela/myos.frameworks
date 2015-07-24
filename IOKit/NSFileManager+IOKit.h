@@ -1,5 +1,5 @@
 /*
- Copyright © 2014-2015 myOS Group.
+ Copyright © 2015 myOS Group.
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -15,8 +15,4 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#import <IOKit/IOWindow.h>
-#import <IOKit/IOPipe.h>
-#import <IOKit/IOEvent.h>
-#import <IOKit/NSFileHandle+IOKit.h>
-#import <IOKit/NSFileManager+IOKit.h>
+NSString *_NSFileManagerMyAppsPath();

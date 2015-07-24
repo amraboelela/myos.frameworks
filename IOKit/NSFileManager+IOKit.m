@@ -1,5 +1,5 @@
 /*
- Copyright © 2014-2015 myOS Group.
+ Copyright © 2015 myOS Group.
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -15,8 +15,22 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#import <IOKit/IOWindow.h>
-#import <IOKit/IOPipe.h>
-#import <IOKit/IOEvent.h>
-#import <IOKit/NSFileHandle+IOKit.h>
-#import <IOKit/NSFileManager+IOKit.h>
+#import <IOKit/IOKit.h>
+
+static NSString *_myappsPath = nil;
+
+#pragma mark - Public functions
+
+NSString *_NSFileManagerMyAppsPath()
+{
+    if (!_myappsPath) {
+#ifdef ANDROID
+        _myappsPath = @"/data/data/com.myos.myapps";
+#else
+        _myappsPath = IOPipeRunCommand(@"echo ${MYOS_PATH}", YES);
+        _myappsPath = [_myappsPath substringToIndex:_myappsPath.length-1];
+        _myappsPath = [NSString stringWithFormat:@"%@/myapps", _myappsPath];
+#endif
+    }
+    return _myappsPath;
+}
