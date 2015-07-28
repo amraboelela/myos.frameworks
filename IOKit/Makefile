@@ -18,8 +18,9 @@
 LDLIBS=-lCoreFoundation -lFoundation
 OBJECTS = \
     IOWindow.o \
-    NSFileHandle+IOKit.o \
     IOPipe.o \
+    NSFileHandle+IOKit.o \
+    NSFileManager+IOKit.o \
 
 ifeq ($(APP_TYPE),NativeApp)
     LIB_NAME=NAIOKit

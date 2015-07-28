@@ -32,7 +32,7 @@
     if (self) {
         _application = application;
         //DLog(@"imageName: %@", _imageName);
-        NSString *imagePath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/Icon.png", application->_name];
+        NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Icon.png", _NSFileManagerMyAppsPath(),  application->_name];
         //DLog(@"imagePath: %@", imagePath);
         //UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
         _iconImage = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:imagePath]];

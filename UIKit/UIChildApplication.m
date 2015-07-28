@@ -35,11 +35,15 @@ static NSString *const _kUIChildApplicationScorePath = @"application.score";
 
 static void UIChildApplicationRunApp(NSString *appName)
 {
-    const char *appPath = [[NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", appName, appName] cString];
+    const char *appPath = [[NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(), appName, appName] cString];
     const char *cAppName = [appName cString];
     //DLog(@"appPath: %s", appPath);
     char *const args[] = {cAppName, NULL};
+#ifdef ANDROID
     const char *myEnv[] = {"LD_LIBRARY_PATH=/data/data/com.myos.myapps/lib:$LD_LIBRARY_PATH", 0};
+#else
+    const char *myEnv = NULL;//{"LD_LIBRARY_PATH=/data/data/com.myos.myapps/lib:$LD_LIBRARY_PATH", 0};
+#endif
     execve(appPath, args, myEnv);
     //DLog();
 }
@@ -68,10 +72,10 @@ static void UIChildApplicationRunApp(NSString *appName)
         [_allApplicationsDictionary setObject:self forKey:name];
         _opened = NO;
         //_needsScreenCapture = YES;
-        NSString *dataPath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/data.json", _name];
+        NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), _name];
         NSData *data = [NSData dataWithContentsOfFile:dataPath];
         _data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
-        //DLog(@"_data: %@", _data);
+        DLog(@"_data: %@", _data);
         int x = [[_data valueForKeyPath:_kUIChildApplicationXLocationPath] intValue];
         int y = [[_data valueForKeyPath:_kUIChildApplicationYLocationPath] intValue];
         _score = [[_data valueForKeyPath:_kUIChildApplicationScorePath] intValue];
@@ -144,7 +148,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (UIImageView *)defaultScreenView
 {
-    NSString *imagePath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/Default.png", _name];
+    NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Default.png", _NSFileManagerMyAppsPath(), _name];
     UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
     return [[[UIImageView alloc] initWithImage:image] autorelease];
     //return [[[UIImageView alloc] init] autorelease];
@@ -354,7 +358,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 void UIChildApplicationSaveData(UIChildApplication *app)
 {
-    NSString *dataPath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/data.json", app->_name];
+    NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), app->_name];
     //DLog(@"dataPath: %@", dataPath);
     [app->_data setValue:[NSNumber numberWithInt:app->_score] forKeyPath:_kUIChildApplicationScorePath];
     //DLog(@"app->_data: %@", app->_data);
