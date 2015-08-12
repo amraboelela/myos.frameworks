@@ -31,6 +31,7 @@
 #import <CoreGraphics/CGGradient-private.h>
 #import <CoreGraphics/CGGeometry-private.h>
 #import <CoreGraphics/CGImage-private.h>
+#import <CoreGraphics/CairoFont.h>
 #import <cairo/cairo.h>
 
 #ifdef ANDROID

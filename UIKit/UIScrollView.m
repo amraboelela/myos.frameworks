@@ -149,8 +149,10 @@ CGPoint _UIScrollViewConfinedDelta(UIScrollView *scrollView, CGPoint delta, BOOL
 
 static void _UIScrollViewScrollContent(UIScrollView *scrollView, CGPoint delta, BOOL animated)
 {
-    //DLog(@"delta: %@", NSStringFromCGPoint(delta));
+    DLog(@"delta: %@", NSStringFromCGPoint(delta));
+    DLog(@"[CATransaction valueForKey:kCATransactionAnimationDuration]: %@", [CATransaction valueForKey:kCATransactionAnimationDuration]);
     CFTimeInterval duration = (CFTimeInterval)[(NSNumber *)[CATransaction valueForKey:kCATransactionAnimationDuration] doubleValue];
+    DLog();
     scrollView->_contentOffset = CGPointMake(scrollView->_contentOffset.x - delta.x, scrollView->_contentOffset.y - delta.y);
     if (animated) {
         //DLog(@"animated");
@@ -269,7 +271,7 @@ static UIScrollViewAnimation *_UIScrollViewPageSnapAnimation(UIScrollView *scrol
 
 static void _UIScrollViewAnimateWithVelocity(UIScrollView *scrollView, CGPoint velocity)
 {
-    //DLog(@"velocity: %@", NSStringFromCGPoint(velocity));
+    DLog(@"velocity: %@", NSStringFromCGPoint(velocity));
     CFTimeInterval duration = (CFTimeInterval)[(NSNumber *)[CATransaction valueForKey:kCATransactionAnimationDuration] doubleValue];
     
     CGPoint proposedDelta = CGPointMake(velocity.x * duration, velocity.y * duration);

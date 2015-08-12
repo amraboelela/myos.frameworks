@@ -364,6 +364,7 @@ void UIChildApplicationSaveData(UIChildApplication *app)
     //DLog(@"app->_data: %@", app->_data);
     NSData *data = [NSJSONSerialization dataWithJSONObject:app->_data options:0 error:NULL];
     [data writeToFile:dataPath atomically:YES];
+    //DLog();
 }
 
 void UIChildApplicationClosePipes()

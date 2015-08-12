@@ -113,9 +113,7 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (CFTimeInterval)animationDuration
 {
-    double result;
-    CFNumberGetValue([self valueForKey:kCATransactionAnimationDuration], kCFNumberDoubleType, &result);
-    return result;
+    return (CFTimeInterval)[(NSNumber *)[self valueForKey:kCATransactionAnimationDuration] doubleValue];
 }
 
 + (void)setAnimationDuration:(CFTimeInterval)dur
@@ -153,9 +151,10 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (id)valueForKey:(NSString *)key
 {
-    //DLog(@"key: %@", key);
+    DLog(@"key: %@", key);
     CATransactionGroup *group = _CATransactionGetCurrentTransaction();
-    //DLog(@"group->_values: %@", group->_values);
+    DLog(@"group: %@", group);
+    DLog(@"group->_values: %@", group->_values);
     return CFDictionaryGetValue(group->_values, key);
 }
 

@@ -209,7 +209,8 @@ static id _CAAnimationColorProgressValue(CABasicAnimation *animation, float prog
         _beginTime = 0;
         _startTime = 0;
         //DLog(@"[CATransaction valueForKey:kCATransactionAnimationDuration]: %0.0f", [CATransaction valueForKey:kCATransactionAnimationDuration]);
-        CFNumberGetValue([CATransaction valueForKey:kCATransactionAnimationDuration], kCFNumberDoubleType, &_duration);//(CFTimeInterval)[(NSNumber *)[CATransaction valueForKey:kCATransactionAnimationDuration] doubleValue];
+        //CFNumberGetValue([CATransaction valueForKey:kCATransactionAnimationDuration], kCFNumberDoubleType, &_duration);
+        (CFTimeInterval)[(NSNumber *)[CATransaction valueForKey:kCATransactionAnimationDuration] doubleValue];
         //DLog(@"_duration: %0.2f", _duration);
         _timingFunction = [CATransaction valueForKey:kCATransactionAnimationTimingFunction] ? :
                         [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionDefault];
