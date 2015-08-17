@@ -1,4 +1,5 @@
 *.so
 .DS_Store
 xcuserdata
+*.xccheckout
 config.sh
