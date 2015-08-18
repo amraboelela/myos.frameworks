@@ -25,33 +25,25 @@
 {
     self = [super init];
     if (self) {
-        //DLog();
         _values = CFDictionaryCreateMutable(kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         //DLog();
         //float fNumber = 0.25;
         //CFNumberRef number = [NSNumber numberWithFloat:0.25]; //CFNumberCreate(NULL, kCFNumberFloatType, &fNumber);//[NSNumber numberWithFloat:0.25];
-        //DLog(@"number: %p", number);
         //DLog(@"number: %@", number);
-        //DLog(@"[number retainCount]: %d", [number retainCount]);
-        //DLog(@"[number retain]: %@", [number retain]);
-        //DLog(@"[number retainCount]: %d", [number retainCount]);
         //DLog(@"CFRetain(number): %@", CFRetain(number));
         //DLog(@"[number retainCount]: %d", [number retainCount]);
         //DLog(@"_values: %@", _values);
         //GSHashTableSetValue(_values, kCATransactionAnimationDuration, number);
-        //DLog(@"_values: %@", _values);
-        //DLog();
         CFDictionarySetValue(_values, kCATransactionAnimationDuration, [NSNumber numberWithFloat:0.25]);
-        DLog();
+        //DLog();
         CFDictionarySetValue(_values, kCATransactionDisableActions, [NSNumber numberWithBool:NO]);
-        DLog(@"_values: %@", _values);
+        //DLog(@"_values: %@", _values);
     }
     return self;
 }
 
 - (void)dealloc
 {
-    //DLog();
     CFRelease(_values);
     [super dealloc];
 }

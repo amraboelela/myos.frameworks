@@ -46,7 +46,7 @@ extern NSMutableArray *_openedApplications;
 @property (nonatomic) int pageNumber;
 @property (nonatomic) int xLocation;
 @property (nonatomic) int yLocation;
-@property (nonatomic) BOOL anchored;
+//@property (nonatomic) BOOL anchored;
 @property (nonatomic, readonly) UIImageView *defaultScreenView;
 @property BOOL running;
 

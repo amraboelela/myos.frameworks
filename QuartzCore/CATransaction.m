@@ -31,14 +31,12 @@ static CFMutableSetRef _removeLayers = nil;
 
 static CATransactionGroup *_CATransactionGetCurrentTransaction()
 {
-    //DLog();
     _CATransactionCreateImplicitTransactionIfNeeded();
     return CFArrayGetValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
 }
 
 static void _CATransactionLayoutLayers(CALayer *layer)
 {
-    //DLog();
     [layer layoutIfNeeded];
     for (CALayer *sublayer in layer->_sublayers) {
         _CATransactionLayoutLayers(sublayer);
@@ -70,7 +68,6 @@ static void _CATransactionCopyTree(CALayer *layer)
 
 static void _CATransactionUnloadIfNeeded(CALayer *layer)
 {
-    //DLog(@"layer: %@", layer);
     if (layer->_needsUnload) {
         layer->_needsUnload = NO;
         CALayer *presentationLayer = layer->_presentationLayer;
@@ -84,7 +81,6 @@ static void _CATransactionUnloadIfNeeded(CALayer *layer)
 
 static void _CATransactionRemoveLayers()
 {
-    //DLog();
     for (CALayer *layer in _removeLayers) {
         //DLog(@"layer: %@", layer);
         CALayer *presentationLayer = layer->_presentationLayer;
@@ -103,7 +99,6 @@ static void _CATransactionRemoveLayers()
 
 static void _CATransactionCommitTransactionAfterDelay(float delay)
 {
-    //DLog();
     [[CATransaction class] performSelector:@selector(_commitTransaction) withObject:nil afterDelay:delay];
 }
 
@@ -144,17 +139,16 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 + (void)setValue:(id)value forKey:(NSString *)key
 {
     //DLog(@"key: %@", key);
-    //DLog(@"key: %s", key);
     CATransactionGroup *group = _CATransactionGetCurrentTransaction();
     CFDictionarySetValue(group->_values, key, value);
 }
 
 + (id)valueForKey:(NSString *)key
 {
-    DLog(@"key: %@", key);
+    //DLog(@"key: %@", key);
     CATransactionGroup *group = _CATransactionGetCurrentTransaction();
-    DLog(@"group: %@", group);
-    DLog(@"group->_values: %@", group->_values);
+    //DLog(@"group: %@", group);
+    //DLog(@"group->_values: %@", group->_values);
     return CFDictionaryGetValue(group->_values, key);
 }
 
@@ -169,7 +163,6 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)_commitTransaction
 {
-    //DLog();
     if (![_CAAnimatorConditionLock tryLock]) {
         //DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
         // Instead of blocking the run loop or the animation thread, we will try to commit later
@@ -186,7 +179,6 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
     }
     //DLog(@"_CARendererDisplayLayers");
     _CARendererDisplayLayers(YES);
-    //DLog(@"_CATransactionCopyTree");
     _CATransactionCopyTree(rootLayer);
     //DLog(@"_CATransactionUnloadIfNeeded");
     _CATransactionUnloadIfNeeded(rootLayer);
@@ -201,7 +193,6 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 + (void)commit
 {
-    //DLog(@"");
     CFArrayRemoveValueAtIndex(_transactions, CFArrayGetCount(_transactions)-1);
     _CATransactionCreateImplicitTransactionIfNeeded();
 }
@@ -224,7 +215,6 @@ static void _CATransactionCommitTransactionAfterDelay(float delay)
 
 void _CATransactionInitialize()
 {
-    //DLog();
     _transactions = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
     _removeLayers = CFSetCreateMutable(kCFAllocatorDefault, 10, &kCFTypeSetCallBacks);
     _CAAnimationInitialize();
@@ -232,20 +222,16 @@ void _CATransactionInitialize()
     _CARendererInitialize();
     //DLog();
     _CACompositorInitialize();
-    //DLog();
 }
 
 void _CATransactionAddToRemoveLayers(CALayer *layer)
 {
-    //DLog();
     CFSetAddValue(_removeLayers, layer);
 }
 
 void _CATransactionCreateImplicitTransactionIfNeeded()
 {
-    //DLog();
     if (CFArrayGetCount(_transactions)==0) {
-        //DLog();
         CATransactionGroup *group = [[CATransactionGroup alloc] init];
         CFArrayAppendValue(_transactions, group);
         [group release];

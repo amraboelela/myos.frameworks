@@ -25,11 +25,11 @@ NSMutableDictionary *_allApplicationsDictionary;
 UIChildApplication *_currentMAApplication = nil;
 NSMutableArray *_openedApplications;
 
-static NSString *const _kUIChildApplicationPageNumberPath = @"page.pageNumber";
-static NSString *const _kUIChildApplicationXLocationPath = @"page.xLocation";
-static NSString *const _kUIChildApplicationYLocationPath = @"page.yLocation";
-static NSString *const _kUIChildApplicationAnchoredPath = @"page.anchored";
-static NSString *const _kUIChildApplicationScorePath = @"application.score";
+//static NSString *const _kUIChildApplicationPageNumberPath = @"page.pageNumber";
+//static NSString *const _kUIChildApplicationXLocationPath = @"page.xLocation";
+//static NSString *const _kUIChildApplicationYLocationPath = @"page.yLocation";
+//static NSString *const _kUIChildApplicationAnchoredPath = @"page.anchored";
+//static NSString *const _kUIChildApplicationScorePath = @"application.score";
 
 #pragma mark - Static functions
 
@@ -55,7 +55,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 @dynamic pageNumber;
 @dynamic xLocation;
 @dynamic yLocation;
-@dynamic anchored;
+//@dynamic anchored;
 
 #pragma mark - Life cycle
 
@@ -76,9 +76,9 @@ static void UIChildApplicationRunApp(NSString *appName)
         NSData *data = [NSData dataWithContentsOfFile:dataPath];
         _data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
         DLog(@"_data: %@", _data);
-        int x = [[_data valueForKeyPath:_kUIChildApplicationXLocationPath] intValue];
-        int y = [[_data valueForKeyPath:_kUIChildApplicationYLocationPath] intValue];
-        _score = [[_data valueForKeyPath:_kUIChildApplicationScorePath] intValue];
+        int x = [[_data valueForKey:@"xLocation"] intValue];
+        int y = [[_data valueForKey:@"yLocation"] intValue];
+        _score = [[_data valueForKey:@"score"] intValue];
         
         _applicationIcon = [[UIApplicationIcon alloc] initWithApplication:self];
         
@@ -105,36 +105,37 @@ static void UIChildApplicationRunApp(NSString *appName)
 - (int)pageNumber
 {
     //DLog(@"self: %p", self);
-    return [[_data valueForKeyPath:_kUIChildApplicationPageNumberPath] intValue];
+    return [[_data valueForKey:@"pageNumber"] intValue];
 }
 
 - (void)setPageNumber:(int)pageNumber
 {
-    [_data setValue:[NSNumber numberWithInt:pageNumber] forKeyPath:_kUIChildApplicationPageNumberPath];
+    [_data setValue:[NSNumber numberWithInt:pageNumber] forKey:@"pageNumber"];
 }
 
 - (int)xLocation
 {
     //DLog();
-    return [[_data valueForKeyPath:_kUIChildApplicationXLocationPath] intValue];
+    return [[_data valueForKey:@"xLocation"] intValue];
 }
 
 - (void)setXLocation:(int)x
 {
-    [_data setValue:[NSNumber numberWithInt:x] forKeyPath:_kUIChildApplicationXLocationPath];
+    [_data setValue:[NSNumber numberWithInt:x] forKey:@"xLocation"];
 }
 
 - (int)yLocation
 {
     //DLog();
-    return [[_data valueForKeyPath:_kUIChildApplicationYLocationPath] intValue];
+    return [[_data valueForKey:@"yLocation"] intValue];
 }
 
 - (void)setYLocation:(int)y
 {
-    [_data setValue:[NSNumber numberWithInt:y] forKeyPath:_kUIChildApplicationYLocationPath];
+    [_data setValue:[NSNumber numberWithInt:y] forKey:@"yLocation"];
 }
 
+/*
 - (BOOL)anchored
 {
     //DLog();
@@ -144,7 +145,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 - (void)setAnchored:(BOOL)anchored
 {
     [_data setValue:[NSNumber numberWithBool:anchored] forKeyPath:_kUIChildApplicationAnchoredPath];
-}
+}*/
 
 - (UIImageView *)defaultScreenView
 {
@@ -360,7 +361,7 @@ void UIChildApplicationSaveData(UIChildApplication *app)
 {
     NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), app->_name];
     //DLog(@"dataPath: %@", dataPath);
-    [app->_data setValue:[NSNumber numberWithInt:app->_score] forKeyPath:_kUIChildApplicationScorePath];
+    [app->_data setValue:[NSNumber numberWithInt:app->_score] forKey:@"score"];
     //DLog(@"app->_data: %@", app->_data);
     NSData *data = [NSJSONSerialization dataWithJSONObject:app->_data options:0 error:NULL];
     [data writeToFile:dataPath atomically:YES];
