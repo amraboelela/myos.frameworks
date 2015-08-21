@@ -25,12 +25,6 @@ NSMutableDictionary *_allApplicationsDictionary;
 UIChildApplication *_currentMAApplication = nil;
 NSMutableArray *_openedApplications;
 
-//static NSString *const _kUIChildApplicationPageNumberPath = @"page.pageNumber";
-//static NSString *const _kUIChildApplicationXLocationPath = @"page.xLocation";
-//static NSString *const _kUIChildApplicationYLocationPath = @"page.yLocation";
-//static NSString *const _kUIChildApplicationAnchoredPath = @"page.anchored";
-//static NSString *const _kUIChildApplicationScorePath = @"application.score";
-
 #pragma mark - Static functions
 
 static void UIChildApplicationRunApp(NSString *appName)
@@ -42,7 +36,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 #ifdef ANDROID
     const char *myEnv[] = {"LD_LIBRARY_PATH=/data/data/com.myos.myapps/lib:$LD_LIBRARY_PATH", 0};
 #else
-    const char *myEnv = NULL;//{"LD_LIBRARY_PATH=/data/data/com.myos.myapps/lib:$LD_LIBRARY_PATH", 0};
+    const char *myEnv = NULL;
 #endif
     execve(appPath, args, myEnv);
     //DLog();
@@ -52,9 +46,9 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 @synthesize name=_name;
 @synthesize score=_score;
-@dynamic pageNumber;
-@dynamic xLocation;
-@dynamic yLocation;
+//@dynamic pageNumber;
+//@dynamic xLocation;
+//@dynamic yLocation;
 //@dynamic anchored;
 
 #pragma mark - Life cycle
@@ -76,8 +70,8 @@ static void UIChildApplicationRunApp(NSString *appName)
         NSData *data = [NSData dataWithContentsOfFile:dataPath];
         _data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
         DLog(@"_data: %@", _data);
-        int x = [[_data valueForKey:@"xLocation"] intValue];
-        int y = [[_data valueForKey:@"yLocation"] intValue];
+        //int x = [[_data valueForKey:@"xLocation"] intValue];
+        //int y = [[_data valueForKey:@"yLocation"] intValue];
         _score = [[_data valueForKey:@"score"] intValue];
         
         _applicationIcon = [[UIApplicationIcon alloc] initWithApplication:self];
@@ -102,6 +96,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 #pragma mark - Accessors
 
+/*
 - (int)pageNumber
 {
     //DLog(@"self: %p", self);
@@ -135,7 +130,6 @@ static void UIChildApplicationRunApp(NSString *appName)
     [_data setValue:[NSNumber numberWithInt:y] forKey:@"yLocation"];
 }
 
-/*
 - (BOOL)anchored
 {
     //DLog();
@@ -176,11 +170,11 @@ static void UIChildApplicationRunApp(NSString *appName)
 - (NSString *)description
 {
     return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d;>", [self className], self, _name, _opened, [self isCurrent], _score];
-    /*return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d; pageNumber: %d; xLocation: %d; yLocation: %d; anchored: %d>", [self className], self, _name, _opened, [self isCurrent], _score, self.pageNumber, self.xLocation, self.yLocation, self.anchored];*/
 }
 
 #pragma mark - Data
 
+/*
 - (void)swapLocationWithApp:(UIChildApplication *)anotherApp
 {
     int tempPageNumber = self.pageNumber;
@@ -192,7 +186,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     self.yLocation = anotherApp.yLocation;
     anotherApp.xLocation = tempX;
     anotherApp.yLocation = tempY;
-}
+}*/
 
 #pragma mark - Delegates
 /*

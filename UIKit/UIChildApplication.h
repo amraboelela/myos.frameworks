@@ -43,15 +43,14 @@ extern NSMutableArray *_openedApplications;
 
 @property (nonatomic, retain) NSString *name;
 @property (nonatomic) int score;
-@property (nonatomic) int pageNumber;
-@property (nonatomic) int xLocation;
-@property (nonatomic) int yLocation;
-//@property (nonatomic) BOOL anchored;
+//@property (nonatomic) int pageNumber;
+//@property (nonatomic) int xLocation;
+//@property (nonatomic) int yLocation;
 @property (nonatomic, readonly) UIImageView *defaultScreenView;
 @property BOOL running;
 
 - (id)initWithAppName:name;
-- (void)swapLocationWithApp:(UIChildApplication *)anotherApp;
+//- (void)swapLocationWithApp:(UIChildApplication *)anotherApp;
 - (BOOL)isCurrent;
 - (void)startApp;
 - (void)setAsCurrent:(BOOL)withSignal;
