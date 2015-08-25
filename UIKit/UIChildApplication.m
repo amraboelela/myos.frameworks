@@ -72,7 +72,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         DLog(@"_data: %@", _data);
         //int x = [[_data valueForKey:@"xLocation"] intValue];
         //int y = [[_data valueForKey:@"yLocation"] intValue];
-        _score = [[_data valueForKey:@"score"] intValue];
+        //_score = [[_data valueForKey:@"score"] intValue];
         
         _applicationIcon = [[UIApplicationIcon alloc] initWithApplication:self];
         
