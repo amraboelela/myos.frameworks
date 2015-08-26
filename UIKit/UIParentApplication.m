@@ -122,7 +122,7 @@ void UIParentApplicationTerminateSomeApps()
     }
 }
 
-void UIParentApplicationPresentAppScreen(UIChildApplication *maApp, BOOL coldStart)
+void UIParentApplicationPresentAppScreen(UIChildApplication *childApp, BOOL coldStart)
 {
     //DLog(@"uiApplication: %@", uiApplication);
     //_UIChildApplication = maApp;
@@ -130,22 +130,21 @@ void UIParentApplicationPresentAppScreen(UIChildApplication *maApp, BOOL coldSta
     _launcherView.hidden = YES;
     _UIApplicationEnterBackground();
     if (coldStart) {
-        //DLog(@"%@", maApp->_name);
         //UIParentApplicationCheckMemory();
         [_maAppView addSubview:maApp.defaultScreenView];
         long freeMemory = CFGetFreeMemory();
-        //DLog(@"%@ Free memory: %ld KB", maApp->_name, freeMemory);
+        //DLog(@"%@ Free memory: %ld KB", childApp->_bundleName, freeMemory);
         if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
             freeMemory < 5000 && (_freeMemoryCount % 2 == 1)) {
             DLog(@"Low memory");
             UIParentApplicationTerminateSomeApps();
             freeMemory = CFGetFreeMemory();
-            DLog(@"%@ Free memory 2: %ld KB", maApp->_name, freeMemory);
+            DLog(@"%@ Free memory 2: %ld KB", childApp->_bundleName, freeMemory);
         }
         _freeMemory = freeMemory;
-        [maApp startApp];
+        [childApp startApp];
     } else {
-        [maApp setAsCurrent:YES];
+        [childApp setAsCurrent:YES];
     }
 #ifdef NATIVE_APP
     [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
