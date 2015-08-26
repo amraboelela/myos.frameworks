@@ -22,7 +22,7 @@
 #import <CoreGraphics/CoreGraphics-private.h>
 
 NSMutableDictionary *_allApplicationsDictionary;
-UIChildApplication *_currentMAApplication = nil;
+UIChildApplication *_currentChildApplication = nil;
 NSMutableArray *_openedApplications;
 
 #pragma mark - Static functions
@@ -333,14 +333,14 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (BOOL)isCurrent
 {
-    return (_currentMAApplication == self);
+    return (_currentChildApplication == self);
 }
 
 - (void)setAsCurrent:(BOOL)withSignal
 {
     IOPipeSetPipes(_pipeRead, _pipeWrite);
-    _currentMAApplication = self;
-    //DLog(@"indexOfObject:_currentMAApplication: %d", _CFArrayGetIndexOfValue(_openedApplications, _currentMAApplication));
+    _currentChildApplication = self;
+    //DLog(@"indexOfObject:_currentChildApplication: %d", _CFArrayGetIndexOfValue(_openedApplications, _currentChildApplication));
     _running = YES;
     //DLog(@"self: %@", self);
 #ifdef NATIVE_APP

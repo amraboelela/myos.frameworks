@@ -23,7 +23,7 @@
 @class UIApplicationIcon, UIChildApplication;
 
 extern NSMutableDictionary *_allApplicationsDictionary;
-extern UIChildApplication *_currentMAApplication;
+extern UIChildApplication *_currentChildApplication;
 extern NSMutableArray *_openedApplications;
 
 @interface UIChildApplication : NSObject {
