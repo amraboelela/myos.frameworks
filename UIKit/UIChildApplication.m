@@ -44,10 +44,10 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 @implementation UIChildApplication
 
-@synthesize name=_name;
+@synthesize bundleName=_bundleName;
 @synthesize score=_score;
-//@dynamic pageNumber;
-//@dynamic xLocation;
+@dynamic name;
+@dynamic category;
 //@dynamic yLocation;
 //@dynamic anchored;
 
@@ -59,14 +59,14 @@ static void UIChildApplicationRunApp(NSString *appName)
     _openedApplications = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
 }
 
-- (id)initWithAppName:(NSString *)name
+- (id)initWithBundleName:(NSString *)bundleName
 {
     if ((self=[super init])) {
-        _name = name;
-        [_allApplicationsDictionary setObject:self forKey:name];
+        _bundleName = [bundleName retain];
+        [_allApplicationsDictionary setObject:self forKey:_bundleName];
         _opened = NO;
         //_needsScreenCapture = YES;
-        NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), _name];
+        NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), _bundleName];
         NSData *data = [NSData dataWithContentsOfFile:dataPath];
         _data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
         DLog(@"_data: %@", _data);
@@ -76,7 +76,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         
         _applicationIcon = [[UIApplicationIcon alloc] initWithApplication:self];
         
-        //NSString *imagePath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/Default.png", _name];
+        //NSString *imagePath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/Default.png", _bundleName];
         //UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
         //_screenImageView = nil;//[[UIImageView alloc] initWithImage:image];
         //DLog(@"%@, Loaded _screenImageView: %@", name, _screenImageView);
@@ -88,7 +88,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (void)dealloc
 {
-    [_name release];
+    [_bundleName release];
     [_data release];
     [_applicationIcon release];
     [super dealloc];
@@ -106,9 +106,30 @@ static void UIChildApplicationRunApp(NSString *appName)
 - (void)setPageNumber:(int)pageNumber
 {
     [_data setValue:[NSNumber numberWithInt:pageNumber] forKey:@"pageNumber"];
+}*/
+
+- (void)setValue:(id)value forUndefinedKey:(NSString *)key
+{
+    id dataValue = [_data valueForKey:key];
+    if (!dataValue) {
+        [super setValue:value forUndefinedKey:key];
+    } else {
+        [_data setValue:value forKey:key];
+    }
 }
 
-- (int)xLocation
+- (id)valueForUndefinedKey:(NSString *)key
+{
+    id result = [_data valueForKey:key];
+    if (!result) {
+        return [super valueForUndefinedKey:key];
+    } else {
+        return result;
+    }
+}
+
+/*
+- (NSString *)name
 {
     //DLog();
     return [[_data valueForKey:@"xLocation"] intValue];
@@ -130,6 +151,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     [_data setValue:[NSNumber numberWithInt:y] forKey:@"yLocation"];
 }
 
+/*
 - (BOOL)anchored
 {
     //DLog();
@@ -143,7 +165,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (UIImageView *)defaultScreenView
 {
-    NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Default.png", _NSFileManagerMyAppsPath(), _name];
+    NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Default.png", _NSFileManagerMyAppsPath(), _bundleName];
     UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
     return [[[UIImageView alloc] initWithImage:image] autorelease];
     //return [[[UIImageView alloc] init] autorelease];
@@ -169,7 +191,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d;>", [self className], self, _name, _opened, [self isCurrent], _score];
+    return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d;>", [self className], self, self.name, _opened, [self isCurrent], _score];
 }
 
 #pragma mark - Data
@@ -231,7 +253,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 - (void)startApp
 {
     //return;
-    //DLog(@"_name: %@", _name);
+    //DLog(@"name: %@", self.name);
     //self.opened = YES;
     int pipe1[2];
     int pipe2[2];
@@ -254,7 +276,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         NSLog(@"Pipe2 failed.");
         return;
     }
-    //DLog(@"_name: %@", _name);
+    //DLog(@"name: %@", self.name);
     long flags;
     _pid = fork();
     //DLog(@"pid: %d", pid);
@@ -276,7 +298,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         //DLog();
         IOPipeWriteMessage(MLPipeMessageChildIsReady, YES);
         //DLog();
-        UIChildApplicationRunApp(_name);
+        UIChildApplicationRunApp(_bundleName);
     } else {
         int pipeRead = pipe2[0];
         int pipeWrite = pipe1[1];
@@ -304,7 +326,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         CFArrayAppendValue(_openedApplications, self);
         [self setAsCurrent:NO];
         IOPipeWriteMessage(MAPipeMessageCharString, NO);
-        IOPipeWriteCharString(_name);
+        IOPipeWriteCharString(_bundleName);
         UIParentApplicationSetChildAppIsRunning(YES);
     }
 }
@@ -353,9 +375,9 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 void UIChildApplicationSaveData(UIChildApplication *app)
 {
-    NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), app->_name];
+    NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), app->_bundleName];
     //DLog(@"dataPath: %@", dataPath);
-    [app->_data setValue:[NSNumber numberWithInt:app->_score] forKey:@"score"];
+    //[app->_data setValue:[NSNumber numberWithInt:app->_score] forKey:@"score"];
     //DLog(@"app->_data: %@", app->_data);
     NSData *data = [NSJSONSerialization dataWithJSONObject:app->_data options:0 error:NULL];
     [data writeToFile:dataPath atomically:YES];

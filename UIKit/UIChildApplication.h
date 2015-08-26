@@ -28,7 +28,7 @@ extern NSMutableArray *_openedApplications;
 
 @interface UIChildApplication : NSObject {
 @package
-    NSString *_name;
+    NSString *_bundleName;
     NSMutableDictionary *_data;
     BOOL _opened;
     BOOL _running;
@@ -41,15 +41,14 @@ extern NSMutableArray *_openedApplications;
     UIApplicationIcon *_applicationIcon;
 }
 
+@property (nonatomic, retain) NSString *bundleName;
 @property (nonatomic, retain) NSString *name;
+@property (nonatomic, retain) NSString *category;
 @property (nonatomic) int score;
-//@property (nonatomic) int pageNumber;
-//@property (nonatomic) int xLocation;
-//@property (nonatomic) int yLocation;
 @property (nonatomic, readonly) UIImageView *defaultScreenView;
 @property BOOL running;
 
-- (id)initWithAppName:name;
+- (id)initWithBundleName:bundleName;
 //- (void)swapLocationWithApp:(UIChildApplication *)anotherApp;
 - (BOOL)isCurrent;
 - (void)startApp;
