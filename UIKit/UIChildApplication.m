@@ -120,6 +120,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (id)valueForUndefinedKey:(NSString *)key
 {
+    DLog(@"key: %@", key);
     id result = [_data valueForKey:key];
     if (!result) {
         return [super valueForUndefinedKey:key];
@@ -128,13 +129,19 @@ static void UIChildApplicationRunApp(NSString *appName)
     }
 }
 
-/*
 - (NSString *)name
 {
     //DLog();
-    return [[_data valueForKey:@"xLocation"] intValue];
+    return [_data valueForKey:@"name"];
 }
 
+- (NSString *)category
+{
+    //DLog();
+    return [_data valueForKey:@"category"];
+}
+
+/*
 - (void)setXLocation:(int)x
 {
     [_data setValue:[NSNumber numberWithInt:x] forKey:@"xLocation"];
@@ -151,7 +158,6 @@ static void UIChildApplicationRunApp(NSString *appName)
     [_data setValue:[NSNumber numberWithInt:y] forKey:@"yLocation"];
 }
 
-/*
 - (BOOL)anchored
 {
     //DLog();

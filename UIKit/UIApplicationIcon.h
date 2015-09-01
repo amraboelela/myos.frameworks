@@ -47,3 +47,4 @@ typedef enum {
 - (id)initWithApplication:(UIChildApplication *)application;
 
 @end
+
