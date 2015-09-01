@@ -17,6 +17,7 @@
 
 #import "UIApplicationIcon.h"
 #import <UIKit/UIKit-private.h>
+#import <IOKit/IOKit.h>
 
 #define _kLabelHeight       20
 
@@ -29,14 +30,16 @@
 - (id)initWithApplication:(UIChildApplication *)application
 {
     self = [super initWithFrame:CGRectMake(0,0,_kIconWidth,_kIconHeight)];
+//    self.backgroundColor = [UIColor redColor];
+//    return self;
     if (self) {
         _application = application;
         //DLog(@"imageName: %@", _imageName);
         NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Icon.png", _NSFileManagerMyAppsPath(),  application->_bundleName];
-        //DLog(@"imagePath: %@", imagePath);
+        DLog(@"imagePath: %@", imagePath);
         //UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
         _iconImage = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:imagePath]];
-        //DLog(@"_iconImage: %@", _iconImage);
+        DLog(@"_iconImage: %@", _iconImage);
         _iconImage.frame = CGRectMake((_kIconWidth - _kImageSize) / 2.0, 5, _kImageSize, _kImageSize);
         [self addSubview:_iconImage];
         
