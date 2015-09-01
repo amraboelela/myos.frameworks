@@ -380,7 +380,7 @@ static void UIApplicationInitialize()
         DLog(@"processName: %@", _processName);
         [[NSProcessInfo processInfo] setProcessName:_processName];
         [[NSBundle mainBundle] reInitialize];
-        _CGDataProviderSetMAAppName(_processName);
+        _CGDataProviderSetChildAppName(_processName);
     } else {
         //DLog(@"message: %d", message);
         NSLog(@"Error can't get process name");

@@ -574,12 +574,12 @@ CGDataProviderRef CGDataProviderCreateWithURL(CFURLRef url)
     return CGDataProviderCreateWithFilename([[(NSURL*)url path] UTF8String]);
 }
 
-static NSString *_maAppName = nil;
+static NSString *_childAppName = nil;
 
-void _CGDataProviderSetMAAppName(NSString *maAppName)
+void _CGDataProviderSetChildAppName(NSString *childAppName)
 {
-    //DLog(@"maAppName: %@", maAppName);
-    _maAppName = maAppName;
+    //DLog(@"childAppName: %@", childAppName);
+    _childAppName = childAppName;
 }
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
@@ -589,7 +589,7 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 #ifdef ANDROID
     if ([path rangeOfString:@"/"].length > 0) {
     } else {
-        path = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", _maAppName, path];
+        path = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", _childAppName, path];
     }
 #endif
     

@@ -32,7 +32,7 @@ static UIApplication *_uiApplication = nil;
 static UIParentApplication *_UIParentApplication = nil;
 static UIChildApplication *_UIChildApplication = nil;
 static UIView *_launcherView = nil;
-static UIView *_maAppView = nil;
+static UIView *_childAppView = nil;
 static long _freeMemory = NSIntegerMax;
 static int _freeMemoryCount = 0;
 
@@ -87,11 +87,11 @@ void UIParentApplicationLauncherViewDidAdded()
     //UIParentApplication *mlApplication = [UIParentApplication sharedMLApplication];
     //DLog();
     _launcherView = [[_uiApplication->_keyWindow subviews] objectAtIndex:0];
-    _maAppView = [[UIView alloc] initWithFrame:_launcherView.frame];
-    //_maAppView.backgroundColor = [UIColor redColor];
-    [_uiApplication->_keyWindow insertSubview:_maAppView atIndex:0];
+    _childAppView = [[UIView alloc] initWithFrame:_launcherView.frame];
+    //_childAppView.backgroundColor = [UIColor redColor];
+    [_uiApplication->_keyWindow insertSubview:_childAppView atIndex:0];
     //DLog(@"_launcherView: %@", _launcherView);
-    //DLog(@"_maAppView: %@", _maAppView);
+    //DLog(@"_childAppView: %@", _childAppView);
 }
 
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
@@ -111,10 +111,10 @@ void UIParentApplicationTerminateSomeApps()
     _freeMemoryCount++;
     int count = _openedApplications.count;
     for (int i=0; i<=count; i++) {
-        UIChildApplication *maApp = CFArrayGetValueAtIndex(_openedApplications, 0);
-        if (maApp != _currentMAApplication) {
-        //DLog(@"Terminating app: %@", maApp);
-            [maApp terminate];
+        UIChildApplication *childApp = CFArrayGetValueAtIndex(_openedApplications, 0);
+        if (childApp != _currentChildApplication) {
+        //DLog(@"Terminating app: %@", childApp);
+            [childApp terminate];
             CFArrayRemoveValueAtIndex(_openedApplications, 0);
         } else {
             return;
@@ -122,30 +122,29 @@ void UIParentApplicationTerminateSomeApps()
     }
 }
 
-void UIParentApplicationPresentAppScreen(UIChildApplication *maApp, BOOL coldStart)
+void UIParentApplicationPresentAppScreen(UIChildApplication *childApp, BOOL coldStart)
 {
     //DLog(@"uiApplication: %@", uiApplication);
-    //_UIChildApplication = maApp;
-    //[_uiApplication->_keyWindow bringSubviewToFront:_maAppView];
+    //_UIChildApplication = childApp;
+    //[_uiApplication->_keyWindow bringSubviewToFront:_childAppView];
     _launcherView.hidden = YES;
     _UIApplicationEnterBackground();
     if (coldStart) {
-        //DLog(@"%@", maApp->_name);
         //UIParentApplicationCheckMemory();
-        [_maAppView addSubview:maApp.defaultScreenView];
+        [_childAppView addSubview:childApp.defaultScreenView];
         long freeMemory = CFGetFreeMemory();
-        //DLog(@"%@ Free memory: %ld KB", maApp->_name, freeMemory);
+        //DLog(@"%@ Free memory: %ld KB", childApp->_bundleName, freeMemory);
         if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
             freeMemory < 5000 && (_freeMemoryCount % 2 == 1)) {
             DLog(@"Low memory");
             UIParentApplicationTerminateSomeApps();
             freeMemory = CFGetFreeMemory();
-            DLog(@"%@ Free memory 2: %ld KB", maApp->_name, freeMemory);
+            DLog(@"%@ Free memory 2: %ld KB", childApp->_bundleName, freeMemory);
         }
         _freeMemory = freeMemory;
-        [maApp startApp];
+        [childApp startApp];
     } else {
-        [maApp setAsCurrent:YES];
+        [childApp setAsCurrent:YES];
     }
 #ifdef NATIVE_APP
     [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
@@ -181,11 +180,11 @@ void UIParentApplicationHandleMessages()
 void UIParentApplicationShowLauncher()
 {
     //DLog();
-    if ([[_maAppView subviews] count] > 0) {
-        //DLog(@"[[_maAppView subviews] count] > 0");
-        [[[_maAppView subviews] objectAtIndex:0] removeFromSuperview];
+    if ([[_childAppView subviews] count] > 0) {
+        //DLog(@"[[_childAppView subviews] count] > 0");
+        [[[_childAppView subviews] objectAtIndex:0] removeFromSuperview];
     }
-    [_currentMAApplication gotoBackground];
+    [_currentChildApplication gotoBackground];
     _UIApplicationEnterForeground();
     _launcherView.hidden = NO;
     //DLog();
@@ -199,22 +198,22 @@ void UIParentApplicationShowLauncher()
 
 void UIParentApplicationGoBack()
 {
-    _maAppView.hidden = NO;
+    _childAppView.hidden = NO;
     if (!_launcherView.hidden) {
         if (CFArrayGetCount(_openedApplications) == 0) {
             DLog(@"CFArrayGetCount(_openedApplications) == 0");
             return;
         } else {
-            //DLog(@"_currentMAApplication: %@", _currentMAApplication);
-            UIParentApplicationPresentAppScreen(_currentMAApplication, NO);
+            //DLog(@"_currentChildApplication: %@", _currentChildApplication);
+            UIParentApplicationPresentAppScreen(_currentChildApplication, NO);
         }
     } else {
-        _maAppView.hidden = NO;
+        _childAppView.hidden = NO;
         if (CFArrayGetCount(_openedApplications) == 1) {
             return;
         }
-        [_currentMAApplication gotoBackground];
-        int currentAppIndex = _CFArrayGetIndexOfValue(_openedApplications, _currentMAApplication);
+        [_currentChildApplication gotoBackground];
+        int currentAppIndex = _CFArrayGetIndexOfValue(_openedApplications, _currentChildApplication);
         //DLog(@"currentAppIndex: %d", currentAppIndex);
         if (currentAppIndex == 0) {
             _UIChildApplication = _CFArrayGetLastValue(_openedApplications);
@@ -228,17 +227,17 @@ void UIParentApplicationGoBack()
 
 void UIParentApplicationMoveCurrentAppToTop()
 {
-    //DLog(@"_currentMAApplication: %@", _currentMAApplication);
+    //DLog(@"_currentChildApplication: %@", _currentChildApplication);
     if (!_launcherView.hidden) {
         return;
     }
-    //_currentMAApplication->_needsScreenCapture = YES;
+    //_currentChildApplication->_needsScreenCapture = YES;
     /*if (currentAppIndex == CFArrayGetCount(_openedApplications) - 1) {
         return;
     }*/
-    _currentMAApplication->_score++;
+    _currentChildApplication->_score++;
     //}
-    _CFArrayMoveValueToTop(_openedApplications, _currentMAApplication);
+    _CFArrayMoveValueToTop(_openedApplications, _currentChildApplication);
     //DLog(@"_openedApplications: %@", _openedApplications);
 }
 
@@ -249,20 +248,20 @@ void UIParentApplicationTerminateApps()
         [_CAAnimatorNAConditionLock lockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }
 #endif
-    //DLog(@"_currentMAApplication: %@", _currentMAApplication);
-    if (!_currentMAApplication) {
+    //DLog(@"_currentChildApplication: %@", _currentChildApplication);
+    if (!_currentChildApplication) {
         return;
     }
-    if (_currentMAApplication->_running) {
+    if (_currentChildApplication->_running) {
         IOPipeWriteMessage(MAPipeMessageTerminateApp, YES);
     }
-    for (UIChildApplication *maApp in _openedApplications) {
-        //DLog(@"maApp: %@", maApp);
-        if (maApp != _currentMAApplication || !_currentMAApplication->_running) {
-            [maApp terminate];
+    for (UIChildApplication *childApp in _openedApplications) {
+        //DLog(@"childApp: %@", childApp);
+        if (childApp != _currentChildApplication || !_currentChildApplication->_running) {
+            [childApp terminate];
         }
     }
-    if (_currentMAApplication->_running) {
+    if (_currentChildApplication->_running) {
         BOOL done = NO;
         _startTime = CACurrentMediaTime();
         while (!done) {
@@ -281,7 +280,7 @@ void UIParentApplicationTerminateApps()
             if (CACurrentMediaTime() - _startTime > _kTerminateChildTimeOut) {
                 DLog(@"CACurrentMediaTime() - _startTime > _kTerminateChildTimeOut");
                 done = YES;
-                [_currentMAApplication terminate];
+                [_currentChildApplication terminate];
             }
         }
     }

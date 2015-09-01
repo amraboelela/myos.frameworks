@@ -23,12 +23,12 @@
 @class UIApplicationIcon, UIChildApplication;
 
 extern NSMutableDictionary *_allApplicationsDictionary;
-extern UIChildApplication *_currentMAApplication;
+extern UIChildApplication *_currentChildApplication;
 extern NSMutableArray *_openedApplications;
 
 @interface UIChildApplication : NSObject {
 @package
-    NSString *_name;
+    NSString *_bundleName;
     NSMutableDictionary *_data;
     BOOL _opened;
     BOOL _running;
@@ -39,19 +39,19 @@ extern NSMutableArray *_openedApplications;
     int _animationPipeRead;
     int _animationPipeWrite;
     UIApplicationIcon *_applicationIcon;
+    UIApplicationIcon *_homeIcon;
 }
 
+@property (nonatomic, retain) NSString *bundleName;
 @property (nonatomic, retain) NSString *name;
+@property (nonatomic, retain) NSString *category;
 @property (nonatomic) int score;
-@property (nonatomic) int pageNumber;
-@property (nonatomic) int xLocation;
-@property (nonatomic) int yLocation;
-//@property (nonatomic) BOOL anchored;
 @property (nonatomic, readonly) UIImageView *defaultScreenView;
+@property (nonatomic, readonly) UIApplicationIcon *homeIcon;
 @property BOOL running;
 
-- (id)initWithAppName:name;
-- (void)swapLocationWithApp:(UIChildApplication *)anotherApp;
+- (id)initWithBundleName:bundleName;
+//- (void)swapLocationWithApp:(UIChildApplication *)anotherApp;
 - (BOOL)isCurrent;
 - (void)startApp;
 - (void)setAsCurrent:(BOOL)withSignal;

@@ -22,14 +22,8 @@
 #import <CoreGraphics/CoreGraphics-private.h>
 
 NSMutableDictionary *_allApplicationsDictionary;
-UIChildApplication *_currentMAApplication = nil;
+UIChildApplication *_currentChildApplication = nil;
 NSMutableArray *_openedApplications;
-
-//static NSString *const _kUIChildApplicationPageNumberPath = @"page.pageNumber";
-//static NSString *const _kUIChildApplicationXLocationPath = @"page.xLocation";
-//static NSString *const _kUIChildApplicationYLocationPath = @"page.yLocation";
-//static NSString *const _kUIChildApplicationAnchoredPath = @"page.anchored";
-//static NSString *const _kUIChildApplicationScorePath = @"application.score";
 
 #pragma mark - Static functions
 
@@ -42,7 +36,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 #ifdef ANDROID
     const char *myEnv[] = {"LD_LIBRARY_PATH=/data/data/com.myos.myapps/lib:$LD_LIBRARY_PATH", 0};
 #else
-    const char *myEnv = NULL;//{"LD_LIBRARY_PATH=/data/data/com.myos.myapps/lib:$LD_LIBRARY_PATH", 0};
+    const char *myEnv = NULL;
 #endif
     execve(appPath, args, myEnv);
     //DLog();
@@ -50,11 +44,12 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 @implementation UIChildApplication
 
-@synthesize name=_name;
+@synthesize bundleName=_bundleName;
 @synthesize score=_score;
-@dynamic pageNumber;
-@dynamic xLocation;
-@dynamic yLocation;
+@dynamic name;
+@dynamic category;
+@dynamic homeIcon;
+//@dynamic yLocation;
 //@dynamic anchored;
 
 #pragma mark - Life cycle
@@ -65,24 +60,24 @@ static void UIChildApplicationRunApp(NSString *appName)
     _openedApplications = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
 }
 
-- (id)initWithAppName:(NSString *)name
+- (id)initWithBundleName:(NSString *)bundleName
 {
     if ((self=[super init])) {
-        _name = name;
-        [_allApplicationsDictionary setObject:self forKey:name];
+        _bundleName = [bundleName retain];
+        [_allApplicationsDictionary setObject:self forKey:_bundleName];
         _opened = NO;
         //_needsScreenCapture = YES;
-        NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), _name];
+        NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), _bundleName];
         NSData *data = [NSData dataWithContentsOfFile:dataPath];
         _data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
         DLog(@"_data: %@", _data);
-        int x = [[_data valueForKey:@"xLocation"] intValue];
-        int y = [[_data valueForKey:@"yLocation"] intValue];
-        _score = [[_data valueForKey:@"score"] intValue];
+        //int x = [[_data valueForKey:@"xLocation"] intValue];
+        //int y = [[_data valueForKey:@"yLocation"] intValue];
+        //_score = [[_data valueForKey:@"score"] intValue];
         
         _applicationIcon = [[UIApplicationIcon alloc] initWithApplication:self];
         
-        //NSString *imagePath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/Default.png", _name];
+        //NSString *imagePath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/Default.png", _bundleName];
         //UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
         //_screenImageView = nil;//[[UIImageView alloc] initWithImage:image];
         //DLog(@"%@, Loaded _screenImageView: %@", name, _screenImageView);
@@ -94,14 +89,16 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (void)dealloc
 {
-    [_name release];
+    [_bundleName release];
     [_data release];
     [_applicationIcon release];
+    [_homeIcon release];
     [super dealloc];
 }
 
 #pragma mark - Accessors
 
+/*
 - (int)pageNumber
 {
     //DLog(@"self: %p", self);
@@ -111,9 +108,30 @@ static void UIChildApplicationRunApp(NSString *appName)
 - (void)setPageNumber:(int)pageNumber
 {
     [_data setValue:[NSNumber numberWithInt:pageNumber] forKey:@"pageNumber"];
+}*/
+
+- (void)setValue:(id)value forUndefinedKey:(NSString *)key
+{
+    id dataValue = [_data valueForKey:key];
+    if (!dataValue) {
+        [super setValue:value forUndefinedKey:key];
+    } else {
+        [_data setValue:value forKey:key];
+    }
 }
 
-- (int)xLocation
+- (id)valueForUndefinedKey:(NSString *)key
+{
+    id result = [_data valueForKey:key];
+    if (!result) {
+        return [super valueForUndefinedKey:key];
+    } else {
+        return result;
+    }
+}
+
+/*
+- (NSString *)name
 {
     //DLog();
     return [[_data valueForKey:@"xLocation"] intValue];
@@ -135,7 +153,6 @@ static void UIChildApplicationRunApp(NSString *appName)
     [_data setValue:[NSNumber numberWithInt:y] forKey:@"yLocation"];
 }
 
-/*
 - (BOOL)anchored
 {
     //DLog();
@@ -149,7 +166,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (UIImageView *)defaultScreenView
 {
-    NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Default.png", _NSFileManagerMyAppsPath(), _name];
+    NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Default.png", _NSFileManagerMyAppsPath(), _bundleName];
     UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
     return [[[UIImageView alloc] initWithImage:image] autorelease];
     //return [[[UIImageView alloc] init] autorelease];
@@ -173,14 +190,22 @@ static void UIChildApplicationRunApp(NSString *appName)
     }
 }
 
+- (UIApplicationIcon *)homeIcon
+{
+    if (!_homeIcon) {
+        _homeIcon = [[UIApplicationIcon alloc] initWithApplication:self];
+    }
+    return _homeIcon;
+}
+
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d;>", [self className], self, _name, _opened, [self isCurrent], _score];
-    /*return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d; pageNumber: %d; xLocation: %d; yLocation: %d; anchored: %d>", [self className], self, _name, _opened, [self isCurrent], _score, self.pageNumber, self.xLocation, self.yLocation, self.anchored];*/
+    return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d;>", [self className], self, self.name, _opened, [self isCurrent], _score];
 }
 
 #pragma mark - Data
 
+/*
 - (void)swapLocationWithApp:(UIChildApplication *)anotherApp
 {
     int tempPageNumber = self.pageNumber;
@@ -192,7 +217,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     self.yLocation = anotherApp.yLocation;
     anotherApp.xLocation = tempX;
     anotherApp.yLocation = tempY;
-}
+}*/
 
 #pragma mark - Delegates
 /*
@@ -237,7 +262,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 - (void)startApp
 {
     //return;
-    //DLog(@"_name: %@", _name);
+    //DLog(@"name: %@", self.name);
     //self.opened = YES;
     int pipe1[2];
     int pipe2[2];
@@ -260,7 +285,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         NSLog(@"Pipe2 failed.");
         return;
     }
-    //DLog(@"_name: %@", _name);
+    //DLog(@"name: %@", self.name);
     long flags;
     _pid = fork();
     //DLog(@"pid: %d", pid);
@@ -282,7 +307,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         //DLog();
         IOPipeWriteMessage(MLPipeMessageChildIsReady, YES);
         //DLog();
-        UIChildApplicationRunApp(_name);
+        UIChildApplicationRunApp(_bundleName);
     } else {
         int pipeRead = pipe2[0];
         int pipeWrite = pipe1[1];
@@ -310,21 +335,21 @@ static void UIChildApplicationRunApp(NSString *appName)
         CFArrayAppendValue(_openedApplications, self);
         [self setAsCurrent:NO];
         IOPipeWriteMessage(MAPipeMessageCharString, NO);
-        IOPipeWriteCharString(_name);
+        IOPipeWriteCharString(_bundleName);
         UIParentApplicationSetChildAppIsRunning(YES);
     }
 }
 
 - (BOOL)isCurrent
 {
-    return (_currentMAApplication == self);
+    return (_currentChildApplication == self);
 }
 
 - (void)setAsCurrent:(BOOL)withSignal
 {
     IOPipeSetPipes(_pipeRead, _pipeWrite);
-    _currentMAApplication = self;
-    //DLog(@"indexOfObject:_currentMAApplication: %d", _CFArrayGetIndexOfValue(_openedApplications, _currentMAApplication));
+    _currentChildApplication = self;
+    //DLog(@"indexOfObject:_currentChildApplication: %d", _CFArrayGetIndexOfValue(_openedApplications, _currentChildApplication));
     _running = YES;
     //DLog(@"self: %@", self);
 #ifdef NATIVE_APP
@@ -359,9 +384,9 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 void UIChildApplicationSaveData(UIChildApplication *app)
 {
-    NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), app->_name];
+    NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), app->_bundleName];
     //DLog(@"dataPath: %@", dataPath);
-    [app->_data setValue:[NSNumber numberWithInt:app->_score] forKey:@"score"];
+    //[app->_data setValue:[NSNumber numberWithInt:app->_score] forKey:@"score"];
     //DLog(@"app->_data: %@", app->_data);
     NSData *data = [NSJSONSerialization dataWithJSONObject:app->_data options:0 error:NULL];
     [data writeToFile:dataPath atomically:YES];

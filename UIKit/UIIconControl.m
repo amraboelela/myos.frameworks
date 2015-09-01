@@ -72,7 +72,7 @@
             CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0);
             //CGContextSetLineWidth(context, 2);
             break;
-        case UIIconControlTypeAnchor: {
+        /*case UIIconControlTypeAnchor: {
             //CGContextSetRGBFillColor(context, 0.7, 0.7, 0.7, 1.0);
             //DLog(@"_applicationIcon->_application: %@", _applicationIcon->_application);
             if (_applicationIcon->_application.anchored) {
@@ -81,7 +81,7 @@
                 CGContextSetRGBStrokeColor(context, 1.0, 1.0, 1.0, 1.0);
             }
             break;
-        }
+        }*/
         default:
             break;
     }

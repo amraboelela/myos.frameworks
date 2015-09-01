@@ -32,7 +32,7 @@
     if (self) {
         _application = application;
         //DLog(@"imageName: %@", _imageName);
-        NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Icon.png", _NSFileManagerMyAppsPath(),  application->_name];
+        NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Icon.png", _NSFileManagerMyAppsPath(),  application->_bundleName];
         //DLog(@"imagePath: %@", imagePath);
         //UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
         _iconImage = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:imagePath]];
@@ -44,7 +44,7 @@
         _iconLabel.textColor = [UIColor whiteColor];
         _iconLabel.textAlignment = UITextAlignmentCenter;
         _iconLabel.font = [UIFont systemFontOfSize:10];
-        _iconLabel.text = application->_name;
+        _iconLabel.text = application->_bundleName;
         _iconLabel.adjustsFontSizeToFitWidth = YES;
         //DLog(@"_iconLabel.frame 1: %@", NSStringFromCGRect(_iconLabel.frame));
         [_iconLabel sizeToFit];
