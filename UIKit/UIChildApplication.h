@@ -39,6 +39,7 @@ extern NSMutableArray *_openedApplications;
     int _animationPipeRead;
     int _animationPipeWrite;
     UIApplicationIcon *_applicationIcon;
+    UIApplicationIcon *_homeIcon;
 }
 
 @property (nonatomic, retain) NSString *bundleName;
@@ -46,6 +47,7 @@ extern NSMutableArray *_openedApplications;
 @property (nonatomic, retain) NSString *category;
 @property (nonatomic) int score;
 @property (nonatomic, readonly) UIImageView *defaultScreenView;
+@property (nonatomic, readonly) UIApplicationIcon *homeIcon;
 @property BOOL running;
 
 - (id)initWithBundleName:bundleName;
