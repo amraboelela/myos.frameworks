@@ -48,6 +48,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 @synthesize score=_score;
 @dynamic name;
 @dynamic category;
+@dynamic homeIcon;
 //@dynamic yLocation;
 //@dynamic anchored;
 
@@ -91,6 +92,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     [_bundleName release];
     [_data release];
     [_applicationIcon release];
+    [_homeIcon release];
     [super dealloc];
 }
 
@@ -193,6 +195,14 @@ static void UIChildApplicationRunApp(NSString *appName)
         _applicationIcon->_iconLabel.textColor = [UIColor whiteColor];
         //DLog(@"self: %@", self);
     }
+}
+
+- (UIApplicationIcon *)homeIcon
+{
+    if (!_homeIcon) {
+        _homeIcon = [[UIApplicationIcon alloc] initWithApplication:self];
+    }
+    return _homeIcon;
 }
 
 - (NSString *)description
