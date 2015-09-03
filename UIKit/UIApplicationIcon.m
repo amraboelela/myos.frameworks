@@ -36,10 +36,10 @@
         _application = application;
         //DLog(@"imageName: %@", _imageName);
         NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Icon.png", _NSFileManagerMyAppsPath(),  application->_bundleName];
-        DLog(@"imagePath: %@", imagePath);
+        //DLog(@"imagePath: %@", imagePath);
         //UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
         _iconImage = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:imagePath]];
-        DLog(@"_iconImage: %@", _iconImage);
+        //DLog(@"_iconImage: %@", _iconImage);
         _iconImage.frame = CGRectMake((_kIconWidth - _kImageSize) / 2.0, 5, _kImageSize, _kImageSize);
         [self addSubview:_iconImage];
         

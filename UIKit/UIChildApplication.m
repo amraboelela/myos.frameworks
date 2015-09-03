@@ -70,7 +70,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), _bundleName];
         NSData *data = [NSData dataWithContentsOfFile:dataPath];
         _data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
-        DLog(@"_data: %@", _data);
+        //DLog(@"_data: %@", _data);
         //int x = [[_data valueForKey:@"xLocation"] intValue];
         //int y = [[_data valueForKey:@"yLocation"] intValue];
         //_score = [[_data valueForKey:@"score"] intValue];
@@ -101,7 +101,6 @@ static void UIChildApplicationRunApp(NSString *appName)
 /*
 - (int)pageNumber
 {
-    //DLog(@"self: %p", self);
     return [[_data valueForKey:@"pageNumber"] intValue];
 }
 
@@ -122,7 +121,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (id)valueForUndefinedKey:(NSString *)key
 {
-    DLog(@"key: %@", key);
+    //DLog(@"key: %@", key);
     id result = [_data valueForKey:key];
     if (!result) {
         return [super valueForUndefinedKey:key];
