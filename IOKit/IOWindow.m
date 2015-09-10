@@ -127,7 +127,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     XSetWindowAttributes wa;
     
     _window->_rect = aRect;
-    _window->display = XOpenDisplay(NULL);
+    _window->display = XOpenDisplay(":0");
     //DLog(@"display: %p", _window->display);
     if (!_window->display) {
         fprintf(stderr, "Cannot open display: %s\n", XDisplayName(NULL));
@@ -150,7 +150,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
                                      CopyFromParent, /* visual */
                                      CWBackPixel | CWEventMask, /* valuemask */
                                      &wa); /* attributes */
-    //printf("XCreateWindow returned: %lx\n", _window->xwindow);
+    printf("XCreateWindow returned: 0x%lx\n", _window->xwindow);
     XSelectInput(_window->display, _window->xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
     /* Map the window */
     int ret = XMapRaised(_window->display, _window->xwindow);

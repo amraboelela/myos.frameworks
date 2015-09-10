@@ -127,7 +127,6 @@ static void _UIApplicationInitialize()
 
 static void _UIApplicationLaunchApplicationWithDefaultWindow(UIWindow *window)
 {
-    //DLog();
     //UIApplication *app = [UIApplication sharedApplication];
     id<UIApplicationDelegate> appDelegate = _application->_delegate;
     
@@ -136,14 +135,11 @@ static void _UIApplicationLaunchApplicationWithDefaultWindow(UIWindow *window)
     } else if ([appDelegate respondsToSelector:@selector(applicationDidFinishLaunching:)]) {
         [appDelegate applicationDidFinishLaunching:_application];
     }
-    //DLog();
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidFinishLaunchingNotification
                                                         object:_application];
-    //DLog();
     if ([appDelegate respondsToSelector:@selector(applicationDidBecomeActive:)]) {
         [appDelegate applicationDidBecomeActive:_application];
     }
-    //DLog();
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification
                                                         object:_application];
 }
@@ -222,17 +218,13 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
                 _CAAnimatorInitialize();
                 UIParentApplicationInitialize();
                 [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
-                //DLog();
                 myEngine->context = _EAGLGetCurrentContext();
                 UIScreen *screen = [[UIScreen alloc] init];
-                //DLog();
                 CGContextRef ctx = IOWindowCreateContextWithRect(screen->_bounds);
                 UIGraphicsPushContext(ctx);
                 [_CAAnimatorConditionLock unlock];
-                //DLog();
                 _application->_lastActivityTime = CACurrentMediaTime();
                 _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-                //DLog();
             }
             break;
         case APP_CMD_TERM_WINDOW: {
@@ -391,7 +383,6 @@ static void UIApplicationInitialize()
 
 static int _UIApplicationHandleMessages()
 {
-    //DLog();
     int message = IOPipeReadMessage();
     //DLog();
     switch (message) {
@@ -730,25 +721,19 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
         // We are starting with a previous saved state; restore from it.
         myEngine->state = *(saved_state*)app->savedState;
     }
-    //DLog();
     _application = [[UIApplication alloc] init];
     //UIParentApplicationInitialize();
-    //DLog();
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
     //NSTimeInterval currentTime = CACurrentMediaTime();
-    //DLog();
     
     _CoreGraphicsInitialize(app);
     
-    //DLog();
     //_startTime = EAGLCurrentTime();
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-        //DLog();
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
-        //DLog();
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
         if (ALooper_pollAll(0, NULL, &events, (void**)&source) >= 0) {
@@ -761,9 +746,7 @@ void _UIApplicationMain(struct android_app *app, NSString *appName, NSString *de
                 return;
             }
         }
-        //DLog();
         UIParentApplicationHandleMessages();
-        //DLog();
         [pool2 release];
     }
     free(myEngine);
@@ -909,25 +892,28 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
 #else
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     _UIApplicationInitialize();
-    DLog();
+    DLog(@"1");
     IOWindow *window = IOWindowCreateSharedWindow();
     CGRect cr = CGRectMake(0,0,640,480);
-    DLog();
+    DLog("2");
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
+    DLog("2.1");
     UIGraphicsPushContext(ctx);
+    DLog("2.2");
     BOOL canDraw = NO;
     while (!canDraw) {
         if (IOEventCanDrawWindow(window)) {
             canDraw = YES;
         }
     }
+    DLog("2.3");
     NSTimeInterval currentTime = CACurrentMediaTime();
-    DLog();
+    DLog(@"3");
     _application = [[UIApplication alloc] init];
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
-    DLog();
+    DLog(@"4");
     
     [[UIScreen alloc] init];
     
