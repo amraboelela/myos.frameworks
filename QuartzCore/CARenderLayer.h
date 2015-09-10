@@ -37,4 +37,3 @@ CGRect _CARenderLayerApplyMasksToBoundsToRect(CALayer *layer, CALayer *ancestorL
 void _CARenderLayerSetNeedsCompositeInRect(CARenderLayer *rootLayer, CARenderLayer *opaqueLayer, CGRect r);
 void _CARenderLayerCompositeIfNeeded(CARenderLayer *layer);
 void _CARenderLayerUnload(CARenderLayer *layer);
-
