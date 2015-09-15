@@ -76,6 +76,8 @@ typedef struct {
 
 #pragma mark - Static functions
 
+#ifdef ANDROID
+
 static void _UIApplicationProcessInitialize()
 {
     int argc=1;
@@ -118,6 +120,8 @@ static void _UIApplicationProcessInitialize()
     GSInitializeProcess(argc, argv, env);
     //printf("_UIApplicationProcessInitialize 3");
 }
+
+#endif
 
 static void _UIApplicationInitialize()
 {
@@ -327,58 +331,6 @@ static void _UIApplicationInitWindow()
     [_CAAnimatorConditionLock unlock];
     _application->_lastActivityTime = CACurrentMediaTime();
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-}
-
-void _UIApplicationTerminate()
-{
-    if ([_application->_delegate respondsToSelector:@selector(applicationWillTerminate:)]) {
-        [_application->_delegate applicationWillTerminate:_application];
-    }
-    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillTerminateNotification
-                                                        object:_application];
-    exit(0);
-}
-
-static void mysig(int sig)
-{
-    int status;
-    pid_t pid;
-    
-    //DLog(@"Signal %d", sig);
-    switch (sig) {
-        case SIGALRM:
-            //DLog(@"SIGALRM");
-            //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
-            break;
-        case SIGTERM:
-            //DLog(@"SIGTERM");
-            _UIApplicationTerminate();
-            break;
-        default:
-            break;
-    }
-}
-
-static void UIApplicationInitialize()
-{
-    //DLog();
-    IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
-    
-    MAPipeMessage message = IOPipeReadMessage();
-    //DLog(@"message: %d", message);
-    _processName = @"ProcessName";
-    if (message == MAPipeMessageCharString) {
-        _processName = [IOPipeReadCharString() retain];
-        DLog(@"processName: %@", _processName);
-        [[NSProcessInfo processInfo] setProcessName:_processName];
-        [[NSBundle mainBundle] reInitialize];
-        _CGDataProviderSetChildAppName(_processName);
-    } else {
-        //DLog(@"message: %d", message);
-        NSLog(@"Error can't get process name");
-    }
-    (void)signal(SIGALRM, mysig);
-    (void)signal(SIGTERM, mysig);
 }
 
 static int _UIApplicationHandleMessages()
@@ -771,7 +723,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     
     int events;
     
-    UIApplicationInitialize();
+    UIChildApplicationInitialize();
     //DLog();
     _application = [[UIApplication alloc] init];
     Class appDelegateClass = NSClassFromString(delegateClassName);
@@ -893,6 +845,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     _UIApplicationInitialize();
     DLog(@"1");
+    UIChildApplicationInitialize();
     IOWindow *window = IOWindowCreateSharedWindow();
     CGRect cr = CGRectMake(0,0,640,480);
     DLog("2");

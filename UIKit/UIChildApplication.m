@@ -27,6 +27,36 @@ NSMutableArray *_openedApplications;
 
 #pragma mark - Static functions
 
+static void UIChildApplicationTerminate()
+{
+    if ([_application->_delegate respondsToSelector:@selector(applicationWillTerminate:)]) {
+        [_application->_delegate applicationWillTerminate:_application];
+    }
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillTerminateNotification
+                                                        object:_application];
+    exit(0);
+}
+
+static void UIChildApplicationSignal(int sig)
+{
+    int status;
+    pid_t pid;
+    
+    //DLog(@"Signal %d", sig);
+    switch (sig) {
+        case SIGALRM:
+            //DLog(@"SIGALRM");
+            //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
+            break;
+        case SIGTERM:
+            //DLog(@"SIGTERM");
+            _UIApplicationTerminate();
+            break;
+        default:
+            break;
+    }
+}
+
 static void UIChildApplicationRunApp(NSString *appName)
 {
     const char *appPath = [[NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(), appName, appName] cString];
@@ -387,6 +417,31 @@ static void UIChildApplicationRunApp(NSString *appName)
 @end
 
 #pragma mark - Public functions
+
+void UIChildApplicationInitialize()
+{
+    DLog();
+    //_UINavigationItemInitialize();
+    IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
+    
+    MAPipeMessage message = IOPipeReadMessage();
+    DLog(@"message: %d", message);
+#ifdef ANDROID
+    _processName = @"ProcessName";
+    if (message == MAPipeMessageCharString) {
+        _processName = [IOPipeReadCharString() retain];
+        DLog(@"processName: %@", _processName);
+        [[NSProcessInfo processInfo] setProcessName:_processName];
+        [[NSBundle mainBundle] reInitialize];
+        _CGDataProviderSetChildAppName(_processName);
+    } else {
+        //DLog(@"message: %d", message);
+        NSLog(@"Error can't get process name");
+    }
+#endif
+    (void)signal(SIGALRM, UIChildApplicationSignal);
+    (void)signal(SIGTERM, UIChildApplicationSignal);
+}
 
 void UIChildApplicationSaveData(UIChildApplication *app)
 {
