@@ -80,8 +80,6 @@ static void UIChildApplicationRunApp(NSString *appName)
 @dynamic name;
 @dynamic category;
 @dynamic homeIcon;
-//@dynamic yLocation;
-//@dynamic anchored;
 
 #pragma mark - Life cycle
 
@@ -173,34 +171,6 @@ static void UIChildApplicationRunApp(NSString *appName)
     return [_data valueForKey:@"category"];
 }
 
-/*
-- (void)setXLocation:(int)x
-{
-    [_data setValue:[NSNumber numberWithInt:x] forKey:@"xLocation"];
-}
-
-- (int)yLocation
-{
-    //DLog();
-    return [[_data valueForKey:@"yLocation"] intValue];
-}
-
-- (void)setYLocation:(int)y
-{
-    [_data setValue:[NSNumber numberWithInt:y] forKey:@"yLocation"];
-}
-
-- (BOOL)anchored
-{
-    //DLog();
-    return [[_data valueForKeyPath:_kUIChildApplicationAnchoredPath] boolValue];
-}
-
-- (void)setAnchored:(BOOL)anchored
-{
-    [_data setValue:[NSNumber numberWithBool:anchored] forKeyPath:_kUIChildApplicationAnchoredPath];
-}*/
-
 - (UIImageView *)defaultScreenView
 {
     NSString *imagePath = [NSString stringWithFormat:@"%@/apps/%@.app/Default.png", _NSFileManagerMyAppsPath(), _bundleName];
@@ -242,19 +212,6 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 #pragma mark - Data
 
-/*
-- (void)swapLocationWithApp:(UIChildApplication *)anotherApp
-{
-    int tempPageNumber = self.pageNumber;
-    self.pageNumber = anotherApp.pageNumber;
-    anotherApp.pageNumber = tempPageNumber;
-    int tempX = self.xLocation;
-    int tempY = self.yLocation;
-    self.xLocation = anotherApp.xLocation;
-    self.yLocation = anotherApp.yLocation;
-    anotherApp.xLocation = tempX;
-    anotherApp.yLocation = tempY;
-}*/
 
 #pragma mark - Delegates
 /*
@@ -326,7 +283,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     long flags;
     _pid = fork();
     DLog(@"pid: %d", _pid);
-    if (_pid == 0) {
+    if (_pid == 0) { // Child process
         flags = fcntl(pipe1[0], F_GETFL);
         fcntl(pipe1[0], F_SETFL, flags | O_NONBLOCK);
         //dup(mypipe[0]);
@@ -341,17 +298,17 @@ static void UIChildApplicationRunApp(NSString *appName)
         
         DLog(@"dup2");
         IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
-        DLog();
+        //DLog();
         IOPipeWriteMessage(MLPipeMessageChildIsReady, YES);
         DLog();
         UIChildApplicationRunApp(_bundleName);
-    } else {
+    } else { // Parent process
         int pipeRead = pipe2[0];
         int pipeWrite = pipe1[1];
         flags = fcntl(pipeRead, F_GETFL);
         fcntl(pipeRead, F_SETFL, flags | O_NONBLOCK);
         
-        DLog();
+        //DLog();
         close(pipe1[0]);
         close(pipe2[1]);
         
@@ -371,8 +328,10 @@ static void UIChildApplicationRunApp(NSString *appName)
         DLog();
         CFArrayAppendValue(_openedApplications, self);
         [self setAsCurrent:NO];
+#ifdef ANDROID
         IOPipeWriteMessage(MAPipeMessageCharString, NO);
         IOPipeWriteCharString(_bundleName);
+#endif
         UIParentApplicationSetChildAppIsRunning(YES);
     }
 }
@@ -421,13 +380,13 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 void UIChildApplicationInitialize()
 {
-    DLog();
+    //DLog();
     //_UINavigationItemInitialize();
     IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
     
+#ifdef ANDROID
     MAPipeMessage message = IOPipeReadMessage();
     DLog(@"message: %d", message);
-#ifdef ANDROID
     _processName = @"ProcessName";
     if (message == MAPipeMessageCharString) {
         _processName = [IOPipeReadCharString() retain];
