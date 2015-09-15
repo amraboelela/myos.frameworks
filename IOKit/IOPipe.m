@@ -19,8 +19,8 @@
 #import <unistd.h>
 #import <IOKit/IOKit.h>
 
-#define kEndOfMessage 0
-#define kDataSize 512
+#define kEndOfMessage   0
+#define kDataSize       512
 
 static int _pipeRead;
 static int _pipeWrite;
