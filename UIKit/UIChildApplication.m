@@ -26,7 +26,6 @@ UIChildApplication *_currentChildApplication = nil;
 NSMutableArray *_openedApplications;
 UIApplication *_application = nil;
 
-
 #pragma mark - Static functions
 
 static void UIChildApplicationTerminate()
