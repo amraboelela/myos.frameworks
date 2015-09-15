@@ -326,7 +326,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     //DLog(@"name: %@", self.name);
     long flags;
     _pid = fork();
-    DLog(@"pid: %d", pid);
+    DLog(@"pid: %d", _pid);
     if (_pid == 0) {
         flags = fcntl(pipe1[0], F_GETFL);
         fcntl(pipe1[0], F_SETFL, flags | O_NONBLOCK);
