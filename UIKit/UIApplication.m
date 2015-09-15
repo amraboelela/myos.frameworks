@@ -163,32 +163,6 @@ static BOOL TouchIsActive(UITouch *touch)
     return TouchIsActiveGesture(touch) || TouchIsActiveNonGesture(touch);
 }
 
-static void _UIApplicationSetCurrentEventTouchedView()
-{
-    UIEvent *currentEvent = _application->_currentEvent;
-    //DLog(@"currentEvent: %@", currentEvent);
-    NSSet *touches = [currentEvent allTouches];
-    UITouch *touch = [touches anyObject];
-    //DLog(@"touch: %@", touch);
-    //DLog(@"touch.view: %@", touch.view);
-    UIView *previousView = [touch.view retain];
-    CGPoint screenLocation = touch->_location;
-    UIScreen *theScreen = _application->_keyWindow->_screen;
-    UIView *hitView = _UIScreenHitTest(theScreen, screenLocation, currentEvent);
-    //DLog(@"hitView: %@", hitView);
-    _UITouchSetTouchedView(touch, hitView);
-    if (hitView != previousView) {
-        UITouchPhase phase = touch.phase;
-        //DLog(@"phase: %d", phase);
-        if (phase == UITouchPhaseMoved) {
-            //DLog(@"phase == UITouchPhaseMoved");
-            [previousView touchesMoved:touches withEvent:currentEvent];
-        }
-    }
-    _UIApplicationSendEvent(currentEvent);
-    [previousView release];
-}
-
 #ifdef NATIVE_APP
 
 #ifdef ANDROID
@@ -857,6 +831,32 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
 }
 
 #endif /* ANDROID */
+
+void _UIApplicationSetCurrentEventTouchedView()
+{
+    UIEvent *currentEvent = _application->_currentEvent;
+    //DLog(@"currentEvent: %@", currentEvent);
+    NSSet *touches = [currentEvent allTouches];
+    UITouch *touch = [touches anyObject];
+    //DLog(@"touch: %@", touch);
+    //DLog(@"touch.view: %@", touch.view);
+    UIView *previousView = [touch.view retain];
+    CGPoint screenLocation = touch->_location;
+    UIScreen *theScreen = _application->_keyWindow->_screen;
+    UIView *hitView = _UIScreenHitTest(theScreen, screenLocation, currentEvent);
+    //DLog(@"hitView: %@", hitView);
+    _UITouchSetTouchedView(touch, hitView);
+    if (hitView != previousView) {
+        UITouchPhase phase = touch.phase;
+        //DLog(@"phase: %d", phase);
+        if (phase == UITouchPhaseMoved) {
+            //DLog(@"phase == UITouchPhaseMoved");
+            [previousView touchesMoved:touches withEvent:currentEvent];
+        }
+    }
+    _UIApplicationSendEvent(currentEvent);
+    [previousView release];
+}
 
 void _UIApplicationSetKeyWindow(UIApplication *application, UIWindow *newKeyWindow)
 {

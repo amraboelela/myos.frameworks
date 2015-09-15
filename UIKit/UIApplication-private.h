@@ -40,7 +40,7 @@ UIResponder *_UIApplicationFirstResponderForScreen(UIApplication *app, UIScreen 
 BOOL _UIApplicationFirstResponderCanPerformAction(UIApplication *app, SEL action, id sender, UIScreen *theScreen);
 BOOL _UIApplicationSendActionToFirstResponder(UIApplication *app, SEL action, id sender, UIScreen *theScreen);
 void _UIApplicationRemoveViewFromTouches(UIApplication* application, UIView *aView);
-//void _UIApplicationSetCurrentEventTouchedView();
+void _UIApplicationSetCurrentEventTouchedView();
 void _UIApplicationSendEvent(UIEvent *event);
 void _UIApplicationEnterForeground();
 BOOL _UIApplicationEnterBackground();
