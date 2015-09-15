@@ -130,7 +130,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     _window->display = XOpenDisplay(":0");
     //DLog(@"display: %p", _window->display);
     if (!_window->display) {
-        fprintf(stderr, "Cannot open display: %s\n", XDisplayName(NULL));
+        NSLog(@"Cannot open display: %s\n", XDisplayName(NULL));
         exit(EXIT_FAILURE);
     }
     //printf("Opened display %s\n", DisplayString(_window->display));
@@ -150,7 +150,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
                                      CopyFromParent, /* visual */
                                      CWBackPixel | CWEventMask, /* valuemask */
                                      &wa); /* attributes */
-    printf("XCreateWindow returned: 0x%lx\n", _window->xwindow);
+    DLog(@"XCreateWindow returned: 0x%lx\n", _window->xwindow);
     XSelectInput(_window->display, _window->xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
     /* Map the window */
     int ret = XMapRaised(_window->display, _window->xwindow);
@@ -159,7 +159,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     /* Create a CGContext */
     _window->_context = IOWindowCreateContext();
     if (!_window->_context) {
-        fprintf(stderr,"Cannot create context\n");
+        NSLog(@"Cannot create context\n");
         exit(EXIT_FAILURE);
     }
     //printf("Created context\n");
@@ -175,7 +175,7 @@ CGContextRef IOWindowCreateContext()
     
     ret = XGetWindowAttributes(_window->display, _window->xwindow, &wa);
     if (!ret) {
-        NSLog(@"XGetWindowAttributes returned %d", ret);
+        DLog(@"XGetWindowAttributes returned %d", ret);
         return NULL;
     }
     target = cairo_xlib_surface_create(_window->display, _window->xwindow, wa.visual, wa.width, wa.height);
