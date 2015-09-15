@@ -93,7 +93,7 @@ int IOPipeReadMessage()
 int IOPipeReadMessageWithPipe(int pipeRead)
 {
     char message;
-    DLog(@"_pipeRead: %d", _pipeRead);
+    //DLog(@"_pipeRead: %d", _pipeRead);
     read(pipeRead, &message, 1);
     return message;
 }

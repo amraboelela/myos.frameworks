@@ -352,7 +352,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         flags = fcntl(pipeRead, F_GETFL);
         fcntl(pipeRead, F_SETFL, flags | O_NONBLOCK);
         
-        DLog();
+        //DLog();
         close(pipe1[0]);
         close(pipe2[1]);
         

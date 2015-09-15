@@ -768,7 +768,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
             canDraw = YES;
         }
     }
-    DLog("2.3");
+    //DLog("2.3");
     NSTimeInterval currentTime = CACurrentMediaTime();
     DLog(@"3");
     _application = [[UIApplication alloc] init];
