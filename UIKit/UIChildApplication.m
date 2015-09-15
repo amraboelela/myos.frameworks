@@ -24,6 +24,8 @@
 NSMutableDictionary *_allApplicationsDictionary;
 UIChildApplication *_currentChildApplication = nil;
 NSMutableArray *_openedApplications;
+UIApplication *_application = nil;
+
 
 #pragma mark - Static functions
 
@@ -441,6 +443,12 @@ void UIChildApplicationInitialize()
 #endif
     (void)signal(SIGALRM, UIChildApplicationSignal);
     (void)signal(SIGTERM, UIChildApplicationSignal);
+}
+
+void UIChildApplicationSetApplication(UIApplication *application)
+{
+    DLog(@"application: %@", application);
+    _application = application;
 }
 
 void UIChildApplicationSaveData(UIChildApplication *app)

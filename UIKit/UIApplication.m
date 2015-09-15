@@ -726,6 +726,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     UIChildApplicationInitialize();
     //DLog();
     _application = [[UIApplication alloc] init];
+    UIChildApplicationSetApplication(_application);
     Class appDelegateClass = NSClassFromString(delegateClassName);
     
     id appDelegate = [[appDelegateClass alloc] init];
@@ -848,9 +849,9 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     UIChildApplicationInitialize();
     IOWindow *window = IOWindowCreateSharedWindow();
     CGRect cr = CGRectMake(0,0,640,480);
-    DLog("2");
+    //DLog("2");
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
-    DLog("2.1");
+    //DLog("2.1");
     UIGraphicsPushContext(ctx);
     DLog("2.2");
     BOOL canDraw = NO;
@@ -863,6 +864,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     NSTimeInterval currentTime = CACurrentMediaTime();
     DLog(@"3");
     _application = [[UIApplication alloc] init];
+    UIChildApplicationSetApplication(_application);
     Class appDelegateClass = NSClassFromString(delegateClassName);
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
