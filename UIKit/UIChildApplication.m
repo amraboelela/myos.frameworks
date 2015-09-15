@@ -52,7 +52,7 @@ static void UIChildApplicationSignal(int sig)
             break;
         case SIGTERM:
             //DLog(@"SIGTERM");
-            _UIApplicationTerminate();
+            UIChildApplicationTerminate();
             break;
         default:
             break;
@@ -509,7 +509,7 @@ int UIChildApplicationHandleMessages()
         case MAPipeMessageTerminateApp:
             DLog(@"MAPipeMessageTerminateApp");
             IOPipeWriteMessage(MLPipeMessageTerminateApp, YES);
-            _UIApplicationTerminate();
+            UIChildApplicationTerminate();
             //return MAPipeMessageTerminateApp;
         default:
             break;
