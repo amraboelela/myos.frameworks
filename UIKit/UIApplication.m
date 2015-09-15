@@ -745,6 +745,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
          //_application->_blackScreen.alpha = 1.0;
          //[UIView commitAnimations];
          }*/
+        UIParentApplicationHandleMessages();
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }

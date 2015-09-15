@@ -165,7 +165,7 @@ void UIParentApplicationHandleMessages()
             //DLog(@"MLPipeMessageEndOfMessage");
             break;
         case MLPipeMessageChildIsReady:
-            //DLog(@"MLPipeMessageChildIsReady");
+            DLog(@"MLPipeMessageChildIsReady");
             break;
         case MLPipeMessageTerminateApp:
             DLog(@"MLPipeMessageTerminateApp");
