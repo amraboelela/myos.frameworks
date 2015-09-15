@@ -451,6 +451,72 @@ void UIChildApplicationSetApplication(UIApplication *application)
     _application = application;
 }
 
+int UIChildApplicationHandleMessages()
+{
+    int message = IOPipeReadMessage();
+    //DLog();
+    switch (message) {
+        case MAPipeMessageEndOfMessage:
+            break;
+        case MAPipeMessageEventActionDown:
+        case MAPipeMessageEventActionMoved:
+        case MAPipeMessageEventActionUp: {
+            UITouch *touch = [[_application->_currentEvent allTouches] anyObject];
+            UIScreen *screen = _UIScreenMainScreen();
+            float x = IOPipeReadFloat();
+            float y = IOPipeReadFloat();
+            //DLog(@"screenLocation: x:%0.0f, y:%0.0f", x, y);
+            CGPoint screenLocation = CGPointMake(x, y);
+            NSTimeInterval timestamp = CACurrentMediaTime();
+            _application->_currentEvent->_timestamp = timestamp;
+            switch (message) {
+                case MAPipeMessageEventActionDown: {
+                    //DLog(@"MAPipeMessageEventActionDown");
+                    CGPoint delta = CGPointZero;
+                    int tapCount = 1;
+                    NSTimeInterval timeDiff = fabs(touch.timestamp - timestamp);
+                    if (touch.phase == UITouchPhaseEnded && timeDiff < _kUIEventTimeDiffMax) {
+                        tapCount = touch.tapCount+1;
+                    }
+                    _UITouchSetPhase(touch, UITouchPhaseBegan, screenLocation, tapCount, delta, timestamp);
+                    break;
+                }
+                case MAPipeMessageEventActionMoved:
+                    //DLog(@"MAPipeMessageEventActionMoved");
+                    _UITouchUpdatePhase(touch, UITouchPhaseMoved, screenLocation, timestamp);
+                    break;
+                case MAPipeMessageEventActionUp:
+                    //DLog(@"screenLocation: x:%0.0f, y:%0.0f", x, y);
+                    //DLog(@"MAPipeMessageEventActionUp");
+                    _UITouchUpdatePhase(touch, UITouchPhaseEnded, screenLocation, timestamp);
+                    break;
+                default:
+                    break;
+            }
+            _UIApplicationSetCurrentEventTouchedView();
+            break;
+        }
+        case MAPipeMessageWillEnterBackground:
+            _UIApplicationEnterBackground();
+            pause();
+            //DLog(@"_application: %@", _application);
+            //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
+            _UIApplicationEnterForeground();
+            break;
+            /*case MAPipeMessageHello:
+             DLog(@"MAPipeMessageHello");
+             break;*/
+        case MAPipeMessageTerminateApp:
+            DLog(@"MAPipeMessageTerminateApp");
+            IOPipeWriteMessage(MLPipeMessageTerminateApp, YES);
+            _UIApplicationTerminate();
+            //return MAPipeMessageTerminateApp;
+        default:
+            break;
+    }
+    return 0;
+}
+
 void UIChildApplicationSaveData(UIChildApplication *app)
 {
     NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), app->_bundleName];
