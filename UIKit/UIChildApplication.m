@@ -294,7 +294,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     //DLog(@"name: %@", self.name);
     long flags;
     _pid = fork();
-    //DLog(@"pid: %d", pid);
+    DLog(@"pid: %d", pid);
     if (_pid == 0) {
         flags = fcntl(pipe1[0], F_GETFL);
         fcntl(pipe1[0], F_SETFL, flags | O_NONBLOCK);
@@ -308,11 +308,11 @@ static void UIChildApplicationRunApp(NSString *appName)
         dup2(animationPipe1[0], _kEAGLChildPipeRead);
         dup2(animationPipe2[1], _kEAGLChildPipeWrite);
         
-        //DLog(@"dup2");
+        DLog(@"dup2");
         IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
-        //DLog();
+        DLog();
         IOPipeWriteMessage(MLPipeMessageChildIsReady, YES);
-        //DLog();
+        DLog();
         UIChildApplicationRunApp(_bundleName);
     } else {
         int pipeRead = pipe2[0];
@@ -320,7 +320,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         flags = fcntl(pipeRead, F_GETFL);
         fcntl(pipeRead, F_SETFL, flags | O_NONBLOCK);
         
-        //DLog();
+        DLog();
         close(pipe1[0]);
         close(pipe2[1]);
         
@@ -337,7 +337,7 @@ static void UIChildApplicationRunApp(NSString *appName)
         _pipeWrite = pipeWrite;
         _animationPipeRead = animationPipeRead;
         _animationPipeWrite = animationPipeWrite;
-        //DLog();
+        DLog();
         CFArrayAppendValue(_openedApplications, self);
         [self setAsCurrent:NO];
         IOPipeWriteMessage(MAPipeMessageCharString, NO);

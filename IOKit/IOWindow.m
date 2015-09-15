@@ -220,5 +220,5 @@ void IOWindowClear()
 {
     XClearWindow(_window->display, _window->xwindow);
 }
-#endif
 
+#endif

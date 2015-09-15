@@ -29,14 +29,14 @@ static int _pipeWrite;
 
 static void _IOPipeWriteEndOfMessage()
 {
-    //DLog();
+    DLog();
     char aChar=kEndOfMessage;
     write(_pipeWrite,&aChar,1);
 }
 
 static void _IOPipeWriteEndOfMessageWithPipe(int writePipe)
 {
-    //DLog();
+    DLog();
     char aChar=kEndOfMessage;
     write(writePipe,&aChar,1);
 }
@@ -45,7 +45,7 @@ static void _IOPipeWriteEndOfMessageWithPipe(int writePipe)
 
 void IOPipeSetPipes(int pipeRead, int pipeWrite)
 {
-    //DLog(@"pipeRead: %d, pipeWrite: %d", pipeRead, pipeWrite);
+    DLog(@"pipeRead: %d, pipeWrite: %d", pipeRead, pipeWrite);
     _pipeRead = pipeRead;
     _pipeWrite = pipeWrite;
 }
@@ -64,7 +64,7 @@ NSString *IOPipeReadLine(int file)
 
 void IOPipeWriteMessage(int message, BOOL withEnd)
 {
-    //DLog(@"message: %d", message);
+    DLog(@"message: %d", message);
     char aChar=message;
     write(_pipeWrite,&aChar,1);
     if (withEnd) {
@@ -74,7 +74,7 @@ void IOPipeWriteMessage(int message, BOOL withEnd)
 
 void IOPipeWriteMessageWithPipe(int message, BOOL withEnd, int pipeWrite)
 {
-    //DLog(@"message: %d", message);
+    DLog(@"message: %d", message);
     char aChar=message;
     write(pipeWrite,&aChar,1);
     if (withEnd) {
@@ -85,7 +85,7 @@ void IOPipeWriteMessageWithPipe(int message, BOOL withEnd, int pipeWrite)
 int IOPipeReadMessage()
 {
     char message;
-    //DLog(@"_pipeRead: %d", _pipeRead);
+    DLog(@"_pipeRead: %d", _pipeRead);
     read(_pipeRead, &message, 1);
     return message;
 }
@@ -93,7 +93,7 @@ int IOPipeReadMessage()
 int IOPipeReadMessageWithPipe(int pipeRead)
 {
     char message;
-    //DLog(@"_pipeRead: %d", _pipeRead);
+    DLog(@"_pipeRead: %d", _pipeRead);
     read(pipeRead, &message, 1);
     return message;
 }
@@ -101,7 +101,7 @@ int IOPipeReadMessageWithPipe(int pipeRead)
 void IOPipeWriteCharString(NSString *aString)
 {
     //_IOPipeWriteMessage(pipe, IOPipeMessageTypeCharString);
-    //DLog(@"[aString cString]: %s", [aString cString]);
+    DLog(@"[aString cString]: %s", [aString cString]);
     write(_pipeWrite,[aString cString],aString.length);
     char aChar=0;
     write(_pipeWrite,&aChar,1); // end of string
@@ -111,7 +111,7 @@ NSString *IOPipeReadCharString()
 {
     char aChar = ' ';
     NSMutableString *aString = [[NSMutableString alloc] init];
-    //DLog(@"_pipeRead: %d", _pipeRead);
+    DLog(@"_pipeRead: %d", _pipeRead);
     while (aChar != 0) {
         read(_pipeRead, &aChar, 1);
         //DLog(@"aChar: %c", aChar);
