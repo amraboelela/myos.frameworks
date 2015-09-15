@@ -66,6 +66,7 @@ extern NSMutableArray *_openedApplications;
 
 void UIChildApplicationInitialize();
 void UIChildApplicationSetApplication(UIApplication *application);
+int UIChildApplicationHandleMessages();
 //void UIChildApplicationTakeScreenCaptureIfNeeded(UIChildApplication *app);
 void UIChildApplicationSaveData(UIChildApplication *app);
 void UIChildApplicationClosePipes();
