@@ -70,7 +70,6 @@ static void UIChildApplicationRunApp(NSString *appName)
     const char *myEnv = NULL;
 #endif
     execve(appPath, args, myEnv);
-    //DLog();
 }
 
 @implementation UIChildApplication
@@ -167,7 +166,6 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (NSString *)category
 {
-    //DLog();
     return [_data valueForKey:@"category"];
 }
 
@@ -234,7 +232,6 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 - (void)singleTapped
 {
-    //DLog();
     if (!_opened) {
         self.opened = YES;
         [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
@@ -282,7 +279,7 @@ static void UIChildApplicationRunApp(NSString *appName)
     //DLog(@"name: %@", self.name);
     long flags;
     _pid = fork();
-    DLog(@"pid: %d", _pid);
+    //DLog(@"pid: %d", _pid);
     if (_pid == 0) { // Child process
         flags = fcntl(pipe1[0], F_GETFL);
         fcntl(pipe1[0], F_SETFL, flags | O_NONBLOCK);

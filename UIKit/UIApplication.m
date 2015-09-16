@@ -762,14 +762,14 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     //DLog("2.1");
     UIGraphicsPushContext(ctx);
-    DLog("2.2");
+    //DLog("2.2");
     BOOL canDraw = NO;
     while (!canDraw) {
         if (IOEventCanDrawWindow(window)) {
             canDraw = YES;
         }
     }
-    DLog("2.3");
+    //DLog("2.3");
     NSTimeInterval currentTime = CACurrentMediaTime();
     DLog(@"3");
     _application = [[UIApplication alloc] init];
