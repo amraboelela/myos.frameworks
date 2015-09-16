@@ -21,6 +21,8 @@
 //#import <OpenGLES/EAGL-private.h>
 //#import <CoreGraphics/CoreGraphics-private.h>
 
+UIApplication *_application = nil;
+
 #pragma mark - Static functions
 
 static void UIChildApplicationSignal(int sig)
@@ -125,7 +127,6 @@ int UIChildApplicationHandleMessages()
         case MAPipeMessageWillEnterBackground:
             _UIApplicationEnterBackground();
             pause();
-            //DLog(@"_application: %@", _application);
             //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
             _UIApplicationEnterForeground();
             break;
