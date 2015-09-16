@@ -16,6 +16,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 typedef enum {
     UIParentApplicationScreenDirectionFromRight,
@@ -29,7 +30,7 @@ typedef enum {
     //BOOL _isActive;
 }
 
-+ (UIParentApplication *)sharedMLApplication;
++ (UIParentApplication *)sharedParentApplication;
 - (void)presentAppDone;
 
 @end
@@ -38,7 +39,7 @@ typedef enum {
 //void UIParentApplicationLauncherViewDidAdded();
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning);
 void UIParentApplicationHandleMessages();
-void UIParentApplicationPresentAppScreen(UIChildApplication *childApp, BOOL coldStart);
+void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart);
 void UIParentApplicationMoveCurrentAppToTop();
 void UIParentApplicationTerminateApps();
 void UIParentApplicationGoBack();

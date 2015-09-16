@@ -121,16 +121,14 @@ void UIParentApplicationTerminateSomeApps()
     }
 }
 
-void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childApp, BOOL coldStart)
+void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart)
 {
     //DLog(@"uiApplication: %@", uiApplication);
-    //_UIChildApplication = childApp;
-    //[_uiApplication->_keyWindow bringSubviewToFront:_childAppView];
     _launcherView.hidden = YES;
     _UIApplicationEnterBackground();
     if (coldStart) {
         //UIParentApplicationCheckMemory();
-        [_childAppView addSubview:childApp.defaultScreenView];
+        [_childAppView addSubview:childAppProxy.defaultScreenView];
         long freeMemory = CFGetFreeMemory();
         //DLog(@"%@ Free memory: %ld KB", childApp->_bundleName, freeMemory);
         if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
@@ -138,12 +136,12 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childApp, BOOL
             DLog(@"Low memory");
             UIParentApplicationTerminateSomeApps();
             freeMemory = CFGetFreeMemory();
-            DLog(@"%@ Free memory 2: %ld KB", childApp->_bundleName, freeMemory);
+            DLog(@"%@ Free memory 2: %ld KB", childAppProxy->_bundleName, freeMemory);
         }
         _freeMemory = freeMemory;
-        [childApp startApp];
+        [childAppProxy startApp];
     } else {
-        [childApp setAsCurrent:YES];
+        [childAppProxy setAsCurrent:YES];
     }
 #ifdef NATIVE_APP
     [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
@@ -165,7 +163,7 @@ void UIParentApplicationHandleMessages()
             break;
         case MLPipeMessageChildIsReady:
             DLog(@"MLPipeMessageChildIsReady");
-            IOPipeWriteInt();
+            IOPipeWriteInt(0x4000001);
             break;
         case MLPipeMessageTerminateApp:
             DLog(@"MLPipeMessageTerminateApp");
@@ -215,13 +213,14 @@ void UIParentApplicationGoBack()
         [_currentChildApplicationProxy gotoBackground];
         int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
         //DLog(@"currentAppIndex: %d", currentAppIndex);
+        UIChildApplicationProxy *_UIChildApplicationProxy;
         if (currentAppIndex == 0) {
-            _UIChildApplication = _CFArrayGetLastValue(_openedChildApplicationProxies);
+            _UIChildApplicationProxy = _CFArrayGetLastValue(_openedChildApplicationProxies);
         } else {
-            _UIChildApplication = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
+            _UIChildApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
             //DLog(@"_UIChildApplication: %@", _UIChildApplication);
         }
-        [_UIChildApplication setAsCurrent:YES];
+        [_UIChildApplicationProxy setAsCurrent:YES];
     }
 }
 

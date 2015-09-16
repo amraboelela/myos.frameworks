@@ -1026,7 +1026,7 @@ void _UIApplicationRemoveViewFromTouches(UIApplication *application, UIView *aVi
 void _UIApplicationTerminate()
 {
     if ([_application->_delegate respondsToSelector:@selector(applicationWillTerminate:)]) {
-        [_application->_delegate applicationWillTerminate:application];
+        [_application->_delegate applicationWillTerminate:_application];
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillTerminateNotification
                                                         object:_application];
