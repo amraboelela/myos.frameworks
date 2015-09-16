@@ -28,7 +28,7 @@
  */
 
 #import <fcntl.h>
-#import <sys/wait.h>
+//#import <sys/wait.h>
 #import <UIKit/UIKit-private.h>
 #import <OpenGLES/EAGL-private.h>
 #import <IOKit/IOKit.h>

@@ -16,14 +16,17 @@
  */
 
 #import <fcntl.h>
+#import <sys/wait.h>
 #import <UIKit/UIKit-private.h>
 #import <IOKit/IOKit.h>
 #import <OpenGLES/EAGL-private.h>
 #import <CoreGraphics/CoreGraphics-private.h>
+#import <QuartzCore/QuartzCore-private.h>
+#import <CoreFoundation/CoreFoundation-private.h>
 
-static NSMutableDictionary *_allApplicationsDictionary;
-static UIChildApplication *_currentChildApplication = nil;
-static NSMutableArray *_openedApplications;
+NSMutableDictionary *_allApplicationsDictionary;
+UIChildApplication *_currentChildApplication = nil;
+NSMutableArray *_openedApplications;
 static UIApplication *_application = nil;
 
 #pragma mark - Static functions
@@ -76,6 +79,7 @@ static void UIChildApplicationRunApp(NSString *appName)
 
 @synthesize bundleName=_bundleName;
 @synthesize score=_score;
+@synthesize running=_running;
 @dynamic name;
 @dynamic category;
 @dynamic homeIcon;

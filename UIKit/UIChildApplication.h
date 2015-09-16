@@ -59,7 +59,7 @@ extern NSMutableArray *_openedApplications;
 - (void)terminate;
 - (void)singleTapped;
 - (void)showMenu;
-- (void)closeApp;
+//- (void)closeApp;
 - (void)deleteApp;
 
 @end
