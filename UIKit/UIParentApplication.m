@@ -22,15 +22,13 @@
 #import <CoreFoundation/CoreFoundation-private.h>
 
 #define _kTerminateChildTimeOut         2.0
-//#define _kGobackTimeLimit               1.0
 
 static BOOL _childAppRunning = NO;
 static UIParentApplication *_mlApp = nil;
 static CFTimeInterval _startTime;
-//static CFTimeInterval _lastGobackTime = 0;
-static UIApplication *_uiApplication = nil;
+//static UIApplication *_uiApplication = nil;
 static UIParentApplication *_UIParentApplication = nil;
-static UIChildApplication *_UIChildApplication = nil;
+//static UIChildApplicationProxy *_UIChildApplicationProxy = nil;
 static UIView *_launcherView = nil;
 static UIView *_childAppView = nil;
 static long _freeMemory = NSIntegerMax;
@@ -73,12 +71,13 @@ static int _freeMemoryCount = 0;
 
 #pragma mark - Public functions
 
+/*
 void UIParentApplicationInitialize()
 {
     //DLog(@"UIParentApplicationInitialize");
     _uiApplication = [UIApplication sharedApplication];
-    _UIChildApplication = [[UIChildApplication alloc] init];
-    //CFArrayAppendValue(_openedApplications, _launcherApp);
+    //_UIChildApplicationProxy = [[UIChildApplicationProxy alloc] init];
+    //CFArrayAppendValue(_openedChildApplicationProxies, _launcherApp);
     //_openedApplicationsDictionary = [[NSMutableDictionary alloc] init];
 }
 
@@ -92,7 +91,7 @@ void UIParentApplicationLauncherViewDidAdded()
     [_uiApplication->_keyWindow insertSubview:_childAppView atIndex:0];
     //DLog(@"_launcherView: %@", _launcherView);
     //DLog(@"_childAppView: %@", _childAppView);
-}
+}*/
 
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
 {
@@ -106,23 +105,23 @@ void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
 
 void UIParentApplicationTerminateSomeApps()
 {
-    //DLog(@"_openedApplications 1: %@", _openedApplications);
-    //NSMutableArray *openedApplications = CFArrayCreateCopy(kCFAllocatorDefault, _openedApplications);
+    //DLog(@"_openedChildApplicationProxies 1: %@", _openedChildApplicationProxies);
+    //NSMutableArray *openedApplications = CFArrayCreateCopy(kCFAllocatorDefault, _openedChildApplicationProxies);
     _freeMemoryCount++;
-    int count = _openedApplications.count;
+    int count = _openedChildApplicationProxies.count;
     for (int i=0; i<=count; i++) {
-        UIChildApplication *childApp = CFArrayGetValueAtIndex(_openedApplications, 0);
-        if (childApp != _currentChildApplication) {
+        UIChildApplicationProxy *childAppProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, 0);
+        if (childAppProxy != _currentChildApplicationProxy) {
         //DLog(@"Terminating app: %@", childApp);
-            [childApp terminate];
-            CFArrayRemoveValueAtIndex(_openedApplications, 0);
+            [childAppProxy terminate];
+            CFArrayRemoveValueAtIndex(_openedChildApplicationProxies, 0);
         } else {
             return;
         }
     }
 }
 
-void UIParentApplicationPresentAppScreen(UIChildApplication *childApp, BOOL coldStart)
+void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childApp, BOOL coldStart)
 {
     //DLog(@"uiApplication: %@", uiApplication);
     //_UIChildApplication = childApp;
@@ -166,6 +165,7 @@ void UIParentApplicationHandleMessages()
             break;
         case MLPipeMessageChildIsReady:
             DLog(@"MLPipeMessageChildIsReady");
+            IOPipeWriteInt();
             break;
         case MLPipeMessageTerminateApp:
             DLog(@"MLPipeMessageTerminateApp");
@@ -184,7 +184,7 @@ void UIParentApplicationShowLauncher()
         //DLog(@"[[_childAppView subviews] count] > 0");
         [[[_childAppView subviews] objectAtIndex:0] removeFromSuperview];
     }
-    [_currentChildApplication gotoBackground];
+    [_currentChildApplicationProxy gotoBackground];
     _UIApplicationEnterForeground();
     _launcherView.hidden = NO;
     //DLog();
@@ -200,25 +200,25 @@ void UIParentApplicationGoBack()
 {
     _childAppView.hidden = NO;
     if (!_launcherView.hidden) {
-        if (CFArrayGetCount(_openedApplications) == 0) {
-            DLog(@"CFArrayGetCount(_openedApplications) == 0");
+        if (CFArrayGetCount(_openedChildApplicationProxies) == 0) {
+            DLog(@"CFArrayGetCount(_openedChildApplicationProxies) == 0");
             return;
         } else {
-            //DLog(@"_currentChildApplication: %@", _currentChildApplication);
-            UIParentApplicationPresentAppScreen(_currentChildApplication, NO);
+            //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
+            UIParentApplicationPresentAppScreen(_currentChildApplicationProxy, NO);
         }
     } else {
         _childAppView.hidden = NO;
-        if (CFArrayGetCount(_openedApplications) == 1) {
+        if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
             return;
         }
-        [_currentChildApplication gotoBackground];
-        int currentAppIndex = _CFArrayGetIndexOfValue(_openedApplications, _currentChildApplication);
+        [_currentChildApplicationProxy gotoBackground];
+        int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
         //DLog(@"currentAppIndex: %d", currentAppIndex);
         if (currentAppIndex == 0) {
-            _UIChildApplication = _CFArrayGetLastValue(_openedApplications);
+            _UIChildApplication = _CFArrayGetLastValue(_openedChildApplicationProxies);
         } else {
-            _UIChildApplication = CFArrayGetValueAtIndex(_openedApplications, currentAppIndex-1);
+            _UIChildApplication = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
             //DLog(@"_UIChildApplication: %@", _UIChildApplication);
         }
         [_UIChildApplication setAsCurrent:YES];
@@ -227,18 +227,18 @@ void UIParentApplicationGoBack()
 
 void UIParentApplicationMoveCurrentAppToTop()
 {
-    //DLog(@"_currentChildApplication: %@", _currentChildApplication);
+    //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
     if (!_launcherView.hidden) {
         return;
     }
-    //_currentChildApplication->_needsScreenCapture = YES;
-    /*if (currentAppIndex == CFArrayGetCount(_openedApplications) - 1) {
+    //_currentChildApplicationProxy->_needsScreenCapture = YES;
+    /*if (currentAppIndex == CFArrayGetCount(_openedChildApplicationProxies) - 1) {
         return;
     }*/
-    _currentChildApplication->_score++;
+    _currentChildApplicationProxy->_score++;
     //}
-    _CFArrayMoveValueToTop(_openedApplications, _currentChildApplication);
-    //DLog(@"_openedApplications: %@", _openedApplications);
+    _CFArrayMoveValueToTop(_openedChildApplicationProxies, _currentChildApplicationProxy);
+    //DLog(@"_openedChildApplicationProxies: %@", _openedChildApplicationProxies);
 }
 
 void UIParentApplicationTerminateApps()
@@ -248,20 +248,20 @@ void UIParentApplicationTerminateApps()
         [_CAAnimatorNAConditionLock lockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }
 #endif
-    //DLog(@"_currentChildApplication: %@", _currentChildApplication);
-    if (!_currentChildApplication) {
+    //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
+    if (!_currentChildApplicationProxy) {
         return;
     }
-    if (_currentChildApplication->_running) {
+    if (_currentChildApplicationProxy->_running) {
         IOPipeWriteMessage(MAPipeMessageTerminateApp, YES);
     }
-    for (UIChildApplication *childApp in _openedApplications) {
-        //DLog(@"childApp: %@", childApp);
-        if (childApp != _currentChildApplication || !_currentChildApplication->_running) {
-            [childApp terminate];
+    for (UIChildApplicationProxy *childAppProxy in _openedChildApplicationProxies) {
+        //DLog(@"childAppProxy: %@", childAppProxy);
+        if (childAppProxy != _currentChildApplicationProxy || !_currentChildApplicationProxy->_running) {
+            [childAppProxy terminate];
         }
     }
-    if (_currentChildApplication->_running) {
+    if (_currentChildApplicationProxy->_running) {
         BOOL done = NO;
         _startTime = CACurrentMediaTime();
         while (!done) {
@@ -280,7 +280,7 @@ void UIParentApplicationTerminateApps()
             if (CACurrentMediaTime() - _startTime > _kTerminateChildTimeOut) {
                 DLog(@"CACurrentMediaTime() - _startTime > _kTerminateChildTimeOut");
                 done = YES;
-                [_currentChildApplication terminate];
+                [_currentChildApplicationProxy terminate];
             }
         }
     }

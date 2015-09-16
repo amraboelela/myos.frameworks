@@ -34,12 +34,10 @@ typedef enum {
 
 @end
 
-void UIParentApplicationInitialize();
-void UIParentApplicationLauncherViewDidAdded();
+//void UIParentApplicationInitialize();
+//void UIParentApplicationLauncherViewDidAdded();
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning);
-//void UIParentApplicationLog(NSString *longString);
 void UIParentApplicationHandleMessages();
-//void UIParentApplicationRunApp(UIChildApplication *childApp);
 void UIParentApplicationPresentAppScreen(UIChildApplication *childApp, BOOL coldStart);
 void UIParentApplicationMoveCurrentAppToTop();
 void UIParentApplicationTerminateApps();
