@@ -21,10 +21,10 @@
 #import <OpenGLES/EAGL-private.h>
 #import <CoreGraphics/CoreGraphics-private.h>
 
-NSMutableDictionary *_allApplicationsDictionary;
-UIChildApplication *_currentChildApplication = nil;
-NSMutableArray *_openedApplications;
-UIApplication *_application = nil;
+static NSMutableDictionary *_allApplicationsDictionary;
+static UIChildApplication *_currentChildApplication = nil;
+static NSMutableArray *_openedApplications;
+static UIApplication *_application = nil;
 
 #pragma mark - Static functions
 

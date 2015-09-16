@@ -97,9 +97,9 @@ void UIParentApplicationLauncherViewDidAdded()
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
 {
     _startTime = CACurrentMediaTime();
-    //DLog(@"_startTime: %f", _startTime);
+    DLog(@"_startTime: %f", _startTime);
     _childAppRunning = isRunning;
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
     EAGLParentSetChildAppIsRunning(isRunning);
 #endif
 }
