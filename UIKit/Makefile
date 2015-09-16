@@ -80,6 +80,7 @@ OBJECTS = \
     UIBarItem.o \
     UIParentApplication.o \
     UIChildApplication.o \
+    UIChildApplicationProxy.o \
     NSArray+UIKit.o \
     UIPageControl.o \
     UIScrollView.o \

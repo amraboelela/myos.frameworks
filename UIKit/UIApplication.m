@@ -194,7 +194,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
                 IOWindow *window = IOWindowCreateSharedWindow();
                 IOWindowSetNativeWindow(app->window);
                 _CAAnimatorInitialize();
-                UIParentApplicationInitialize();
+                //UIParentApplicationInitialize();
                 [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
                 myEngine->context = _EAGLGetCurrentContext();
                 UIScreen *screen = [[UIScreen alloc] init];
@@ -828,6 +828,8 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
     //[tapGesture release];
+    DLog(@"outside. exiting");
+    UIChildApplicationClosePipes();
     [pool release];
 #endif
 }
@@ -1020,3 +1022,14 @@ void _UIApplicationRemoveViewFromTouches(UIApplication *application, UIView *aVi
         }
     }
 }
+
+void _UIApplicationTerminate()
+{
+    if ([_application->_delegate respondsToSelector:@selector(applicationWillTerminate:)]) {
+        [_application->_delegate applicationWillTerminate:application];
+    }
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillTerminateNotification
+                                                        object:_application];
+    exit(0);
+}
+

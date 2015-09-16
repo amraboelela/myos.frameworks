@@ -27,7 +27,7 @@
 
 #pragma mark - Life cycle
 
-- (id)initWithApplication:(UIChildApplication *)application
+- (id)initWithApplication:(UIChildApplicationProxy *)application
 {
     self = [super initWithFrame:CGRectMake(0,0,_kIconWidth,_kIconHeight)];
 //    self.backgroundColor = [UIColor redColor];
