@@ -45,7 +45,7 @@ static void _IOPipeWriteEndOfMessageWithPipe(int writePipe)
 
 void IOPipeSetPipes(int pipeRead, int pipeWrite)
 {
-    DLog(@"pipeRead: %d, pipeWrite: %d", pipeRead, pipeWrite);
+    //DLog(@"pipeRead: %d, pipeWrite: %d", pipeRead, pipeWrite);
     _pipeRead = pipeRead;
     _pipeWrite = pipeWrite;
 }
@@ -85,7 +85,7 @@ void IOPipeWriteMessageWithPipe(int message, BOOL withEnd, int pipeWrite)
 int IOPipeReadMessage()
 {
     char message;
-    DLog(@"_pipeRead: %d", _pipeRead);
+    //DLog(@"_pipeRead: %d", _pipeRead);
     read(_pipeRead, &message, 1);
     return message;
 }

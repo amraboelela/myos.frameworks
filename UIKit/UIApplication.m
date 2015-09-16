@@ -762,7 +762,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     //DLog("2.1");
     UIGraphicsPushContext(ctx);
-    DLog("2.2");
+    //DLog("2.2");
     BOOL canDraw = NO;
     while (!canDraw) {
         if (IOEventCanDrawWindow(window)) {
