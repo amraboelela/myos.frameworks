@@ -58,6 +58,15 @@ CGContextRef IOWindowContext()
     return _window->_context;
 }
 
+int IOWindowGetHandle()
+{
+#ifdef ANDROID
+    return 0;
+#else
+    return _window->xwindow;
+#endif
+}
+
 void IOWindowDestroySharedWindow()
 {
     if (_window) {

@@ -50,13 +50,12 @@ static void UIChildApplicationSignal(int sig)
 
 void UIChildApplicationInitialize()
 {
-    //DLog();
-    //_UINavigationItemInitialize();
+    DLog();
     IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
     
-#ifdef ANDROID
     MAPipeMessage message = IOPipeReadMessage();
     DLog(@"message: %d", message);
+#ifdef ANDROID
     _processName = @"ProcessName";
     if (message == MAPipeMessageCharString) {
         _processName = [IOPipeReadCharString() retain];
@@ -65,8 +64,15 @@ void UIChildApplicationInitialize()
         [[NSBundle mainBundle] reInitialize];
         _CGDataProviderSetChildAppName(_processName);
     } else {
-        //DLog(@"message: %d", message);
         NSLog(@"Error can't get process name");
+    }
+#else
+    if (message == MAPipeMessageInt) {
+        int xWindowHandle = IOPipeReadInt();
+        DLog(@"xWindowHandle: %d", xWindowHandle);
+    } else {
+        //DLog(@"message: %d", message);
+        NSLog(@"Error can't get xWindow handle");
     }
 #endif
     (void)signal(SIGALRM, UIChildApplicationSignal);

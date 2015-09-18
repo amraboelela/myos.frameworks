@@ -778,7 +778,9 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     _application->_delegate = appDelegate;
     DLog(@"4");
     
+    [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
     [[UIScreen alloc] init];
+    [_CAAnimatorConditionLock unlock];
     
     // Setting up the screen sleeping ability
     //_application->_lastActivityTime = CACurrentMediaTime();

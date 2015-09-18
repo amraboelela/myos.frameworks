@@ -293,6 +293,9 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 #ifdef ANDROID
         IOPipeWriteMessage(MAPipeMessageCharString, NO);
         IOPipeWriteCharString(_bundleName);
+#else
+        IOPipeWriteMessage(MAPipeMessageInt, NO);
+        IOPipeWriteInt(IOWindowGetHandle());
 #endif
         UIParentApplicationSetChildAppIsRunning(YES);
     }
