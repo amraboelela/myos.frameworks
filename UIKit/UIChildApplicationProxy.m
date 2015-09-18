@@ -49,7 +49,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     //DLog(@"app->_data: %@", app->_data);
     NSData *data = [NSJSONSerialization dataWithJSONObject:app->_data options:0 error:NULL];
     [data writeToFile:dataPath atomically:YES];
-    //DLog();
 }
 
 @implementation UIChildApplicationProxy
@@ -90,7 +89,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         //_screenImageView = nil;//[[UIImageView alloc] initWithImage:image];
         //DLog(@"%@, Loaded _screenImageView: %@", name, _screenImageView);
         
-        //DLog(@"x: %d", x);
     }
     return self;
 }
@@ -140,7 +138,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 
 - (NSString *)name
 {
-    //DLog();
     return [_data valueForKey:@"name"];
 }
 
@@ -171,7 +168,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         _applicationIcon->_iconLabel.textColor = [UIColor yellowColor];
     } else {
         _applicationIcon->_iconLabel.textColor = [UIColor whiteColor];
-        //DLog(@"self: %@", self);
     }
 }
 
@@ -192,11 +188,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 
 
 #pragma mark - Delegates
-/*
-- (void)closeApp
-{
-    DLog(@"self: %@", self);
-}*/
 
 - (void)deleteApp
 {
@@ -217,7 +208,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
         //UIParentApplicationPresentAppScreen(self, YES);
     } else {
-        //DLog();
         _CFArrayMoveValueToTop(_openedChildApplicationProxies, self);
         UIParentApplicationPresentAppScreen(self, NO);
     }
@@ -232,7 +222,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 
 - (void)startApp
 {
-    //return;
     //DLog(@"name: %@", self.name);
     //self.opened = YES;
     int pipe1[2];
@@ -256,7 +245,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         NSLog(@"Pipe2 failed.");
         return;
     }
-    //DLog(@"name: %@", self.name);
     long flags;
     _pid = fork();
     //DLog(@"pid: %d", _pid);
@@ -273,11 +261,10 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         dup2(animationPipe1[0], _kEAGLChildPipeRead);
         dup2(animationPipe2[1], _kEAGLChildPipeWrite);
         
-        DLog(@"dup2");
+        //DLog(@"dup2");
         IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
-        //DLog();
         IOPipeWriteMessage(MLPipeMessageChildIsReady, YES);
-        DLog();
+        //DLog();
         UIChildApplicationProxyRun(_bundleName);
     } else { // Parent process
         int pipeRead = pipe2[0];
@@ -285,7 +272,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         flags = fcntl(pipeRead, F_GETFL);
         fcntl(pipeRead, F_SETFL, flags | O_NONBLOCK);
         
-        //DLog();
         close(pipe1[0]);
         close(pipe2[1]);
         
@@ -293,7 +279,6 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         int animationPipeWrite = animationPipe1[1];
         flags = fcntl(animationPipeRead, F_GETFL);
         fcntl(animationPipeRead, F_SETFL, flags | O_NONBLOCK);
-        //DLog();
         close(animationPipe1[0]);
         close(animationPipe2[1]);
         
@@ -302,7 +287,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         _pipeWrite = pipeWrite;
         _animationPipeRead = animationPipeRead;
         _animationPipeWrite = animationPipeWrite;
-        DLog();
+        //DLog();
         CFArrayAppendValue(_openedChildApplicationProxies, self);
         [self setAsCurrent:NO];
 #ifdef ANDROID

@@ -107,7 +107,6 @@ static id _CAAnimationFloatProgressValue(CABasicAnimation *animation, float prog
 
 static id _CAAnimationPointProgressValue(CABasicAnimation *animation, float progress)
 {
-    //DLog();
     CGPoint fromPoint = [animation->_fromValue CGPointValue];
     CGPoint toPoint = [animation->_toValue CGPointValue];
     //DLog(@"toPoint: %@", NSStringFromPoint(NSPointFromCGPoint(toPoint)));
@@ -122,7 +121,6 @@ static id _CAAnimationPointProgressValue(CABasicAnimation *animation, float prog
 
 static id _CAAnimationRectProgressValue(CABasicAnimation *animation, float progress)
 {
-    //DLog();
     CGRect fromRect = [animation->_fromValue CGRectValue];
     CGRect toRect = [animation->_toValue CGRectValue];
     float resultX = fromRect.origin.x + (toRect.origin.x - fromRect.origin.x) * progress;
@@ -136,7 +134,6 @@ static id _CAAnimationRectProgressValue(CABasicAnimation *animation, float progr
 
 static id _CAAnimationTransformProgressValue(CABasicAnimation *animation, float progress)
 {
-    //DLog();
     CATransform3D fromTransform = [animation->_fromValue CATransform3DValue];
     CATransform3D toTransform = [animation->_toValue CATransform3DValue];
     CGFloat m11 = fromTransform.m11 + (toTransform.m11 - fromTransform.m11) * progress;

@@ -57,7 +57,6 @@ static void _CAAnimatorApplyAnimationsWithRoot(CALayer *layer)
 
 static void _CAAnimatorApplyAnimations()
 {
-    //DLog();
     _treeHasPendingAnimations=NO;
     _CAAnimatorApplyAnimationsWithRoot(_CALayerRootLayer()->_presentationLayer);
     _CARendererDisplayLayers(NO);
@@ -65,7 +64,6 @@ static void _CAAnimatorApplyAnimations()
 
 static void reportFPS(BOOL withCondition)
 {
-    //DLog();
     //NSTimeInterval currentTime = CACurrentMediaTime();
     if (CACurrentMediaTime() - beforeLockTime > _kResetTimeInterval || !withCondition) {
         float fps = _CAAnimatorFrameCount * 1.0 / (CACurrentMediaTime() - previousTimestamp);
@@ -84,7 +82,7 @@ static void reportFPS(BOOL withCondition)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockStartup];
-    DLog(@"Animation Thread: %@", [NSThread currentThread]);
+    //DLog(@"Animation Thread: %@", [NSThread currentThread]);
     EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
     //DLog(@"context: %@", context);
     [EAGLContext setCurrentContext:context];

@@ -29,7 +29,7 @@ static int _pipeWrite;
 
 static void _IOPipeWriteEndOfMessage()
 {
-    DLog();
+    //DLog();
     char aChar=kEndOfMessage;
     write(_pipeWrite,&aChar,1);
 }

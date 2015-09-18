@@ -754,13 +754,12 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
 #else
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     _UIApplicationInitialize();
-    DLog(@"1");
+    //DLog(@"1");
     UIChildApplicationInitialize();
     IOWindow *window = IOWindowCreateSharedWindow();
     CGRect cr = CGRectMake(0,0,640,480);
     //DLog("2");
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
-    //DLog("2.1");
     UIGraphicsPushContext(ctx);
     //DLog("2.2");
     BOOL canDraw = NO;
@@ -771,7 +770,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     }
     //DLog("2.3");
     NSTimeInterval currentTime = CACurrentMediaTime();
-    DLog(@"3");
+    //DLog(@"3");
     _application = [[UIApplication alloc] init];
     UIChildApplicationSetApplication(_application);
     Class appDelegateClass = NSClassFromString(delegateClassName);
@@ -782,7 +781,8 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     [[UIScreen alloc] init];
     
     // Setting up the screen sleeping ability
-    _application->_lastActivityTime = CACurrentMediaTime();
+    //_application->_lastActivityTime = CACurrentMediaTime();
+    DLog(@"5");
     //_application->_blackScreen = [[UIView alloc] initWithFrame:cr];
     //_application->_blackScreen.backgroundColor = [UIColor blackColor];
     //UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
@@ -791,7 +791,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     
     //NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-    //DLog();
+    DLog(@"6");
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
@@ -801,9 +801,9 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
         [limit release];
         if (IOEventGetNextEvent(window, _application->_currentEvent)) {
             _UIApplicationSetCurrentEventTouchedView();
-            _application->_lastActivityTime = CACurrentMediaTime();
+            //_application->_lastActivityTime = CACurrentMediaTime();
         }
-        currentTime = CACurrentMediaTime();
+        //currentTime = CACurrentMediaTime();
         /*if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
             && _application->_screenMode == _UIApplicationScreenModeActive) {
             _application->_screenMode = _UIApplicationScreenModeSleeping;
@@ -902,16 +902,13 @@ void _UIApplicationEnterForeground()
 {
     DLog();
     if (_application->_applicationState == UIApplicationStateBackground) {
-        //DLog();
         if ([_application->_delegate respondsToSelector:@selector(applicationWillEnterForeground:)]) {
             [_application->_delegate applicationWillEnterForeground:_application];
         }
         [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification
                                                             object:_application];
         _application->_applicationState = UIApplicationStateActive;
-        //DLog();
         _CALayerSetNeedsComposite(_application->_keyWindow->_layer);
-        //DLog();
     }
 }
 

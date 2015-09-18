@@ -75,7 +75,7 @@ void UIChildApplicationInitialize()
 
 void UIChildApplicationSetApplication(UIApplication *application)
 {
-    DLog(@"application: %@", application);
+    //DLog(@"application: %@", application);
     _application = application;
 }
 
@@ -137,7 +137,7 @@ int UIChildApplicationHandleMessages()
         case MAPipeMessageTerminateApp:
             DLog(@"MAPipeMessageTerminateApp");
             IOPipeWriteMessage(MLPipeMessageTerminateApp, YES);
-            UIChildApplicationTerminate();
+            _UIApplicationTerminate();
             //return MAPipeMessageTerminateApp;
         default:
             break;

@@ -464,7 +464,7 @@ void _EAGLSetSwapInterval(int interval)
         NSLog(@"GLX_SGI_swap_control");
         _currentContext->_vSyncEnabled = YES;
     } else {
-        printf("no vsync?!\n");
+        //printf("no vsync?!\n");
         _currentContext->_vSyncEnabled = NO;
         return;
     }

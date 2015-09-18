@@ -84,7 +84,6 @@ void UIParentApplicationInitialize()
 void UIParentApplicationLauncherViewDidAdded()
 {
     //UIParentApplication *mlApplication = [UIParentApplication sharedMLApplication];
-    //DLog();
     _launcherView = [[_uiApplication->_keyWindow subviews] objectAtIndex:0];
     _childAppView = [[UIView alloc] initWithFrame:_launcherView.frame];
     //_childAppView.backgroundColor = [UIColor redColor];
@@ -96,7 +95,7 @@ void UIParentApplicationLauncherViewDidAdded()
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
 {
     _startTime = CACurrentMediaTime();
-    DLog(@"_startTime: %f", _startTime);
+    //DLog(@"_startTime: %f", _startTime);
     _childAppRunning = isRunning;
 #if defined(ANDROID) && defined(NATIVE_APP)
     EAGLParentSetChildAppIsRunning(isRunning);
@@ -123,7 +122,6 @@ void UIParentApplicationTerminateSomeApps()
 
 void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart)
 {
-    //DLog(@"uiApplication: %@", uiApplication);
     _launcherView.hidden = YES;
     _UIApplicationEnterBackground();
     if (coldStart) {
@@ -152,7 +150,6 @@ void UIParentApplicationHandleMessages()
 {
 #ifdef NATIVE_APP
     if (!_childAppRunning) {
-        //DLog();
         return;
     }
     //DLog();
