@@ -67,6 +67,15 @@ int IOWindowGetHandle()
 #endif
 }
 
+void IOWindowSetHandle(int _handle)
+{
+#ifdef ANDROID
+#else
+    _window->xwindow = _handle;
+    DLog(@"_window->xwindow: %d", _window->xwindow);
+#endif
+}
+
 void IOWindowDestroySharedWindow()
 {
     if (_window) {
@@ -147,7 +156,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     //cr = CGRectMake(0,0,640,480);
     wa.background_pixel = WhitePixel(_window->display, DefaultScreen(_window->display));
     wa.event_mask = ExposureMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask;
-    
+#ifdef NATIVE_APP
     /* Create a window */
     _window->xwindow = XCreateWindow(_window->display, /* Display */
                                      DefaultRootWindow(_window->display), /* Parent */
@@ -159,7 +168,8 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
                                      CopyFromParent, /* visual */
                                      CWBackPixel | CWEventMask, /* valuemask */
                                      &wa); /* attributes */
-    DLog(@"XCreateWindow returned: 0x%lx\n", _window->xwindow);
+#endif
+    DLog(@"_window->xwindow: 0x%lx\n", _window->xwindow);
     XSelectInput(_window->display, _window->xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
     /* Map the window */
     int ret = XMapRaised(_window->display, _window->xwindow);
