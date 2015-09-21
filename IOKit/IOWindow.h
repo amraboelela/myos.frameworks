@@ -51,6 +51,7 @@ void IOWindowDestroySharedWindow();
 CGContextRef IOWindowCreateContextWithRect(CGRect aRect);
 CGContextRef IOWindowContext();
 int IOWindowGetHandle();
+void IOWindowSetHandle(int _handle);
 
 #ifdef ANDROID
 #else
