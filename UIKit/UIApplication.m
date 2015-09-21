@@ -755,8 +755,8 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     _UIApplicationInitialize();
     //DLog(@"1");
-    UIChildApplicationInitialize();
     IOWindow *window = IOWindowCreateSharedWindow();
+    UIChildApplicationInitialize();
     CGRect cr = CGRectMake(0,0,640,480);
     //DLog("2");
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);

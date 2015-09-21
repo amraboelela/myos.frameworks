@@ -41,6 +41,7 @@ static IOWindow *_window = nil;
 
 IOWindow *IOWindowCreateSharedWindow()
 {
+    //DLog();
     if (_window) {
         [_window release];
     }
@@ -71,8 +72,9 @@ void IOWindowSetHandle(int _handle)
 {
 #ifdef ANDROID
 #else
+    //DLog();
     _window->xwindow = _handle;
-    DLog(@"_window->xwindow: %d", _window->xwindow);
+    DLog(@"_window->xwindow: 0x%lx", _window->xwindow);
 #endif
 }
 

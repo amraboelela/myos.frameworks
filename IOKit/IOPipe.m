@@ -36,7 +36,7 @@ static void _IOPipeWriteEndOfMessage()
 
 static void _IOPipeWriteEndOfMessageWithPipe(int writePipe)
 {
-    DLog();
+    //DLog();
     char aChar=kEndOfMessage;
     write(writePipe,&aChar,1);
 }
@@ -64,7 +64,7 @@ NSString *IOPipeReadLine(int file)
 
 void IOPipeWriteMessage(int message, BOOL withEnd)
 {
-    DLog(@"message: %d", message);
+    //DLog(@"message: %d", message);
     char aChar=message;
     write(_pipeWrite,&aChar,1);
     if (withEnd) {

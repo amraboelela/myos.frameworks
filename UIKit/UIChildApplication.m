@@ -50,7 +50,7 @@ static void UIChildApplicationSignal(int sig)
 
 void UIChildApplicationInitialize()
 {
-    DLog();
+    //DLog();
     IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
     
     MAPipeMessage message = IOPipeReadMessage();
