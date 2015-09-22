@@ -6,7 +6,9 @@
 
      Author: BALATON Zoltan <balaton@eik.bme.hu>
      Date: 2006
-
+     Modified by: Amr Aboelela <amraboelela@gmail.com>
+     Date: Sep 2015
+ 
      This library is free software; you can redistribute it and/or
      modify it under the terms of the GNU Lesser General Public
      License as published by the Free Software Foundation; either
@@ -52,7 +54,7 @@ static void end_shadow(CGContextRef ctx, CGRect bounds);
     self->ct = cairo_create(target);
     cret = cairo_status(self->ct);
     if (cret) {
-        NSLog(@"cairo_create status: %s",
+        ALog(@"cairo_create status: %s",
                      cairo_status_to_string(cret));
         [self release];
         return NULL;
@@ -60,7 +62,7 @@ static void end_shadow(CGContextRef ctx, CGRect bounds);
 
     self->add = calloc(1, sizeof(struct ct_additions));
     if (!self->add) {
-        NSLog(@"calloc failed");
+        ALog(@"calloc failed");
         [self release];
         return NULL;
     }
@@ -246,14 +248,14 @@ void CGContextSaveGState(CGContextRef ctx)
 
     ctadd = calloc(1, sizeof(struct ct_additions));
     if (!ctadd) {
-        NSLog(@"calloc failed");
+        ALog(@"calloc failed");
         return;
     }
 
     cairo_save(ctx->ct);
     cret = cairo_status(ctx->ct);
     if (cret) {
-        NSLog(@"cairo_save status: %s",
+        ALog(@"cairo_save status: %s",
                     cairo_status_to_string(cret));
         free(ctadd);
         return;
@@ -665,7 +667,7 @@ void CGContextClearPath(CGContextRef ctx)
     cairo_clip_preserve(ctx->ct);
     cret = cairo_status(ctx->ct);
     if (cret) {
-        NSLog(@"cairo clear status: %s", cairo_status_to_string(cret));
+        ALog(@"cairo clear status: %s", cairo_status_to_string(cret));
     }
 }
 
@@ -689,7 +691,7 @@ void CGContextDrawPath(CGContextRef ctx, CGPathDrawingMode mode)
             CGContextStrokePath(ctx);
             break;
         default:
-            NSLog(@"CGContextDrawPath invalid CGPathDrawingMode: %d", mode);
+            ALog(@"CGContextDrawPath invalid CGPathDrawingMode: %d", mode);
     }
 }
 
@@ -878,7 +880,7 @@ static inline void set_color(cairo_pattern_t **cp, CGColorRef clr, double alpha)
     newcp = cairo_pattern_create_rgba(cc[0], cc[1], cc[2], cc[3]*alpha);
     cret = cairo_pattern_status(newcp);
     if (cret) {
-        NSLog(@" cairo_pattern_create_rgba status: %s",
+        ALog(@" cairo_pattern_create_rgba status: %s",
                     cairo_status_to_string(cret));
         return;
     }
@@ -932,7 +934,7 @@ void CGContextSetFillColorSpace(CGContextRef ctx, CGColorSpaceRef colorspace)
     nc = CGColorSpaceGetNumberOfComponents(colorspace);
     components = calloc(nc+1, sizeof(CGFloat));
     if (components) {
-        NSLog(@"calloc failed");
+        ALog(@"calloc failed");
         return;
     }
     /* Default is an opaque, zero intensity color (usually black) */
@@ -952,7 +954,7 @@ void CGContextSetStrokeColorSpace(CGContextRef ctx, CGColorSpaceRef colorspace)
     nc = CGColorSpaceGetNumberOfComponents(colorspace);
     components = calloc(nc+1, sizeof(CGFloat));
     if (components) {
-        NSLog(@"calloc failed");
+        ALog(@"calloc failed");
         return;
     }
     /* Default is an opaque, zero intensity color (usually black) */
@@ -1139,7 +1141,7 @@ static void opal_AddStops(cairo_pattern_t *pat, CGGradientRef grad)
     // FIXME: support other colorspaces by converting to deviceRGB
     if (![CGColorSpaceCreateDeviceRGB() isEqual: OPGradientGetColorSpace(grad)])
     {
-        NSLog(@"Only DeviceRGB supported for gradients");
+        ALog(@"Only DeviceRGB supported for gradients");
         return;
     }
         
@@ -1202,7 +1204,7 @@ void CGContextDrawShading(
 void CGContextSetFont(CGContextRef ctx, CGFontRef font)
 {
     if (!font) {
-        NSLog(@" CGContextSetFont got NULL");
+        ALog(@" CGContextSetFont got NULL");
         return;
     }
     cairo_set_font_face(ctx->ct, cairo_scaled_font_get_font_face(((CairoFont *)font)->cairofont));

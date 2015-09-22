@@ -230,19 +230,19 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     int animationPipe1[2];
     int animationPipe2[2];
     if (pipe(pipe1)) {
-        NSLog(@"Pipe1 failed.");
+        ALog(@"Pipe1 failed.");
         return;
     }
     if (pipe(pipe2)) {
-        NSLog(@"Pipe2 failed.");
+        ALog(@"Pipe2 failed.");
         return;
     }
     if (pipe(animationPipe1)) {
-        NSLog(@"Pipe1 failed.");
+        ALog(@"AnimationPipe1 failed.");
         return;
     }
     if (pipe(animationPipe2)) {
-        NSLog(@"Pipe2 failed.");
+        ALog(@"AnimationPipe2 failed.");
         return;
     }
     long flags;
@@ -335,7 +335,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     UIChildApplicationProxySaveData(self);
     kill(_pid, SIGTERM);
     if (wait(NULL) == -1) {
-        NSLog(@"wait error");
+        ALog(@"wait error");
     }
 }
 

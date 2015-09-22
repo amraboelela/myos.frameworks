@@ -44,7 +44,7 @@
     CTFontRef font = [attribs objectForKey:kCTFontAttributeName]; 
     //DLog(@"font: %@", font);
     if (font == nil) {
-        NSLog(@"OPSimpleLayoutEngine: Error, layoutString:withAttributes: called without a font");
+        ALog(@"OPSimpleLayoutEngine: Error, layoutString:withAttributes: called without a font");
         //DLog(@"attribs: %@", attribs);
         return nil;
     } else {

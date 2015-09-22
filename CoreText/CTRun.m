@@ -168,7 +168,7 @@
     }
 
     if (range.location > _count || (range.location + range.length) > _count) {
-        NSLog(@"CTRunDraw range out of bounds"); 
+        ALog(@"CTRunDraw range out of bounds"); 
         return;
     }
 

@@ -212,7 +212,7 @@ CTFontRef CTFontCreateUIFontForLanguage(
   }
   else
   {
-    NSLog(@"Warning, Opal delegate CTFontCreateUIFontForLanguage to GNUstep gui");
+    ALog(@"Warning, Opal delegate CTFontCreateUIFontForLanguage to GNUstep gui");
     
 		NSDictionary *attrs = [NSDictionary dictionaryWithObjectsAndKeys:
 		  [NSArray arrayWithObject: language], kCTFontLanguagesAttribute,

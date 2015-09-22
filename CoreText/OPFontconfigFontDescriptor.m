@@ -57,7 +57,7 @@
   }
   else
   {
-    NSLog(@"Warning, URL %@ is invalid", url);
+    ALog(@"Warning, URL %@ is invalid", url);
   }
 }
 
@@ -556,7 +556,7 @@
     }
     else
     {
-      NSLog(@"OPFontDescriptor: Ignoring invalid value %@ for attribute %@", value, key);
+      ALog(@"OPFontDescriptor: Ignoring invalid value %@ for attribute %@", value, key);
     }
   }
 }
@@ -594,8 +594,8 @@
   // Call the corresponding add...: method for each element in the attributes dictionary
   [self handleAddValues];
 
-  //NSLog(@"OPFontconfigFontDescriptor: Input attributes %@", attributes);
-  //NSLog(@"OPFontconfigFontDescriptor: Output pattern:");
+  //ALog(@"OPFontconfigFontDescriptor: Input attributes %@", attributes);
+  //ALog(@"OPFontconfigFontDescriptor: Output pattern:");
   //FcPatternPrint(_pat);
 
   return self;
@@ -648,17 +648,17 @@
   {
     FcPattern *patCopy = FcPatternDuplicate(_pat);
 
-    //NSLog(@"1. before substituting: ");
+    //ALog(@"1. before substituting: ");
     //FcPatternPrint(patCopy);
 
     FcConfigSubstitute(NULL, patCopy, FcMatchPattern);
 
-    //NSLog(@"2. after configSubstitute: ");
+    //ALog(@"2. after configSubstitute: ");
     //FcPatternPrint(patCopy);
 
     FcDefaultSubstitute(patCopy);
 
-    //NSLog(@"3. after DefaultSubstitute : ");
+    //ALog(@"3. after DefaultSubstitute : ");
     //FcPatternPrint(patCopy);
 
     // FIXME: FcFontMatch doesn't write in the result variable if the match was successful, this is a strange policy
@@ -666,12 +666,12 @@
     _matchedPat = FcFontMatch(NULL, patCopy, &result);
     if (result != FcResultMatch)
     {
-      NSLog(@"Warning, FcFontMatch failed with code: %d", result);
+      ALog(@"Warning, FcFontMatch failed with code: %d", result);
     }
     else
     {
       FcPatternReference(_matchedPat);
-      //NSLog(@"FcFontMatch succeeded, attributes: ");
+      //ALog(@"FcFontMatch succeeded, attributes: ");
       //FcPatternPrint(_matchedPat);
     }
 		FcPatternDestroy(patCopy);
@@ -736,7 +736,7 @@
   }
   else
   {
-    NSLog(@"ERROR! FcFontSort failed");
+    ALog(@"ERROR! FcFontSort failed");
   }
 
   FcFontSetDestroy(fontSet);
