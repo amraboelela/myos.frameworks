@@ -54,7 +54,7 @@ void UIChildApplicationInitialize()
     IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
     
     MAPipeMessage message = IOPipeReadMessage();
-    DLog(@"message: %d", message);
+    //DLog(@"message: %d", message);
 #ifdef ANDROID
     _processName = @"ProcessName";
     if (message == MAPipeMessageCharString) {

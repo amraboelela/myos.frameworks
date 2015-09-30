@@ -175,15 +175,15 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     XSelectInput(_window->display, _window->xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
     /* Map the window */
     int ret = XMapRaised(_window->display, _window->xwindow);
-    //printf("XMapRaised returned: %x\n", ret);
+    printf("XMapRaised returned: %x\n", ret);
     
     /* Create a CGContext */
     _window->_context = IOWindowCreateContext();
     if (!_window->_context) {
-        NSLog(@"Cannot create context\n");
+        ALog(@"Cannot create context\n");
         exit(EXIT_FAILURE);
     }
-    //printf("Created context\n");
+    printf("Created context\n");
     return _window->_context;
 }
 
@@ -193,20 +193,27 @@ CGContextRef IOWindowCreateContext()
     XWindowAttributes wa;
     cairo_surface_t *target;
     int ret;
-    
-    ret = XGetWindowAttributes(_window->display, _window->xwindow, &wa);
+   
+    //DLog(); 
+#ifdef NATIVE_APP
+    ret = XGetWindowAttributes(_window->display, _window->xwindow, &wa); 
     if (!ret) {
         DLog(@"XGetWindowAttributes returned %d", ret);
         return NULL;
     }
     target = cairo_xlib_surface_create(_window->display, _window->xwindow, wa.visual, wa.width, wa.height);
+    DLog(@"wa.visual: %p, wa.width: %d, wa.height: %d", wa.visual, wa.width, wa.height); 
+    DLog(@"target: %p", target);
     /* May not need this but left here for reference */
     ret = cairo_surface_set_user_data(target, &_window->cwindow, (void *)_window->xwindow, NULL);
     if (ret) {
-        NSLog(@"cairo_surface_set_user_data %s", cairo_status_to_string(CAIRO_STATUS_NO_MEMORY));
+        ALog(@"cairo_surface_set_user_data %s", cairo_status_to_string(CAIRO_STATUS_NO_MEMORY));
         cairo_surface_destroy(target);
         return NULL;
     }
+#else
+    target = cairo_xlib_surface_create(_window->display, _window->xwindow, NULL, 400, 710);
+#endif
     /* Flip coordinate system */
     //cairo_surface_set_device_offset(target, 0, wa.height);
     /* FIXME: The scale part of device transform does not work correctly in
