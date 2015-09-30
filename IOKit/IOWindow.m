@@ -42,7 +42,6 @@ static int _parentWindowID = 0;
 
 IOWindow *IOWindowCreateSharedWindow()
 {
-    //DLog();
     if (_window) {
         [_window release];
     }
@@ -73,9 +72,8 @@ void IOWindowSetParentID(int windowID)
 {
 #ifdef ANDROID
 #else
-    //DLog();
     _parentWindowID = windowID;
-    DLog(@"_parentWindowID: 0x%lx", _parentWindowID);
+    //DLog(@"_parentWindowID: 0x%lx", _parentWindowID);
 #endif
 }
 
@@ -111,7 +109,6 @@ void *IOWindowCreateNativeWindow(int pipeRead)
      _window->_nWindow = window.get();*/
     
 #ifdef NATIVE_APP
-    //DLog();
     _window->_nWindow = getNativeWindow(pipeRead);
 #endif
     return _window->_nWindow;
@@ -157,7 +154,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     //printf("Opened display %s\n", DisplayString(_window->display));
     
     //cr = CGRectMake(0,0,640,480);
-    wa.background_pixel = WhitePixel(_window->display, DefaultScreen(_window->display));
+    //wa.background_pixel = WhitePixel(_window->display, DefaultScreen(_window->display));
     wa.event_mask = ExposureMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask;
 #ifdef NATIVE_APP
     /* Create a window */
@@ -183,11 +180,11 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
                                      CWBackPixel | CWEventMask, /* valuemask */
                                      &wa); /* attributes */
 #endif
-    DLog(@"_window->xwindow: 0x%lx\n", _window->xwindow);
+    //DLog(@"_window->xwindow: 0x%lx\n", _window->xwindow);
     XSelectInput(_window->display, _window->xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
     /* Map the window */
     int ret = XMapRaised(_window->display, _window->xwindow);
-    printf("XMapRaised returned: %x\n", ret);
+    //printf("XMapRaised returned: %x\n", ret);
     
     /* Create a CGContext */
     _window->_context = IOWindowCreateContext();
@@ -195,7 +192,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
         ALog(@"Cannot create context\n");
         exit(EXIT_FAILURE);
     }
-    printf("Created context\n");
+    //printf("Created context\n");
     return _window->_context;
 }
 
@@ -207,15 +204,15 @@ CGContextRef IOWindowCreateContext()
     int ret;
    
     //DLog(); 
-#ifdef NATIVE_APP
+//#ifdef NATIVE_APP
     ret = XGetWindowAttributes(_window->display, _window->xwindow, &wa); 
     if (!ret) {
         DLog(@"XGetWindowAttributes returned %d", ret);
         return NULL;
     }
     target = cairo_xlib_surface_create(_window->display, _window->xwindow, wa.visual, wa.width, wa.height);
-    DLog(@"wa.visual: %p, wa.width: %d, wa.height: %d", wa.visual, wa.width, wa.height); 
-    DLog(@"target: %p", target);
+    //DLog(@"wa.visual: %p, wa.width: %d, wa.height: %d", wa.visual, wa.width, wa.height); 
+    //DLog(@"target: %p", target);
     /* May not need this but left here for reference */
     ret = cairo_surface_set_user_data(target, &_window->cwindow, (void *)_window->xwindow, NULL);
     if (ret) {
@@ -223,9 +220,9 @@ CGContextRef IOWindowCreateContext()
         cairo_surface_destroy(target);
         return NULL;
     }
-#else
-    target = cairo_xlib_surface_create(_window->display, _window->xwindow, NULL, 400, 710);
-#endif
+//#else
+//    target = cairo_xlib_surface_create(_window->display, _window->xwindow, NULL, 400, 710);
+//#endif
     /* Flip coordinate system */
     //cairo_surface_set_device_offset(target, 0, wa.height);
     /* FIXME: The scale part of device transform does not work correctly in

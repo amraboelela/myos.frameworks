@@ -50,7 +50,6 @@ static void UIChildApplicationSignal(int sig)
 
 void UIChildApplicationInitialize()
 {
-    //DLog();
     IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
     
     MAPipeMessage message = IOPipeReadMessage();
@@ -69,7 +68,7 @@ void UIChildApplicationInitialize()
 #else
     if (message == MAPipeMessageInt) {
         int parentWindowID = IOPipeReadInt();
-        DLog(@"parentWindowID: 0x%lx", parentWindowID);
+        //DLog(@"parentWindowID: 0x%lx", parentWindowID);
         IOWindowSetParentID(parentWindowID);
     } else {
         //DLog(@"message: %d", message);
@@ -89,14 +88,15 @@ void UIChildApplicationSetApplication(UIApplication *application)
 int UIChildApplicationHandleMessages()
 {
     int message = IOPipeReadMessage();
-    DLog();
+    //DLog();
     switch (message) {
         case MAPipeMessageEndOfMessage:
-            DLog(@"MAPipeMessageEndOfMessage");
+            //DLog(@"MAPipeMessageEndOfMessage");
             break;
         case MAPipeMessageEventActionDown:
         case MAPipeMessageEventActionMoved:
         case MAPipeMessageEventActionUp: {
+            DLog(@"MAPipeMessageEventAction*");
             UITouch *touch = [[_application->_currentEvent allTouches] anyObject];
             UIScreen *screen = _UIScreenMainScreen();
             float x = IOPipeReadFloat();
@@ -133,6 +133,7 @@ int UIChildApplicationHandleMessages()
             break;
         }
         case MAPipeMessageWillEnterBackground:
+            DLog(@"MAPipeMessageWillEnterBackground");
             _UIApplicationEnterBackground();
             pause();
             //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
