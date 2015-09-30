@@ -68,9 +68,9 @@ void UIChildApplicationInitialize()
     }
 #else
     if (message == MAPipeMessageInt) {
-        int xWindowHandle = IOPipeReadInt();
-        DLog(@"xWindowHandle: 0x%lx", xWindowHandle);
-        IOWindowSetHandle(xWindowHandle);
+        int parentWindowID = IOPipeReadInt();
+        DLog(@"parentWindowID: 0x%lx", parentWindowID);
+        IOWindowSetParentID(parentWindowID);
     } else {
         //DLog(@"message: %d", message);
         NSLog(@"Error can't get xWindow handle");

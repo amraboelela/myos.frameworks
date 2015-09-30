@@ -295,7 +295,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         IOPipeWriteCharString(_bundleName);
 #else
         IOPipeWriteMessage(MAPipeMessageInt, NO);
-        IOPipeWriteInt(IOWindowGetHandle());
+        IOPipeWriteInt(IOWindowGetID());
 #endif
         UIParentApplicationSetChildAppIsRunning(YES);
     }

@@ -22,6 +22,7 @@
 #endif
 
 static IOWindow *_window = nil;
+static int _parentWindowID = 0;
 
 #pragma mark - Static functions
 
@@ -59,7 +60,7 @@ CGContextRef IOWindowContext()
     return _window->_context;
 }
 
-int IOWindowGetHandle()
+int IOWindowGetID()
 {
 #ifdef ANDROID
     return 0;
@@ -68,13 +69,13 @@ int IOWindowGetHandle()
 #endif
 }
 
-void IOWindowSetHandle(int _handle)
+void IOWindowSetParentID(int windowID)
 {
 #ifdef ANDROID
 #else
     //DLog();
-    _window->xwindow = _handle;
-    DLog(@"_window->xwindow: 0x%lx", _window->xwindow);
+    _parentWindowID = windowID;
+    DLog(@"_parentWindowID: 0x%lx", _parentWindowID);
 #endif
 }
 
@@ -162,6 +163,17 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     /* Create a window */
     _window->xwindow = XCreateWindow(_window->display, /* Display */
                                      DefaultRootWindow(_window->display), /* Parent */
+                                     _window->_rect.origin.x, _window->_rect.origin.y, /* x, y */
+                                     _window->_rect.size.width, _window->_rect.size.height, /* width, height */
+                                     0, /* border_width */
+                                     CopyFromParent, /* depth */
+                                     InputOutput, /* class */
+                                     CopyFromParent, /* visual */
+                                     CWBackPixel | CWEventMask, /* valuemask */
+                                     &wa); /* attributes */
+#else
+    _window->xwindow = XCreateWindow(_window->display, /* Display */
+                                     _parentWindowID, /* Parent */
                                      _window->_rect.origin.x, _window->_rect.origin.y, /* x, y */
                                      _window->_rect.size.width, _window->_rect.size.height, /* width, height */
                                      0, /* border_width */
