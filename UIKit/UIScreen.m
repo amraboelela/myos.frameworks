@@ -58,10 +58,15 @@ NSMutableArray *_allScreens = nil;
 - (id)init
 {
     if ((self = [super init])) {
+#ifdef NATIVE_APP
+        _bounds = CGRectMake(0,0,_kScreenWidth,_kScreenHeight+_kScreenFooter);
+#else
         _bounds = CGRectMake(0,0,_kScreenWidth,_kScreenHeight);
+#endif
+        
         [_allScreens addObject:self];
         //DLog();
-//#ifdef ANDROID
+        //#ifdef ANDROID
         EAGLContext *context = _EAGLGetCurrentContext();
         //DLog(@"context: %@", context);
         _hScale = context->_width * 1.0 / _kScreenWidth;
@@ -72,9 +77,9 @@ NSMutableArray *_allScreens = nil;
 #endif
         _scale = MAX(_hScale, _vScale);
         _screenScaleFactor = _scale;
-//#else
-//        _scale = _kScreenScaleFactor;
-//#endif
+        //#else
+        //        _scale = _kScreenScaleFactor;
+        //#endif
         DLog(@"_scale: %0.1f", _scale);
     }
     return self;
