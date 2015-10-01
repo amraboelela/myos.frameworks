@@ -666,7 +666,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     
     XInitThreads();
     IOWindow *window = IOWindowCreateSharedWindow();
-    CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
+    CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,(_kScreenHeight + _kScreenFooter)*_kScreenScaleFactor);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     UIGraphicsPushContext(ctx);
     BOOL canDraw = NO;
