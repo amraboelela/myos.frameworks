@@ -65,7 +65,11 @@ NSMutableArray *_allScreens = nil;
         EAGLContext *context = _EAGLGetCurrentContext();
         //DLog(@"context: %@", context);
         _hScale = context->_width * 1.0 / _kScreenWidth;
+#ifdef NATIVE_APP
         _vScale = context->_height * 1.0 / _kScreenHeight;
+#else
+        _vScale = context->_height * 1.0 / (_kScreenHeight+_kScreenFooter);
+#endif
         _scale = MAX(_hScale, _vScale);
         _screenScaleFactor = _scale;
 //#else

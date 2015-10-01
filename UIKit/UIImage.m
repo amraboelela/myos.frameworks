@@ -437,11 +437,6 @@ UIImage *_UIImageTabBarItemImage()
 
 UIImage *_UIImageCaptureScreen()
 {
-    //UIScreen *screen = [UIScreen mainScreen];
-    //CGFloat s = screen->_scale;
-    //if ([screen respondsToSelector:@selector(scale)]) {
-    //s = (int)screen->_scale;
-    //}
     //DLog(@"s: %.1f", s);
     
     EAGLContext *context = _EAGLGetCurrentContext();
