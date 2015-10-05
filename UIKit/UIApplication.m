@@ -539,7 +539,7 @@ static void _UIApplicationInitWindow()
 - (void)setAsCurrent:(BOOL)withSignal
 {
     IOPipeSetPipes(0, 0);
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
     EAGLParentSetPipes(0, 0);
 #endif
 }

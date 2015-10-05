@@ -42,7 +42,7 @@ void EAGLParentSetPipes(int pipeRead, int pipeWrite)
 
 void EAGLParentHandleMessages()
 {
-    //DLog();
+    DLog();
     if (!_childAppRunning) {
         return;
     }
@@ -80,7 +80,7 @@ void EAGLParentHandleMessages()
 
 void EAGLParentGenTexture()
 {
-    //DLog();
+    DLog();
     GLuint textureID;
     glGenTextures(1, &textureID);
     //DLog(@"textureID: %d", textureID);
@@ -91,7 +91,7 @@ void EAGLParentGenTexture()
 
 void EAGLParentLoadImage()
 {
-    //DLog();
+    DLog();
     //CATransactionGroup *group = [[CATransactionGroup alloc] init];
     //CFArrayAppendValue(_transactions, group);
     int textureID = IOPipeReadIntWithPipe(_pipeRead);
@@ -113,7 +113,7 @@ void EAGLParentLoadImage()
 
 void EAGLParentDraw()
 {
-    //DLog();
+    DLog();
     int i;
     int textureID = IOPipeReadIntWithPipe(_pipeRead);
     glBindTexture(GL_TEXTURE_2D, textureID);

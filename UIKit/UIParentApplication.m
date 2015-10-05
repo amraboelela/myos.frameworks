@@ -141,7 +141,7 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy,
     } else {
         [childAppProxy setAsCurrent:YES];
     }
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
     [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
 #endif
 }
@@ -184,7 +184,7 @@ void UIParentApplicationShowLauncher()
     _launcherView.hidden = NO;
     //DLog();
     //[_uiApplication->_keyWindow bringSubviewToFront:_launcherView];
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
     if ([_CAAnimatorNAConditionLock condition] == _CAAnimatorConditionLockHasWork) {
         [_CAAnimatorNAConditionLock lockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }
@@ -239,7 +239,7 @@ void UIParentApplicationMoveCurrentAppToTop()
 
 void UIParentApplicationTerminateApps()
 {
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
     if ([_CAAnimatorNAConditionLock condition] == _CAAnimatorConditionLockHasWork) {
         [_CAAnimatorNAConditionLock lockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }
