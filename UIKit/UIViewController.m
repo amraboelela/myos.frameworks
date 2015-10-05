@@ -74,15 +74,14 @@ static id _UIViewControllerNearestParentViewControllerThatIsKindOf(UIViewControl
 
 - (void)loadView
 {
-    //DLog();
     CGRect frame = [[UIScreen mainScreen] bounds];
     frame = CGRectMake(frame.origin.x, frame.origin.y + _kStatusBarHeight, frame.size.width, frame.size.height - _kStatusBarHeight);
     self.view = [[[UIView alloc] initWithFrame:frame] autorelease];
+    //DLog(@"frame: %@", NSStringFromCGRect(frame));
 }
 
 - (void)viewDidLoad
 {
-    //DLog();
 }
 
 - (void)viewDidUnload
@@ -112,7 +111,6 @@ static id _UIViewControllerNearestParentViewControllerThatIsKindOf(UIViewControl
     [_navigationItem release];
     [_title release];
     [_view release];
-    //DLog();
     [super dealloc];
 }
 
@@ -140,12 +138,10 @@ static id _UIViewControllerNearestParentViewControllerThatIsKindOf(UIViewControl
 
 - (UIView *)view
 {
-    //DLog();
     if ([self isViewLoaded]) {
         return _view;
     } else {
         [self loadView];
-        //DLog();
         [self viewDidLoad];
         return _view;
     }
@@ -161,7 +157,6 @@ static id _UIViewControllerNearestParentViewControllerThatIsKindOf(UIViewControl
             [_view release];
         }
         _view = [aView retain];
-        //DLog();
         _view->_viewController=self;
     }
 }

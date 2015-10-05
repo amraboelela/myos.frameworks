@@ -90,7 +90,7 @@ static void reportFPS(BOOL withCondition)
     _EAGLSetup();
     //DLog();
     _EAGLClear();
-    _EAGLSwapBuffers();
+    //_EAGLSwapBuffers();
     //DLog();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
     //DLog();

@@ -19,7 +19,7 @@
 #import "EAGL-private.h"
 
 #ifdef ANDROID
-#import <EGL/egl.h>
+//#import <EGL/egl.h>
 #import <GLES/gl.h>
 #endif
 
@@ -194,9 +194,10 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
         GLX_BLUE_SIZE, 1,
         None
     };
+    DLog();
     context->_window = [otherContext->_window retain];
-    context->_display = XOpenDisplay(NULL);
-    //Display *display = context->_window->display;
+    //context->_display = XOpenDisplay(NULL);
+    context->_display = context->_window->display;
     int screen = DefaultScreen(context->_display);
     XVisualInfo *visualInfo;
     visualInfo = glXChooseVisual(context->_display, screen, attribList);
@@ -208,7 +209,7 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
     DLog(@"created GLX context: %p", context->_glXContext);
 }
 
-#endif // ANDROID
+#endif 
 
 static bool checkGLXExtension(const char* extName)
 {
@@ -223,7 +224,7 @@ static bool checkGLXExtension(const char* extName)
     Display *display = context->_display;
     int screen = DefaultScreen(display);
     char *list = (char*) glXQueryExtensionsString(display, screen);
-    //NSLog(@"list: %s", list);
+    NSLog(@"list: %s", list);
     char *end;
     int extNameLen;
     extNameLen = strlen(extName);
@@ -464,7 +465,7 @@ void _EAGLSetSwapInterval(int interval)
         NSLog(@"GLX_SGI_swap_control");
         _currentContext->_vSyncEnabled = YES;
     } else {
-        //printf("no vsync?!\n");
+        printf("no vsync?!\n");
         _currentContext->_vSyncEnabled = NO;
         return;
     }
@@ -488,12 +489,12 @@ void _EAGLFlush()
 
 void _EAGLSwapBuffers()
 {
-    //DLog();
+    DLog();
     _EAGLSwappingBuffers = YES;
     glFlush();
     //DLog();
-    //DLog(@"currentContext->_eglDisplay: %p, currentContext->_eglSurface: %p", currentContext->_eglDisplay, currentContext->_eglSurface);
 #ifdef ANDROID
+    DLog(@"currentContext->_eglDisplay: %p, currentContext->_eglSurface: %p", _currentContext->_eglDisplay, _currentContext->_eglSurface);
     eglSwapBuffers(_currentContext->_eglDisplay, _currentContext->_eglSurface);
 #endif
     //DLog();
@@ -507,3 +508,4 @@ NSTimeInterval EAGLCurrentTime()
 {
     return (CFTimeInterval)[NSDate timeIntervalSinceReferenceDate];
 }
+

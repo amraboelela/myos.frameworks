@@ -65,7 +65,6 @@ NSMutableArray *_allScreens = nil;
 #endif
         
         [_allScreens addObject:self];
-        //DLog();
         //#ifdef ANDROID
         EAGLContext *context = _EAGLGetCurrentContext();
         //DLog(@"context: %@", context);
@@ -80,7 +79,7 @@ NSMutableArray *_allScreens = nil;
         //#else
         //        _scale = _kScreenScaleFactor;
         //#endif
-        DLog(@"_scale: %0.1f", _scale);
+        //DLog(@"_scale: %0.1f", _scale);
     }
     return self;
 }
@@ -188,7 +187,6 @@ UIView *_UIScreenHitTest(UIScreen *screen, CGPoint touchPoint, UIEvent *theEvent
 {
     UIWindow *window = [UIApplication sharedApplication]->_keyWindow;
 
-    //DLog();
     if (window->_screen == screen) {
         CGPoint windowPoint = [window convertPoint:touchPoint fromWindow:nil];
         UIView *touchedView = [window hitTest:windowPoint withEvent:theEvent];
@@ -203,7 +201,6 @@ UIView *_UIScreenHitTest(UIScreen *screen, CGPoint touchPoint, UIEvent *theEvent
 
 CGImageRef _UIScreenCaptureScreen()
 {
-    //DLog();
     //_CAAnimatorCaptureScreen = YES;
     /*while (_CAAnimatorCaptureScreen) {
         usleep(1000);

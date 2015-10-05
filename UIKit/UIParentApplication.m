@@ -159,7 +159,7 @@ void UIParentApplicationHandleMessages()
             //DLog(@"MLPipeMessageEndOfMessage");
             break;
         case MLPipeMessageChildIsReady:
-            DLog(@"MLPipeMessageChildIsReady");
+            //DLog(@"MLPipeMessageChildIsReady");
             IOPipeWriteInt(0x4000001);
             break;
         case MLPipeMessageTerminateApp:
