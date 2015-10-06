@@ -19,7 +19,6 @@
 #import "EAGL-private.h"
 
 #ifdef ANDROID
-//#import <EGL/egl.h>
 #import <GLES/gl.h>
 #endif
 
@@ -152,61 +151,94 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
 
 #else // not ANDROID
 
+#pragma mark - Static functions
+
 static void _EAGLCreateContext(EAGLContext *context)
 {
-    int attribList[] = {
+    /*int attribList[] = {
         GLX_DEPTH_SIZE, 1,
         GLX_RGBA,
         GLX_RED_SIZE, 1,
         GLX_GREEN_SIZE, 1,
         GLX_BLUE_SIZE, 1,
         None
-    };
+    };*/
     //DLog(@"context: %@", context);
-    context->_window = [IOWindowGetSharedWindow() retain];
+    IOWindow *window = [IOWindowGetSharedWindow() retain];
+    context->_window = window;
     //DLog(@"context->_window: %@", context->_window);
-    context->_display = context->_window->display;//XOpenDisplay(NULL);
+    context->_display = window->_display;
     //DLog(@"context->_display: %p", context->_display);
-    //Display *display = context->_window->display;
-    int screen = DefaultScreen(context->_display);
+    //int screen = DefaultScreen(context->_display);
     //DLog(@"screen: %d", screen);
-    XVisualInfo *visualInfo = glXChooseVisual(context->_display, screen, attribList);
+    //XVisualInfo *visualInfo = glXChooseVisual(context->_display, screen, attribList);
     //DLog(@"visualInfo: %p", visualInfo);
-    if (!visualInfo) {
+    /*if (!visualInfo) {
         NSLog(@"glXChooseVisual failed");
         return;
-    }
-    context->_glXContext = glXCreateContext(context->_display, visualInfo, NULL, GL_TRUE);
+    }*/
+    //context->_glXContext = glXCreateContext(context->_display, window->_visualInfo, NULL, GL_TRUE);
     //DLog(@"created GLX context: %p", context->_glXContext);
     
-    context->_width = context->_window->_rect.size.width;
-    context->_height = context->_window->_rect.size.height;
+    context->_width = window->_rect.size.width;
+    context->_height = window->_rect.size.height;
     //DLog(@"context->_width: %0.1f, context->_height: %0.1f", context->_width, context->_height);
+    
+    
+    /* Create a GLX context for OpenGL rendering */
+    context->_glXContext = glXCreateNewContext(context->_display, window->_fbConfigs[0], GLX_RGBA_TYPE, NULL, True);
+    
+    /* Create a GLX window to associate the frame buffer configuration
+     ** with the created X window */
+    GLXWindow glxWin = glXCreateWindow(context->_display, window->_fbConfigs[0], window->_xwindow, NULL);
+
+    /* Bind the GLX context to the Window */
+    glXMakeContextCurrent(context->_display, glxWin, glxWin, context->_glXContext);
+    
+    /* OpenGL rendering ... */
+    glClearColor(1.0, 1.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glFlush();
+    //if ( swapFlag )
+    glXSwapBuffers(context->_display, glxWin);
+    sleep(10);
+    exit(EXIT_SUCCESS);
 }
 
 static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *otherContext)
 {
-    int attribList[] = {
+    /*int attribList[] = {
         GLX_DEPTH_SIZE, 1,
         GLX_RGBA,
         GLX_RED_SIZE, 1,
         GLX_GREEN_SIZE, 1,
         GLX_BLUE_SIZE, 1,
         None
-    };
+    };*/
     DLog();
-    context->_window = [otherContext->_window retain];
+    IOWindow *window = [otherContext->_window retain];
+    context->_window = window;
     //context->_display = XOpenDisplay(NULL);
-    context->_display = context->_window->display;
-    int screen = DefaultScreen(context->_display);
-    XVisualInfo *visualInfo;
-    visualInfo = glXChooseVisual(context->_display, screen, attribList);
-    if (!visualInfo) {
+    context->_display = window->_display;
+    //int screen = DefaultScreen(context->_display);
+    //XVisualInfo *visualInfo;
+    //visualInfo = glXChooseVisual(context->_display, screen, attribList);
+    /*if (!visualInfo) {
         NSLog(@"glXChooseVisual failed");
         return;
-    }
-    context->_glXContext = glXCreateContext(context->_display, visualInfo, NULL, GL_TRUE);
+    }*/
+    //context->_glXContext = glXCreateContext(context->_display, window->_visualInfo, NULL, GL_TRUE);
+    
+    /* Create a GLX context for OpenGL rendering */
+    context->_glXContext = glXCreateNewContext(context->_display, window->_fbConfigs[0], GLX_RGBA_TYPE, NULL, True);
     DLog(@"created GLX context: %p", context->_glXContext);
+    /* Create a GLX window to associate the frame buffer configuration
+     ** with the created X window */
+    GLXWindow glxWin = glXCreateWindow(context->_display, window->_fbConfigs[0], window->_xwindow, NULL);
+    
+    /* Bind the GLX context to the Window */
+    glXMakeContextCurrent(context->_display, glxWin, glxWin, context->_glXContext);
 }
 
 #endif 
@@ -300,7 +332,7 @@ static bool checkGLXExtension(const char* extName)
         eglTerminate(_eglDisplay);
     }
 #else
-    glXDestroyContext(_window->display, _glXContext);
+    glXDestroyContext(_window->_display, _glXContext);
 #endif
     [super dealloc];
 }
@@ -342,7 +374,7 @@ static bool checkGLXExtension(const char* extName)
     //DLog(@"_currentContext: %@", _currentContext);
     if (context) {
         //DLog(@"context: %@", context);
-        BOOL result = glXMakeCurrent(context->_display, context->_window->xwindow, context->_glXContext);
+        BOOL result = glXMakeCurrent(context->_display, context->_window->_xwindow, context->_glXContext);
         //DLog(@"result: %d", result);
         if (result) {
             //DLog(@"Success");

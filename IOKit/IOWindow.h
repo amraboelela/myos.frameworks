@@ -32,9 +32,12 @@
 #ifdef ANDROID
     ANativeWindow *_nWindow;
 #else
-    Window xwindow;
-    cairo_user_data_key_t cwindow;
-    Display *display;
+    Window _xwindow;
+    cairo_user_data_key_t _cwindow;
+    Display *_display;
+    //BOOL _hasDoubleBuffer;
+    XVisualInfo *_visualInfo;
+    GLXFBConfig *_fbConfigs;
 #endif
     CGRect _rect;
 }
@@ -42,8 +45,8 @@
 
 CGContextRef IOWindowCreateContext();
 void *IOWindowCreateNativeWindow(int pipeRead);
+void IOWindowSetNativeWindow(void *nWindow);
 void IOWindowDestroyNativeWindow(void *nWindow);
-void IOWindowSetNativeWindow(void* nWindow);
 IOWindow *IOWindowCreateSharedWindow();
 IOWindow *IOWindowGetSharedWindow();
 void IOWindowDestroySharedWindow();

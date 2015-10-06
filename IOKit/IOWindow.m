@@ -24,8 +24,6 @@
 static IOWindow *_window = nil;
 static int _parentWindowID = 0;
 
-#pragma mark - Static functions
-
 @implementation IOWindow
 
 - (void)dealloc
@@ -64,7 +62,7 @@ int IOWindowGetID()
 #ifdef ANDROID
     return 0;
 #else
-    return _window->xwindow;
+    return _window->_xwindow;
 #endif
 }
 
@@ -143,47 +141,73 @@ CGContextRef IOWindowCreateContext()
 CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
 {
     XSetWindowAttributes wa;
+    //GLXFBConfig *fbConfigs;
+    
+    int doubleBufferAttributes[] = {
+        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+        GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+        GLX_DOUBLEBUFFER,  True,  /* Request a double-buffered color buffer with */
+        GLX_RED_SIZE,      1,     /* the maximum number of bits per component    */
+        GLX_GREEN_SIZE,    1,
+        GLX_BLUE_SIZE,     1,
+        None
+    };
     
     _window->_rect = aRect;
-    _window->display = XOpenDisplay(":0");
-    //DLog(@"display: %p", _window->display);
-    if (!_window->display) {
+#ifdef NATIVE_APP
+    _window->_display = XOpenDisplay(NULL);
+    Window parentWindow = DefaultRootWindow(_window->_display);
+#else
+    _window->_display = XOpenDisplay(":0");
+    Window parentWindow = _parentWindowID;
+#endif
+    
+    //DLog(@"display: %p", _window->_display);
+    if (!_window->_display) {
         NSLog(@"Cannot open display: %s\n", XDisplayName(NULL));
         exit(EXIT_FAILURE);
     }
-    //printf("Opened display %s\n", DisplayString(_window->display));
+    //printf("Opened display %s\n", DisplayString(_window->_display));
     
-    //cr = CGRectMake(0,0,640,480);
-    //wa.background_pixel = WhitePixel(_window->display, DefaultScreen(_window->display));
-    wa.event_mask = ExposureMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask;
-#ifdef NATIVE_APP
+    /* Request a suitable framebuffer configuration - try for a double
+     ** buffered configuration first */
+    //_window->_hasDoubleBuffer = YES;
+    _window->_fbConfigs = glXChooseFBConfig(_window->_display, DefaultScreen(_window->_display), doubleBufferAttributes, &numReturned);
+    if (_window->_fbConfigs == NULL) {  /* no double buffered configs available */
+        NSLog(@"No double buffered configs available");
+        exit(EXIT_FAILURE);
+    }
+    
+    /* Create an X colormap and window with a visual matching the first
+     ** returned framebuffer config */
+    _window->_visualInfo = glXGetVisualFromFBConfig(_window->_display, _window->_fbConfigs[0]);
+    
+    wa.border_pixel = 0;
+    //wa.event_mask = StructureNotifyMask;
+    wa.event_mask = StructureNotifyMask | ExposureMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask;
+    wa.colormap = XCreateColormap(_window->_display, parentWindow, _window->_visualInfo->visual, AllocNone);
+    int swaMask = CWBorderPixel | CWColormap | CWEventMask;
     /* Create a window */
-    _window->xwindow = XCreateWindow(_window->display, /* Display */
-                                     DefaultRootWindow(_window->display), /* Parent */
+    _window->_xwindow = XCreateWindow(_window->_display, /* Display */
+                                     parentWindow, /* Parent */
                                      _window->_rect.origin.x, _window->_rect.origin.y, /* x, y */
                                      _window->_rect.size.width, _window->_rect.size.height, /* width, height */
                                      0, /* border_width */
-                                     CopyFromParent, /* depth */
+                                     _window->_visualInfo->depth, /* depth */
                                      InputOutput, /* class */
-                                     CopyFromParent, /* visual */
-                                     CWBackPixel | CWEventMask, /* valuemask */
+                                     _window->_visualInfo->visual, /* visual */
+                                     swaMask, /* valuemask */
                                      &wa); /* attributes */
-#else
-    _window->xwindow = XCreateWindow(_window->display, /* Display */
-                                     _parentWindowID, /* Parent */
-                                     _window->_rect.origin.x, _window->_rect.origin.y, /* x, y */
-                                     _window->_rect.size.width, _window->_rect.size.height, /* width, height */
-                                     0, /* border_width */
-                                     CopyFromParent, /* depth */
-                                     InputOutput, /* class */
-                                     CopyFromParent, /* visual */
-                                     CWBackPixel | CWEventMask, /* valuemask */
-                                     &wa); /* attributes */
-#endif
-    //DLog(@"_window->xwindow: 0x%lx\n", _window->xwindow);
-    XSelectInput(_window->display, _window->xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
+
+    //DLog(@"_window->_xwindow: 0x%lx\n", _window->_xwindow);
+    XSelectInput(_window->_display, _window->_xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
+
+    /* Map the window to the screen, and wait for it to appear */
+    //XMapWindow(dpy, xWin);
+    //XIfEvent(dpy, &event, WaitForNotify, (XPointer) xWin);
+    
     /* Map the window */
-    int ret = XMapRaised(_window->display, _window->xwindow);
+    int ret = XMapRaised(_window->_display, _window->_xwindow);
     //printf("XMapRaised returned: %x\n", ret);
     
     /* Create a CGContext */
@@ -205,31 +229,21 @@ CGContextRef IOWindowCreateContext()
    
     //DLog(); 
 //#ifdef NATIVE_APP
-    ret = XGetWindowAttributes(_window->display, _window->xwindow, &wa); 
+    ret = XGetWindowAttributes(_window->_display, _window->_xwindow, &wa); 
     if (!ret) {
         DLog(@"XGetWindowAttributes returned %d", ret);
         return NULL;
     }
-    target = cairo_xlib_surface_create(_window->display, _window->xwindow, wa.visual, wa.width, wa.height);
+    target = cairo_xlib_surface_create(_window->_display, _window->_xwindow, wa.visual, wa.width, wa.height);
     //DLog(@"wa.visual: %p, wa.width: %d, wa.height: %d", wa.visual, wa.width, wa.height); 
     //DLog(@"target: %p", target);
     /* May not need this but left here for reference */
-    ret = cairo_surface_set_user_data(target, &_window->cwindow, (void *)_window->xwindow, NULL);
+    ret = cairo_surface_set_user_data(target, &_window->_cwindow, (void *)_window->_xwindow, NULL);
     if (ret) {
         ALog(@"cairo_surface_set_user_data %s", cairo_status_to_string(CAIRO_STATUS_NO_MEMORY));
         cairo_surface_destroy(target);
         return NULL;
     }
-//#else
-//    target = cairo_xlib_surface_create(_window->display, _window->xwindow, NULL, 400, 710);
-//#endif
-    /* Flip coordinate system */
-    //cairo_surface_set_device_offset(target, 0, wa.height);
-    /* FIXME: The scale part of device transform does not work correctly in
-     * cairo so for now we have to patch the CTM! This should really be fixed
-     * in cairo and then the ScaleCTM call below and the hacks in GetCTM in
-     * CGContext should be removed in favour of the following line: */
-    /* _cairo_surface_set_device_scale(target, 1.0, -1.0); */
     
     // NOTE: It doesn't looks like cairo will support using both device_scale and
     //             device_offset any time soon, so I moved the translation part of the
@@ -249,13 +263,12 @@ void IOWindowSetContextSize(CGSize size)
 
 void IOWindowFlush()
 {
-    //    XFlushGC(_window->display, _window->_context);
-    XFlush(_window->display);
+    XFlush(_window->_display);
 }
 
 void IOWindowClear()
 {
-    XClearWindow(_window->display, _window->xwindow);
+    XClearWindow(_window->_display, _window->_xwindow);
 }
 
 #endif
