@@ -53,7 +53,6 @@ static void _EAGLCreateContext(EAGLContext *context)
     EGLSurface surface;
     EGLContext eglcontext;
     
-    //DLog();
     context->_window = [IOWindowGetSharedWindow() retain];
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     //DLog(@"eglGetError: %d",eglGetError());
@@ -120,7 +119,7 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
     
     context->_window = [otherContext->_window retain];
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    DLog();
+    //DLog();
     eglInitialize(display, 0, 0);
     
     /* Here, the application chooses the configuration it desires. In this
@@ -155,14 +154,6 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
 
 static void _EAGLCreateContext(EAGLContext *context)
 {
-    /*int attribList[] = {
-        GLX_DEPTH_SIZE, 1,
-        GLX_RGBA,
-        GLX_RED_SIZE, 1,
-        GLX_GREEN_SIZE, 1,
-        GLX_BLUE_SIZE, 1,
-        None
-    };*/
     //DLog(@"context: %@", context);
     IOWindow *window = [IOWindowGetSharedWindow() retain];
     context->_window = window;
@@ -190,20 +181,15 @@ static void _EAGLCreateContext(EAGLContext *context)
     
     /* Create a GLX window to associate the frame buffer configuration
      ** with the created X window */
-    GLXWindow glxWin = glXCreateWindow(context->_display, window->_fbConfigs[0], window->_xwindow, NULL);
-
-    /* Bind the GLX context to the Window */
-    glXMakeContextCurrent(context->_display, glxWin, glxWin, context->_glXContext);
-    
+    context->_glxWindow = glXCreateWindow(context->_display, window->_fbConfigs[0], window->_xwindow, NULL);
+   
     /* OpenGL rendering ... */
-    glClearColor(1.0, 1.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    //glClearColor(0.5, 0.5, 0.5, 1.0);
+    //glClear(GL_COLOR_BUFFER_BIT);
     
-    glFlush();
-    //if ( swapFlag )
-    glXSwapBuffers(context->_display, glxWin);
-    sleep(10);
-    exit(EXIT_SUCCESS);
+    //glFlush();
+    //sleep(10);
+    //exit(EXIT_SUCCESS);
 }
 
 static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *otherContext)
@@ -216,7 +202,7 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
         GLX_BLUE_SIZE, 1,
         None
     };*/
-    DLog();
+    //DLog();
     IOWindow *window = [otherContext->_window retain];
     context->_window = window;
     //context->_display = XOpenDisplay(NULL);
@@ -232,13 +218,10 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
     
     /* Create a GLX context for OpenGL rendering */
     context->_glXContext = glXCreateNewContext(context->_display, window->_fbConfigs[0], GLX_RGBA_TYPE, NULL, True);
-    DLog(@"created GLX context: %p", context->_glXContext);
+    //DLog(@"created GLX context: %p", context->_glXContext);
     /* Create a GLX window to associate the frame buffer configuration
      ** with the created X window */
     GLXWindow glxWin = glXCreateWindow(context->_display, window->_fbConfigs[0], window->_xwindow, NULL);
-    
-    /* Bind the GLX context to the Window */
-    glXMakeContextCurrent(context->_display, glxWin, glxWin, context->_glXContext);
 }
 
 #endif 
@@ -256,7 +239,7 @@ static bool checkGLXExtension(const char* extName)
     Display *display = context->_display;
     int screen = DefaultScreen(display);
     char *list = (char*) glXQueryExtensionsString(display, screen);
-    NSLog(@"list: %s", list);
+    //NSLog(@"list: %s", list);
     char *end;
     int extNameLen;
     extNameLen = strlen(extName);
@@ -344,7 +327,6 @@ static bool checkGLXExtension(const char* extName)
 + (BOOL)setCurrentContext:(EAGLContext *)context
 {
     if (_currentContext) {
-        //DLog();
         [_currentContext release];
     }
     _currentContext = [context retain];
@@ -373,8 +355,10 @@ static bool checkGLXExtension(const char* extName)
     _currentContext = [context retain];
     //DLog(@"_currentContext: %@", _currentContext);
     if (context) {
+        /* Bind the GLX context to the Window */
+        BOOL result = glXMakeContextCurrent(context->_display, context->_glxWindow, context->_glxWindow, context->_glXContext);
         //DLog(@"context: %@", context);
-        BOOL result = glXMakeCurrent(context->_display, context->_window->_xwindow, context->_glXContext);
+        //BOOL result = glXMakeCurrent(context->_display, context->_window->_xwindow, context->_glXContext);
         //DLog(@"result: %d", result);
         if (result) {
             //DLog(@"Success");
@@ -418,7 +402,6 @@ void EAGLGetVersion(unsigned int *major, unsigned int *minor)
 
 EAGLContext *_EAGLGetCurrentContext()
 {
-    //DLog();
     return _currentContext;
 }
 
@@ -508,7 +491,7 @@ void _EAGLSetSwapInterval(int interval)
 void _EAGLClear()
 {
     //DLog();
-    glClearColor(0,0,0,0);
+    glClearColor(0.5,0.5,0.5,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -521,18 +504,17 @@ void _EAGLFlush()
 
 void _EAGLSwapBuffers()
 {
-    DLog();
+    //DLog();
     _EAGLSwappingBuffers = YES;
     glFlush();
     //DLog();
 #ifdef ANDROID
     DLog(@"currentContext->_eglDisplay: %p, currentContext->_eglSurface: %p", _currentContext->_eglDisplay, _currentContext->_eglSurface);
     eglSwapBuffers(_currentContext->_eglDisplay, _currentContext->_eglSurface);
+#else
+    glXSwapBuffers(_currentContext->_display, _currentContext->_glxWindow);
 #endif
     //DLog();
-
-//    EAGLChildSwapBuffers();
-
     _EAGLSwappingBuffers = NO;
 }
 

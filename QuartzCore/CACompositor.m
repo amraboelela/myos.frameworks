@@ -111,7 +111,6 @@ static void _CACompositorCompositeTree(CARenderLayer *rootRenderLayer)
 static void _CACompositorCleanPresentationTree(CALayer *layer)
 {
     if (layer->_needsComposite) {
-        //DLog();
         if (![layer->_animations count]) {
             layer->_needsComposite = NO;
         }
@@ -144,7 +143,6 @@ void _CACompositorInitialize()
 
 void _CACompositorPrepareComposite()
 {
-    //DLog();
     CALayer *rootPresentationLayer = _CALayerRootLayer()->_presentationLayer;
     //if (_firstBuffer) {
     //CGRect _tempRect = _compositeRect;
@@ -168,10 +166,7 @@ void _CACompositorPrepareComposite()
 
 void _CACompositorComposite()
 {
-    //DLog();
     CARenderLayer *rootRenderLayer = (CARenderLayer *)_CALayerRootLayer()->_renderLayer;
     _CACompositorCompositeTree(rootRenderLayer);
-    //DLog();
     _CACompositorCleanRenderTree(rootRenderLayer);
-    //DLog();
 }

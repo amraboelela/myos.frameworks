@@ -24,6 +24,13 @@
 static IOWindow *_window = nil;
 static int _parentWindowID = 0;
 
+#pragma mark - Static functions
+
+static Bool WaitForNotify(Display *dpy, XEvent *event, XPointer arg) 
+{
+    return (event->type == MapNotify) && (event->xmap.window == (Window) arg);
+}
+
 @implementation IOWindow
 
 - (void)dealloc
@@ -141,6 +148,8 @@ CGContextRef IOWindowCreateContext()
 CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
 {
     XSetWindowAttributes wa;
+    XEvent event;
+    int numReturned;
     //GLXFBConfig *fbConfigs;
     
     int doubleBufferAttributes[] = {
@@ -209,6 +218,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     /* Map the window */
     int ret = XMapRaised(_window->_display, _window->_xwindow);
     //printf("XMapRaised returned: %x\n", ret);
+    XIfEvent(_window->_display, &event, WaitForNotify, (XPointer)_window->_xwindow);
     
     /* Create a CGContext */
     _window->_context = IOWindowCreateContext();
@@ -216,6 +226,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
         ALog(@"Cannot create context\n");
         exit(EXIT_FAILURE);
     }
+
     //printf("Created context\n");
     return _window->_context;
 }
@@ -228,7 +239,6 @@ CGContextRef IOWindowCreateContext()
     int ret;
    
     //DLog(); 
-//#ifdef NATIVE_APP
     ret = XGetWindowAttributes(_window->_display, _window->_xwindow, &wa); 
     if (!ret) {
         DLog(@"XGetWindowAttributes returned %d", ret);

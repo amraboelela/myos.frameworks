@@ -93,7 +93,6 @@ static void reportFPS(BOOL withCondition)
     //_EAGLSwapBuffers();
     //DLog();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
-    //DLog();
     _eaglContextIsReady = YES;
     BOOL vSyncEnabled = context->_vSyncEnabled;
     
@@ -137,9 +136,7 @@ static void reportFPS(BOOL withCondition)
     }
 #else
     beforeLockTime = CACurrentMediaTime();
-    //DLog();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasWork];
-    //DLog();
 #endif
     //DLog();
 #ifdef DEBUG

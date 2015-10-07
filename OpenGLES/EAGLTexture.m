@@ -82,7 +82,6 @@ void _EAGLTextureLoad(EAGLTexture *texture, NSArray *images)
     }
     //DLog();
     //DLog(@"glGetError: %d", glGetError());
-    //DLog(@"glGetError: %d", glGetError());
 }
 
 void _EAGLTextureUnload(EAGLTexture *texture)

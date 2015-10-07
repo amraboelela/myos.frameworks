@@ -218,6 +218,7 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
 
 static void _CARenderLayerComposite(CARenderLayer *layer)
 {
+    //DLog();
     GLuint textureID;
     if (layer->_contentsTransitionProgress < 1.0) {
         GLuint oldTextureID = layer->_oldBackingStore->_texture->_textureIDs[0];

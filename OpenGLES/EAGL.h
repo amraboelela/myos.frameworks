@@ -54,6 +54,7 @@ extern void EAGLGetVersion(unsigned int *major, unsigned int *minor);
 #else
     GLXContext _glXContext;
     Display *_display;
+    GLXWindow _glxWindow;
 #endif
     BOOL _vSyncEnabled;
 }

@@ -23,6 +23,8 @@
 #else
 #import <X11/Xlib.h>
 #import <cairo-xlib.h>
+#import <GL/gl.h>
+#import <GL/glx.h>
 #endif
 
 @interface IOWindow : NSObject
