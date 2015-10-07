@@ -44,6 +44,7 @@ extern NSString *const UIScreenModeDidChangeNotification;
     UIScreenMode *_currentMode;
     CGRect _applicationFrame;
     NSArray *_availableModes;
+    //UIPopoverController *_popoverController;
 }
 
 @property (nonatomic, readonly) CGRect bounds;

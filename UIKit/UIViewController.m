@@ -75,7 +75,12 @@ static id _UIViewControllerNearestParentViewControllerThatIsKindOf(UIViewControl
 - (void)loadView
 {
     CGRect frame = [[UIScreen mainScreen] bounds];
-    frame = CGRectMake(frame.origin.x, frame.origin.y + _kStatusBarHeight, frame.size.width, frame.size.height - _kStatusBarHeight);
+#ifdef NATIVE_APP
+    frame = CGRectMake(frame.origin.x, frame.origin.y + _kStatusBarHeight, frame.size.width, frame.size.height - _kStatusBarHeight - _kScreenFooter);
+#else
+    frame = CGRectMake(frame.origin.x, frame.origin.y + _kStatusBarHeight, frame.size.width, frame.size.height-_kStatusBarHeight);
+    //frame = CGRectMake(frame.origin.x, frame.origin.y+50, frame.size.width, frame.size.height-50);
+#endif
     self.view = [[[UIView alloc] initWithFrame:frame] autorelease];
     //DLog(@"frame: %@", NSStringFromCGRect(frame));
 }
