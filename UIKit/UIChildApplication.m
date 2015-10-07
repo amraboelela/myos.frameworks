@@ -158,3 +158,4 @@ void UIChildApplicationClosePipes()
     close(kMainPipeRead);
     close(kMainPipeWrite);
 }
+
