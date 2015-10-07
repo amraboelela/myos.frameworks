@@ -47,9 +47,7 @@
 
 - (void)loadView
 {
-    CGRect frame = [[UIScreen mainScreen] bounds];
-    frame = CGRectMake(frame.origin.x, frame.origin.y + _kStatusBarHeight, frame.size.width, frame.size.height - _kStatusBarHeight);
-    self.tableView = [[[UITableView alloc] initWithFrame:frame style:_style] autorelease];
+    self.tableView = [[[UITableView alloc] initWithFrame:CGRectMake(0,0,_kScreenWidth,_kScreenHeight) style:_style] autorelease];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
 }
