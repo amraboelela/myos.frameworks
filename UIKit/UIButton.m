@@ -42,7 +42,6 @@ static NSString *const UIButtonContentTypeImage = @"UIButtonContentTypeImage";
 
 static UIColor *_UIButtonDefaultTitleColor(UIButton *button, UIControlState state)
 {
-    //DLog();
     switch (button->_buttonType) {
         case UIButtonTypeCustom:
             return button->_titleLabel.textColor;
@@ -73,6 +72,7 @@ static UIColor *_UIButtonDefaultTitleShadowColor(UIButton *button)
 
 static id _UIButtonContentForState(UIButton *button, UIControlState state, NSString *type)
 {
+    //DLog(@"type: %@", type);
     return [[button->_content objectForKey:type] objectForKey:[NSNumber numberWithInt:state]];
 }
 
@@ -284,7 +284,6 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     }
 }
 
-
 - (NSString *)currentTitle
 {
     return _titleLabel.text;
@@ -451,7 +450,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     _imageView.image = image;
     _backgroundImageView.image = backgroundImage;
     if (_highlighted) {
-        //DLog(@"[_registeredActions count]: %d", [_registeredActions count]);
+        DLog(@"[_registeredActions count]: %d", [_registeredActions count]);
         //if ([_registeredActions count]==0) {
         //_gradientLayer.frame = button.bounds;
         //[_layer insertSublayer:_gradientLayer atIndex:0];
@@ -503,3 +502,4 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
 }
 
 @end
+

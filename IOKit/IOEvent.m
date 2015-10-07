@@ -25,7 +25,6 @@ static XEvent _xevent;
 
 #define _KIOEventTimeDiffMax	0.27
 
-//static IOEventRef _event = nil;
 UIEvent* IOEventUIEventFromXEvent(XEvent e);
 
 BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
