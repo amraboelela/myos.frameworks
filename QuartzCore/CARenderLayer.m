@@ -121,13 +121,9 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     //DLog(@"texCoords: %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f", texCoords[0], texCoords[1], texCoords[2], texCoords[3],
     //     texCoords[4], texCoords[5], texCoords[6], texCoords[7]);
     IOWindow *screenWindow = IOWindowGetSharedWindow();
+    //CGRect screenBound = [UIScreen mainScreen].bounds;
     float ws = _kScreenWidth;//screenWindow->_rect.size.width; // width of screen // _kScreenWidth
-#ifdef NATIVE_APP
-    float hs = _kScreenHeight+_kScreenFooter;//screenWindow->_rect.size.height; // height of screen // _kScreenHeight
-#else
     float hs = _kScreenHeight;//screenWindow->_rect.size.height; // height of screen // _kScreenHeight
-#endif
-    
     
     CGPoint layerOrigin = _CARenderLayerGetOrigin(layer);
     //DLog(@"ws: %0.1f, hs: %0.1f", ws, hs);
