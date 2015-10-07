@@ -37,8 +37,9 @@
     Window _xwindow;
     cairo_user_data_key_t _cwindow;
     Display *_display;
-    //XVisualInfo *_visualInfo;
-    //GLXFBConfig *_fbConfigs;
+    //BOOL _hasDoubleBuffer;
+    XVisualInfo *_visualInfo;
+    GLXFBConfig *_fbConfigs;
 #endif
     CGRect _rect;
 }
