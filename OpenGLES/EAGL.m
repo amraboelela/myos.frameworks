@@ -150,10 +150,20 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
 
 #else // not ANDROID
 
-#pragma mark - Static functions
-
 static void _EAGLCreateContext(EAGLContext *context)
 {
+    int numReturned;
+    
+    int doubleBufferAttributes[] = {
+        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+        GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+        GLX_DOUBLEBUFFER,  True,  /* Request a double-buffered color buffer with */
+        GLX_RED_SIZE,      1,     /* the maximum number of bits per component    */
+        GLX_GREEN_SIZE,    1,
+        GLX_BLUE_SIZE,     1,
+        None
+    };
+    
     //DLog(@"context: %@", context);
     IOWindow *window = [IOWindowGetSharedWindow() retain];
     context->_window = window;
@@ -175,13 +185,14 @@ static void _EAGLCreateContext(EAGLContext *context)
     context->_height = window->_rect.size.height;
     //DLog(@"context->_width: %0.1f, context->_height: %0.1f", context->_width, context->_height);
     
+    GLXFBConfig *fbConfigs = glXChooseFBConfig(context->_display, DefaultScreen(context->_display), doubleBufferAttributes, &numReturned);
     
     /* Create a GLX context for OpenGL rendering */
-    context->_glXContext = glXCreateNewContext(context->_display, window->_fbConfigs[0], GLX_RGBA_TYPE, NULL, True);
+    context->_glXContext = glXCreateNewContext(context->_display, fbConfigs[0], GLX_RGBA_TYPE, NULL, True);
     
     /* Create a GLX window to associate the frame buffer configuration
      ** with the created X window */
-    context->_glxWindow = glXCreateWindow(context->_display, window->_fbConfigs[0], window->_xwindow, NULL);
+    context->_glxWindow = glXCreateWindow(context->_display, fbConfigs[0], window->_xwindow, NULL);
    
     /* OpenGL rendering ... */
     //glClearColor(0.5, 0.5, 0.5, 1.0);
@@ -194,14 +205,17 @@ static void _EAGLCreateContext(EAGLContext *context)
 
 static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *otherContext)
 {
-    /*int attribList[] = {
-        GLX_DEPTH_SIZE, 1,
-        GLX_RGBA,
-        GLX_RED_SIZE, 1,
-        GLX_GREEN_SIZE, 1,
-        GLX_BLUE_SIZE, 1,
+    int numReturned;
+    
+    int doubleBufferAttributes[] = {
+        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+        GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+        GLX_DOUBLEBUFFER,  True,  /* Request a double-buffered color buffer with */
+        GLX_RED_SIZE,      1,     /* the maximum number of bits per component    */
+        GLX_GREEN_SIZE,    1,
+        GLX_BLUE_SIZE,     1,
         None
-    };*/
+    };
     //DLog();
     IOWindow *window = [otherContext->_window retain];
     context->_window = window;
@@ -214,14 +228,14 @@ static void _EAGLCreateContextFromAnother(EAGLContext *context, EAGLContext *oth
         NSLog(@"glXChooseVisual failed");
         return;
     }*/
-    //context->_glXContext = glXCreateContext(context->_display, window->_visualInfo, NULL, GL_TRUE);
+    GLXFBConfig *fbConfigs = glXChooseFBConfig(context->_display, DefaultScreen(context->_display), doubleBufferAttributes, &numReturned);
     
     /* Create a GLX context for OpenGL rendering */
-    context->_glXContext = glXCreateNewContext(context->_display, window->_fbConfigs[0], GLX_RGBA_TYPE, NULL, True);
+    context->_glXContext = glXCreateNewContext(context->_display, fbConfigs[0], GLX_RGBA_TYPE, NULL, True);
     //DLog(@"created GLX context: %p", context->_glXContext);
     /* Create a GLX window to associate the frame buffer configuration
      ** with the created X window */
-    GLXWindow glxWin = glXCreateWindow(context->_display, window->_fbConfigs[0], window->_xwindow, NULL);
+    GLXWindow glxWin = glXCreateWindow(context->_display, fbConfigs[0], window->_xwindow, NULL);
 }
 
 #endif 

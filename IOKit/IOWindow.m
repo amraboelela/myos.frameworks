@@ -178,23 +178,20 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     }
     //printf("Opened display %s\n", DisplayString(_window->_display));
     
-    /* Request a suitable framebuffer configuration - try for a double
-     ** buffered configuration first */
-    //_window->_hasDoubleBuffer = YES;
-    _window->_fbConfigs = glXChooseFBConfig(_window->_display, DefaultScreen(_window->_display), doubleBufferAttributes, &numReturned);
-    if (_window->_fbConfigs == NULL) {  /* no double buffered configs available */
+    GLXFBConfig *fbConfigs = glXChooseFBConfig(_window->_display, DefaultScreen(_window->_display), doubleBufferAttributes, &numReturned);
+    if (fbConfigs == NULL) {  /* no double buffered configs available */
         NSLog(@"No double buffered configs available");
         exit(EXIT_FAILURE);
     }
     
     /* Create an X colormap and window with a visual matching the first
      ** returned framebuffer config */
-    _window->_visualInfo = glXGetVisualFromFBConfig(_window->_display, _window->_fbConfigs[0]);
+    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(_window->_display, fbConfigs[0]);
     
     wa.border_pixel = 0;
     //wa.event_mask = StructureNotifyMask;
     wa.event_mask = StructureNotifyMask | ExposureMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask;
-    wa.colormap = XCreateColormap(_window->_display, parentWindow, _window->_visualInfo->visual, AllocNone);
+    wa.colormap = XCreateColormap(_window->_display, parentWindow, visualInfo->visual, AllocNone);
     int swaMask = CWBorderPixel | CWColormap | CWEventMask;
     /* Create a window */
     _window->_xwindow = XCreateWindow(_window->_display, /* Display */
@@ -202,9 +199,9 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
                                      _window->_rect.origin.x, _window->_rect.origin.y, /* x, y */
                                      _window->_rect.size.width, _window->_rect.size.height, /* width, height */
                                      0, /* border_width */
-                                     _window->_visualInfo->depth, /* depth */
+                                     visualInfo->depth, /* depth */
                                      InputOutput, /* class */
-                                     _window->_visualInfo->visual, /* visual */
+                                     visualInfo->visual, /* visual */
                                      swaMask, /* valuemask */
                                      &wa); /* attributes */
 
