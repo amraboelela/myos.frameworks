@@ -448,7 +448,6 @@ UIImage *_UIImageCaptureScreen()
     //_hScale = context->_width * 1.0 / _kScreenWidth;
     //_vScale = context->_height * 1.0 / _kScreenHeight;
     
-    //CGRect frame = [screen bounds];
     const int w = context->_width;
     const int h = context->_height;
     const NSInteger myDataLength = w * h * 4;
