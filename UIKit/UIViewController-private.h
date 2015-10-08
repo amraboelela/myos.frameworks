@@ -29,6 +29,4 @@
 
 #import <UIKit/UIViewController.h>
 
-//void _UIViewControllerSetParentViewController(UIViewController* viewController, UIViewController* parentViewController);
-
 #define _kStatusBarHeight   27
