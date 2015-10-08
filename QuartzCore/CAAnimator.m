@@ -91,7 +91,6 @@ static void reportFPS(BOOL withCondition)
     //DLog();
     _EAGLClear();
     //_EAGLSwapBuffers();
-    //DLog();
     [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
     _eaglContextIsReady = YES;
     BOOL vSyncEnabled = context->_vSyncEnabled;
@@ -127,7 +126,6 @@ static void reportFPS(BOOL withCondition)
         //beforeLockTime = CACurrentMediaTime();
         return;
     }
-    //DLog();
     if (![_CAAnimatorConditionLock tryLock]) {
         //DLog(@"[_CAAnimatorConditionLock condition]: %d", [_CAAnimatorConditionLock condition]);
         // Instead of blocking the run loop or the animation thread, we will try to display later
@@ -138,13 +136,11 @@ static void reportFPS(BOOL withCondition)
     beforeLockTime = CACurrentMediaTime();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasWork];
 #endif
-    //DLog();
 #ifdef DEBUG
     _CAAnimatorFrameCount++;
 #endif
     //currentTime = CACurrentMediaTime();
     //reportFPS(YES);
-    //DLog();
     _CAAnimatorApplyAnimations();
     //DLog(@"_CARendererLoadRenderLayers");
     _CARendererLoadRenderLayers();
@@ -168,7 +164,6 @@ static void reportFPS(BOOL withCondition)
         }
         [_CAAnimatorConditionLock unlockWithCondition:_CAAnimatorConditionLockHasNoWork];
     }
-    //DLog();
     _CACompositorComposite();
     //DLog();
     _EAGLSwapBuffers();

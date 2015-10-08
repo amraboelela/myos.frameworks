@@ -734,6 +734,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
 #else
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     _UIApplicationInitialize();
+    XInitThreads();
     IOWindow *window = IOWindowCreateSharedWindow();
     UIChildApplicationInitialize();
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
