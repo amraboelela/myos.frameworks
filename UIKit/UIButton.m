@@ -121,12 +121,10 @@ static CGSize _UIButtonTitleSizeForState(UIButton *button, UIControlState state)
     //DLog(@"maxSize: %@", NSStringFromCGSize(maxSize));
     //DLog(@"titleLabel.font: %@", titleLabel.font);
     CGSize resultSize = [title sizeWithFont:titleLabel.font constrainedToSize:maxSize lineBreakMode:titleLabel.lineBreakMode];
-    //DLog(@"resultSize: %@", NSStringFromCGSize(resultSize));
     //CGSize result = [title sizeWithFont:titleLabel.font constrainedToSize:CGSizeMake(CGFLOAT_MAX,CGFLOAT_MAX)];
     //if (resultSize.width == 0) {
     //    resultSize.width = 10;
     //}
-    //DLog(@"resultSize 2: %@", NSStringFromCGSize(resultSize));
     return ([title length] > 0) ? resultSize : CGSizeZero;
 }
 
@@ -450,7 +448,7 @@ static CGRect _UIButtonComponentRectForSize(UIButton *button, CGSize size, CGRec
     _imageView.image = image;
     _backgroundImageView.image = backgroundImage;
     if (_highlighted) {
-        DLog(@"[_registeredActions count]: %d", [_registeredActions count]);
+        //DLog(@"[_registeredActions count]: %d", [_registeredActions count]);
         //if ([_registeredActions count]==0) {
         //_gradientLayer.frame = button.bounds;
         //[_layer insertSublayer:_gradientLayer atIndex:0];
