@@ -33,6 +33,7 @@
 
 #define _kScreenWidth       320.0
 #define _kScreenHeight      568.0
+#define _kScreenFooter      40.0
 #define _kScreenScaleFactor 1.25
 
 UIScreen *_UIScreenMainScreen();
