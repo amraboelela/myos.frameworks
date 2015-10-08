@@ -165,12 +165,12 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     _window->_rect = aRect;
 #ifdef NATIVE_APP
     _window->_display = XOpenDisplay(NULL);
-    Window parentWindow = DefaultRootWindow(_window->_display);
+    //Window parentWindow = DefaultRootWindow(_window->_display);
 #else
     _window->_display = XOpenDisplay(":0");
-    Window parentWindow = _parentWindowID;
+    //Window parentWindow = _parentWindowID;
 #endif
-    
+    Window parentWindow = DefaultRootWindow(_window->_display);
     //DLog(@"display: %p", _window->_display);
     if (!_window->_display) {
         NSLog(@"Cannot open display: %s\n", XDisplayName(NULL));
