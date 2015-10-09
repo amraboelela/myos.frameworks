@@ -175,13 +175,13 @@ void UIParentApplicationHandleMessages()
 void UIParentApplicationShowLauncher()
 {
     //DLog();
-    if ([[_childAppView subviews] count] > 0) {
+    /*if ([[_childAppView subviews] count] > 0) {
         //DLog(@"[[_childAppView subviews] count] > 0");
         [[[_childAppView subviews] objectAtIndex:0] removeFromSuperview];
-    }
+    }*/
     [_currentChildApplicationProxy gotoBackground];
-    _UIApplicationEnterForeground();
-    _launcherView.hidden = NO;
+    //_UIApplicationEnterForeground();
+    //_launcherView.hidden = NO;
     //DLog();
     //[_uiApplication->_keyWindow bringSubviewToFront:_launcherView];
 #if defined(ANDROID) && defined(NATIVE_APP)
