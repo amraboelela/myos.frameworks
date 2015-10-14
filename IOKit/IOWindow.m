@@ -281,4 +281,9 @@ void IOWindowClear()
     XClearWindow(_window->_display, _window->_xwindow);
 }
 
+void IOWindowHideWindow()
+{
+    int ret = XUnmapWindow(_window->_display, _window->_xwindow);
+}
+
 #endif

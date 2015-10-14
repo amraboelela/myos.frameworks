@@ -64,3 +64,5 @@ void IOWindowSetContextSize(CGSize size);
 void IOWindowFlush();
 void IOWindowClear();
 #endif
+
+void IOWindowHideWindow();
