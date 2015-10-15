@@ -88,7 +88,6 @@ void UIChildApplicationSetApplication(UIApplication *application)
 int UIChildApplicationHandleMessages()
 {
     int message = IOPipeReadMessage();
-    //DLog();
     switch (message) {
         case MAPipeMessageEndOfMessage:
             //DLog(@"MAPipeMessageEndOfMessage");

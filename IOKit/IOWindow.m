@@ -217,6 +217,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     
     /* Map the window */
     int ret = XMapRaised(_window->_display, _window->_xwindow);
+    //DLog(@"_window->_xwindow: %p", _window->_xwindow);
     //printf("XMapRaised returned: %x\n", ret);
     XIfEvent(_window->_display, &event, WaitForNotify, (XPointer)_window->_xwindow);
     
@@ -238,7 +239,6 @@ CGContextRef IOWindowCreateContext()
     cairo_surface_t *target;
     int ret;
    
-    //DLog(); 
     ret = XGetWindowAttributes(_window->_display, _window->_xwindow, &wa); 
     if (!ret) {
         DLog(@"XGetWindowAttributes returned %d", ret);
@@ -283,7 +283,10 @@ void IOWindowClear()
 
 void IOWindowHideWindow()
 {
+    //DLog(@"_window->_xwindow: %p", _window->_xwindow);
     int ret = XUnmapWindow(_window->_display, _window->_xwindow);
+    //printf("XUnmapMapWindow returned: %x\n", ret);
+    XFlush(_window->_display);
 }
 
 void IOWindowShowWindow()
@@ -292,3 +295,4 @@ void IOWindowShowWindow()
 }
 
 #endif
+
