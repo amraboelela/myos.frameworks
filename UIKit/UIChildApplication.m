@@ -136,6 +136,7 @@ int UIChildApplicationHandleMessages()
             IOWindowHideWindow();
             _UIApplicationEnterBackground();
             pause();
+            DLog(@"Will enter foreground");
             //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
             _UIApplicationEnterForeground();
             break;

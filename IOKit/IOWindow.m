@@ -289,5 +289,10 @@ void IOWindowHideWindow()
     XFlush(_window->_display);
 }
 
+void IOWindowShowWindow()
+{
+    int ret = XMapWindow(_window->_display, _window->_xwindow);
+}
+
 #endif
 
