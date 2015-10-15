@@ -889,6 +889,7 @@ void _UIApplicationEnterForeground()
                                                             object:_application];
         _application->_applicationState = UIApplicationStateActive;
         _CALayerSetNeedsComposite(_application->_keyWindow->_layer);
+        IOWindowShowWindow();
     }
 }
 

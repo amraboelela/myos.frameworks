@@ -286,4 +286,9 @@ void IOWindowHideWindow()
     int ret = XUnmapWindow(_window->_display, _window->_xwindow);
 }
 
+void IOWindowShowWindow()
+{
+    int ret = XMapWindow(_window->_display, _window->_xwindow);
+}
+
 #endif

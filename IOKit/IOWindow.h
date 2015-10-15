@@ -66,3 +66,4 @@ void IOWindowClear();
 #endif
 
 void IOWindowHideWindow();
+void IOWindowShowWindow();
