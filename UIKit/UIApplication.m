@@ -863,6 +863,7 @@ void _UIApplicationWindowDidBecomeHidden(UIApplication *application, UIWindow *t
 
 BOOL _UIApplicationEnterBackground()
 {
+    DLog();
     //DLog(@"_application: %@", _application);
     if (_application->_applicationState != UIApplicationStateBackground) {
         _application->_applicationState = UIApplicationStateBackground;
@@ -880,7 +881,7 @@ BOOL _UIApplicationEnterBackground()
 
 void _UIApplicationEnterForeground()
 {
-    //DLog();
+    DLog();
     if (_application->_applicationState == UIApplicationStateBackground) {
         if ([_application->_delegate respondsToSelector:@selector(applicationWillEnterForeground:)]) {
             [_application->_delegate applicationWillEnterForeground:_application];
