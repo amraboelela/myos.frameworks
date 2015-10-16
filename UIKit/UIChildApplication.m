@@ -31,10 +31,10 @@ static void UIChildApplicationSignal(int sig)
     int status;
     pid_t pid;
     
-    DLog(@"Signal %d", sig);
+    //DLog(@"Signal %d", sig);
     switch (sig) {
         case SIGALRM:
-            DLog(@"SIGALRM");
+            //DLog(@"SIGALRM");
             //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
             break;
         case SIGTERM:
@@ -132,7 +132,7 @@ int UIChildApplicationHandleMessages()
             break;
         }
         case MAPipeMessageWillEnterBackground:
-            //DLog(@"MAPipeMessageWillEnterBackground");
+            DLog(@"MAPipeMessageWillEnterBackground");
             IOWindowHideWindow();
             _UIApplicationEnterBackground();
             pause();

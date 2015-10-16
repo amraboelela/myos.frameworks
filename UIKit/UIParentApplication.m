@@ -122,6 +122,7 @@ void UIParentApplicationTerminateSomeApps()
 
 void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart)
 {
+    DLog();
     //_launcherView.hidden = YES;
     _UIApplicationEnterBackground();
     if (coldStart) {
