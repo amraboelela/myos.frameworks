@@ -166,13 +166,16 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     //DLog(@"self: %@, running: %d", self, _opened);
     if (_opened) {
         _applicationIcon->_iconLabel.textColor = [UIColor yellowColor];
+        _homeIcon->_iconLabel.textColor = [UIColor yellowColor];
     } else {
         _applicationIcon->_iconLabel.textColor = [UIColor whiteColor];
+        _homeIcon->_iconLabel.textColor = [UIColor whiteColor];
     }
 }
 
 - (UIApplicationIcon *)homeIcon
 {
+    DLog();
     if (!_homeIcon) {
         _homeIcon = [[UIApplicationIcon alloc] initWithApplication:self];
     }
@@ -203,6 +206,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 
 - (void)singleTapped
 {
+    DLog();
     if (!_opened) {
         self.opened = YES;
         [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
