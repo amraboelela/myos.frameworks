@@ -175,7 +175,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 
 - (UIApplicationIcon *)homeIcon
 {
-    DLog();
+    //DLog();
     if (!_homeIcon) {
         _homeIcon = [[UIApplicationIcon alloc] initWithApplication:self];
     }
@@ -206,7 +206,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 
 - (void)singleTapped
 {
-    DLog();
+    //DLog();
     if (!_opened) {
         self.opened = YES;
         [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
