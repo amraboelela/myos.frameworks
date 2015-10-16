@@ -316,9 +316,11 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     _currentChildApplicationProxy = self;
     //DLog(@"indexOfObject:_currentChildApplicationProxy: %d", _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy));
     _running = YES;
-    //DLog(@"self: %@", self);
+    DLog(@"self: %@", self);
 #ifdef NATIVE_APP
+#ifdef ANDROID
     EAGLParentSetPipes(_animationPipeRead, _animationPipeWrite);
+#endif
     if (withSignal) {
         kill(_pid, SIGALRM);
     }

@@ -29,8 +29,8 @@ static CFTimeInterval _startTime;
 //static UIApplication *_uiApplication = nil;
 static UIParentApplication *_UIParentApplication = nil;
 //static UIChildApplicationProxy *_UIChildApplicationProxy = nil;
-static UIView *_launcherView = nil;
-static UIView *_childAppView = nil;
+//static UIView *_launcherView = nil;
+//static UIView *_childAppView = nil;
 static long _freeMemory = NSIntegerMax;
 static int _freeMemoryCount = 0;
 
@@ -122,11 +122,11 @@ void UIParentApplicationTerminateSomeApps()
 
 void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart)
 {
-    _launcherView.hidden = YES;
+    //_launcherView.hidden = YES;
     _UIApplicationEnterBackground();
     if (coldStart) {
         //UIParentApplicationCheckMemory();
-        [_childAppView addSubview:childAppProxy.defaultScreenView];
+        //[_childAppView addSubview:childAppProxy.defaultScreenView];
         long freeMemory = CFGetFreeMemory();
         //DLog(@"%@ Free memory: %ld KB", childApp->_bundleName, freeMemory);
         if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
@@ -226,9 +226,9 @@ void UIParentApplicationGoBack()
 void UIParentApplicationMoveCurrentAppToTop()
 {
     //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
-    if (!_launcherView.hidden) {
+    /*if (!_launcherView.hidden) {
         return;
-    }
+    }*/
     //_currentChildApplicationProxy->_needsScreenCapture = YES;
     /*if (currentAppIndex == CFArrayGetCount(_openedChildApplicationProxies) - 1) {
         return;
