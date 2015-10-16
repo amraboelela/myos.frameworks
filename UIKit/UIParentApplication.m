@@ -180,7 +180,7 @@ void UIParentApplicationShowLauncher()
         [[[_childAppView subviews] objectAtIndex:0] removeFromSuperview];
     }*/
     [_currentChildApplicationProxy gotoBackground];
-    //_UIApplicationEnterForeground();
+    _UIApplicationEnterForeground();
     //_launcherView.hidden = NO;
     //DLog();
     //[_uiApplication->_keyWindow bringSubviewToFront:_launcherView];

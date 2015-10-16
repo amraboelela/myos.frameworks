@@ -871,7 +871,7 @@ BOOL _UIApplicationEnterBackground()
         }
         [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification
                                                             object:_application];
-        _application->_applicationState = UIApplicationStateBackground;
+        //_application->_applicationState = UIApplicationStateBackground;
         return YES;
     } else {
         return NO;
