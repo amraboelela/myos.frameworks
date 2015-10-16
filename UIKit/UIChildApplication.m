@@ -132,11 +132,11 @@ int UIChildApplicationHandleMessages()
             break;
         }
         case MAPipeMessageWillEnterBackground:
-            DLog(@"MAPipeMessageWillEnterBackground");
+            //DLog(@"MAPipeMessageWillEnterBackground");
             IOWindowHideWindow();
             _UIApplicationEnterBackground();
             pause();
-            DLog(@"Will enter foreground");
+            //DLog(@"Will enter foreground");
             //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
             _UIApplicationEnterForeground();
             break;

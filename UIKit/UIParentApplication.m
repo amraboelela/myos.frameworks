@@ -174,7 +174,7 @@ void UIParentApplicationHandleMessages()
 
 void UIParentApplicationShowLauncher()
 {
-    DLog();
+    //DLog();
     /*if ([[_childAppView subviews] count] > 0) {
         //DLog(@"[[_childAppView subviews] count] > 0");
         [[[_childAppView subviews] objectAtIndex:0] removeFromSuperview];
