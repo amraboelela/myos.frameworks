@@ -132,7 +132,7 @@ int UIChildApplicationHandleMessages()
             break;
         }
         case MAPipeMessageWillEnterBackground:
-            DLog(@"MAPipeMessageWillEnterBackground");
+            //DLog(@"MAPipeMessageWillEnterBackground");
             IOWindowHideWindow();
             _UIApplicationEnterBackground();
             pause();

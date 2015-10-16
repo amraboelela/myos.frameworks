@@ -330,8 +330,9 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 
 - (void)gotoBackground
 {
-    DLog();
+    DLog(@"self: %@", self);
     if (_running) {
+        DLog(@"_running");
         _running = NO;
         IOPipeWriteMessage(MAPipeMessageWillEnterBackground, YES);
     }
