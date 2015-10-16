@@ -211,7 +211,11 @@ void UIParentApplicationGoBack()
     if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
         return;
     }
-    [_currentChildApplicationProxy gotoBackground];
+    if (_currentChildApplicationProxy->_running) {
+        [_currentChildApplicationProxy gotoBackground];
+    } else {
+        _UIApplicationEnterBackground();
+    }
     int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
     //DLog(@"currentAppIndex: %d", currentAppIndex);
     UIChildApplicationProxy *_UIChildApplicationProxy;
