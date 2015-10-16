@@ -193,32 +193,34 @@ void UIParentApplicationShowLauncher()
 
 void UIParentApplicationGoBack()
 {
-    _childAppView.hidden = NO;
-    if (!_launcherView.hidden) {
-        if (CFArrayGetCount(_openedChildApplicationProxies) == 0) {
-            DLog(@"CFArrayGetCount(_openedChildApplicationProxies) == 0");
-            return;
-        } else {
-            //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
-            UIParentApplicationPresentAppScreen(_currentChildApplicationProxy, NO);
-        }
-    } else {
-        _childAppView.hidden = NO;
-        if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
-            return;
-        }
-        [_currentChildApplicationProxy gotoBackground];
-        int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
-        //DLog(@"currentAppIndex: %d", currentAppIndex);
-        UIChildApplicationProxy *_UIChildApplicationProxy;
-        if (currentAppIndex == 0) {
-            _UIChildApplicationProxy = _CFArrayGetLastValue(_openedChildApplicationProxies);
-        } else {
-            _UIChildApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
-            //DLog(@"_UIChildApplication: %@", _UIChildApplication);
-        }
-        [_UIChildApplicationProxy setAsCurrent:YES];
+    DLog();
+    /*
+     _childAppView.hidden = NO;
+     if (!_launcherView.hidden) {
+     if (CFArrayGetCount(_openedChildApplicationProxies) == 0) {
+     DLog(@"CFArrayGetCount(_openedChildApplicationProxies) == 0");
+     return;
+     } else {
+     //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
+     UIParentApplicationPresentAppScreen(_currentChildApplicationProxy, NO);
+     }
+     } else {*/
+    //_childAppView.hidden = NO;
+    if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
+        return;
     }
+    [_currentChildApplicationProxy gotoBackground];
+    int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
+    //DLog(@"currentAppIndex: %d", currentAppIndex);
+    UIChildApplicationProxy *_UIChildApplicationProxy;
+    if (currentAppIndex == 0) {
+        _UIChildApplicationProxy = _CFArrayGetLastValue(_openedChildApplicationProxies);
+    } else {
+        _UIChildApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
+        //DLog(@"_UIChildApplication: %@", _UIChildApplication);
+    }
+    [_UIChildApplicationProxy setAsCurrent:YES];
+    //}
 }
 
 void UIParentApplicationMoveCurrentAppToTop()
