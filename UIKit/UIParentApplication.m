@@ -128,6 +128,7 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy,
     if (coldStart) {
         //UIParentApplicationCheckMemory();
         //[_childAppView addSubview:childAppProxy.defaultScreenView];
+#ifdef ANDROID
         long freeMemory = CFGetFreeMemory();
         //DLog(@"%@ Free memory: %ld KB", childApp->_bundleName, freeMemory);
         if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
@@ -138,6 +139,7 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy,
             DLog(@"%@ Free memory 2: %ld KB", childAppProxy->_bundleName, freeMemory);
         }
         _freeMemory = freeMemory;
+#endif
         [childAppProxy startApp];
     } else {
         [childAppProxy setAsCurrent:YES];
