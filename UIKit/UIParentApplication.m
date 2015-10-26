@@ -142,7 +142,7 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy,
 #endif
         [childAppProxy startApp];
     } else {
-        [childAppProxy setAsCurrent];
+        [childAppProxy setAsCurrent:YES];
     }
 #if defined(ANDROID) && defined(NATIVE_APP)
     [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
