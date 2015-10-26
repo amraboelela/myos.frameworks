@@ -293,11 +293,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         _animationPipeWrite = animationPipeWrite;
         //DLog();
         CFArrayAppendValue(_openedChildApplicationProxies, self);
-        
-        IOPipeSetPipes(_pipeRead, _pipeWrite);
-        _currentChildApplicationProxy = self;
-        _running = YES;
-        _score++;
+        [self setAsCurrent:NO];
 #ifdef ANDROID
         IOPipeWriteMessage(MAPipeMessageCharString, NO);
         IOPipeWriteCharString(_bundleName);
@@ -314,9 +310,9 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     return (_currentChildApplicationProxy == self);
 }
 
-- (void)setAsCurrent
+- (void)setAsCurrent:(BOOL)withSignal
 {
-    //IOPipeSetPipes(_pipeRead, _pipeWrite);
+    IOPipeSetPipes(_pipeRead, _pipeWrite);
     _currentChildApplicationProxy = self;
     //DLog(@"indexOfObject:_currentChildApplicationProxy: %d", _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy));
     _running = YES;
@@ -325,9 +321,9 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 #ifdef ANDROID
     EAGLParentSetPipes(_animationPipeRead, _animationPipeWrite);
 #endif
-    //if (withSignal) {
-    kill(_pid, SIGALRM);
-    //}
+    if (withSignal) {
+        kill(_pid, SIGALRM);
+    }
 #endif
     _score++;
 }

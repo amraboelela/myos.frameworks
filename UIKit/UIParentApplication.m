@@ -236,8 +236,8 @@ void UIParentApplicationGoBack()
             _UIChildApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
             //DLog(@"_UIChildApplication: %@", _UIChildApplication);
         }
-        [_UIChildApplicationProxy setAsCurrent];
-    }
+    [_UIChildApplicationProxy setAsCurrent:YES];
+    //}
 }
 
 void UIParentApplicationMoveCurrentAppToTop()
