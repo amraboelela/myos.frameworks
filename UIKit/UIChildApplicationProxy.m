@@ -325,9 +325,9 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 #ifdef ANDROID
     EAGLParentSetPipes(_animationPipeRead, _animationPipeWrite);
 #endif
-    if (withSignal) {
-        kill(_pid, SIGALRM);
-    }
+    //if (withSignal) {
+    kill(_pid, SIGALRM);
+    //}
 #endif
     _score++;
 }
