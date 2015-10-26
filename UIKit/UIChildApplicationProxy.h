@@ -51,7 +51,7 @@ extern NSMutableArray *_openedChildApplicationProxies;
 - (id)initWithBundleName:bundleName;
 - (BOOL)isCurrent;
 - (void)startApp;
-- (void)setAsCurrent:(BOOL)withSignal;
+- (void)setAsCurrent;
 - (void)gotoBackground;
 - (void)terminate;
 - (void)singleTapped;

@@ -140,7 +140,7 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy,
         _freeMemory = freeMemory;
         [childAppProxy startApp];
     } else {
-        [childAppProxy setAsCurrent:YES];
+        [childAppProxy setAsCurrent];
     }
 #if defined(ANDROID) && defined(NATIVE_APP)
     [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
@@ -209,6 +209,7 @@ void UIParentApplicationGoBack()
      } else {*/
     //_childAppView.hidden = NO;
     if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
+        [_currentChildApplicationProxy setAsCurrent];
         return;
     }
     if (_currentChildApplicationProxy->_running) {
@@ -225,13 +226,13 @@ void UIParentApplicationGoBack()
         _UIChildApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
         //DLog(@"_UIChildApplication: %@", _UIChildApplication);
     }
-    [_UIChildApplicationProxy setAsCurrent:YES];
+    [_UIChildApplicationProxy setAsCurrent];
     //}
 }
 
 void UIParentApplicationMoveCurrentAppToTop()
 {
-    //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
+    DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
     /*if (!_launcherView.hidden) {
         return;
     }*/
