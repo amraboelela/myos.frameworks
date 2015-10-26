@@ -210,26 +210,28 @@ void UIParentApplicationGoBack()
      }
      } else {*/
     //_childAppView.hidden = NO;
-    if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
-        [_currentChildApplicationProxy setAsCurrent];
-        return;
-    }
+    /*if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
+     return;
+     }*/
     if (_currentChildApplicationProxy->_running) {
         [_currentChildApplicationProxy gotoBackground];
     } else {
         _UIApplicationEnterBackground();
     }
-    int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
-    //DLog(@"currentAppIndex: %d", currentAppIndex);
-    UIChildApplicationProxy *_UIChildApplicationProxy;
-    if (currentAppIndex == 0) {
-        _UIChildApplicationProxy = _CFArrayGetLastValue(_openedChildApplicationProxies);
+    if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
+        [_currentChildApplicationProxy setAsCurrent];
     } else {
-        _UIChildApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
-        //DLog(@"_UIChildApplication: %@", _UIChildApplication);
+        int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
+        //DLog(@"currentAppIndex: %d", currentAppIndex);
+        UIChildApplicationProxy *_UIChildApplicationProxy;
+        if (currentAppIndex == 0) {
+            _UIChildApplicationProxy = _CFArrayGetLastValue(_openedChildApplicationProxies);
+        } else {
+            _UIChildApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
+            //DLog(@"_UIChildApplication: %@", _UIChildApplication);
+        }
+        [_UIChildApplicationProxy setAsCurrent];
     }
-    [_UIChildApplicationProxy setAsCurrent];
-    //}
 }
 
 void UIParentApplicationMoveCurrentAppToTop()
