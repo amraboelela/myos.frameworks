@@ -213,14 +213,19 @@ void UIParentApplicationGoBack()
     /*if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
      return;
      }*/
-    if (_currentChildApplicationProxy->_running) {
-        [_currentChildApplicationProxy gotoBackground];
-    } else {
-        _UIApplicationEnterBackground();
-    }
     if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
-        [_currentChildApplicationProxy setAsCurrent];
+        if (_currentChildApplicationProxy->_running) {
+            [_currentChildApplicationProxy gotoBackground];
+        } else {
+            _UIApplicationEnterBackground();
+            [_currentChildApplicationProxy setAsCurrent];
+        }
     } else {
+        if (_currentChildApplicationProxy->_running) {
+            [_currentChildApplicationProxy gotoBackground];
+        } else {
+            _UIApplicationEnterBackground();
+        }
         int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
         //DLog(@"currentAppIndex: %d", currentAppIndex);
         UIChildApplicationProxy *_UIChildApplicationProxy;
