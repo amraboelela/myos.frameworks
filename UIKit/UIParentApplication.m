@@ -214,10 +214,8 @@ void UIParentApplicationGoBack()
      return;
      }*/
     if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
-        DLog(@"(CFArrayGetCount(_openedChildApplicationProxies) == 1)");
-        if (_currentChildApplicationProxy->_running) {
-            [_currentChildApplicationProxy gotoBackground];
-        } else {
+        //DLog(@"(CFArrayGetCount(_openedChildApplicationProxies) == 1)");
+        if (!_currentChildApplicationProxy->_running) {
             _UIApplicationEnterBackground();
             [_currentChildApplicationProxy setAsCurrent:YES];
         }
