@@ -50,9 +50,12 @@ BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
                 break;
             case ButtonRelease:
                 _UITouchUpdatePhase(touch, UITouchPhaseEnded, screenLocation, timestamp);
+#ifdef NATIVE_APP
+                UIParentApplicationMoveCurrentAppToTop();
+#endif
                 break;
         }
-        //DLog(@"touch: %@", touch);
+        DLog(@"touch: %@", touch);
         return YES;
     } else {
         return NO;
