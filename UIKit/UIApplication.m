@@ -864,7 +864,7 @@ void _UIApplicationWindowDidBecomeHidden(UIApplication *application, UIWindow *t
 
 BOOL _UIApplicationEnterBackground()
 {
-    DLog();
+    //DLog();
     //DLog(@"_application: %@", _application);
     if (_application->_applicationState != UIApplicationStateBackground) {
         _application->_applicationState = UIApplicationStateBackground;
