@@ -15,10 +15,12 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#import "IOEvent.h"
+//#import "IOEvent.h"
 #import <cairo-xlib.h>
+#import <IOKit/IOKit.h>
 #import <UIKit/UIEvent.h>
 #import <UIKit/UITouch-private.h>
+
 
 float _screenScaleFactor;
 static XEvent _xevent;
@@ -51,7 +53,8 @@ BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
             case ButtonRelease:
                 _UITouchUpdatePhase(touch, UITouchPhaseEnded, screenLocation, timestamp);
 #ifdef NATIVE_APP
-                UIParentApplicationMoveCurrentAppToTop();
+#else
+                IOPipeWriteMessage(MLPipeMessageMoveApplicationToTop, YES);
 #endif
                 break;
         }

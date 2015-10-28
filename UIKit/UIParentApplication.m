@@ -165,6 +165,9 @@ void UIParentApplicationHandleMessages()
             //DLog(@"MLPipeMessageChildIsReady");
             IOPipeWriteInt(0x4000001);
             break;
+        case MLPipeMessageMoveApplicationToTop:
+            UIParentApplicationMoveCurrentAppToTop();
+            break;
         case MLPipeMessageTerminateApp:
             DLog(@"MLPipeMessageTerminateApp");
             //[[[_application->_keyWindow subviews] lastObject] removeFromSuperview];

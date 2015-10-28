@@ -31,6 +31,7 @@ typedef enum {
 typedef enum {
     MLPipeMessageEndOfMessage,
     MLPipeMessageChildIsReady,
+    MLPipeMessageMoveApplicationToTop,
     MLPipeMessageTerminateApp,
 } MLPipeMessage;
 
