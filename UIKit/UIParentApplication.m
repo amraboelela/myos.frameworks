@@ -248,10 +248,17 @@ void UIParentApplicationMoveCurrentAppToTop()
     /*if (currentAppIndex == CFArrayGetCount(_openedChildApplicationProxies) - 1) {
         return;
     }*/
-    _currentChildApplicationProxy->_score++;
-    //}
-    _CFArrayMoveValueToTop(_openedChildApplicationProxies, _currentChildApplicationProxy);
-    //DLog(@"_openedChildApplicationProxies: %@", _openedChildApplicationProxies);
+    DLog();
+    if (!_currentChildApplicationProxy) {
+        return;
+    }
+    if (_currentChildApplicationProxy->_running) {
+        _currentChildApplicationProxy->_score++;
+        //}
+        DLog();
+        _CFArrayMoveValueToTop(_openedChildApplicationProxies, _currentChildApplicationProxy);
+        //DLog(@"_openedChildApplicationProxies: %@", _openedChildApplicationProxies);
+    }
 }
 
 void UIParentApplicationTerminateApps()
