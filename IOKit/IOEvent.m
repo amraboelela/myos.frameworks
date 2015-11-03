@@ -58,7 +58,7 @@ BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
 #endif
                 break;
         }
-        DLog(@"touch: %@", touch);
+        //DLog(@"touch: %@", touch);
         return YES;
     } else {
         return NO;

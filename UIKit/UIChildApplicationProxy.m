@@ -316,7 +316,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     _currentChildApplicationProxy = self;
     //DLog(@"indexOfObject:_currentChildApplicationProxy: %d", _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy));
     _running = YES;
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
 #ifdef NATIVE_APP
 #ifdef ANDROID
     EAGLParentSetPipes(_animationPipeRead, _animationPipeWrite);
@@ -330,9 +330,9 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 
 - (void)gotoBackground
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     if (_running) {
-        DLog(@"_running");
+        //DLog(@"_running");
         _running = NO;
         IOPipeWriteMessage(MAPipeMessageWillEnterBackground, YES);
     }

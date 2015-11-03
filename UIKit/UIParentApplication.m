@@ -122,7 +122,7 @@ void UIParentApplicationTerminateSomeApps()
 
 void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart)
 {
-    DLog();
+    //DLog();
     //_launcherView.hidden = YES;
     _UIApplicationEnterBackground();
     if (coldStart) {
@@ -180,7 +180,7 @@ void UIParentApplicationHandleMessages()
 
 void UIParentApplicationShowLauncher()
 {
-    DLog();
+    //DLog();
     /*if ([[_childAppView subviews] count] > 0) {
         //DLog(@"[[_childAppView subviews] count] > 0");
         [[[_childAppView subviews] objectAtIndex:0] removeFromSuperview];
@@ -200,7 +200,7 @@ void UIParentApplicationShowLauncher()
 
 void UIParentApplicationGoBack()
 {
-    DLog();
+    //DLog();
     /*
      _childAppView.hidden = NO;
      if (!_launcherView.hidden) {
@@ -229,7 +229,7 @@ void UIParentApplicationGoBack()
             _UIApplicationEnterBackground();
         }
         int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
-        DLog(@"currentAppIndex: %d", currentAppIndex);
+        //DLog(@"currentAppIndex: %d", currentAppIndex);
         UIChildApplicationProxy *_UIChildApplicationProxy;
         if (currentAppIndex == 0) {
             _UIChildApplicationProxy = _CFArrayGetLastValue(_openedChildApplicationProxies);
@@ -251,14 +251,14 @@ void UIParentApplicationMoveCurrentAppToTop()
     /*if (currentAppIndex == CFArrayGetCount(_openedChildApplicationProxies) - 1) {
         return;
     }*/
-    DLog();
+    //DLog();
     if (!_currentChildApplicationProxy) {
         return;
     }
     if (_currentChildApplicationProxy->_running) {
         _currentChildApplicationProxy->_score++;
         //}
-        DLog();
+        //DLog();
         _CFArrayMoveValueToTop(_openedChildApplicationProxies, _currentChildApplicationProxy);
         //DLog(@"_openedChildApplicationProxies: %@", _openedChildApplicationProxies);
     }
