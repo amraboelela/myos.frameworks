@@ -578,19 +578,20 @@ static NSString *_childAppName = nil;
 
 void _CGDataProviderSetChildAppName(NSString *childAppName)
 {
-    //DLog(@"childAppName: %@", childAppName);
+    DLog(@"childAppName: %@", childAppName);
     _childAppName = childAppName;
 }
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
     DLog(@"filename: %s", filename);
-    NSString *path = [NSString stringWithCString:filename];
+    NSString *fileNameString = [NSString stringWithCString:filename];
+    NSString *path = @"";
 //#ifdef ANDROID
     if ([path rangeOfString:@"/"].length > 0) {
     } else {
         //path = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", _childAppName, path];
-        path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, path];
+        path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
     }
     DLog(@"path: %@", path);
 //#endif
@@ -599,7 +600,7 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
     if (NULL == info) {
         //ALog(@"File at path: %@ not found", path);
 #ifndef ANDROID
-        path = [NSString stringWithFormat:@"assets/%@", path];
+        path = [NSString stringWithFormat:@"assets/%@", fileNameString];
         info = fopen([path cString], "rb");
         if (NULL == info) {
             ALog(@"File at path: %@ not found", path);

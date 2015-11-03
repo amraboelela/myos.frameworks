@@ -294,10 +294,11 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         //DLog();
         CFArrayAppendValue(_openedChildApplicationProxies, self);
         [self setAsCurrent:NO];
-#ifdef ANDROID
+
         IOPipeWriteMessage(MAPipeMessageCharString, NO);
         IOPipeWriteCharString(_bundleName);
-#else
+#ifndef ANDROID
+//#else
         IOPipeWriteMessage(MAPipeMessageInt, NO);
         IOPipeWriteInt(IOWindowGetID());
 #endif
