@@ -16,3 +16,4 @@
  */
 
 NSString *_NSFileManagerMyAppsPath();
+NSString *_NSFileManagerSetMyAppsPath(NSString *myappsPath);

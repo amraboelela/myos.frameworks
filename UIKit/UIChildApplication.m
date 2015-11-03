@@ -66,6 +66,16 @@ void UIChildApplicationInitialize()
     } else {
         NSLog(@"Error can't get process name");
     }
+    
+    message = IOPipeReadMessage();
+    if (message == MAPipeMessageCharString) {
+        NSString *myappsPath = [IOPipeReadCharString() retain];
+        DLog(@"myappsPath: %@", myappsPath);
+        _NSFileManagerSetMyAppsPath(myappsPath);
+    } else {
+        NSLog(@"Error can't get MyAppsPath");
+    }
+    
     message = IOPipeReadMessage();
 #ifndef ANDROID
     if (message == MAPipeMessageInt) {
