@@ -36,7 +36,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 #ifdef ANDROID
     const char *myEnv[] = {"LD_LIBRARY_PATH=/data/data/com.myos.myapps/lib:$LD_LIBRARY_PATH", 0};
 #else
-    const char *myEnv = NULL;
+    const char *myEnv = {[[NSString stringWithFormat:@"MYOS_PATH=%@", _NSFileManagerMyAppsPath()] cString], 0};
 #endif
     execve(appPath, args, myEnv);
 }
