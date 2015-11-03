@@ -586,7 +586,7 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
     DLog(@"filename: %s", filename);
     NSString *fileNameString = [NSString stringWithCString:filename];
-    NSString *path = @"";
+    NSString *path = fileNameString;
 //#ifdef ANDROID
     if ([path rangeOfString:@"/"].length > 0) {
     } else {
