@@ -54,15 +54,15 @@ void UIChildApplicationInitialize()
     
     MAPipeMessage message = IOPipeReadMessage();
     //DLog(@"message: %d", message);
-    _processName = @"ProcessName";
+    NSString *processName = @"ProcessName";
     if (message == MAPipeMessageCharString) {
-        _processName = [IOPipeReadCharString() retain];
-        DLog(@"processName: %@", _processName);
+        processName = [IOPipeReadCharString() retain];
+        DLog(@"processName: %@", processName);
 #ifdef ANDROID
-        [[NSProcessInfo processInfo] setProcessName:_processName];
+        [[NSProcessInfo processInfo] setProcessName:processName];
         [[NSBundle mainBundle] reInitialize];
 #endif
-        _CGDataProviderSetChildAppName(_processName);
+        _CGDataProviderSetChildAppName(processName);
     } else {
         NSLog(@"Error can't get process name");
     }
