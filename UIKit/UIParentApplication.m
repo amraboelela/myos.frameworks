@@ -225,25 +225,26 @@ void UIParentApplicationGoBack()
     } else {
         if (_currentChildApplicationProxy->_running) {
             [_currentChildApplicationProxy gotoBackground];
+            int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
+            //DLog(@"currentAppIndex: %d", currentAppIndex);
+            UIChildApplicationProxy *childApplicationProxy;
+            if (currentAppIndex == 0) {
+                childApplicationProxy = _CFArrayGetLastValue(_openedChildApplicationProxies);
+            } else {
+                childApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
+                //DLog(@"_UIChildApplication: %@", _UIChildApplication);
+            }
+            [childApplicationProxy setAsCurrent:YES];
         } else {
             _UIApplicationEnterBackground();
+            [_currentChildApplicationProxy setAsCurrent:YES];
         }
-        int currentAppIndex = _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy);
-        //DLog(@"currentAppIndex: %d", currentAppIndex);
-        UIChildApplicationProxy *_UIChildApplicationProxy;
-        if (currentAppIndex == 0) {
-            _UIChildApplicationProxy = _CFArrayGetLastValue(_openedChildApplicationProxies);
-        } else {
-            _UIChildApplicationProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, currentAppIndex-1);
-            //DLog(@"_UIChildApplication: %@", _UIChildApplication);
-        }
-        [_UIChildApplicationProxy setAsCurrent:YES];
     }
 }
 
 void UIParentApplicationMoveCurrentAppToTop()
 {
-    DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
+    //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
     /*if (!_launcherView.hidden) {
         return;
     }*/
@@ -258,7 +259,6 @@ void UIParentApplicationMoveCurrentAppToTop()
     if (_currentChildApplicationProxy->_running) {
         _currentChildApplicationProxy->_score++;
         //}
-        //DLog();
         _CFArrayMoveValueToTop(_openedChildApplicationProxies, _currentChildApplicationProxy);
         //DLog(@"_openedChildApplicationProxies: %@", _openedChildApplicationProxies);
     }

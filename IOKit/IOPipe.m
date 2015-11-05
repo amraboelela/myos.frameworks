@@ -58,7 +58,7 @@ void IOPipeWriteLine(NSString *message)
 
 NSString *IOPipeReadLine(int file)
 {
-    DLog();
+    //DLog();
     return _NSFileHandleReadLine(file);
 }
 
@@ -74,7 +74,7 @@ void IOPipeWriteMessage(int message, BOOL withEnd)
 
 void IOPipeWriteMessageWithPipe(int message, BOOL withEnd, int pipeWrite)
 {
-    DLog(@"message: %d", message);
+    //DLog(@"message: %d", message);
     char aChar=message;
     write(pipeWrite,&aChar,1);
     if (withEnd) {
@@ -101,7 +101,7 @@ int IOPipeReadMessageWithPipe(int pipeRead)
 void IOPipeWriteCharString(NSString *aString)
 {
     //_IOPipeWriteMessage(pipe, IOPipeMessageTypeCharString);
-    DLog(@"[aString cString]: %s", [aString cString]);
+    //DLog(@"[aString cString]: %s", [aString cString]);
     write(_pipeWrite,[aString cString],aString.length);
     char aChar=0;
     write(_pipeWrite,&aChar,1); // end of string
@@ -111,7 +111,7 @@ NSString *IOPipeReadCharString()
 {
     char aChar = ' ';
     NSMutableString *aString = [[NSMutableString alloc] init];
-    DLog(@"_pipeRead: %d", _pipeRead);
+    //DLog(@"_pipeRead: %d", _pipeRead);
     while (aChar != 0) {
         read(_pipeRead, &aChar, 1);
         //DLog(@"aChar: %c", aChar);
@@ -192,7 +192,7 @@ void IOPipeReadDataWithPipe(void *data, int size, int readPipe)
 
 int IOPipeClosePipes()
 {
-    DLog(@"IOPipeClosePipes");
+    //DLog(@"IOPipeClosePipes");
     //int pipeWrite = _mlPipe1[1];
     //int pipeRead = _mlPipe2[0];
     close(_pipeRead);

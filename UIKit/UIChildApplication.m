@@ -57,7 +57,7 @@ void UIChildApplicationInitialize()
     NSString *processName = @"ProcessName";
     if (message == MAPipeMessageCharString) {
         processName = [IOPipeReadCharString() retain];
-        DLog(@"processName: %@", processName);
+        //DLog(@"processName: %@", processName);
 #ifdef ANDROID
         [[NSProcessInfo processInfo] setProcessName:processName];
         [[NSBundle mainBundle] reInitialize];
@@ -70,7 +70,7 @@ void UIChildApplicationInitialize()
     message = IOPipeReadMessage();
     if (message == MAPipeMessageCharString) {
         NSString *myappsPath = [IOPipeReadCharString() retain];
-        DLog(@"myappsPath: %@", myappsPath);
+        //DLog(@"myappsPath: %@", myappsPath);
         _NSFileManagerSetMyAppsPath(myappsPath);
     } else {
         NSLog(@"Error can't get MyAppsPath");
@@ -107,7 +107,7 @@ int UIChildApplicationHandleMessages()
         case MAPipeMessageEventActionDown:
         case MAPipeMessageEventActionMoved:
         case MAPipeMessageEventActionUp: {
-            DLog(@"MAPipeMessageEventAction*");
+            //DLog(@"MAPipeMessageEventAction*");
             UITouch *touch = [[_application->_currentEvent allTouches] anyObject];
             UIScreen *screen = _UIScreenMainScreen();
             float x = IOPipeReadFloat();
@@ -156,7 +156,7 @@ int UIChildApplicationHandleMessages()
              DLog(@"MAPipeMessageHello");
              break;*/
         case MAPipeMessageTerminateApp:
-            DLog(@"MAPipeMessageTerminateApp");
+            //DLog(@"MAPipeMessageTerminateApp");
             IOPipeWriteMessage(MLPipeMessageTerminateApp, YES);
             _UIApplicationTerminate();
             //return MAPipeMessageTerminateApp;
