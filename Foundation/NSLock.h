@@ -7,7 +7,9 @@
 
    Author:  Scott Christley <scottc@net-community.com>
    Date: 1996
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Dec 2015
+ 
    This file is part of the GNUstep Objective-C Library.
 
    This library is free software; you can redistribute it and/or
@@ -71,11 +73,11 @@ extern "C" {
  */
 @interface NSLock : NSObject <NSLocking>
 {
-#if	GS_EXPOSE(NSLock)
+//#if	GS_EXPOSE(NSLock)
 @private
   gs_mutex_t	_mutex;
   NSString	*_name;
-#endif
+//#endif
 }
 
 /**
@@ -115,12 +117,12 @@ extern "C" {
  */
 @interface NSCondition : NSObject <NSLocking>
 {
-#if	GS_EXPOSE(NSCondition)
+//#if	GS_EXPOSE(NSCondition)
 @private
   gs_cond_t	_condition;
   gs_mutex_t	_mutex;
   NSString	*_name;
-#endif
+//#endif
 }
 /**
  * Blocks and atomically unlocks the receiver.
@@ -165,12 +167,12 @@ extern "C" {
  */
 @interface NSConditionLock : NSObject <NSLocking>
 {
-#if	GS_EXPOSE(NSConditionLock)
+//#if	GS_EXPOSE(NSConditionLock)
 @private
   NSCondition *_condition;
   int   _condition_value;
   NSString      *_name;
-#endif
+//#endif
 }
 
 /**
@@ -258,11 +260,11 @@ extern "C" {
  */
 @interface NSRecursiveLock : NSObject <NSLocking>
 {
-#if	GS_EXPOSE(NSRecursiveLock)
+//#if	GS_EXPOSE(NSRecursiveLock)
 @private
   gs_mutex_t	_mutex;
   NSString      *_name;
-#endif
+//#endif
 }
 
 /**
