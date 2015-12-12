@@ -152,6 +152,15 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     int numReturned;
     //GLXFBConfig *fbConfigs;
     
+    int singleBufferAttributess[] = {
+        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+        GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+        GLX_RED_SIZE,      1,   /* Request a single buffered color buffer */
+        GLX_GREEN_SIZE,    1,   /* with the maximum number of color bits  */
+        GLX_BLUE_SIZE,     1,   /* for each component                     */
+        None
+    };
+    
     int doubleBufferAttributes[] = {
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE,   GLX_RGBA_BIT,
@@ -182,11 +191,16 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
      ** buffered configuration first */
     //_window->_hasDoubleBuffer = YES;
     _window->_fbConfigs = glXChooseFBConfig(_window->_display, DefaultScreen(_window->_display), doubleBufferAttributes, &numReturned);
-    if (_window->_fbConfigs == NULL) {  /* no double buffered configs available */
+
+    if (_window->_fbConfigs) {
+        //_window->_hasDoubleBuffer = YES;
+    } else { /* no double buffered configs available */
+        fbConfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy),
+                                      singleBufferAttributess, &numReturned );
+        //_window->_hasDoubleBuffer = NO;
         NSLog(@"No double buffered configs available");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
-    
     /* Create an X colormap and window with a visual matching the first
      ** returned framebuffer config */
     _window->_visualInfo = glXGetVisualFromFBConfig(_window->_display, _window->_fbConfigs[0]);
