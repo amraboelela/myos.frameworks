@@ -3,3 +3,5 @@
 xcuserdata
 *.xccheckout
 config.sh
+config.h
+GSConfig.h
