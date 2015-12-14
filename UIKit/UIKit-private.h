@@ -15,6 +15,7 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
+#import <UIKit/config.h>
 #import <UIKit/UIKit.h>
 #import <UIKit/UIWindow-private.h>
 #import <UIKit/UIScreen-private.h>
