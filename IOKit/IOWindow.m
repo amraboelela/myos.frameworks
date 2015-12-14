@@ -152,7 +152,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     int numReturned;
     //GLXFBConfig *fbConfigs;
     
-    int singleBufferAttributess[] = {
+    int singleBufferAttributes[] = {
         GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
         GLX_RENDER_TYPE,   GLX_RGBA_BIT,
         GLX_RED_SIZE,      1,   /* Request a single buffered color buffer */
@@ -195,21 +195,25 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     if (_window->_fbConfigs) {
         //_window->_hasDoubleBuffer = YES;
     } else { /* no double buffered configs available */
-        fbConfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy),
-                                      singleBufferAttributess, &numReturned );
+        _window->_fbConfigs = glXChooseFBConfig( _window->_display, DefaultScreen(_window->_display),
+                                      singleBufferAttributes, &numReturned );
         //_window->_hasDoubleBuffer = NO;
         NSLog(@"No double buffered configs available");
+        DLog(@"_window->_fbConfigs: %p", _window->_fbConfigs);
         //exit(EXIT_FAILURE);
     }
+    DLog();
     /* Create an X colormap and window with a visual matching the first
      ** returned framebuffer config */
     _window->_visualInfo = glXGetVisualFromFBConfig(_window->_display, _window->_fbConfigs[0]);
+    DLog();
     
     wa.border_pixel = 0;
     //wa.event_mask = StructureNotifyMask;
     wa.event_mask = StructureNotifyMask | ExposureMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask;
     wa.colormap = XCreateColormap(_window->_display, parentWindow, _window->_visualInfo->visual, AllocNone);
     int swaMask = CWBorderPixel | CWColormap | CWEventMask;
+    DLog();
     /* Create a window */
     _window->_xwindow = XCreateWindow(_window->_display, /* Display */
                                      parentWindow, /* Parent */
@@ -222,7 +226,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
                                      swaMask, /* valuemask */
                                      &wa); /* attributes */
 
-    //DLog(@"_window->_xwindow: 0x%lx\n", _window->_xwindow);
+    DLog(@"_window->_xwindow: 0x%lx\n", _window->_xwindow);
     XSelectInput(_window->_display, _window->_xwindow, ExposureMask | StructureNotifyMask | ButtonPressMask | Button1MotionMask | ButtonReleaseMask);
 
     /* Map the window to the screen, and wait for it to appear */
@@ -231,7 +235,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
     
     /* Map the window */
     int ret = XMapRaised(_window->_display, _window->_xwindow);
-    //DLog(@"_window->_xwindow: %p", _window->_xwindow);
+    DLog(@"_window->_xwindow: %p", _window->_xwindow);
     //printf("XMapRaised returned: %x\n", ret);
     XIfEvent(_window->_display, &event, WaitForNotify, (XPointer)_window->_xwindow);
     
@@ -242,7 +246,7 @@ CGContextRef IOWindowCreateContextWithRect(CGRect aRect)
         exit(EXIT_FAILURE);
     }
 
-    //printf("Created context\n");
+    printf("Created context\n");
     return _window->_context;
 }
 
@@ -259,8 +263,8 @@ CGContextRef IOWindowCreateContext()
         return NULL;
     }
     target = cairo_xlib_surface_create(_window->_display, _window->_xwindow, wa.visual, wa.width, wa.height);
-    //DLog(@"wa.visual: %p, wa.width: %d, wa.height: %d", wa.visual, wa.width, wa.height); 
-    //DLog(@"target: %p", target);
+    DLog(@"wa.visual: %p, wa.width: %d, wa.height: %d", wa.visual, wa.width, wa.height); 
+    DLog(@"target: %p", target);
     /* May not need this but left here for reference */
     ret = cairo_surface_set_user_data(target, &_window->_cwindow, (void *)_window->_xwindow, NULL);
     if (ret) {
