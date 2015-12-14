@@ -584,31 +584,35 @@ void _CGDataProviderSetChildAppName(NSString *childAppName)
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
-    //DLog(@"filename: %s", filename);
+    DLog(@"filename: %s", filename);
     NSString *fileNameString = [NSString stringWithCString:filename];
     NSString *path = fileNameString;
 //#ifdef ANDROID
     if ([path rangeOfString:@"/"].length > 0) {
     } else {
         //path = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", _childAppName, path];
+#ifdef NATIVE_APP
+        //path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
+#else
         path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
+#endif
     }
-    //DLog(@"path: %@", path);
+    DLog(@"path: %@", path);
 //#endif
     
     void *info = fopen([path cString], "rb");
     if (NULL == info) {
         //ALog(@"File at path: %@ not found", path);
-#ifndef ANDROID
+//#ifndef ANDROID
         path = [NSString stringWithFormat:@"assets/%@", fileNameString];
         info = fopen([path cString], "rb");
         if (NULL == info) {
             ALog(@"File at path: %@ not found", path);
             return nil;
         }
-#else
-        return nil;
-#endif
+//#else
+//        return nil;
+//#endif
     }
     return CGDataProviderCreateSequential(info, &opal_fileCallbacks);
 }
