@@ -179,7 +179,7 @@ static UIViewController *_UINavigationControllerPopViewControllerWithoutPoppingN
 
 - (void)loadView
 {
-    DLog();
+    //DLog();
     self.view = [[[UIView alloc] initWithFrame:CGRectMake(0,_kStatusBarHeight,_kScreenWidth,_kScreenHeight)] autorelease];
     self.view.clipsToBounds = YES;
     
