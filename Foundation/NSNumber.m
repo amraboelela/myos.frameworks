@@ -918,7 +918,7 @@ if (aValue >= -1 && aValue <= 12)\
         return boxDouble(aValue, SMALL_FLOAT_MASK);
     }
 #endif
-    DLog();
+    //DLog();
     n = NSAllocateObject (NSFloatNumberClass, 0, 0);
     n->value = aValue;
     return AUTORELEASE(n);

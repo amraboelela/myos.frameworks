@@ -584,7 +584,7 @@ void _CGDataProviderSetChildAppName(NSString *childAppName)
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
-    DLog(@"filename: %s", filename);
+    //DLog(@"filename: %s", filename);
     NSString *fileNameString = [NSString stringWithCString:filename];
     NSString *path = fileNameString;
 //#ifdef ANDROID
@@ -597,7 +597,7 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
         path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
 #endif
     }
-    DLog(@"path: %@", path);
+    //DLog(@"path: %@", path);
 //#endif
     
     void *info = fopen([path cString], "rb");
