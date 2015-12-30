@@ -18,7 +18,7 @@
 #import <QuartzCore/QuartzCore-private.h>
 #import <OpenGLES/EAGL-private.h>
 #import <IOKit/IOKit.h>
-#import <UIKit/UIScreen-private.h>
+#import <UIKit/config.h>
 
 static BOOL _foundOpaqueLayer = NO;
 
