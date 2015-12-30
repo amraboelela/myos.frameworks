@@ -31,8 +31,6 @@
 
 @class UIView, UIEvent;
 
-#define _kScreenFooter      40.0
-
 UIScreen *_UIScreenMainScreen();
 UIView *_UIScreenHitTest(UIScreen *screen, CGPoint touchPoint, UIEvent *theEvent);
 CGImageRef _UIScreenCaptureScreen();
