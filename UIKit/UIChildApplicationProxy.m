@@ -31,12 +31,12 @@ static void UIChildApplicationProxyRun(NSString *appName)
 {
     const char *appPath = [[NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(), appName, appName] cString];
     const char *cAppName = [appName cString];
-    //DLog(@"appPath: %s", appPath);
+    DLog(@"appPath: %s", appPath);
     char *const args[] = {cAppName, NULL};
 #ifdef ANDROID
     const char *myEnv[] = {"LD_LIBRARY_PATH=/data/data/com.myos.myapps/lib:$LD_LIBRARY_PATH", 0};
 #else
-    const char *myEnv = NULL;
+    const char *myEnv[] = {"LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH", 0};
 #endif
     execve(appPath, args, myEnv);
 }
