@@ -494,7 +494,7 @@ void _EAGLClear()
 //#ifdef NATIVE_APP
 //    glClearColor(1.0,0.0,0.0,1.0);
 //#else
-    glClearColor(0.5,0.5,0.5,1.0);
+    glClearColor(0,0,0,1.0);
 //#endif
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
