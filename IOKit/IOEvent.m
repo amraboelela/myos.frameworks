@@ -15,7 +15,6 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-//#import "IOEvent.h"
 #import <cairo-xlib.h>
 #import <IOKit/IOKit.h>
 #import <UIKit/UIEvent.h>
@@ -27,11 +26,11 @@ static XEvent _xevent;
 
 #define _KIOEventTimeDiffMax	0.27
 
-UIEvent* IOEventUIEventFromXEvent(XEvent e);
+UIEvent *IOEventUIEventFromXEvent(XEvent e);
 
-BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
+BOOL IOEventGetNextEvent(IOWindow *window, UIEvent *uievent)
 {
-    if (XCheckWindowEvent(window->_display, window->_xwindow, ButtonPressMask | Button1MotionMask | ButtonReleaseMask, &_xevent)) {
+    if (XCheckWindowEvent(window->_display, window->_xwindow, ButtonPressMask | Button1MotionMask | ButtonReleaseMask | StructureNotifyMask, &_xevent)) {
         UITouch *touch = [[uievent allTouches] anyObject];
         CGPoint screenLocation = CGPointMake(_xevent.xbutton.x / _screenScaleFactor, _xevent.xbutton.y / _screenScaleFactor);
         NSTimeInterval timestamp = _xevent.xbutton.time / 1000.0;
@@ -56,6 +55,9 @@ BOOL IOEventGetNextEvent(IOWindow * window, UIEvent *uievent)
 #else
                 IOPipeWriteMessage(MLPipeMessageMoveApplicationToTop, YES);
 #endif
+                break;
+            case DestroyNotify:
+                DLog(@"DestroyNotify");
                 break;
         }
         //DLog(@"touch: %@", touch);
