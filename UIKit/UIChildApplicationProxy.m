@@ -209,8 +209,8 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     //DLog();
     if (!_opened) {
         self.opened = YES;
-        [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
-        //UIParentApplicationPresentAppScreen(self, YES);
+        //[self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
+        UIParentApplicationPresentAppScreen(self, YES);
     } else {
         _CFArrayMoveValueToTop(_openedChildApplicationProxies, self);
         UIParentApplicationPresentAppScreen(self, NO);
