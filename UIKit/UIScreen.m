@@ -67,7 +67,7 @@ NSMutableArray *_allScreens = nil;
         [_allScreens addObject:self];
         //#ifdef ANDROID
         EAGLContext *context = _EAGLGetCurrentContext();
-        DLog(@"context: %@", context);
+        //DLog(@"context: %@", context);
         _hScale = context->_width * 1.0 / _kScreenWidth;
 #ifdef NATIVE_APP
         _vScale = context->_height * 1.0 / (_kScreenHeight+_kScreenFooter);
@@ -79,7 +79,7 @@ NSMutableArray *_allScreens = nil;
         //#else
         //        _scale = _kScreenScaleFactor;
         //#endif
-        DLog(@"_scale: %0.1f", _scale);
+        //DLog(@"_scale: %0.1f", _scale);
     }
     return self;
 }

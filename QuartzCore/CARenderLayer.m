@@ -1,5 +1,5 @@
 /*
- Copyright © 2014-2015 myOS Group.
+ Copyright © 2014-2016 myOS Group.
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -106,10 +106,16 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     float wl = bounds.size.width; // width of layer bounds
     float hl = bounds.size.height; // height of layer bounds
     //DLog(@"textureID: %d, wl: %0.1f, hl: %0.1f", textureID, wl, hl);
+    //DLog(@"xr: %0.1f, yr: %0.1f, wr: %0.1f, hr: %0.1f", xr, yr, wr, hr);
     CGPoint p1 = CGPointMake(xr/wl, 1.0-yr/hl);
     CGPoint p2 = CGPointMake((xr+wr)/wl, p1.y);
     CGPoint p3 = CGPointMake(p1.x, 1.0-(yr+hr)/hl);
     CGPoint p4 = CGPointMake(p2.x, p3.y);
+ 
+//    DLog(@"p1.x: %0.1f, p1.y: %0.1f", p1.x, p1.y);
+//    DLog(@"p2.x: %0.1f, p2.y: %0.1f", p2.x, p2.y);
+//    DLog(@"p3.x: %0.1f, p3.y: %0.1f", p3.x, p3.y);
+//    DLog(@"p4.x: %0.1f, p4.y: %0.1f", p4.x, p4.y);
     
     GLfloat texCoords[] = {
         p1.x, p1.y,
@@ -120,15 +126,14 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     
     //DLog(@"texCoords: %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f, %0.1f", texCoords[0], texCoords[1], texCoords[2], texCoords[3],
     //     texCoords[4], texCoords[5], texCoords[6], texCoords[7]);
-    IOWindow *screenWindow = IOWindowGetSharedWindow();
-    float ws = screenWindow->_rect.size.width;
-    float hs = screenWindow->_rect.size.height
-/*#ifdef NATIVE_APP
+    //IOWindow *screenWindow = IOWindowGetSharedWindow();
+    float ws = _kScreenWidth;//screenWindow->_rect.size.width;
+    //float hs = screenWindow->_rect.size.height;
+#ifdef NATIVE_APP
     float hs = _kScreenHeight+_kScreenFooter;//screenWindow->_rect.size.height; // height of screen // _kScreenHeight
 #else
     float hs = _kScreenHeight;//screenWindow->_rect.size.height; // height of screen // _kScreenHeight
 #endif
-  */  
     
     CGPoint layerOrigin = _CARenderLayerGetOrigin(layer);
     //DLog(@"ws: %0.1f, hs: %0.1f", ws, hs);
@@ -136,12 +141,25 @@ static void _CARenderLayerCompositeWithOpacity(CARenderLayer *layer, float opaci
     float xo = layerOrigin.x + xr;
     float yo = layerOrigin.y + yr;
     
+    //DLog(@"xo: %0.1f, yo: %0.1f", xo, yo);
     CATransform3D transform = _CARenderLayerTransform(layer);
     if (CATransform3DIsIdentity(transform)) {
+        //DLog(@"CATransform3DIsIdentity");
         p1 = CGPointMake(2.0*xo/ws-1, 1.0-2*yo/hs);
         p2 = CGPointMake(2.0*(xo+wr)/ws-1, p1.y);
         p3 = CGPointMake(p1.x, 1.0-2*(yo+hr)/hs);
         p4 = CGPointMake(p2.x, p3.y);
+/*        if (hr < 608) {
+            p1 = CGPointMake(-0.9, 0.5);
+            p2 = CGPointMake(0.9, 0.5);
+            p3 = CGPointMake(-0.9, -0.8);
+            p4 = CGPointMake(0.9, -0.8);
+        }
+        DLog(@"p1.x: %0.1f, p1.y: %0.1f", p1.x, p1.y);
+        DLog(@"p2.x: %0.1f, p2.y: %0.1f", p2.x, p2.y);
+        DLog(@"p3.x: %0.1f, p3.y: %0.1f", p3.x, p3.y);
+        DLog(@"p4.x: %0.1f, p4.y: %0.1f", p4.x, p4.y);
+*/
     } else {
         //CATransform3D transform = layer->_transform;
         //DLog(@"layer.transform: %@", CATransform3DDescription(transform));
