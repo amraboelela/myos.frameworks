@@ -124,7 +124,6 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy,
 {
     //DLog();
     //_launcherView.hidden = YES;
-    _UIApplicationEnterBackground();
     if (coldStart) {
         //UIParentApplicationCheckMemory();
         //[_childAppView addSubview:childAppProxy.defaultScreenView];
@@ -144,6 +143,7 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy,
     } else {
         [childAppProxy setAsCurrent:YES];
     }
+    _UIApplicationEnterBackground();
 #if defined(ANDROID) && defined(NATIVE_APP)
     [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
 #endif
@@ -163,7 +163,7 @@ void UIParentApplicationHandleMessages()
             break;
         case MLPipeMessageChildIsReady:
             //DLog(@"MLPipeMessageChildIsReady");
-            IOPipeWriteInt(0x4000001);
+            //IOPipeWriteInt(0x4000001);
             break;
         case MLPipeMessageMoveApplicationToTop:
             UIParentApplicationMoveCurrentAppToTop();
