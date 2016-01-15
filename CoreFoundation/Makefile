@@ -1,26 +1,10 @@
-#
-# Copyright © 2014-2015 myOS Group.
-#
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 2 of the License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for more details.
-#
-# Contributor(s):
-# Amr Aboelela <amraboelela@gmail.com>
-#
 
-LIB_NAME=CoreFoundation
+#LIB_NAME=CoreFoundation
 LDLIBS=-lobjc
 
 ifeq ($(BASE_OS),android)
 else
-    CFLAGS=-MMD -MP -DGNUSTEP -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1 -pthread -Wall -DGSWARN -DGSDIAGNOSE -Wno-import \
+    CFLAGS+=-MMD -MP -DGNUSTEP -DGNUSTEP_BASE_LIBRARY=1 -DGNU_RUNTIME=1 -DGNUSTEP_BASE_LIBRARY=1 -pthread -Wall -DGSWARN -DGSDIAGNOSE -Wno-import \
         -g -O2 -DBUILDING_SELF
     LDLIBS+=-licui18n -licuuc -licudata -fgnu-runtime -lFoundation
 endif
