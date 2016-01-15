@@ -5,3 +5,5 @@ xcuserdata
 config.sh
 config.h
 GSConfig.h
+*.o
+*.d

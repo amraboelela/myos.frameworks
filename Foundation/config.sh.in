@@ -1,0 +1,9 @@
+# Copy this file to config.sh if you want to build it in debug mode
+
+export BUILD_TYPE=Library
+
+#This means it is one binary used for both NativeApp and ChildApp
+#export APP_TYPE=Universal
+
+#export DEBUG_MODE=YES
+
