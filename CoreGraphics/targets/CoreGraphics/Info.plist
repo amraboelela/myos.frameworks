@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>English</string>
 	<key>CFBundleDisplayName</key>
 	<string>CoreGraphics</string>
 	<key>CFBundleExecutable</key>
 	<string>CoreGraphics</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.coregraphics</string>
+	<string>org.myos.CoreGraphics</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -19,6 +19,8 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.1</string>
+	<string>1.0</string>
+	<key>LSRequiresNativeExecution</key>
+	<false/>
 </dict>
 </plist>

@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>English</string>
 	<key>CFBundleDisplayName</key>
 	<string>NAUIKit</string>
 	<key>CFBundleExecutable</key>
 	<string>NAUIKit</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.nauikit</string>
+	<string>org.myos.NAUIKit</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -19,6 +19,6 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.1</string>
+	<string>1.0</string>
 </dict>
 </plist>

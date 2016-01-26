@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>English</string>
 	<key>CFBundleDisplayName</key>
 	<string>NACoreText</string>
 	<key>CFBundleExecutable</key>
 	<string>NACoreText</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.nacoretext</string>
+	<string>org.myos.NACoreText</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -19,6 +19,8 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.1</string>
+	<string>1.0</string>
+	<key>LSRequiresNativeExecution</key>
+	<true/>
 </dict>
 </plist>
