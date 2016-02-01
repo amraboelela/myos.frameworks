@@ -50,12 +50,12 @@ static void UIChildApplicationSignal(int sig)
 
 void UIChildApplicationInitialize()
 {
-    IOPipeSetPipes(kMainPipeRead, kMainPipeWrite);
+    IOPipeSetPipes(ChildApplicationPipeRead, ChildApplicationPipeWrite);
     
-    MAPipeMessage message = IOPipeReadMessage();
+    ChildPipeMessage message = IOPipeReadMessage();
     //DLog(@"message: %d", message);
     NSString *processName = @"ProcessName";
-    if (message == MAPipeMessageCharString) {
+    if (message == ChildPipeMessageCharString) {
         processName = [IOPipeReadCharString() retain];
         //DLog(@"processName: %@", processName);
 #ifdef ANDROID
@@ -68,7 +68,7 @@ void UIChildApplicationInitialize()
     }
     
     message = IOPipeReadMessage();
-    if (message == MAPipeMessageCharString) {
+    if (message == ChildPipeMessageCharString) {
         NSString *myappsPath = [IOPipeReadCharString() retain];
         //DLog(@"myappsPath: %@", myappsPath);
         _NSFileManagerSetMyAppsPath(myappsPath);
@@ -78,7 +78,7 @@ void UIChildApplicationInitialize()
     
     message = IOPipeReadMessage();
 #ifndef ANDROID
-    if (message == MAPipeMessageInt) {
+    if (message == ChildPipeMessageInt) {
         int parentWindowID = IOPipeReadInt();
         //DLog(@"parentWindowID: 0x%lx", parentWindowID);
         IOWindowSetParentID(parentWindowID);
@@ -101,13 +101,13 @@ int UIChildApplicationHandleMessages()
 {
     int message = IOPipeReadMessage();
     switch (message) {
-        case MAPipeMessageEndOfMessage:
-            //DLog(@"MAPipeMessageEndOfMessage");
+        case ChildPipeMessageEndOfMessage:
+            //DLog(@"ChildPipeMessageEndOfMessage");
             break;
-        case MAPipeMessageEventActionDown:
-        case MAPipeMessageEventActionMoved:
-        case MAPipeMessageEventActionUp: {
-            //DLog(@"MAPipeMessageEventAction*");
+        case ChildPipeMessageEventActionDown:
+        case ChildPipeMessageEventActionMoved:
+        case ChildPipeMessageEventActionUp: {
+            //DLog(@"ChildPipeMessageEventAction*");
             UITouch *touch = [[_application->_currentEvent allTouches] anyObject];
             UIScreen *screen = _UIScreenMainScreen();
             float x = IOPipeReadFloat();
@@ -117,8 +117,8 @@ int UIChildApplicationHandleMessages()
             NSTimeInterval timestamp = CACurrentMediaTime();
             _application->_currentEvent->_timestamp = timestamp;
             switch (message) {
-                case MAPipeMessageEventActionDown: {
-                    //DLog(@"MAPipeMessageEventActionDown");
+                case ChildPipeMessageEventActionDown: {
+                    //DLog(@"ChildPipeMessageEventActionDown");
                     CGPoint delta = CGPointZero;
                     int tapCount = 1;
                     NSTimeInterval timeDiff = fabs(touch.timestamp - timestamp);
@@ -128,13 +128,13 @@ int UIChildApplicationHandleMessages()
                     _UITouchSetPhase(touch, UITouchPhaseBegan, screenLocation, tapCount, delta, timestamp);
                     break;
                 }
-                case MAPipeMessageEventActionMoved:
-                    //DLog(@"MAPipeMessageEventActionMoved");
+                case ChildPipeMessageEventActionMoved:
+                    //DLog(@"ChildPipeMessageEventActionMoved");
                     _UITouchUpdatePhase(touch, UITouchPhaseMoved, screenLocation, timestamp);
                     break;
-                case MAPipeMessageEventActionUp:
+                case ChildPipeMessageEventActionUp:
                     //DLog(@"screenLocation: x:%0.0f, y:%0.0f", x, y);
-                    //DLog(@"MAPipeMessageEventActionUp");
+                    //DLog(@"ChildPipeMessageEventActionUp");
                     _UITouchUpdatePhase(touch, UITouchPhaseEnded, screenLocation, timestamp);
                     break;
                 default:
@@ -143,8 +143,8 @@ int UIChildApplicationHandleMessages()
             _UIApplicationSetCurrentEventTouchedView();
             break;
         }
-        case MAPipeMessageWillEnterBackground:
-            //DLog(@"MAPipeMessageWillEnterBackground");
+        case ChildPipeMessageWillEnterBackground:
+            //DLog(@"ChildPipeMessageWillEnterBackground");
             IOWindowHideWindow();
             _UIApplicationEnterBackground();
             pause();
@@ -152,14 +152,14 @@ int UIChildApplicationHandleMessages()
             //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
             _UIApplicationEnterForeground();
             break;
-            /*case MAPipeMessageHello:
-             DLog(@"MAPipeMessageHello");
+            /*case ChildPipeMessageHello:
+             DLog(@"ChildPipeMessageHello");
              break;*/
-        case MAPipeMessageTerminateApp:
-            //DLog(@"MAPipeMessageTerminateApp");
-            IOPipeWriteMessage(MLPipeMessageTerminateApp, YES);
+        case ChildPipeMessageTerminateApp:
+            //DLog(@"ChildPipeMessageTerminateApp");
+            IOPipeWriteMessage(ParentPipeMessageTerminateApp, YES);
             _UIApplicationTerminate();
-            //return MAPipeMessageTerminateApp;
+            //return ChildPipeMessageTerminateApp;
         default:
             break;
     }
@@ -168,6 +168,6 @@ int UIChildApplicationHandleMessages()
 
 void UIChildApplicationClosePipes()
 {
-    close(kMainPipeRead);
-    close(kMainPipeWrite);
+    close(ChildApplicationPipeRead);
+    close(ChildApplicationPipeWrite);
 }

@@ -1,5 +1,5 @@
 /*
- Copyright © 2014-2015 myOS Group.
+ Copyright © 2014-2016 myOS Group.
  
  This file is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
 
 #import <UIKit/UIKit.h>
 
-#define kMainPipeRead           10
-#define kMainPipeWrite          21
+#define ChildApplicationPipeRead           10
+#define ChildApplicationPipeWrite          21
 
 void UIChildApplicationInitialize();
 void UIChildApplicationSetApplication(UIApplication *application);

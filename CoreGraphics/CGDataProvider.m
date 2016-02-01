@@ -591,8 +591,9 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
     if ([path rangeOfString:@"/"].length > 0) {
     } else {
         //path = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", _childAppName, path];
-#ifdef NATIVE_APP
-    DLog(@"NATIVE_APP");
+//#ifdef NATIVE_APP
+#if defined(NATIVE_APP) || defined(PARENT_APP)
+    DLog(@"NATIVE_APP || PARENT_APP");
         //path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
 #else
         path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];

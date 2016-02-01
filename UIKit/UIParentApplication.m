@@ -1,5 +1,5 @@
 /*
- Copyright © 2014-2015 myOS Group.
+ Copyright © 2014-2016 myOS Group.
  
  This file is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -15,10 +15,11 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#import <fcntl.h>
+//#import <fcntl.h>
 #import <UIKit/UIKit-private.h>
+#import <UIKit/UIChildApplicationProxy.h>
 #import <IOKit/IOKit.h>
-#import <QuartzCore/QuartzCore-private.h>
+//#import <QuartzCore/QuartzCore-private.h>
 #import <CoreFoundation/CoreFoundation-private.h>
 
 #define _kTerminateChildTimeOut         2.0
@@ -151,31 +152,31 @@ void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy,
 
 void UIParentApplicationHandleMessages()
 {
-#ifdef NATIVE_APP
+//#ifdef NATIVE_APP
     if (!_childAppRunning) {
         return;
     }
     //DLog();
     int message = IOPipeReadMessage();
     switch (message) {
-        case MLPipeMessageEndOfMessage:
-            //DLog(@"MLPipeMessageEndOfMessage");
+        case ParentPipeMessageEndOfMessage:
+            //DLog(@"ParentPipeMessageEndOfMessage");
             break;
-        case MLPipeMessageChildIsReady:
-            //DLog(@"MLPipeMessageChildIsReady");
+        case ParentPipeMessageChildIsReady:
+            //DLog(@"ParentPipeMessageChildIsReady");
             //IOPipeWriteInt(0x4000001);
             break;
-        case MLPipeMessageMoveApplicationToTop:
+        case ParentPipeMessageMoveApplicationToTop:
             UIParentApplicationMoveCurrentAppToTop();
             break;
-        case MLPipeMessageTerminateApp:
-            DLog(@"MLPipeMessageTerminateApp");
+        case ParentPipeMessageTerminateApp:
+            DLog(@"ParentPipeMessageTerminateApp");
             //[[[_application->_keyWindow subviews] lastObject] removeFromSuperview];
             break;
         default:
             break;
     }
-#endif
+//#endif
 }
 
 void UIParentApplicationShowLauncher()
@@ -276,7 +277,7 @@ void UIParentApplicationTerminateApps()
         return;
     }
     if (_currentChildApplicationProxy->_running) {
-        IOPipeWriteMessage(MAPipeMessageTerminateApp, YES);
+        IOPipeWriteMessage(ChildPipeMessageTerminateApp, YES);
     }
     for (UIChildApplicationProxy *childAppProxy in _openedChildApplicationProxies) {
         //DLog(@"childAppProxy: %@", childAppProxy);
@@ -290,11 +291,11 @@ void UIParentApplicationTerminateApps()
         while (!done) {
             int message = IOPipeReadMessage();
             switch (message) {
-                case MLPipeMessageEndOfMessage:
-                    DLog(@"MLPipeMessageEndOfMessage");
+                case ParentPipeMessageEndOfMessage:
+                    DLog(@"ParentPipeMessageEndOfMessage");
                     break;
-                case MLPipeMessageTerminateApp:
-                    DLog(@"MLPipeMessageTerminateApp");
+                case ParentPipeMessageTerminateApp:
+                    DLog(@"ParentPipeMessageTerminateApp");
                     done = YES;
                     break;
                 default:

@@ -24,7 +24,7 @@ typedef enum {
 } _CAAnimatorConditionLockTypes;
 
 extern NSConditionLock *_CAAnimatorConditionLock;
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
 extern NSConditionLock *_CAAnimatorNAConditionLock;
 #endif
 //extern BOOL _CAAnimatorCaptureScreen;

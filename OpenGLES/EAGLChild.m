@@ -35,7 +35,7 @@ int EAGLChildGenTexture()
         message = IOPipeReadMessageWithPipe(_kEAGLChildPipeRead);
         switch (message) {
             case EAGLChildMessageEndOfMessage: {
-                //DLog(@"MAPipeMessageEndOfMessage");
+                //DLog(@"ChildPipeMessageEndOfMessage");
                 break;
             }
             case EAGLChildMessageGenTexture:

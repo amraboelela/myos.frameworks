@@ -40,6 +40,7 @@ static UIImage *_UIImageCachedImageForName(NSString *name)
     return [[UIImage imageCache] objectForKey:name];
 }
 
+/*
 static UIImage *_UIImageNALoadImageNamed(NSString *name)
 {
     //DLog(@"name: %@", name);
@@ -48,16 +49,8 @@ static UIImage *_UIImageNALoadImageNamed(NSString *name)
     NSString *path = name;//[[bundle resourcePath] stringByAppendingPathComponent:name];
     //DLog(@"path: %@", path);
     UIImage *img = [UIImage imageWithContentsOfFile:path];
-    /*
-     if (!img) {
-     // if nothing is found, try again after replacing any underscores in the name with dashes.
-     // I don't know why, but UIKit does something similar. it probably has a good reason and it might not be this simplistic, but
-     // for now this little hack makes Ramp Champ work. :)
-     path = [[[bundle resourcePath] stringByAppendingPathComponent:[[name stringByDeletingPathExtension] stringByReplacingOccurrencesOfString:@"_" withString:@"-"]] stringByAppendingPathExtension:[name pathExtension]];
-     img = [self imageWithContentsOfFile:path];
-     }*/
     return img;
-}
+}*/
 
 static UIImage *_UIImageLoadImageNamed(NSString *name)
 {
@@ -186,12 +179,12 @@ static UIImage *_UIImageLoadImageNamed(NSString *name)
 
     if (!img) {
         // as per the iOS docs, if it fails to find a match with the bare name, it re-tries by appending a png file extension
-#ifdef NATIVE_APP
-        img = _UIImageNALoadImageNamed(name) ?: _UIImageNALoadImageNamed([name stringByAppendingPathExtension:@"png"]);
-#else
+//#ifdef NATIVE_APP
+//        img = _UIImageNALoadImageNamed(name) ?: _UIImageNALoadImageNamed([name stringByAppendingPathExtension:@"png"]);
+//#else
         //DLog();
         img = _UIImageLoadImageNamed(name) ?: _UIImageLoadImageNamed([name stringByAppendingPathExtension:@"png"]);
-#endif
+//#endif
         _UIImageCacheImage(img, name);
     }
     return img;

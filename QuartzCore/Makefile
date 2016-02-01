@@ -2,14 +2,16 @@
 LDLIBS=-lCoreFoundation -lFoundation
 
 ifeq ($(APP_TYPE),NativeApp)
-    LDLIBS+=-lEGL -lIOKit_native -lOpenGLES_native -lCoreGraphics_native -lCoreText_native
+    LDLIBS+=-lIOKit_native -lOpenGLES_native -lCoreGraphics_native -lCoreText_native
+else ifeq ($(APP_TYPE),ParentApp)
+    LDLIBS+=-lIOKit_parent -lOpenGLES_parent -lCoreGraphics_parent -lCoreText_parent
 else
     LDLIBS+=-lIOKit -lOpenGLES -lCoreGraphics -lCoreText
 endif
 
 ifeq ($(BASE_OS),android)
     ifeq ($(APP_TYPE),NativeApp)
-        LDLIBS+=-lGLESv1_CM
+        LDLIBS+=-lEGL -lGLESv1_CM
     endif
 endif
 

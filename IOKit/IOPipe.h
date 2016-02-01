@@ -1,5 +1,5 @@
 /*
- Copyright © 2014-2015 myOS Group.
+ Copyright © 2014-2016 myOS Group.
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -16,24 +16,30 @@
  */
 
 typedef enum {
-    MAPipeMessageEndOfMessage,
-    MAPipeMessageInt,
-    MAPipeMessageCharString,
-    MAPipeMessageScreenSize,
-    MAPipeMessageData,
-    MAPipeMessageEventActionDown,
-    MAPipeMessageEventActionMoved,
-    MAPipeMessageEventActionUp,
-    MAPipeMessageWillEnterBackground,
-    MAPipeMessageTerminateApp,
-} MAPipeMessage;
+    NativePipeMessageEndOfMessage,
+} NativePipeMessage;
 
 typedef enum {
-    MLPipeMessageEndOfMessage,
-    MLPipeMessageChildIsReady,
-    MLPipeMessageMoveApplicationToTop,
-    MLPipeMessageTerminateApp,
-} MLPipeMessage;
+    ParentPipeMessageEndOfMessage,
+    ParentPipeMessageInt,
+    ParentPipeMessageCharString,
+    ParentPipeMessageChildIsReady,
+    ParentPipeMessageMoveApplicationToTop,
+    ParentPipeMessageTerminateApp,
+} ParentPipeMessage;
+
+typedef enum {
+    ChildPipeMessageEndOfMessage,
+    ChildPipeMessageInt,
+    ChildPipeMessageCharString,
+    ChildPipeMessageScreenSize,
+    ChildPipeMessageData,
+    ChildPipeMessageEventActionDown,
+    ChildPipeMessageEventActionMoved,
+    ChildPipeMessageEventActionUp,
+    ChildPipeMessageWillEnterBackground,
+    ChildPipeMessageTerminateApp,
+} ChildPipeMessage;
 
 void IOPipeSetPipes(int pipeRead, int pipeWrite);
 NSString *IOPipeReadLine();

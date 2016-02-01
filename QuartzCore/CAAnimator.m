@@ -23,7 +23,7 @@
 
 NSConditionLock *_CAAnimatorConditionLock = nil;
 
-#ifdef NATIVE_APP
+#if defined(ANDROID) && defined(NATIVE_APP)
 NSConditionLock *_CAAnimatorNAConditionLock = nil;
 #endif
 

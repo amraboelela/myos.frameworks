@@ -4,12 +4,21 @@ OBJECTS = \
     EAGL.o \
     EAGLTexture.o \
 
+ifeq ($(BASE_OS),android)
+    ifeq ($(APP_TYPE),NativeApp)
+        LDLIBS+=-lEGL
+        OBJECTS+=EAGLParent.o
+    else
+        OBJECTS+=EAGLChild.o
+    endif
+endif
+
 ifeq ($(APP_TYPE),NativeApp)
-    LDLIBS+=-lEGL -lIOKit_native -lCoreGraphics_native
-    OBJECTS+=EAGLParent.o
+    LDLIBS+=-lIOKit_native -lCoreGraphics_native
+else ifeq ($(APP_TYPE),ParentApp)
+    LDLIBS+=-lIOKit_parent -lCoreGraphics_parent
 else
     LDLIBS+=-lIOKit -lCoreGraphics
-    OBJECTS+=EAGLChild.o
 endif
 
 ifeq ($(BASE_OS),android)

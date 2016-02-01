@@ -1,5 +1,5 @@
 /*
- Copyright © 2014-2015 myOS Group.
+ Copyright © 2016 myOS Group.
  
  This file is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,6 @@
 //#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#define ParentApplicationPipeRead           30
-#define ParentApplicationPipeWrite          51
-
-@class UIChildApplicationProxy;
-
 /*
 typedef enum {
     UIParentApplicationScreenDirectionFromRight,
@@ -32,22 +27,22 @@ typedef enum {
 }  UIParentApplicationScreenDirection;
 */
 
-@interface UIParentApplication : NSObject {
+@interface UINativeApplication : NSObject {
 @package
     //BOOL _isActive;
 }
 
-+ (UIParentApplication *)sharedParentApplication;
-- (void)presentAppDone;
++ (UINativeApplication *)sharedNativeApplication;
+//- (void)presentAppDone;
 
 @end
 
 //void UIParentApplicationInitialize();
 //void UIParentApplicationLauncherViewDidAdded();
-void UIParentApplicationSetChildAppIsRunning(BOOL isRunning);
-void UIParentApplicationHandleMessages();
-void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart);
-void UIParentApplicationMoveCurrentAppToTop();
-void UIParentApplicationTerminateApps();
-void UIParentApplicationGoBack();
-void UIParentApplicationShowLauncher();
+//void UIParentApplicationSetChildAppIsRunning(BOOL isRunning);
+void UINativeApplicationHandleMessages();
+//void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart);
+//void UIParentApplicationMoveCurrentAppToTop();
+//void UIParentApplicationTerminateApps();
+//void UIParentApplicationGoBack();
+//void UIParentApplicationShowLauncher();

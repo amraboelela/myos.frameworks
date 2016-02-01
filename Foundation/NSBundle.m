@@ -2815,7 +2815,7 @@ IF_NO_GC(
     }
   else
     {
-      return [_path stringByAppendingPathComponent: @"Resources"];
+        return _path;//[_path stringByAppendingPathComponent: @"Resources"];
     }
 }
 

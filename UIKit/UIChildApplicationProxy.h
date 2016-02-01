@@ -34,8 +34,10 @@ extern NSMutableArray *_openedChildApplicationProxies;
     pid_t _pid;
     int _pipeRead;
     int _pipeWrite;
+#ifdef ANDROID
     int _animationPipeRead;
     int _animationPipeWrite;
+#endif
     UIApplicationIcon *_applicationIcon;
     UIApplicationIcon *_homeIcon;
 }

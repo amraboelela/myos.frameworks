@@ -51,9 +51,9 @@ BOOL IOEventGetNextEvent(IOWindow *window, UIEvent *uievent)
                 break;
             case ButtonRelease:
                 _UITouchUpdatePhase(touch, UITouchPhaseEnded, screenLocation, timestamp);
-#ifdef NATIVE_APP
+#if defined(NATIVE_APP) || defined(PARENT_APP)
 #else
-                IOPipeWriteMessage(MLPipeMessageMoveApplicationToTop, YES);
+                IOPipeWriteMessage(ParentPipeMessageMoveApplicationToTop, YES);
 #endif
                 break;
             case DestroyNotify:

@@ -1,15 +1,10 @@
 
 CFLAGS+=-fblocks
-
-ifeq ($(APP_TYPE),NativeApp)
-    LDLIBS+=-lEGL -lCoreFoundation -lFoundation -lIOKit_native -lOpenGLES_native -lQuartzCore_native -lCoreGraphics_native -lCoreText_native
-else
-    LDLIBS=-lCoreFoundation -lFoundation -lIOKit -lOpenGLES -lQuartzCore -lCoreGraphics -lCoreText
-endif
+LDLIBS= -lCoreFoundation -lFoundation
 
 ifeq ($(BASE_OS),android)
     ifeq ($(APP_TYPE),NativeApp)
-        LDLIBS+=-lGLESv1_CM -lGLESv1_enc
+        LDLIBS+=-lEGL -lGLESv1_CM -lGLESv1_enc
     endif
 endif
 
@@ -60,9 +55,6 @@ OBJECTS = \
     UIToolbarButton.o \
     UITabBar.o \
     UIBarItem.o \
-    UIParentApplication.o \
-    UIChildApplication.o \
-    UIChildApplicationProxy.o \
     NSArray+UIKit.o \
     UIPageControl.o \
     UIScrollView.o \
@@ -75,5 +67,24 @@ OBJECTS = \
     UIApplicationIcon.o \
     UIActivityIndicatorView.o \
     UIDevice.o \
+
+ifeq ($(APP_TYPE),NativeApp)
+    LDLIBS+=-lIOKit_native -lOpenGLES_native -lQuartzCore_native -lCoreGraphics_native -lCoreText_native
+    OBJECTS+= \
+        UINativeApplication.o \
+        UIParentApplicationProxy.o \
+
+else ifeq ($(APP_TYPE),ParentApp)
+    LDLIBS+=-lIOKit_parent -lOpenGLES_parent -lQuartzCore_parent -lCoreGraphics_parent -lCoreText_parent
+    OBJECTS+= \
+        UIParentApplication.o \
+        UIChildApplicationProxy.o \
+        
+else
+    LDLIBS=-lIOKit -lOpenGLES -lQuartzCore -lCoreGraphics -lCoreText
+    OBJECTS+= \
+        UIChildApplication.o \
+        
+endif
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

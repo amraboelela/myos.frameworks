@@ -257,12 +257,12 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent *event)
         _application->_currentEvent->_timestamp = timestamp;
         if (action == AMOTION_EVENT_ACTION_UP) {
             //DLog(@"AMOTION_EVENT_ACTION_UP");
-            IOPipeWriteMessage(MAPipeMessageEventActionUp, NO);
+            IOPipeWriteMessage(ChildPipeMessageEventActionUp, NO);
             _UITouchUpdatePhase(touch, UITouchPhaseEnded, screenLocation, timestamp);
             UIParentApplicationMoveCurrentAppToTop();
         } else if (action == AMOTION_EVENT_ACTION_DOWN) {
             //DLog(@"AMOTION_EVENT_ACTION_DOWN");
-            IOPipeWriteMessage(MAPipeMessageEventActionDown, NO);
+            IOPipeWriteMessage(ChildPipeMessageEventActionDown, NO);
             CGPoint delta = CGPointZero;
             int tapCount = 1;
             NSTimeInterval timeDiff = fabs(touch.timestamp - timestamp);
@@ -272,7 +272,7 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent *event)
             _UITouchSetPhase(touch, UITouchPhaseBegan, screenLocation, tapCount, delta, timestamp);
         } else {
             //DLog(@"AMOTION_EVENT_ACTION_MOVED");
-            IOPipeWriteMessage(MAPipeMessageEventActionMoved, NO);
+            IOPipeWriteMessage(ChildPipeMessageEventActionMoved, NO);
             _UITouchUpdatePhase(touch, UITouchPhaseMoved, screenLocation, timestamp);
         }
         IOPipeWriteFloat(x);
@@ -644,7 +644,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
         [limit release];
-        //MAPipeMessage pipeMessage = UIChildApplicationHandleMessages();
+        //ChildPipeMessage pipeMessage = UIChildApplicationHandleMessages();
         //if (pipeMessage) {
         UIChildApplicationHandleMessages();
         [pool2 release];
@@ -661,12 +661,11 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
 
 int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSString *delegateClassName)
 {
-#ifdef NATIVE_APP
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     _UIApplicationInitialize();
-    
     XInitThreads();
     IOWindow *window = IOWindowCreateSharedWindow();
+#ifdef NATIVE_APP
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,(_kScreenHeight + _kScreenFooter)*_kScreenScaleFactor);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
     UIGraphicsPushContext(ctx);
@@ -688,12 +687,6 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     [[UIScreen alloc] init];
     [_CAAnimatorConditionLock unlock];
     NSTimeInterval timestamp = CACurrentMediaTime();
-    // Setting up the screen sleeping ability
-    //_application->_lastActivityTime = timestamp;
-    //_application->_blackScreen = [[UIView alloc] initWithFrame:cr];
-    //_application->_blackScreen.backgroundColor = [UIColor blackColor];
-    //UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
-    //[_application->_blackScreen addGestureRecognizer:tapGesture];
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
@@ -706,37 +699,49 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
             //_application->_lastActivityTime = timestamp;
             _application->_currentEvent->_timestamp = timestamp;
         }
-        //currentTime = timestamp;
-        /*if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
-         && _application->_screenMode == _UIApplicationScreenModeActive) {
-         _application->_screenMode = _UIApplicationScreenModeSleeping;
-         //[_application->_keyWindow addSubview:_application->_blackScreen];
-         //_application->_blackScreen.alpha = 0.0;
-         //[UIView beginAnimations:@"gotoSleep" context:nil];
-         //[UIView setAnimationDuration:0.5];
-         //_application->_blackScreen.alpha = 0.8;
-         //[UIView commitAnimations];
-         //[NSTimer scheduledTimerWithTimeInterval:2 target:_application selector:@selector(turnONScreen) userInfo:nil repeats:NO];
-         }
-         if (currentTime - _application->_lastActivityTime > _kLongInactiveTimeLimit
-         && _application->_screenMode == _UIApplicationScreenModeSleeping) {
-         _application->_screenMode = _UIApplicationScreenModeOff;
-         [UIView beginAnimations:@"gotoSleep" context:nil];
-         //[UIView setAnimationDuration:1.0];
-         //_application->_blackScreen.alpha = 1.0;
-         //[UIView commitAnimations];
-         }*/
         UIParentApplicationHandleMessages();
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
-    //[tapGesture release];
-    [pool release];
+#elif defined(PARENT_APP)
+    CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,(_kScreenHeight + _kScreenFooter)*_kScreenScaleFactor);
+    CGContextRef ctx = IOWindowCreateContextWithRect(cr);
+    UIGraphicsPushContext(ctx);
+    BOOL canDraw = NO;
+    while (!canDraw) {
+        if (IOEventCanDrawWindow(window)) {
+            canDraw = YES;
+        }
+    }
+    NSTimeInterval currentTime = CACurrentMediaTime();
+    
+    _application = [[UIApplication alloc] init];
+    Class appDelegateClass = NSClassFromString(delegateClassName);
+    id appDelegate = [[appDelegateClass alloc] init];
+    _application->_delegate = appDelegate;
+    
+    _CAAnimatorInitialize();
+    [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
+    [[UIScreen alloc] init];
+    [_CAAnimatorConditionLock unlock];
+    NSTimeInterval timestamp = CACurrentMediaTime();
+    _UIApplicationLaunchApplicationWithDefaultWindow(nil);
+    while (YES) {
+        NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
+        NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
+        [[NSRunLoop currentRunLoop] runUntilDate:limit];
+        [limit release];
+        timestamp = CACurrentMediaTime();
+        if (IOEventGetNextEvent(window, _application->_currentEvent)) {
+            _UIApplicationSetCurrentEventTouchedView();
+            //_application->_lastActivityTime = timestamp;
+            _application->_currentEvent->_timestamp = timestamp;
+        }
+        UIParentApplicationHandleMessages();
+        [pool2 release];
+        //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
+    }
 #else
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    _UIApplicationInitialize();
-    XInitThreads();
-    IOWindow *window = IOWindowCreateSharedWindow();
     UIChildApplicationInitialize();
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
@@ -811,8 +816,8 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     //[tapGesture release];
     DLog(@"outside. exiting");
     UIChildApplicationClosePipes();
-    [pool release];
 #endif
+    [pool release];
 }
 
 #endif /* ANDROID */
