@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>NAQuartzCore</string>
+	<string>IOKit_native</string>
 	<key>CFBundleExecutable</key>
-	<string>NAQuartzCore</string>
+	<string>IOKit_native</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.NAQuartzCore</string>
+	<string>org.myos.IOKit_native</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>NAQuartzCore</string>
+	<string>IOKit_native</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleSignature</key>

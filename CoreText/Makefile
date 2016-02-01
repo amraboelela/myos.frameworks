@@ -3,10 +3,8 @@
 LDLIBS= -lCoreFoundation -lFoundation
 
 ifeq ($(APP_TYPE),NativeApp)
-#    LIB_NAME=NACoreText
-    LDLIBS+=-lNACoreGraphics
+    LDLIBS+=-lCoreGraphics_native
 else
-#    LIB_NAME=CoreText
     LDLIBS+=-lCoreGraphics
 endif
 

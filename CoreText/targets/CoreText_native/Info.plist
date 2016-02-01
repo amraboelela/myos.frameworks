@@ -5,20 +5,22 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>NAUIKit</string>
+	<string>CoreText_native</string>
 	<key>CFBundleExecutable</key>
-	<string>NAUIKit</string>
+	<string>CoreText_native</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.NAUIKit</string>
+	<string>org.myos.CoreText_native</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>NAUIKit</string>
+	<string>CoreText_native</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
+	<key>LSRequiresNativeExecution</key>
+	<true/>
 </dict>
 </plist>

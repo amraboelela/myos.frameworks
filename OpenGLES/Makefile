@@ -5,11 +5,9 @@ OBJECTS = \
     EAGLTexture.o \
 
 ifeq ($(APP_TYPE),NativeApp)
-#    LIB_NAME=NAOpenGLES
-    LDLIBS+=-lEGL -lNAIOKit -lNACoreGraphics
+    LDLIBS+=-lEGL -lIOKit_native -lCoreGraphics_native
     OBJECTS+=EAGLParent.o
 else
-#    LIB_NAME=OpenGLES
     LDLIBS+=-lIOKit -lCoreGraphics
     OBJECTS+=EAGLChild.o
 endif

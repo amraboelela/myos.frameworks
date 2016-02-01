@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>NAOpenGLES</string>
+	<string>OpenGLES_native</string>
 	<key>CFBundleExecutable</key>
-	<string>NAOpenGLES</string>
+	<string>OpenGLES_native</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.NAOpenGLES</string>
+	<string>org.myos.OpenGLES_native</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>NAOpenGLES</string>
+	<string>OpenGLES_native</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleSignature</key>

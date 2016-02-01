@@ -5,22 +5,20 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>NACoreGraphics</string>
+	<string>UIKit_native</string>
 	<key>CFBundleExecutable</key>
-	<string>NACoreGraphics</string>
+	<string>UIKit_native</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.NACoreGraphics</string>
+	<string>org.myos.UIKit_native</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>NACoreGraphics</string>
+	<string>UIKit_native</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
-	<key>LSRequiresNativeExecution</key>
-	<true/>
 </dict>
 </plist>

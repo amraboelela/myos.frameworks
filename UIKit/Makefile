@@ -2,10 +2,8 @@
 CFLAGS+=-fblocks
 
 ifeq ($(APP_TYPE),NativeApp)
-#    LIB_NAME=NAUIKit
-    LDLIBS+=-lEGL -lCoreFoundation -lFoundation -lNAIOKit -lNAOpenGLES -lNAQuartzCore -lNACoreGraphics -lNACoreText
+    LDLIBS+=-lEGL -lCoreFoundation -lFoundation -lIOKit_native -lOpenGLES_native -lQuartzCore_native -lCoreGraphics_native -lCoreText_native
 else
-#    LIB_NAME=UIKit
     LDLIBS=-lCoreFoundation -lFoundation -lIOKit -lOpenGLES -lQuartzCore -lCoreGraphics -lCoreText
 endif
 

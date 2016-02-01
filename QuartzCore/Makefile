@@ -2,10 +2,8 @@
 LDLIBS=-lCoreFoundation -lFoundation
 
 ifeq ($(APP_TYPE),NativeApp)
-#    LIB_NAME=NAQuartzCore
-    LDLIBS+=-lEGL -lNAIOKit -lNAOpenGLES -lNACoreGraphics -lNACoreText
+    LDLIBS+=-lEGL -lIOKit_native -lOpenGLES_native -lCoreGraphics_native -lCoreText_native
 else
-#    LIB_NAME=QuartzCore
     LDLIBS+=-lIOKit -lOpenGLES -lCoreGraphics -lCoreText
 endif
 

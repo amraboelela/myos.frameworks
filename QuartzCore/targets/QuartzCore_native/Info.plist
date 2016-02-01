@@ -5,22 +5,20 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>NACoreText</string>
+	<string>QuartzCore_native</string>
 	<key>CFBundleExecutable</key>
-	<string>NACoreText</string>
+	<string>QuartzCore_native</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.NACoreText</string>
+	<string>org.myos.QuartzCore_native</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>NACoreText</string>
+	<string>QuartzCore_native</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
-	<key>LSRequiresNativeExecution</key>
-	<true/>
 </dict>
 </plist>

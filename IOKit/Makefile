@@ -7,10 +7,8 @@ OBJECTS = \
     NSFileManager+IOKit.o \
 
 ifeq ($(APP_TYPE),NativeApp)
-#    LIB_NAME=NAIOKit
-    LDLIBS+=-lNACoreGraphics
+    LDLIBS+=-lCoreGraphics_native
 else
-#    LIB_NAME=IOKit
     LDLIBS+=-lCoreGraphics
 endif
 
