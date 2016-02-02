@@ -1,3 +1,4 @@
-
-export APP_TYPE=NativeApp
-export CFLAGS=
+#export APP_TYPE=NativeApp
+#export CFLAGS=
+echo "No need for libCoreGraphics_native.so in device. (Release config is for device deployment). Exiting."
+exit
