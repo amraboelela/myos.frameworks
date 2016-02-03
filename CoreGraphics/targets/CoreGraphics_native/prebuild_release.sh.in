@@ -1,0 +1,3 @@
+
+echo "No need for CoreGraphics_native framework in device. (Release config is for device deployment). Exiting."
+exit

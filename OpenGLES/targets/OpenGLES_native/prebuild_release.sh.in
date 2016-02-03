@@ -1,0 +1,3 @@
+
+echo "No need for OpenGLES_native framework in device. (Release config is for device deployment). Exiting."
+exit

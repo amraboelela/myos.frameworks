@@ -1,3 +1,0 @@
-
-export APP_TYPE=NativeApp
-export CFLAGS=
