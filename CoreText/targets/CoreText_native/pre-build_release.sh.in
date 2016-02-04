@@ -1,3 +1,8 @@
 
-echo "No need for CoreText_native framework in device. (Release config is for device deployment). Exiting."
-exit
+if  [ ${DESTINATION} = "Device" ]; then
+    echo "No need for CoreText_native framework in device. Exiting."
+    exit
+fi
+    
+export APP_TYPE=NativeApp
+export CFLAGS=

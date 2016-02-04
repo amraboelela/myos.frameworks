@@ -1,3 +1,3 @@
 
 export BUILD_TYPE=Library
-export DEBUG_MODE=NO
+export DESTINATION=Device
