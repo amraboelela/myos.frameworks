@@ -2,8 +2,8 @@
 .DS_Store
 xcuserdata
 *.xccheckout
-config.develop.sh
-config.release.sh
+*_debug.sh
+*_release.sh
 config.h
 GSConfig.h
 *.o
