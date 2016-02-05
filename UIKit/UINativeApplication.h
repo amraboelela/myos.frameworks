@@ -39,7 +39,7 @@ typedef enum {
 
 //void UIParentApplicationInitialize();
 //void UIParentApplicationLauncherViewDidAdded();
-//void UIParentApplicationSetChildAppIsRunning(BOOL isRunning);
+void UINativeApplicationSetParentAppIsRunning(BOOL isRunning);
 void UINativeApplicationHandleMessages();
 //void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart);
 //void UIParentApplicationMoveCurrentAppToTop();

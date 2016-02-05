@@ -24,9 +24,11 @@
 
 //#define _kTerminateChildTimeOut         2.0
 
-//static BOOL _childAppRunning = NO;
+static BOOL _parentAppRunning = NO;
 //static UIParentApplication *_mlApp = nil;
-//static CFTimeInterval _startTime;
+#ifdef DEBUG
+static CFTimeInterval _startTime;
+#endif
 //static UIApplication *_uiApplication = nil;
 //static UIParentApplication *_UIParentApplication = nil;
 //static UIChildApplicationProxy *_UIChildApplicationProxy = nil;
@@ -60,10 +62,19 @@
 
 #pragma mark - Public functions
 
+void UINativeApplicationSetParentAppIsRunning(BOOL isRunning)
+{
+#ifdef DEBUG
+    _startTime = CACurrentMediaTime();
+    //DLog(@"_startTime: %f", _startTime);
+#endif
+    _parentAppRunning = isRunning;
+}
+
 void UINativeApplicationHandleMessages()
 {
 //#ifdef NATIVE_APP
-    if (!_childAppRunning) {
+    if (!_parentAppRunning) {
         return;
     }
     //DLog();
