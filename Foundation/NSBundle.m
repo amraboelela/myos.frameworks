@@ -351,53 +351,53 @@ AbsolutePathOfExecutable(NSString *path, BOOL atLaunch)
 NSString *
 GSPrivateExecutablePath()
 {
-  static NSString	*executablePath = nil;
-  static BOOL		beenHere = NO;
-
-  if (beenHere == NO)
+    static NSString	*executablePath = nil;
+    static BOOL		beenHere = NO;
+    
+    if (beenHere == NO)
     {
-      [load_lock lock];
-      if (beenHere == NO)
-	{
+        [load_lock lock];
+        if (beenHere == NO)
+        {
 #if	defined(PROCFS_EXE_LINK)
-	  executablePath = [manager()
-	    pathContentOfSymbolicLinkAtPath:
-              [NSString stringWithUTF8String: PROCFS_EXE_LINK]];
-
-	  /*
-	  On some systems, the link is of the form "[device]:inode", which
-	  can be used to open the executable, but is useless if you want
-	  the path to it. Thus we check that the path is an actual absolute
-	  path. (Using '/' here is safe; it isn't the path separator
-	  everywhere, but it is on all systems that have PROCFS_EXE_LINK.)
-	  */
-	  if ([executablePath length] > 0
-	    && [executablePath characterAtIndex: 0] != '/')
-	    {
-	      executablePath = nil;
-	    }
+            executablePath = [manager()
+                              pathContentOfSymbolicLinkAtPath:
+                              [NSString stringWithUTF8String: PROCFS_EXE_LINK]];
+            
+            /*
+             On some systems, the link is of the form "[device]:inode", which
+             can be used to open the executable, but is useless if you want
+             the path to it. Thus we check that the path is an actual absolute
+             path. (Using '/' here is safe; it isn't the path separator
+             everywhere, but it is on all systems that have PROCFS_EXE_LINK.)
+             */
+            if ([executablePath length] > 0
+                && [executablePath characterAtIndex: 0] != '/')
+            {
+                executablePath = nil;
+            }
 #endif
-	  if (executablePath == nil || [executablePath length] == 0)
-	    {
-	      executablePath
-		= [[[NSProcessInfo processInfo] arguments] objectAtIndex: 0];
-	    }
-	  if (NO == [executablePath isAbsolutePath])
-	    {
-	      executablePath = AbsolutePathOfExecutable(executablePath, YES);
-	    }
-	  else
-	    {
-	      executablePath = [executablePath stringByResolvingSymlinksInPath];
-	      executablePath = [executablePath stringByStandardizingPath];
-	    }
-	  IF_NO_GC([executablePath retain];)
-	  beenHere = YES;
-	}
-      [load_lock unlock];
-      NSCAssert(executablePath != nil, NSInternalInconsistencyException);
+            if (executablePath == nil || [executablePath length] == 0)
+            {
+                executablePath
+                = [[[NSProcessInfo processInfo] arguments] objectAtIndex: 0];
+            }
+            if (NO == [executablePath isAbsolutePath])
+            {
+                executablePath = AbsolutePathOfExecutable(executablePath, YES);
+            }
+            else
+            {
+                executablePath = [executablePath stringByResolvingSymlinksInPath];
+                executablePath = [executablePath stringByStandardizingPath];
+            }
+            IF_NO_GC([executablePath retain];)
+            beenHere = YES;
+        }
+        [load_lock unlock];
+        NSCAssert(executablePath != nil, NSInternalInconsistencyException);
     }
-  return executablePath;
+    return executablePath;
 }
 
 static NSArray *
@@ -1346,7 +1346,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
          * ones.  Keep track of this special case in this variable.
          */
         BOOL isNonInstalledTool = NO;
-        //DLog(@"GSPrivateExecutablePath(): %@", GSPrivateExecutablePath());
+        DLog(@"GSPrivateExecutablePath(): %@", GSPrivateExecutablePath());
         /* If it's a tool, we will need the tool name.  Since we don't
          know yet if it's a tool or an application, we always store
          the executable name here - just in case it turns out it's a
@@ -1357,8 +1357,8 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
 #endif
         
         /* Strip off the name of the program */
-        path = GSPrivateExecutablePath();// stringByDeletingLastPathComponent];
-        //DLog(@"path: %@", path);
+        path = [GSPrivateExecutablePath() stringByDeletingLastPathComponent];
+        DLog(@"path: %@", path);
         /* We now need to chop off the extra subdirectories, the library
          combo and the target cpu/os if they exist.  The executable
          and this library should match so that is why we can use the
@@ -1431,7 +1431,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
          }
          }
          }*/
-        //DLog(@"s: %@", s);
+        DLog(@"s: %@", s);
         if (isApplication == NO) {
             //DLog(@"isApplication == NO");
             NSString *maybePath = nil;
@@ -1483,12 +1483,13 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
         }
         
         NSDebugMLLog(@"NSBundle", @"Found main in %@\n", path);
+        DLog(@"path: %@", path);
         /* We do alloc and init separately so initWithPath: knows we are
          the _mainBundle.  Please note that we do *not* autorelease
          mainBundle, because we don't want it to be ever released.  */
         _mainBundle = [self alloc];
         /* Please note that _mainBundle should *not* be nil.  */
-        _mainBundle = [_mainBundle initWithPath: path];
+        _mainBundle = [_mainBundle initWithPath:path];
         DLog(@"_mainBundle: %@", _mainBundle);
         NSAssert(_mainBundle != nil, NSInternalInconsistencyException);
     }
