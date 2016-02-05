@@ -17,6 +17,7 @@
 
 #import <fcntl.h>
 #import <UIKit/UIParentApplicationProxy.h>
+#import <UIKit/UIParentApplication.h>
 #import <IOKit/IOKit.h>
 #import <OpenGLES/EAGL-private.h>
 #import <CoreGraphics/CoreGraphics-private.h>

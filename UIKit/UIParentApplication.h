@@ -1,5 +1,5 @@
 /*
- Copyright © 2014-2015 myOS Group.
+ Copyright © 2014-2016 myOS Group.
  
  This file is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -15,22 +15,12 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-//#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
 #define ParentApplicationPipeRead           30
 #define ParentApplicationPipeWrite          51
 
 @class UIChildApplicationProxy;
-
-/*
-typedef enum {
-    UIParentApplicationScreenDirectionFromRight,
-    UIParentApplicationScreenDirectionFromLeft,
-    UIParentApplicationScreenDirectionToRight,
-    UIParentApplicationScreenDirectionToLeft,
-}  UIParentApplicationScreenDirection;
-*/
 
 @interface UIParentApplication : NSObject {
 @package
