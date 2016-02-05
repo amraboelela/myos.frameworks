@@ -16,6 +16,7 @@
  */
 
 //#import <fcntl.h>
+#import <UIKit/UIParentApplication.h>
 #import <UIKit/UIKit-private.h>
 #import <UIKit/UIChildApplicationProxy.h>
 #import <IOKit/IOKit.h>
