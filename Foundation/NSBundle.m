@@ -1489,7 +1489,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
         _mainBundle = [self alloc];
         /* Please note that _mainBundle should *not* be nil.  */
         _mainBundle = [_mainBundle initWithPath: path];
-        //DLog(@"_mainBundle: %@", _mainBundle);
+        DLog(@"_mainBundle: %@", _mainBundle);
         NSAssert(_mainBundle != nil, NSInternalInconsistencyException);
     }
     

@@ -54,11 +54,11 @@ static UIImage *_UIImageNALoadImageNamed(NSString *name)
 
 static UIImage *_UIImageLoadImageNamed(NSString *name)
 {
-    //DLog(@"name: %@", name);
+    DLog(@"name: %@", name);
     NSBundle *bundle = [NSBundle mainBundle];
-    //DLog(@"bundle: %@", bundle);
+    DLog(@"bundle: %@", bundle);
     NSString *path = [[bundle resourcePath] stringByAppendingPathComponent:name];
-    //DLog(@"path: %@", path);
+    DLog(@"path: %@", path);
     UIImage *img = [UIImage imageWithContentsOfFile:path];
     /*
      if (!img) {
@@ -100,7 +100,7 @@ static UIImage *_UIImageLoadImageNamed(NSString *name)
         _image = CGImageCreateWithPNGDataProviderWithAsset(pngData, NULL, YES, kCGRenderingIntentDefault);
     }
 #else
-    //DLog(@"path: %@", path);
+    DLog(@"path: %@", path);
     pngData = CGDataProviderCreateWithFilename([path cString]);
     //DLog(@"pngData: %@", pngData);
     _image = CGImageCreateWithPNGDataProvider(pngData, NULL, YES, kCGRenderingIntentDefault);
