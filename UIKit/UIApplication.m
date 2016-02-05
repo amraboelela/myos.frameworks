@@ -699,7 +699,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
             //_application->_lastActivityTime = timestamp;
             _application->_currentEvent->_timestamp = timestamp;
         }
-        UIParentApplicationHandleMessages();
+        UINativeApplicationHandleMessages();
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
