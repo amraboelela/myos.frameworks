@@ -17,6 +17,7 @@
 
 #import "UIApplicationIcon.h"
 #import <UIKit/UIKit-private.h>
+#import <UIKit/UIChildApplicationProxy.h>
 #import <IOKit/IOKit.h>
 
 #define _kLabelHeight       20
