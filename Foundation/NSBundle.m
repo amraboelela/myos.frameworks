@@ -1346,7 +1346,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
          * ones.  Keep track of this special case in this variable.
          */
         BOOL isNonInstalledTool = NO;
-        DLog(@"GSPrivateExecutablePath(): %@", GSPrivateExecutablePath());
+        //DLog(@"GSPrivateExecutablePath(): %@", GSPrivateExecutablePath());
         /* If it's a tool, we will need the tool name.  Since we don't
          know yet if it's a tool or an application, we always store
          the executable name here - just in case it turns out it's a
@@ -1358,7 +1358,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
         
         /* Strip off the name of the program */
         path = [GSPrivateExecutablePath() stringByDeletingLastPathComponent];
-        DLog(@"path: %@", path);
+        //DLog(@"path: %@", path);
         /* We now need to chop off the extra subdirectories, the library
          combo and the target cpu/os if they exist.  The executable
          and this library should match so that is why we can use the
@@ -1431,7 +1431,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
          }
          }
          }*/
-        DLog(@"s: %@", s);
+        //DLog(@"s: %@", s);
         if (isApplication == NO) {
             //DLog(@"isApplication == NO");
             NSString *maybePath = nil;
@@ -1483,14 +1483,14 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
         }
         
         NSDebugMLLog(@"NSBundle", @"Found main in %@\n", path);
-        DLog(@"path: %@", path);
+        //DLog(@"path: %@", path);
         /* We do alloc and init separately so initWithPath: knows we are
          the _mainBundle.  Please note that we do *not* autorelease
          mainBundle, because we don't want it to be ever released.  */
         _mainBundle = [self alloc];
         /* Please note that _mainBundle should *not* be nil.  */
         _mainBundle = [_mainBundle initWithPath:path];
-        DLog(@"_mainBundle: %@", _mainBundle);
+        //DLog(@"_mainBundle: %@", _mainBundle);
         NSAssert(_mainBundle != nil, NSInternalInconsistencyException);
     }
     
@@ -2708,7 +2708,7 @@ IF_NO_GC(
 - (NSString *) executablePath
 {
   NSString *object, *path;
-    DLog();
+    //DLog();
     if (!_mainBundle) {
       [NSBundle mainBundle];
     }
