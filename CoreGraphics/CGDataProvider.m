@@ -194,7 +194,6 @@ static off_t asset_fileSkipForward(void *info, off_t count)
 
 static void asset_fileRewind(void *info)
 {
-    //DLog();
     AAsset_seek((AAsset *)info, 0, SEEK_SET);
 }
 
@@ -468,7 +467,6 @@ const void *OPDataProviderGetBytePointer(CGDataProviderRef dp)
 
 void OPDataProviderReleaseBytePointer(CGDataProviderRef dp, const void *pointer)
 {
-    //DLog();
     [dp releaseBytePointer: pointer];
 }
 
@@ -584,7 +582,7 @@ void _CGDataProviderSetChildAppName(NSString *childAppName)
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
-    DLog(@"filename: %s", filename);
+    //DLog(@"filename: %s", filename);
     NSString *fileNameString = [NSString stringWithCString:filename];
     NSString *path = fileNameString;
 //#ifdef ANDROID
@@ -593,13 +591,13 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
         //path = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/%@", _childAppName, path];
 //#ifdef NATIVE_APP
 #if defined(NATIVE_APP) || defined(PARENT_APP)
-    DLog(@"NATIVE_APP || PARENT_APP");
+    //DLog(@"NATIVE_APP || PARENT_APP");
         //path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
 #else
         path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
 #endif
     }
-    DLog(@"path: %@", path);
+    //DLog(@"path: %@", path);
 //#endif
     
     void *info = fopen([path cString], "rb");
