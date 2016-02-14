@@ -355,7 +355,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 {
     DLog(@"%@", self);
     self.opened = NO;
-    UIChildApplicationProxySaveData(self);
+    //UIChildApplicationProxySaveData(self);
     kill(_pid, SIGTERM);
     if (wait(NULL) == -1) {
         ALog(@"wait error");
