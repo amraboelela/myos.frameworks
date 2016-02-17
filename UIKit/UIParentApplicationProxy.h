@@ -20,44 +20,21 @@
 
 @class UIApplicationIcon, UIParentApplicationProxy;
 
-//extern NSMutableDictionary *_allChildApplicationProxiesDictionary;
-//extern UIChildApplicationProxy *_currentChildApplicationProxy;
-//extern NSMutableArray *_openedChildApplicationProxies;
-
 @interface UIParentApplicationProxy : NSObject {
 @package
     NSString *_bundleName;
     NSString *_bundlePath;
-    //NSMutableDictionary *_data;
-    //BOOL _opened;
-    //BOOL _running;
-    //int _score;
     pid_t _pid;
     int _pipeRead;
     int _pipeWrite;
-    //int _animationPipeRead;
-    //int _animationPipeWrite;
-    //UIApplicationIcon *_applicationIcon;
-    //UIApplicationIcon *_homeIcon;
 }
 
 @property (nonatomic, retain) NSString *bundleName;
 @property (nonatomic, retain) NSString *bundlePath;
-//@property (nonatomic, retain) NSString *category;
-//@property (nonatomic) int score;
-//@property (nonatomic, readonly) UIImageView *defaultScreenView;
-//@property (nonatomic, readonly) UIApplicationIcon *homeIcon;
-//@property BOOL running;
 
 - (id)initWithBundleName:(NSString *)bundleName andPath:(NSString *)path;
-//- (BOOL)isCurrent;
 - (void)startApp;
-//- (void)setAsCurrent:(BOOL)withSignal;
-- (void)gotoBackground;
+//- (void)gotoBackground;
 - (void)terminate;
-//- (void)singleTapped;
-//- (void)showMenu;
-//- (void)closeApp;
-//- (void)deleteApp;
 
 @end

@@ -35,7 +35,6 @@
 #define IBOutlet
 #endif
 
-//#import <UIKit/UIApplicationDelegate.h>
 #import <UIKit/UIScreen.h>
 #import <UIKit/UIGeometry.h>
 #import <UIKit/UIGraphics.h>
@@ -98,7 +97,6 @@
 #import <UIKit/UIAccelerometer.h>
 #import <UIKit/UIMenuController.h>
 #import <UIKit/UIMenuItem.h>
-//#import <UIKit/UIViewAdapter.h>
 #import <UIKit/UIPageControl.h>
 #import <UIKit/UIProgressView.h>
 #import <UIKit/UIPickerView.h>

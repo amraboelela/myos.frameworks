@@ -27,7 +27,7 @@ extern NSMutableArray *_openedChildApplicationProxies;
 @interface UIChildApplicationProxy : NSObject {
 @package
     NSString *_bundleName;
-    NSMutableDictionary *_data;
+    //NSMutableDictionary *_data;
     BOOL _opened;
     BOOL _running;
     int _score;
@@ -39,7 +39,7 @@ extern NSMutableArray *_openedChildApplicationProxies;
     int _animationPipeWrite;
 #endif
     UIApplicationIcon *_applicationIcon;
-    UIApplicationIcon *_homeIcon;
+    UIApplicationIcon *_homePageIcon;
 }
 
 @property (nonatomic, retain) NSString *bundleName;
@@ -47,7 +47,7 @@ extern NSMutableArray *_openedChildApplicationProxies;
 @property (nonatomic, retain) NSString *category;
 @property (nonatomic) int score;
 @property (nonatomic, readonly) UIImageView *defaultScreenView;
-@property (nonatomic, readonly) UIApplicationIcon *homeIcon;
+@property (nonatomic, readonly) UIApplicationIcon *homePageIcon;
 @property BOOL running;
 
 - (id)initWithBundleName:bundleName;

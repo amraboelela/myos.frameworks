@@ -20,19 +20,14 @@
 #import <UIKit/UIKit-private.h>
 #import <UIKit/UIChildApplicationProxy.h>
 #import <IOKit/IOKit.h>
-//#import <QuartzCore/QuartzCore-private.h>
 #import <CoreFoundation/CoreFoundation-private.h>
 
 #define _kTerminateChildTimeOut         2.0
 
 static BOOL _childAppRunning = NO;
-static UIParentApplication *_mlApp = nil;
+//static UIParentApplication *_mlApp = nil;
 static CFTimeInterval _startTime;
-//static UIApplication *_uiApplication = nil;
 static UIParentApplication *_UIParentApplication = nil;
-//static UIChildApplicationProxy *_UIChildApplicationProxy = nil;
-//static UIView *_launcherView = nil;
-//static UIView *_childAppView = nil;
 static long _freeMemory = NSIntegerMax;
 static int _freeMemoryCount = 0;
 
@@ -53,7 +48,7 @@ static int _freeMemoryCount = 0;
 - (void)dealloc
 {
     [super dealloc];
-}*/
+}
 
 #pragma mark - Class methods
 
@@ -63,7 +58,7 @@ static int _freeMemoryCount = 0;
         _mlApp = [[UIParentApplication alloc] init];
     }
     return _mlApp;
-}
+}*/
 
 #pragma mark - Accessors
 
@@ -72,27 +67,6 @@ static int _freeMemoryCount = 0;
 @end
 
 #pragma mark - Public functions
-
-/*
-void UIParentApplicationInitialize()
-{
-    //DLog(@"UIParentApplicationInitialize");
-    _uiApplication = [UIApplication sharedApplication];
-    //_UIChildApplicationProxy = [[UIChildApplicationProxy alloc] init];
-    //CFArrayAppendValue(_openedChildApplicationProxies, _launcherApp);
-    //_openedApplicationsDictionary = [[NSMutableDictionary alloc] init];
-}
-
-void UIParentApplicationLauncherViewDidAdded()
-{
-    //UIParentApplication *mlApplication = [UIParentApplication sharedMLApplication];
-    _launcherView = [[_uiApplication->_keyWindow subviews] objectAtIndex:0];
-    _childAppView = [[UIView alloc] initWithFrame:_launcherView.frame];
-    //_childAppView.backgroundColor = [UIColor redColor];
-    [_uiApplication->_keyWindow insertSubview:_childAppView atIndex:0];
-    //DLog(@"_launcherView: %@", _launcherView);
-    //DLog(@"_childAppView: %@", _childAppView);
-}*/
 
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
 {
@@ -120,35 +94,6 @@ void UIParentApplicationTerminateSomeApps()
             return;
         }
     }
-}
-
-void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart)
-{
-    //DLog();
-    //_launcherView.hidden = YES;
-    if (coldStart) {
-        //UIParentApplicationCheckMemory();
-        //[_childAppView addSubview:childAppProxy.defaultScreenView];
-#ifdef ANDROID
-        long freeMemory = CFGetFreeMemory();
-        //DLog(@"%@ Free memory: %ld KB", childApp->_bundleName, freeMemory);
-        if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
-            freeMemory < 5000 && (_freeMemoryCount % 2 == 1)) {
-            DLog(@"Low memory");
-            UIParentApplicationTerminateSomeApps();
-            freeMemory = CFGetFreeMemory();
-            DLog(@"%@ Free memory 2: %ld KB", childAppProxy->_bundleName, freeMemory);
-        }
-        _freeMemory = freeMemory;
-#endif
-        [childAppProxy startApp];
-    } else {
-        [childAppProxy setAsCurrent:YES];
-    }
-    _UIApplicationEnterBackground();
-#if defined(ANDROID) && defined(NATIVE_APP)
-    [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
-#endif
 }
 
 void UIParentApplicationHandleMessages()
@@ -203,21 +148,6 @@ void UIParentApplicationShowLauncher()
 void UIParentApplicationGoBack()
 {
     //DLog();
-    /*
-     _childAppView.hidden = NO;
-     if (!_launcherView.hidden) {
-     if (CFArrayGetCount(_openedChildApplicationProxies) == 0) {
-     DLog(@"CFArrayGetCount(_openedChildApplicationProxies) == 0");
-     return;
-     } else {
-     //DLog(@"_currentChildApplicationProxy: %@", _currentChildApplicationProxy);
-     UIParentApplicationPresentAppScreen(_currentChildApplicationProxy, NO);
-     }
-     } else {*/
-    //_childAppView.hidden = NO;
-    /*if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
-     return;
-     }*/
     if (CFArrayGetCount(_openedChildApplicationProxies) == 1) {
         //DLog(@"(CFArrayGetCount(_openedChildApplicationProxies) == 1)");
         if (!_currentChildApplicationProxy->_running) {

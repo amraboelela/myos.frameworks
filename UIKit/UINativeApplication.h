@@ -15,17 +15,7 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-//#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-
-/*
-typedef enum {
-    UIParentApplicationScreenDirectionFromRight,
-    UIParentApplicationScreenDirectionFromLeft,
-    UIParentApplicationScreenDirectionToRight,
-    UIParentApplicationScreenDirectionToLeft,
-}  UIParentApplicationScreenDirection;
-*/
 
 @interface UINativeApplication : NSObject {
 @package
@@ -41,7 +31,7 @@ typedef enum {
 //void UIParentApplicationLauncherViewDidAdded();
 void UINativeApplicationSetParentAppIsRunning(BOOL isRunning);
 void UINativeApplicationHandleMessages();
-//void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart);
+void UINativeApplicationRunParentApp(UIParentApplicationProxy *parentAppProxy);
 //void UIParentApplicationMoveCurrentAppToTop();
 //void UIParentApplicationTerminateApps();
 //void UIParentApplicationGoBack();

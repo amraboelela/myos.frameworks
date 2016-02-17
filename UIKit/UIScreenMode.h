@@ -28,7 +28,6 @@
  */
 
 #import <CoreGraphics/CoreGraphics.h>
-//#import <Foundation/Foundation.h>
 
 @interface UIScreenMode : NSObject {
 @package

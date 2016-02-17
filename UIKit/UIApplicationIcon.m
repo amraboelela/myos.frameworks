@@ -100,12 +100,7 @@
 
 - (void)singleTapped:(id)sender
 {
-    //DLog();
-    //if (_mode == UIApplicationIconModeNormal) {
     [_application singleTapped];
-    //} else {
-    //    _UIApplicationIconResetToNormalMode(self);
-    //}
 }
 
 - (void)longPressed:(id)sender

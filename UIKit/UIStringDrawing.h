@@ -27,7 +27,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//#import <Foundation/Foundation.h>
 #import <UIKit/UIGraphics.h>
 
 typedef enum {

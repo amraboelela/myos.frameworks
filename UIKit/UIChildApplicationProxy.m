@@ -18,7 +18,7 @@
 #import <fcntl.h>
 #import <UIKit/UIChildApplicationProxy.h>
 #import <UIKit/UIKit-private.h>
-#import <UIKit/UIChildApplication.h>
+//#import <UIKit/UIChildApplication.h>
 #import <IOKit/IOKit.h>
 #import <OpenGLES/EAGL-private.h>
 #import <CoreGraphics/CoreGraphics-private.h>
@@ -28,6 +28,35 @@ UIChildApplicationProxy *_currentChildApplicationProxy = nil;
 NSMutableArray *_openedChildApplicationProxies;
 
 #pragma mark - Static functions
+
+static void UIChildApplicationProxyRunApp(UIChildApplicationProxy *childAppProxy, BOOL coldStart)
+{
+    //DLog();
+    //_launcherView.hidden = YES;
+    if (coldStart) {
+        //UIParentApplicationCheckMemory();
+        //[_childAppView addSubview:childAppProxy.defaultScreenView];
+#ifdef ANDROID
+        long freeMemory = CFGetFreeMemory();
+        //DLog(@"%@ Free memory: %ld KB", childApp->_bundleName, freeMemory);
+        if (freeMemory > _freeMemory && (_freeMemoryCount % 2 == 0) ||
+            freeMemory < 5000 && (_freeMemoryCount % 2 == 1)) {
+            DLog(@"Low memory");
+            UIParentApplicationTerminateSomeApps();
+            freeMemory = CFGetFreeMemory();
+            DLog(@"%@ Free memory 2: %ld KB", childAppProxy->_bundleName, freeMemory);
+        }
+        _freeMemory = freeMemory;
+#endif
+        [childAppProxy startApp];
+    } else {
+        [childAppProxy setAsCurrent:YES];
+    }
+    _UIApplicationEnterBackground();
+#if defined(ANDROID) && defined(NATIVE_APP)
+    [_CAAnimatorNAConditionLock unlockWithCondition:_CAAnimatorConditionLockHasWork];
+#endif
+}
 
 static void UIChildApplicationProxyRun(NSString *appName)
 {
@@ -43,24 +72,13 @@ static void UIChildApplicationProxyRun(NSString *appName)
     execve(appWithFullPath, args, myEnv);
 }
 
-/*
-static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
-{
-    NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), app->_bundleName];
-    //DLog(@"dataPath: %@", dataPath);
-    //[app->_data setValue:[NSNumber numberWithInt:app->_score] forKey:@"score"];
-    //DLog(@"app->_data: %@", app->_data);
-    NSData *data = [NSJSONSerialization dataWithJSONObject:app->_data options:0 error:NULL];
-    [data writeToFile:dataPath atomically:YES];
-}*/
-
 @implementation UIChildApplicationProxy
 
 @synthesize bundleName=_bundleName;
 @synthesize score=_score;
 @dynamic name;
 @dynamic category;
-@dynamic homeIcon;
+@dynamic homePageIcon;
 
 #pragma mark - Life cycle
 
@@ -76,22 +94,7 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
         _bundleName = [bundleName retain];
         [_allChildApplicationProxiesDictionary setObject:self forKey:_bundleName];
         _opened = NO;
-        //_needsScreenCapture = YES;
-        NSString *dataPath = [NSString stringWithFormat:@"%@/apps/%@.app/data.json", _NSFileManagerMyAppsPath(), _bundleName];
-        NSData *data = [NSData dataWithContentsOfFile:dataPath];
-        _data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
-        //DLog(@"_data: %@", _data);
-        //int x = [[_data valueForKey:@"xLocation"] intValue];
-        //int y = [[_data valueForKey:@"yLocation"] intValue];
-        //_score = [[_data valueForKey:@"score"] intValue];
-        
         _applicationIcon = [[UIApplicationIcon alloc] initWithApplication:self];
-        
-        //NSString *imagePath = [NSString stringWithFormat:@"/data/data/com.myos.myapps/apps/%@.app/Default.png", _bundleName];
-        //UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
-        //_screenImageView = nil;//[[UIImageView alloc] initWithImage:image];
-        //DLog(@"%@, Loaded _screenImageView: %@", name, _screenImageView);
-        
     }
     return self;
 }
@@ -99,55 +102,13 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
 - (void)dealloc
 {
     [_bundleName release];
-    [_data release];
+    //[_data release];
     [_applicationIcon release];
-    [_homeIcon release];
+    [_homePageIcon release];
     [super dealloc];
 }
 
 #pragma mark - Accessors
-
-/*
-- (int)pageNumber
-{
-    return [[_data valueForKey:@"pageNumber"] intValue];
-}
-
-- (void)setPageNumber:(int)pageNumber
-{
-    [_data setValue:[NSNumber numberWithInt:pageNumber] forKey:@"pageNumber"];
-}*/
-
-- (void)setValue:(id)value forUndefinedKey:(NSString *)key
-{
-    id dataValue = [_data valueForKey:key];
-    if (!dataValue) {
-        [super setValue:value forUndefinedKey:key];
-    } else {
-        [_data setValue:value forKey:key];
-    }
-}
-
-- (id)valueForUndefinedKey:(NSString *)key
-{
-    //DLog(@"key: %@", key);
-    id result = [_data valueForKey:key];
-    if (!result) {
-        return [super valueForUndefinedKey:key];
-    } else {
-        return result;
-    }
-}
-
-- (NSString *)name
-{
-    return [_data valueForKey:@"name"];
-}
-
-- (NSString *)category
-{
-    return [_data valueForKey:@"category"];
-}
 
 - (UIImageView *)defaultScreenView
 {
@@ -169,20 +130,20 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     //DLog(@"self: %@, running: %d", self, _opened);
     if (_opened) {
         _applicationIcon->_iconLabel.textColor = [UIColor yellowColor];
-        _homeIcon->_iconLabel.textColor = [UIColor yellowColor];
+        _homePageIcon->_iconLabel.textColor = [UIColor yellowColor];
     } else {
         _applicationIcon->_iconLabel.textColor = [UIColor whiteColor];
-        _homeIcon->_iconLabel.textColor = [UIColor whiteColor];
+        _homePageIcon->_iconLabel.textColor = [UIColor whiteColor];
     }
 }
 
-- (UIApplicationIcon *)homeIcon
+- (UIApplicationIcon *)homePageIcon
 {
     //DLog();
-    if (!_homeIcon) {
-        _homeIcon = [[UIApplicationIcon alloc] initWithApplication:self];
+    if (!_homePageIcon) {
+        _homePageIcon = [[UIApplicationIcon alloc] initWithApplication:self];
     }
-    return _homeIcon;
+    return _homePageIcon;
 }
 
 - (NSString *)description
@@ -213,16 +174,16 @@ static void UIChildApplicationProxySaveData(UIChildApplicationProxy *app)
     if (!_opened) {
         self.opened = YES;
         //[self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
-        UIParentApplicationPresentAppScreen(self, YES);
+        UIChildApplicationProxyRunApp(self, YES);
     } else {
         _CFArrayMoveValueToTop(_openedChildApplicationProxies, self);
-        UIParentApplicationPresentAppScreen(self, NO);
+        UIChildApplicationProxyRunApp(self, NO);
     }
 }
 
 - (void)presentAppScreen
 {
-    UIParentApplicationPresentAppScreen(self, YES);
+    UIChildApplicationProxyRunApp(self, YES);
 }
 
 #pragma mark - Public methods

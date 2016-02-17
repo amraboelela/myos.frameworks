@@ -1,5 +1,5 @@
 /*
- Copyright © 2015 myOS Group.
+ Copyright © 2015-2016 myOS Group.
  
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -17,22 +17,32 @@
 
 #import <IOKit/IOKit.h>
 
-static NSString *_myappsPath = nil;
+static NSString *_myOSPath = nil;
+static NSString *_myAppsPath = nil;
 
 #pragma mark - Public functions
 
+NSString *_NSFileManagerMyOSPath()
+{
+    if (!_myOSPath) {
+        _myOSPath = IOPipeRunCommand(@"echo ${MYOS_PATH}", YES);
+        _myOSPath = [_myappsPath substringToIndex:_myappsPath.length-1];
+    }
+    return _myOSPath;
+}
+
 NSString *_NSFileManagerMyAppsPath()
 {
-    if (!_myappsPath) {
+    if (!_myAppsPath) {
 #ifdef ANDROID
-        _myappsPath = @"/data/data/com.myos.myapps";
+        _myAppsPath = @"/data/data/com.myos.myapps";
 #else
-        _myappsPath = IOPipeRunCommand(@"echo ${MYOS_PATH}", YES);
-        _myappsPath = [_myappsPath substringToIndex:_myappsPath.length-1];
-        _myappsPath = [NSString stringWithFormat:@"%@/myapps", _myappsPath];
+        //_myAppsPath = IOPipeRunCommand(@"echo ${MYOS_PATH}", YES);
+        //_myAppsPath = [_myappsPath substringToIndex:_myappsPath.length-1];
+        _myAppsPath = [NSString stringWithFormat:@"%@/myapps/targets/myApps/myApps.app", _NSFileManagerMyOSPath()];
 #endif
     }
-    return _myappsPath;
+    return _myAppsPath;
 }
 
 NSString *_NSFileManagerSetMyAppsPath(NSString *myappsPath)

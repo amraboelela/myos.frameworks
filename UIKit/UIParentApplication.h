@@ -36,7 +36,7 @@
 //void UIParentApplicationLauncherViewDidAdded();
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning);
 void UIParentApplicationHandleMessages();
-void UIParentApplicationPresentAppScreen(UIChildApplicationProxy *childAppProxy, BOOL coldStart);
+//void UIChildApplicationProxyRunApp(UIChildApplicationProxy *childAppProxy, BOOL coldStart);
 void UIParentApplicationMoveCurrentAppToTop();
 void UIParentApplicationTerminateApps();
 void UIParentApplicationGoBack();
