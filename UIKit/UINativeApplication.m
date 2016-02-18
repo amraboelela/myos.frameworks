@@ -71,10 +71,11 @@ void UINativeApplicationSetParentAppIsRunning(BOOL isRunning)
     _parentAppRunning = isRunning;
 }
 
+/*
 void UINativeApplicationRunParentApp(UIParentApplicationProxy *parentAppProxy)
 {
     [parentAppProxy startApp];
-}
+}*/
 
 void UINativeApplicationHandleMessages()
 {

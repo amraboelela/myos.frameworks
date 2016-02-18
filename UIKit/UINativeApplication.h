@@ -31,7 +31,7 @@
 //void UIParentApplicationLauncherViewDidAdded();
 void UINativeApplicationSetParentAppIsRunning(BOOL isRunning);
 void UINativeApplicationHandleMessages();
-void UINativeApplicationRunParentApp(UIParentApplicationProxy *parentAppProxy);
+//void UINativeApplicationRunParentApp(UIParentApplicationProxy *parentAppProxy);
 //void UIParentApplicationMoveCurrentAppToTop();
 //void UIParentApplicationTerminateApps();
 //void UIParentApplicationGoBack();
