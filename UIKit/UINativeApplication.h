@@ -23,12 +23,9 @@
 }
 
 + (UINativeApplication *)sharedNativeApplication;
-//- (void)presentAppDone;
 
 @end
 
-//void UIParentApplicationInitialize();
-//void UIParentApplicationLauncherViewDidAdded();
 void UINativeApplicationSetParentAppIsRunning(BOOL isRunning);
 void UINativeApplicationHandleMessages();
 void UINativeApplicationRunParentApp(UIParentApplicationProxy *parentAppProxy);

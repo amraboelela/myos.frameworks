@@ -32,7 +32,7 @@
 
 @end
 
-//void UIParentApplicationInitialize();
+void UIParentApplicationInitialize();
 //void UIParentApplicationLauncherViewDidAdded();
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning);
 void UIParentApplicationHandleMessages();

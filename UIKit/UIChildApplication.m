@@ -61,7 +61,7 @@ void UIChildApplicationInitialize()
         [[NSProcessInfo processInfo] setProcessName:processName];
         [[NSBundle mainBundle] reInitialize];
 #endif
-        _CGDataProviderSetChildAppName(processName);
+        _CGDataProviderSetAppName(processName);
     } else {
         NSLog(@"Error can't get process name");
     }

@@ -33,40 +33,66 @@ static int _freeMemoryCount = 0;
 
 #pragma mark - Static functions
 
-@implementation UIParentApplication
-
-#pragma mark - Life cycle
-/*
-- (id)init
+static void UIParentApplicationSignal(int sig)
 {
-    if ((self=[super init])) {
-        _uiApplication = [UIApplication sharedApplication];
+    int status;
+    pid_t pid;
+    
+    //DLog(@"Signal %d", sig);
+    switch (sig) {
+        case SIGALRM:
+            DLog(@"SIGALRM");
+            //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
+            break;
+        case SIGTERM:
+            DLog(@"SIGTERM");
+            _UIApplicationTerminate();
+            break;
+        default:
+            break;
     }
-    return self;
 }
-
-- (void)dealloc
-{
-    [super dealloc];
-}
-
-#pragma mark - Class methods
-
-+ (UIParentApplication *)sharedMLApplication
-{
-    if (!_mlApp) {
-        _mlApp = [[UIParentApplication alloc] init];
-    }
-    return _mlApp;
-}*/
-
-#pragma mark - Accessors
-
-#pragma mark - Delegates
-
-@end
 
 #pragma mark - Public functions
+
+void UIParentApplicationInitialize()
+{
+    IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
+    
+    ParentPipeMessage message = IOPipeReadMessage();
+    //DLog(@"message: %d", message);
+    NSString *processName = @"ProcessName";
+    if (message == ParentPipeMessageCharString) {
+        processName = [IOPipeReadCharString() retain];
+        //DLog(@"processName: %@", processName);
+        _CGDataProviderSetAppName(processName);
+    } else {
+        NSLog(@"Error can't get process name");
+    }
+    
+    message = IOPipeReadMessage();
+    if (message == ParentPipeMessageCharString) {
+        NSString *myappsPath = [IOPipeReadCharString() retain];
+        DLog(@"myappsPath: %@", myappsPath);
+        _NSFileManagerSetMyAppsPath(myappsPath);
+    } else {
+        NSLog(@"Error can't get MyAppsPath");
+    }
+    
+    message = IOPipeReadMessage();
+#ifndef ANDROID
+    if (message == ParentPipeMessageInt) {
+        int parentWindowID = IOPipeReadInt();
+        DLog(@"parentWindowID: 0x%lx", parentWindowID);
+        IOWindowSetParentID(parentWindowID);
+    } else {
+        //DLog(@"message: %d", message);
+        NSLog(@"Error can't get xWindow handle");
+    }
+#endif
+    (void)signal(SIGALRM, UIParentApplicationSignal);
+    (void)signal(SIGTERM, UIParentApplicationSignal);
+}
 
 void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
 {
