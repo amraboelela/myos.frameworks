@@ -19,7 +19,6 @@
 #import <UIKit/UIParentApplicationProxy.h>
 #import <UIKit/UIParentApplication.h>
 #import <IOKit/IOKit.h>
-//#import <OpenGLES/EAGL-private.h>
 #import <CoreGraphics/CoreGraphics-private.h>
 
 #pragma mark - Static functions
@@ -65,7 +64,7 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
 
 - (void)startApp
 {
-    DLog(@"name: %@", self.name);
+    DLog(@"bundleName: %@", self.bundleName);
     int pipe1[2];
     int pipe2[2];
     
@@ -121,35 +120,6 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         //UIParentApplicationSetChildAppIsRunning(YES);
     }
 }
-
-/*
-- (BOOL)isCurrent
-{
-    return (_currentChildApplicationProxy == self);
-}
-
-- (void)setAsCurrent:(BOOL)withSignal
-{
-    IOPipeSetPipes(_pipeRead, _pipeWrite);
-    _currentChildApplicationProxy = self;
-    //DLog(@"indexOfObject:_currentChildApplicationProxy: %d", _CFArrayGetIndexOfValue(_openedChildApplicationProxies, _currentChildApplicationProxy));
-    _running = YES;
-    //DLog(@"self: %@", self);
-//#ifdef NATIVE_APP
-#ifdef ANDROID
-    EAGLParentSetPipes(_animationPipeRead, _animationPipeWrite);
-#endif
-    if (withSignal) {
-        kill(_pid, SIGALRM);
-    }
-//#endif
-    _score++;
-}
-
-- (void)gotoBackground
-{
-    DLog(@"self: %@", self);
-}*/
 
 - (void)terminate
 {
