@@ -574,7 +574,7 @@ CGDataProviderRef CGDataProviderCreateWithURL(CFURLRef url)
 
 static NSString *_childAppName = nil;
 
-void _CGDataProviderSetChildAppName(NSString *childAppName)
+void _CGDataProviderSetAppName(NSString *childAppName)
 {
     //DLog(@"childAppName: %@", childAppName);
     _childAppName = childAppName;

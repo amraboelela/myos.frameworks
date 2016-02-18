@@ -16,7 +16,7 @@
  */
 
 #import <UIKit/UIImageView.h>
-#import <UIKit/UIChildApplication.h>
+//#import <UIKit/UIChildApplication.h>
 
 @class UIApplicationIcon, UIChildApplicationProxy;
 
