@@ -26,7 +26,7 @@ NSString *_NSFileManagerMyOSPath()
 {
     if (!_myOSPath) {
         _myOSPath = IOPipeRunCommand(@"echo ${MYOS_PATH}", YES);
-        _myOSPath = [_myappsPath substringToIndex:_myappsPath.length-1];
+        _myOSPath = [_myAppsPath substringToIndex:_myAppsPath.length-1];
     }
     return _myOSPath;
 }
@@ -38,14 +38,14 @@ NSString *_NSFileManagerMyAppsPath()
         _myAppsPath = @"/data/data/com.myos.myapps";
 #else
         //_myAppsPath = IOPipeRunCommand(@"echo ${MYOS_PATH}", YES);
-        //_myAppsPath = [_myappsPath substringToIndex:_myappsPath.length-1];
+        //_myAppsPath = [_myAppsPath substringToIndex:_myAppsPath.length-1];
         _myAppsPath = [NSString stringWithFormat:@"%@/myapps/targets/myApps/myApps.app", _NSFileManagerMyOSPath()];
 #endif
     }
     return _myAppsPath;
 }
 
-NSString *_NSFileManagerSetMyAppsPath(NSString *myappsPath)
+NSString *_NSFileManagerSetMyAppsPath(NSString *myAppsPath)
 {
-    _myappsPath = myappsPath;
+    _myAppsPath = myAppsPath;
 }
