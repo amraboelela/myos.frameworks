@@ -27,7 +27,8 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
 {
     const char *appWithFullPath = [[NSString stringWithFormat:@"%@/%@", appPath, appName] cString];
     const char *cAppName = [appName cString];
-    DLog(@"appPath: %s", appPath);
+    DLog(@"appPath: %@", appPath);
+    DLog(@"appWithFullPath: %s", appWithFullPath);
     char *const args[] = {cAppName, NULL};
     const char *myEnv[] = {"LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH", 0};
     execve(appWithFullPath, args, myEnv);
@@ -79,7 +80,6 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
     
     long flags;
     _pid = fork();
-    DLog(@"pid: %d", _pid);
     if (_pid == 0) { // Child process
         flags = fcntl(pipe1[0], F_GETFL);
         fcntl(pipe1[0], F_SETFL, flags | O_NONBLOCK);
@@ -93,6 +93,7 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         //DLog();
         UIParentApplicationProxyRun(_bundleName, _bundlePath);
     } else { // Parent process
+        DLog(@"pid: %d", _pid);
         int pipeRead = pipe2[0];
         int pipeWrite = pipe1[1];
         flags = fcntl(pipeRead, F_GETFL);
@@ -106,14 +107,14 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         _pipeWrite = pipeWrite;
 
         //CFArrayAppendValue(_openedChildApplicationProxies, self);
-        [self setAsCurrent:NO];
+        //[self setAsCurrent:NO];
 
         IOPipeWriteMessage(ParentPipeMessageCharString, NO);
         IOPipeWriteCharString(_bundleName);
 //#ifndef ANDROID
 //#else
-        //IOPipeWriteMessage(ChildPipeMessageCharString, NO);
-        //IOPipeWriteCharString(_NSFileManagerMyAppsPath());
+        IOPipeWriteMessage(ChildPipeMessageCharString, NO);
+        IOPipeWriteCharString(_NSFileManagerMyAppsPath());
         IOPipeWriteMessage(ParentPipeMessageInt, NO);
         IOPipeWriteInt(IOWindowGetID());
 //#endif
