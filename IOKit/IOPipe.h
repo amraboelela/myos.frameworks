@@ -17,6 +17,7 @@
 
 typedef enum {
     NativePipeMessageEndOfMessage,
+    NativePipeMessageParentIsReady,
 } NativePipeMessage;
 
 typedef enum {
