@@ -60,14 +60,14 @@ void UIParentApplicationInitialize()
     IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
     
     ParentPipeMessage message = IOPipeReadMessage();
-    //DLog(@"message: %d", message);
+    DLog(@"message: %d", message);
     NSString *processName = @"ProcessName";
     if (message == ParentPipeMessageCharString) {
         processName = [IOPipeReadCharString() retain];
-        //DLog(@"processName: %@", processName);
+        DLog(@"processName: %@", processName);
         _CGDataProviderSetAppName(processName);
     } else {
-        NSLog(@"Error can't get process name");
+        ALog(@"Error can't get process name");
     }
     
     message = IOPipeReadMessage();
@@ -76,7 +76,7 @@ void UIParentApplicationInitialize()
         DLog(@"myappsPath: %@", myappsPath);
         _NSFileManagerSetMyAppsPath(myappsPath);
     } else {
-        NSLog(@"Error can't get MyAppsPath");
+        ALog(@"Error can't get MyAppsPath");
     }
     
     message = IOPipeReadMessage();
@@ -86,8 +86,8 @@ void UIParentApplicationInitialize()
         DLog(@"parentWindowID: 0x%lx", parentWindowID);
         IOWindowSetParentID(parentWindowID);
     } else {
-        //DLog(@"message: %d", message);
-        NSLog(@"Error can't get xWindow handle");
+        DLog(@"message: %d", message);
+        ALog(@"Error can't get xWindow handle");
     }
 #endif
     (void)signal(SIGALRM, UIParentApplicationSignal);
@@ -128,14 +128,14 @@ void UIParentApplicationHandleMessages()
     if (!_childAppRunning) {
         return;
     }
-    //DLog();
+    DLog();
     int message = IOPipeReadMessage();
     switch (message) {
         case ParentPipeMessageEndOfMessage:
-            //DLog(@"ParentPipeMessageEndOfMessage");
+            DLog(@"ParentPipeMessageEndOfMessage");
             break;
         case ParentPipeMessageChildIsReady:
-            //DLog(@"ParentPipeMessageChildIsReady");
+            DLog(@"ParentPipeMessageChildIsReady");
             //IOPipeWriteInt(0x4000001);
             break;
         case ParentPipeMessageMoveApplicationToTop:

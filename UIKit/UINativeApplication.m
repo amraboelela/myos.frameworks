@@ -83,7 +83,7 @@ void UINativeApplicationHandleMessages()
     if (!_parentAppRunning) {
         return;
     }
-    //DLog();
+    DLog();
     int message = IOPipeReadMessage();
     switch (message) {
         case NativePipeMessageEndOfMessage:
