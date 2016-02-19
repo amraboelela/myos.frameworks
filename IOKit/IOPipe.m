@@ -210,7 +210,7 @@ NSString *IOPipeRunCommand(NSString *command, BOOL usingPipe)
     // Setup our pipe for reading and execute our command.
     if (usingPipe) {
         FILE *pf = popen(cCommand, "r");
-        if(!pf){
+        if (!pf) {
             //DLog(@"Could not open pipe for output.");
             return @"Could not open pipe for output.";
         }
@@ -219,7 +219,7 @@ NSString *IOPipeRunCommand(NSString *command, BOOL usingPipe)
         // Grab data from process execution
         while (fgets(data, kDataSize , pf)) {
             // Print grabbed data to the screen.
-            //NSLog(@"data: %s", data);
+            NSLog(@"data: %s", data);
             [commandOutput appendString:[NSString stringWithFormat:@"%s", data]];
         }
         pclose(pf);
