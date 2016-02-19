@@ -89,7 +89,7 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         
         //DLog(@"dup2");
         IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
-        IOPipeWriteMessage(ParentPipeMessageChildIsReady, YES);
+        IOPipeWriteMessage(NativePipeMessageParentIsReady, YES);
         //DLog();
         UIParentApplicationProxyRun(_bundleName, _bundlePath);
     } else { // Parent process
@@ -118,7 +118,7 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         IOPipeWriteMessage(ParentPipeMessageInt, NO);
         IOPipeWriteInt(IOWindowGetID());
 //#endif
-        //UIParentApplicationSetChildAppIsRunning(YES);
+        UINativeApplicationSetParentAppIsRunning(YES);
     }
 }
 

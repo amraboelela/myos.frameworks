@@ -89,8 +89,8 @@ void UINativeApplicationHandleMessages()
         case NativePipeMessageEndOfMessage:
             DLog(@"NativePipeMessageEndOfMessage");
             break;
-        case ParentPipeMessageChildIsReady:
-            //DLog(@"ParentPipeMessageChildIsReady");
+        case NativePipeMessageParentIsReady:
+            DLog(@"NativePipeMessageParentIsReady");
             //IOPipeWriteInt(0x4000001);
             break;
         /*case ParentPipeMessageMoveApplicationToTop:
