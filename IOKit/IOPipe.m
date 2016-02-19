@@ -29,7 +29,6 @@ static int _pipeWrite;
 
 static void _IOPipeWriteEndOfMessage()
 {
-    //DLog();
     char aChar=kEndOfMessage;
     write(_pipeWrite,&aChar,1);
 }
@@ -58,7 +57,6 @@ void IOPipeWriteLine(NSString *message)
 
 NSString *IOPipeReadLine(int file)
 {
-    //DLog();
     return _NSFileHandleReadLine(file);
 }
 
@@ -211,7 +209,7 @@ NSString *IOPipeRunCommand(NSString *command, BOOL usingPipe)
     if (usingPipe) {
         FILE *pf = popen(cCommand, "r");
         if (!pf) {
-            //DLog(@"Could not open pipe for output.");
+            DLog(@"Could not open pipe for output.");
             return @"Could not open pipe for output.";
         }
         NSMutableString *commandOutput = [[NSMutableString alloc] init];
@@ -219,13 +217,15 @@ NSString *IOPipeRunCommand(NSString *command, BOOL usingPipe)
         // Grab data from process execution
         while (fgets(data, kDataSize , pf)) {
             // Print grabbed data to the screen.
-            NSLog(@"data: %s", data);
+            //DLog(@"data: %s", data);
             [commandOutput appendString:[NSString stringWithFormat:@"%s", data]];
         }
         pclose(pf);
+        //DLog(@"commandOutput: %@", commandOutput);
         return [commandOutput autorelease];
     } else {
         system(cCommand);
         return nil;
     }
 }
+
