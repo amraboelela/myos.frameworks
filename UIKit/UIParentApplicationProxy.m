@@ -27,8 +27,8 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
 {
     const char *appWithFullPath = [[NSString stringWithFormat:@"%@/%@", appPath, appName] cString];
     const char *cAppName = [appName cString];
-    DLog(@"appPath: %@", appPath);
-    DLog(@"appWithFullPath: %s", appWithFullPath);
+    //DLog(@"appPath: %@", appPath);
+    //DLog(@"appWithFullPath: %s", appWithFullPath);
     char *const args[] = {cAppName, NULL};
     const char *myEnv[] = {"LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH", 0};
     execve(appWithFullPath, args, myEnv);
@@ -65,7 +65,7 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
 
 - (void)startApp
 {
-    DLog(@"bundleName: %@", self.bundleName);
+    //DLog(@"bundleName: %@", self.bundleName);
     int pipe1[2];
     int pipe2[2];
     
@@ -93,7 +93,7 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         //DLog();
         UIParentApplicationProxyRun(_bundleName, _bundlePath);
     } else { // Parent process
-        DLog(@"pid: %d", _pid);
+        //DLog(@"pid: %d", _pid);
         int pipeRead = pipe2[0];
         int pipeWrite = pipe1[1];
         flags = fcntl(pipeRead, F_GETFL);
