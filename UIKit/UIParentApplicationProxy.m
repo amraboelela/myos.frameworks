@@ -99,7 +99,6 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         //DLog(@"dup2");
         IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
         IOPipeWriteMessage(NativePipeMessageParentIsReady, YES);
-        //DLog();
         UIParentApplicationProxyRun(_bundleName, _bundlePath);
     } else { // Parent process
         //DLog(@"pid: %d", _pid);
@@ -120,16 +119,13 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
 
         IOPipeWriteMessage(ParentPipeMessageCharString, NO);
         IOPipeWriteCharString(_bundleName);
-        DLog(@"_bundleName: %@", _bundleName);
-//#ifndef ANDROID
-//#else
+        //DLog(@"_bundleName: %@", _bundleName);
         IOPipeWriteMessage(ChildPipeMessageCharString, NO);
         IOPipeWriteCharString(_NSFileManagerMyAppsPath());
-        DLog(@"_NSFileManagerMyAppsPath(): %@", _NSFileManagerMyAppsPath());
+        //DLog(@"_NSFileManagerMyAppsPath(): %@", _NSFileManagerMyAppsPath());
         IOPipeWriteMessage(ParentPipeMessageInt, NO);
         IOPipeWriteInt(IOWindowGetID());
-        DLog(@"IOWindowGetID(): %@", IOWindowGetID());
-//#endif
+        //DLog(@"IOWindowGetID(): %@", IOWindowGetID());
         UINativeApplicationSetParentAppIsRunning(YES);
     }
 }
