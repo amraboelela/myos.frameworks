@@ -24,6 +24,7 @@
 @package
     NSString *_bundleName;
     NSString *_bundlePath;
+    BOOL _running;
     pid_t _pid;
     int _pipeRead;
     int _pipeWrite;
@@ -31,6 +32,7 @@
 
 @property (nonatomic, retain) NSString *bundleName;
 @property (nonatomic, retain) NSString *bundlePath;
+@property BOOL running;
 
 - (id)initWithBundleName:(NSString *)bundleName andPath:(NSString *)path;
 - (void)startApp;

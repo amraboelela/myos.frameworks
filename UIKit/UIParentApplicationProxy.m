@@ -21,6 +21,9 @@
 #import <IOKit/IOKit.h>
 #import <CoreGraphics/CoreGraphics-private.h>
 
+UIParentApplicationProxy *_currentParentApplicationProxy = nil;
+NSMutableArray *_openedParentApplicationProxies;
+
 #pragma mark - Static functions
 
 static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
@@ -40,7 +43,13 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
 @synthesize bundlePath=_bundlePath;
 
 #pragma mark - Life cycle
- 
+
++ (void)initialize
+{
+    //_allChildApplicationProxiesDictionary = [[NSMutableDictionary alloc] init];
+    _openedParentApplicationProxies = CFArrayCreateMutable(kCFAllocatorDefault, 5, &kCFTypeArrayCallBacks);
+}
+
 - (id)initWithBundleName:(NSString *)bundleName andPath:(NSString *)path
 {
     if ((self=[super init])) {
@@ -106,8 +115,8 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         _pipeRead = pipeRead;
         _pipeWrite = pipeWrite;
 
-        //CFArrayAppendValue(_openedChildApplicationProxies, self);
-        //[self setAsCurrent:NO];
+        CFArrayAppendValue(_openedParentApplicationProxies, self);
+        [self setAsCurrent:NO];
 
         IOPipeWriteMessage(ParentPipeMessageCharString, NO);
         IOPipeWriteCharString(_bundleName);
@@ -122,6 +131,22 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         DLog(@"IOWindowGetID(): %@", IOWindowGetID());
 //#endif
         UINativeApplicationSetParentAppIsRunning(YES);
+    }
+}
+
+- (BOOL)isCurrent
+{
+    return (_currentParentApplicationProxy == self);
+}
+
+- (void)setAsCurrent:(BOOL)withSignal
+{
+    IOPipeSetPipes(_pipeRead, _pipeWrite);
+    _currentParentApplicationProxy = self;
+    _running = YES;
+    //DLog(@"self: %@", self);
+    if (withSignal) {
+        kill(_pid, SIGALRM);
     }
 }
 
