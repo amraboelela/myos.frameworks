@@ -50,5 +50,5 @@ NSString *_NSFileManagerMyAppsPath()
 NSString *_NSFileManagerSetMyAppsPath(NSString *myAppsPath)
 {
     _myAppsPath = myAppsPath;
-    DLog(@"_myAppsPath: %@", _myAppsPath);
+    //DLog(@"_myAppsPath: %@", _myAppsPath);
 }
