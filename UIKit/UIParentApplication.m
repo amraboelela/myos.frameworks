@@ -15,7 +15,6 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-//#import <fcntl.h>
 #import <UIKit/UIParentApplication.h>
 #import <UIKit/UIKit-private.h>
 #import <UIKit/UIChildApplicationProxy.h>
@@ -60,7 +59,7 @@ void UIParentApplicationInitialize()
     IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
     
     ParentPipeMessage message = IOPipeReadMessage();
-    DLog(@"message: %d", message);
+    //DLog(@"message: %d", message);
     NSString *processName = @"ProcessName";
     if (message == ParentPipeMessageCharString) {
         processName = [IOPipeReadCharString() retain];
@@ -73,7 +72,7 @@ void UIParentApplicationInitialize()
     message = IOPipeReadMessage();
     if (message == ParentPipeMessageCharString) {
         NSString *myappsPath = [IOPipeReadCharString() retain];
-        DLog(@"myappsPath: %@", myappsPath);
+        //DLog(@"myappsPath: %@", myappsPath);
         _NSFileManagerSetMyAppsPath(myappsPath);
     } else {
         ALog(@"Error can't get MyAppsPath");

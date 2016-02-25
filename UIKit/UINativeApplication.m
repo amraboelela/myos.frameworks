@@ -16,11 +16,9 @@
  */
 
 //#import <fcntl.h>
-//#import <UIKit/UIKit.h>
 #import <UIKit/UINativeApplication.h>
 #import <IOKit/IOKit.h>
 //#import <QuartzCore/QuartzCore-private.h>
-//#import <CoreFoundation/CoreFoundation-private.h>
 
 //#define _kTerminateChildTimeOut         2.0
 
@@ -31,9 +29,6 @@ static CFTimeInterval _startTime;
 #endif
 //static UIApplication *_uiApplication = nil;
 //static UIParentApplication *_UIParentApplication = nil;
-//static UIChildApplicationProxy *_UIChildApplicationProxy = nil;
-//static UIView *_launcherView = nil;
-//static UIView *_childAppView = nil;
 //static long _freeMemory = NSIntegerMax;
 //static int _freeMemoryCount = 0;
 
@@ -66,7 +61,7 @@ void UINativeApplicationSetParentAppIsRunning(BOOL isRunning)
 {
 #ifdef DEBUG
     _startTime = CACurrentMediaTime();
-    //DLog(@"_startTime: %f", _startTime);
+    DLog(@"_startTime: %f", _startTime);
 #endif
     _parentAppRunning = isRunning;
 }
@@ -79,15 +74,16 @@ void UINativeApplicationRunParentApp(UIParentApplicationProxy *parentAppProxy)
 
 void UINativeApplicationHandleMessages()
 {
+    //DLog();
 //#ifdef NATIVE_APP
     if (!_parentAppRunning) {
         return;
     }
-    DLog();
+    //DLog();
     int message = IOPipeReadMessage();
     switch (message) {
         case NativePipeMessageEndOfMessage:
-            DLog(@"NativePipeMessageEndOfMessage");
+            //DLog(@"NativePipeMessageEndOfMessage");
             break;
         case NativePipeMessageParentIsReady:
             DLog(@"NativePipeMessageParentIsReady");
