@@ -18,9 +18,7 @@
 //#import <fcntl.h>
 #import <UIKit/UINativeApplication.h>
 #import <IOKit/IOKit.h>
-//#import <QuartzCore/QuartzCore-private.h>
 
-//#define _kTerminateChildTimeOut         2.0
 
 static BOOL _parentAppRunning = NO;
 //static UIParentApplication *_mlApp = nil;
@@ -28,9 +26,6 @@ static BOOL _parentAppRunning = NO;
 static CFTimeInterval _startTime;
 #endif
 //static UIApplication *_uiApplication = nil;
-//static UIParentApplication *_UIParentApplication = nil;
-//static long _freeMemory = NSIntegerMax;
-//static int _freeMemoryCount = 0;
 
 #pragma mark - Static functions
 
@@ -86,7 +81,7 @@ void UINativeApplicationHandleMessages()
             //DLog(@"NativePipeMessageEndOfMessage");
             break;
         case NativePipeMessageParentIsReady:
-            DLog(@"NativePipeMessageParentIsReady");
+            //DLog(@"NativePipeMessageParentIsReady");
             //IOPipeWriteInt(0x4000001);
             break;
         /*case ParentPipeMessageMoveApplicationToTop:

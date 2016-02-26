@@ -2,7 +2,7 @@
 
      <abstract>C Interface to graphics drawing library</abstract>
 
-     Copyright (C) 2010-2015 Free Software Foundation, Inc.
+     Copyright (C) 2010-2016 Free Software Foundation, Inc.
 
      Author: Eric Wasylishen <ewasylishen@gmail.com>
      Date: June, 2010
@@ -582,7 +582,7 @@ void _CGDataProviderSetAppName(NSString *childAppName)
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
-    //DLog(@"filename: %s", filename);
+    DLog(@"filename: %s", filename);
     NSString *fileNameString = [NSString stringWithCString:filename];
     NSString *path = fileNameString;
 //#ifdef ANDROID
@@ -594,7 +594,8 @@ CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
     //DLog(@"NATIVE_APP || PARENT_APP");
         //path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
 #else
-        path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
+    //DLog(@"not (NATIVE_APP || PARENT_APP)");
+    path = [NSString stringWithFormat:@"%@/apps/%@.app/%@", _NSFileManagerMyAppsPath(),  _childAppName, fileNameString];
 #endif
     }
     //DLog(@"path: %@", path);

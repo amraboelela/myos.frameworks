@@ -705,7 +705,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     }
 #elif defined(PARENT_APP)
     UIParentApplicationInitialize();
-    DLog();
+    //DLog();
 
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,(_kScreenHeight + _kScreenFooter)*_kScreenScaleFactor);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
@@ -723,15 +723,15 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     id appDelegate = [[appDelegateClass alloc] init];
     _application->_delegate = appDelegate;
     //DLog();
-    /*
+    
     _CAAnimatorInitialize();
     [_CAAnimatorConditionLock lockWhenCondition:_CAAnimatorConditionLockHasNoWork];
     [[UIScreen alloc] init];
-    [_CAAnimatorConditionLock unlock];*/
+    [_CAAnimatorConditionLock unlock];
     NSTimeInterval timestamp = CACurrentMediaTime();
     //DLog();
-    /*_UIApplicationLaunchApplicationWithDefaultWindow(nil);
-*/
+    _UIApplicationLaunchApplicationWithDefaultWindow(nil);
+
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
   //  DLog();
@@ -741,11 +741,11 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
         [limit release];
         timestamp = CACurrentMediaTime();
     //DLog();
-    /*    if (IOEventGetNextEvent(window, _application->_currentEvent)) {
-            //_UIApplicationSetCurrentEventTouchedView();
+        if (IOEventGetNextEvent(window, _application->_currentEvent)) {
+            _UIApplicationSetCurrentEventTouchedView();
             //_application->_lastActivityTime = timestamp;
             _application->_currentEvent->_timestamp = timestamp;
-        }*/
+        }
         UIParentApplicationHandleMessages();
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
