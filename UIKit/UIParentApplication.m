@@ -63,7 +63,7 @@ void UIParentApplicationInitialize()
     NSString *processName = @"ProcessName";
     if (message == ParentPipeMessageCharString) {
         processName = [IOPipeReadCharString() retain];
-        DLog(@"processName: %@", processName);
+        //DLog(@"processName: %@", processName);
         _CGDataProviderSetAppName(processName);
     } else {
         ALog(@"Error can't get process name");
@@ -82,7 +82,7 @@ void UIParentApplicationInitialize()
 #ifndef ANDROID
     if (message == ParentPipeMessageInt) {
         int parentWindowID = IOPipeReadInt();
-        DLog(@"parentWindowID: 0x%lx", parentWindowID);
+        //DLog(@"parentWindowID: 0x%lx", parentWindowID);
         IOWindowSetParentID(parentWindowID);
     } else {
         DLog(@"message: %d", message);
@@ -127,11 +127,11 @@ void UIParentApplicationHandleMessages()
     if (!_childAppRunning) {
         return;
     }
-    DLog();
+    //DLog();
     int message = IOPipeReadMessage();
     switch (message) {
         case ParentPipeMessageEndOfMessage:
-            DLog(@"ParentPipeMessageEndOfMessage");
+            //DLog(@"ParentPipeMessageEndOfMessage");
             break;
         case ParentPipeMessageChildIsReady:
             DLog(@"ParentPipeMessageChildIsReady");

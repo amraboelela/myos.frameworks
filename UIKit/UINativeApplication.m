@@ -56,7 +56,7 @@ void UINativeApplicationSetParentAppIsRunning(BOOL isRunning)
 {
 #ifdef DEBUG
     _startTime = CACurrentMediaTime();
-    DLog(@"_startTime: %f", _startTime);
+    //DLog(@"_startTime: %f", _startTime);
 #endif
     _parentAppRunning = isRunning;
 }

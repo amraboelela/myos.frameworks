@@ -582,7 +582,7 @@ void _CGDataProviderSetAppName(NSString *childAppName)
 
 CGDataProviderRef CGDataProviderCreateWithFilename(const char *filename)
 {
-    DLog(@"filename: %s", filename);
+    //DLog(@"filename: %s", filename);
     NSString *fileNameString = [NSString stringWithCString:filename];
     NSString *path = fileNameString;
 //#ifdef ANDROID
