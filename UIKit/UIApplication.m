@@ -751,6 +751,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
 #else
+    DLog();
     UIChildApplicationInitialize();
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
     CGContextRef ctx = IOWindowCreateContextWithRect(cr);
