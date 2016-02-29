@@ -26,6 +26,8 @@ typedef enum {
     ParentPipeMessageCharString,
     ParentPipeMessageChildIsReady,
     ParentPipeMessageMoveApplicationToTop,
+    ParentPipeMessageHomeButtonClicked,
+    ParentPipeMessageBackButtonClicked,
     ParentPipeMessageTerminateApp,
 } ParentPipeMessage;
 

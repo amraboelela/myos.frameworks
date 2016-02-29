@@ -75,8 +75,8 @@ void UIChildApplicationInitialize()
         NSLog(@"Error can't get MyAppsPath");
     }
     
-    message = IOPipeReadMessage();
 #ifndef ANDROID
+    message = IOPipeReadMessage();
     if (message == ChildPipeMessageInt) {
         int parentWindowID = IOPipeReadInt();
         //DLog(@"parentWindowID: 0x%lx", parentWindowID);

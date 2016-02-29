@@ -70,7 +70,6 @@ void UINativeApplicationRunParentApp(UIParentApplicationProxy *parentAppProxy)
 void UINativeApplicationHandleMessages()
 {
     //DLog();
-//#ifdef NATIVE_APP
     if (!_parentAppRunning) {
         return;
     }
@@ -84,15 +83,7 @@ void UINativeApplicationHandleMessages()
             //DLog(@"NativePipeMessageParentIsReady");
             //IOPipeWriteInt(0x4000001);
             break;
-        /*case ParentPipeMessageMoveApplicationToTop:
-            UIParentApplicationMoveCurrentAppToTop();
-            break;
-        case ParentPipeMessageTerminateApp:
-            DLog(@"ParentPipeMessageTerminateApp");
-            //[[[_application->_keyWindow subviews] lastObject] removeFromSuperview];
-            break;*/
         default:
             break;
     }
-//#endif
 }

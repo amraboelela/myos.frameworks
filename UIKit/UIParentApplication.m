@@ -135,10 +135,15 @@ void UIParentApplicationHandleMessages()
             break;
         case ParentPipeMessageChildIsReady:
             DLog(@"ParentPipeMessageChildIsReady");
-            //IOPipeWriteInt(0x4000001);
             break;
         case ParentPipeMessageMoveApplicationToTop:
             UIParentApplicationMoveCurrentAppToTop();
+            break;
+        case ParentPipeMessageHomeButtonClicked:
+            DLog(@"ParentPipeMessageHomeButtonClicked");
+            break;
+        case ParentPipeMessageBackButtonClicked:
+            DLog(@"ParentPipeMessageBackButtonClicked");
             break;
         case ParentPipeMessageTerminateApp:
             DLog(@"ParentPipeMessageTerminateApp");
