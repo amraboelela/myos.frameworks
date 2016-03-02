@@ -536,15 +536,6 @@ static void _UIApplicationInitWindow()
     run_tasks();
 }
 
-/*
-- (void)setAsCurrent:(BOOL)withSignal
-{
-    IOPipeSetPipes(0, 0);
-#if defined(ANDROID) && defined(NATIVE_APP)
-    EAGLParentSetPipes(0, 0);
-#endif
-}*/
-
 @end
 
 @implementation UIApplication(UIApplicationDeprecated)

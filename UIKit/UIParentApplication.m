@@ -103,30 +103,12 @@ void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
 #endif
 }
 
-void UIParentApplicationTerminateSomeApps()
-{
-    //DLog(@"_openedChildApplicationProxies 1: %@", _openedChildApplicationProxies);
-    //NSMutableArray *openedApplications = CFArrayCreateCopy(kCFAllocatorDefault, _openedChildApplicationProxies);
-    _freeMemoryCount++;
-    int count = _openedChildApplicationProxies.count;
-    for (int i=0; i<=count; i++) {
-        UIChildApplicationProxy *childAppProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, 0);
-        if (childAppProxy != _currentChildApplicationProxy) {
-        //DLog(@"Terminating app: %@", childApp);
-            [childAppProxy terminate];
-            CFArrayRemoveValueAtIndex(_openedChildApplicationProxies, 0);
-        } else {
-            return;
-        }
-    }
-}
-
 void UIParentApplicationHandleMessages()
 {
 //#ifdef NATIVE_APP
-    if (!_childAppRunning) {
+    /*if (!_childAppRunning) {
         return;
-    }
+    }*/
     //DLog();
     int message = IOPipeReadMessage();
     switch (message) {
@@ -223,6 +205,24 @@ void UIParentApplicationMoveCurrentAppToTop()
         //}
         _CFArrayMoveValueToTop(_openedChildApplicationProxies, _currentChildApplicationProxy);
         //DLog(@"_openedChildApplicationProxies: %@", _openedChildApplicationProxies);
+    }
+}
+
+void UIParentApplicationTerminateSomeApps()
+{
+    //DLog(@"_openedChildApplicationProxies 1: %@", _openedChildApplicationProxies);
+    //NSMutableArray *openedApplications = CFArrayCreateCopy(kCFAllocatorDefault, _openedChildApplicationProxies);
+    _freeMemoryCount++;
+    int count = _openedChildApplicationProxies.count;
+    for (int i=0; i<=count; i++) {
+        UIChildApplicationProxy *childAppProxy = CFArrayGetValueAtIndex(_openedChildApplicationProxies, 0);
+        if (childAppProxy != _currentChildApplicationProxy) {
+            //DLog(@"Terminating app: %@", childApp);
+            [childAppProxy terminate];
+            CFArrayRemoveValueAtIndex(_openedChildApplicationProxies, 0);
+        } else {
+            return;
+        }
     }
 }
 

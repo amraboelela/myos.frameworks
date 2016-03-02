@@ -120,7 +120,7 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         IOPipeWriteMessage(ParentPipeMessageCharString, NO);
         IOPipeWriteCharString(_bundleName);
         //DLog(@"_bundleName: %@", _bundleName);
-        IOPipeWriteMessage(ChildPipeMessageCharString, NO);
+        IOPipeWriteMessage(ParentPipeMessageCharString, NO);
         IOPipeWriteCharString(_NSFileManagerMyAppsPath());
         //DLog(@"_NSFileManagerMyAppsPath(): %@", _NSFileManagerMyAppsPath());
         IOPipeWriteMessage(ParentPipeMessageInt, NO);
