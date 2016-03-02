@@ -56,9 +56,9 @@ static void UIParentApplicationSignal(int sig)
 
 void UIParentApplicationInitialize()
 {
-    //IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
+    IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
     
-    ParentPipeMessage message = IOPipeReadMessageWithPipe(ParentApplicationPipeRead);
+    ParentPipeMessage message = IOPipeReadMessage();
     //DLog(@"message: %d", message);
     NSString *processName = @"ProcessName";
     if (message == ParentPipeMessageCharString) {
@@ -69,7 +69,7 @@ void UIParentApplicationInitialize()
         ALog(@"Error can't get process name");
     }
     
-    message =IOPipeReadMessageWithPipe(ParentApplicationPipeRead);
+    message = IOPipeReadMessage();
     if (message == ParentPipeMessageCharString) {
         NSString *myappsPath = [IOPipeReadCharString() retain];
         //DLog(@"myappsPath: %@", myappsPath);
@@ -78,7 +78,7 @@ void UIParentApplicationInitialize()
         ALog(@"Error can't get MyAppsPath");
     }
     
-    message = IOPipeReadMessageWithPipe(ParentApplicationPipeRead);
+    message = IOPipeReadMessage();
 #ifndef ANDROID
     if (message == ParentPipeMessageInt) {
         int parentWindowID = IOPipeReadInt();
