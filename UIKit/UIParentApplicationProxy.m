@@ -97,8 +97,8 @@ static void UIParentApplicationProxyRun(NSString *appName, NSString *appPath)
         dup2(pipe2[1], ParentApplicationPipeWrite);
         
         //DLog(@"dup2");
-        IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
-        IOPipeWriteMessage(NativePipeMessageParentIsReady, YES);
+        //IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
+        IOPipeWriteMessageWithPipe(NativePipeMessageParentIsReady, YES, ParentApplicationPipeWrite);
         UIParentApplicationProxyRun(_bundleName, _bundlePath);
     } else { // Parent process
         //DLog(@"pid: %d", _pid);

@@ -56,9 +56,9 @@ static void UIParentApplicationSignal(int sig)
 
 void UIParentApplicationInitialize()
 {
-    IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
+    //IOPipeSetPipes(ParentApplicationPipeRead, ParentApplicationPipeWrite);
     
-    ParentPipeMessage message = IOPipeReadMessage();
+    ParentPipeMessage message = IOPipeReadMessageWithPipe(ParentApplicationPipeRead);
     //DLog(@"message: %d", message);
     NSString *processName = @"ProcessName";
     if (message == ParentPipeMessageCharString) {
@@ -69,7 +69,7 @@ void UIParentApplicationInitialize()
         ALog(@"Error can't get process name");
     }
     
-    message = IOPipeReadMessage();
+    message =IOPipeReadMessageWithPipe(ParentApplicationPipeRead);
     if (message == ParentPipeMessageCharString) {
         NSString *myappsPath = [IOPipeReadCharString() retain];
         //DLog(@"myappsPath: %@", myappsPath);
@@ -78,7 +78,7 @@ void UIParentApplicationInitialize()
         ALog(@"Error can't get MyAppsPath");
     }
     
-    message = IOPipeReadMessage();
+    message = IOPipeReadMessageWithPipe(ParentApplicationPipeRead);
 #ifndef ANDROID
     if (message == ParentPipeMessageInt) {
         int parentWindowID = IOPipeReadInt();
@@ -105,12 +105,25 @@ void UIParentApplicationSetChildAppIsRunning(BOOL isRunning)
 
 void UIParentApplicationHandleMessages()
 {
-//#ifdef NATIVE_APP
-    /*if (!_childAppRunning) {
+    ParentPipeMessage message = IOPipeReadMessageWithPipe(ParentApplicationPipeRead);
+    switch (message) {
+        case ParentPipeMessageEndOfMessage:
+            //DLog(@"ParentPipeMessageEndOfMessage");
+            break;
+        case ParentPipeMessageHomeButtonClicked:
+            DLog(@"ParentPipeMessageHomeButtonClicked");
+            break;
+        case ParentPipeMessageBackButtonClicked:
+            DLog(@"ParentPipeMessageBackButtonClicked");
+            break;
+        default:
+            break;
+    }
+    if (!_childAppRunning) {
         return;
-    }*/
+    }
     //DLog();
-    int message = IOPipeReadMessage();
+    ParentPipeMessage message = IOPipeReadMessage();
     switch (message) {
         case ParentPipeMessageEndOfMessage:
             //DLog(@"ParentPipeMessageEndOfMessage");
