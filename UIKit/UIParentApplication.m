@@ -123,7 +123,7 @@ void UIParentApplicationHandleMessages()
         return;
     }
     //DLog();
-    ParentPipeMessage message = IOPipeReadMessage();
+    message = IOPipeReadMessage();
     switch (message) {
         case ParentPipeMessageEndOfMessage:
             //DLog(@"ParentPipeMessageEndOfMessage");
