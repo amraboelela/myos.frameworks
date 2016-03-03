@@ -76,7 +76,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 
 @synthesize bundleName=_bundleName;
 @synthesize score=_score;
-@dynamic name;
+//@dynamic name;
 @dynamic category;
 @dynamic homePageIcon;
 
@@ -127,7 +127,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 {
     //[self willChangeValueForKey:@"running"];
     _opened = newValue;
-    //DLog(@"self: %@, running: %d", self, _opened);
+    DLog(@"self: %@, opened: %d", self, _opened);
     if (_opened) {
         _applicationIcon->_iconLabel.textColor = [UIColor yellowColor];
         _homePageIcon->_iconLabel.textColor = [UIColor yellowColor];
@@ -148,7 +148,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d;>", [self className], self, self.name, _opened, [self isCurrent], _score];
+    return [NSString stringWithFormat:@"<%@: %p; name: %@; opened: %d; isCurrent: %d; score: %d;>", [self className], self, self.bundleName, _opened, [self isCurrent], _score];
 }
 
 #pragma mark - Data
@@ -173,8 +173,8 @@ static void UIChildApplicationProxyRun(NSString *appName)
     //DLog();
     if (!_opened) {
         self.opened = YES;
-        //[self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
-        UIChildApplicationProxyRunApp(self, YES);
+        [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
+        //UIChildApplicationProxyRunApp(self, YES);
     } else {
         _CFArrayMoveValueToTop(_openedChildApplicationProxies, self);
         UIChildApplicationProxyRunApp(self, NO);
