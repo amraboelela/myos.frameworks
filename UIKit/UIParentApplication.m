@@ -111,11 +111,12 @@ void UIParentApplicationHandleMessages()
             //DLog(@"ParentPipeMessageEndOfMessage");
             break;
         case ParentPipeMessageHomeButtonClicked:
-            DLog(@"ParentPipeMessageHomeButtonClicked");
+            //DLog(@"ParentPipeMessageHomeButtonClicked");
             UIParentApplicationShowLauncher();
             break;
         case ParentPipeMessageBackButtonClicked:
-            DLog(@"ParentPipeMessageBackButtonClicked");
+            //DLog(@"ParentPipeMessageBackButtonClicked");
+            UIParentApplicationGoBack();
             break;
         default:
             break;
