@@ -112,6 +112,7 @@ void UIParentApplicationHandleMessages()
             break;
         case ParentPipeMessageHomeButtonClicked:
             DLog(@"ParentPipeMessageHomeButtonClicked");
+            UIParentApplicationShowLauncher();
             break;
         case ParentPipeMessageBackButtonClicked:
             DLog(@"ParentPipeMessageBackButtonClicked");
@@ -152,11 +153,7 @@ void UIParentApplicationHandleMessages()
 
 void UIParentApplicationShowLauncher()
 {
-    //DLog();
-    /*if ([[_childAppView subviews] count] > 0) {
-        //DLog(@"[[_childAppView subviews] count] > 0");
-        [[[_childAppView subviews] objectAtIndex:0] removeFromSuperview];
-    }*/
+    DLog();
     [_currentChildApplicationProxy gotoBackground];
     //_currentChildApplicationProxy = nil;
     _UIApplicationEnterForeground();
