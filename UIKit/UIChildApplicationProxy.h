@@ -27,7 +27,7 @@ extern NSMutableArray *_openedChildApplicationProxies;
 @interface UIChildApplicationProxy : NSObject {
 @package
     NSString *_bundleName;
-    //NSMutableDictionary *_data;
+    NSDictionary *_info;
     BOOL _opened;
     BOOL _running;
     int _score;
