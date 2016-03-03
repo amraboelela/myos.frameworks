@@ -118,11 +118,13 @@ static void UIChildApplicationProxyRun(NSString *appName)
 
 - (NSString *)name
 {
+    DLog(@"name: %@", [_info valueForKey:@"CFBundleDisplayName"]);
     return [_info valueForKey:@"CFBundleDisplayName"];
 }
 
 - (NSString *)category
 {
+    DLog(@"category: %@", [_info valueForKey:@"LSApplicationCategoryType"]);
     return [_info valueForKey:@"LSApplicationCategoryType"];
 }
 
