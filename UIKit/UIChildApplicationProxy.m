@@ -94,6 +94,12 @@ static void UIChildApplicationProxyRun(NSString *appName)
         _bundleName = [bundleName retain];
         [_allChildApplicationProxiesDictionary setObject:self forKey:_bundleName];
         _opened = NO;
+        NSString *infoPath = [NSString stringWithFormat:@"%@/apps/%@.app/Info.plist", _NSFileManagerMyAppsPath(), _bundleName];
+        _info = [[NSDictionary dictionaryWithContentsOfFile:infoPath] retain];
+        
+        //NSData *infoData = [NSData dataWithContentsOfFile:infoPath];
+        //_data = [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:NULL] retain];
+        
         _applicationIcon = [[UIApplicationIcon alloc] initWithApplication:self];
     }
     return self;
@@ -102,13 +108,23 @@ static void UIChildApplicationProxyRun(NSString *appName)
 - (void)dealloc
 {
     [_bundleName release];
-    //[_data release];
+    [_info release];
     [_applicationIcon release];
     [_homePageIcon release];
     [super dealloc];
 }
 
 #pragma mark - Accessors
+
+- (NSString *)name
+{
+    return [_info valueForKey:@"CFBundleDisplayName"];
+}
+
+- (NSString *)category
+{
+    return [_info valueForKey:@"LSApplicationCategoryType"];
+}
 
 - (UIImageView *)defaultScreenView
 {
