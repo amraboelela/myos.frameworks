@@ -85,7 +85,7 @@ void UIParentApplicationInitialize()
         //DLog(@"parentWindowID: 0x%lx", parentWindowID);
         IOWindowSetParentID(parentWindowID);
     } else {
-        DLog(@"message: %d", message);
+        //DLog(@"message: %d", message);
         ALog(@"Error can't get xWindow handle");
     }
 #endif
@@ -124,23 +124,16 @@ void UIParentApplicationHandleMessages()
     if (!_childAppRunning) {
         return;
     }
-    //DLog();
     message = IOPipeReadMessage();
     switch (message) {
         case ParentPipeMessageEndOfMessage:
             //DLog(@"ParentPipeMessageEndOfMessage");
             break;
         case ParentPipeMessageChildIsReady:
-            DLog(@"ParentPipeMessageChildIsReady");
+            //DLog(@"ParentPipeMessageChildIsReady");
             break;
         case ParentPipeMessageMoveApplicationToTop:
             UIParentApplicationMoveCurrentAppToTop();
-            break;
-        case ParentPipeMessageHomeButtonClicked:
-            DLog(@"ParentPipeMessageHomeButtonClicked");
-            break;
-        case ParentPipeMessageBackButtonClicked:
-            DLog(@"ParentPipeMessageBackButtonClicked");
             break;
         case ParentPipeMessageTerminateApp:
             DLog(@"ParentPipeMessageTerminateApp");
@@ -154,7 +147,7 @@ void UIParentApplicationHandleMessages()
 
 void UIParentApplicationShowLauncher()
 {
-    DLog();
+    //DLog();
     [_currentChildApplicationProxy gotoBackground];
     //_currentChildApplicationProxy = nil;
     _UIApplicationEnterForeground();

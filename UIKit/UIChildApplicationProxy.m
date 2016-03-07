@@ -31,7 +31,6 @@ NSMutableArray *_openedChildApplicationProxies;
 
 static void UIChildApplicationProxyRunApp(UIChildApplicationProxy *childAppProxy, BOOL coldStart)
 {
-    //DLog();
     //_launcherView.hidden = YES;
     if (coldStart) {
         //UIParentApplicationCheckMemory();
@@ -118,13 +117,13 @@ static void UIChildApplicationProxyRun(NSString *appName)
 
 - (NSString *)name
 {
-    DLog(@"name: %@", [_info valueForKey:@"CFBundleDisplayName"]);
+    //DLog(@"name: %@", [_info valueForKey:@"CFBundleDisplayName"]);
     return [_info valueForKey:@"CFBundleDisplayName"];
 }
 
 - (NSString *)category
 {
-    DLog(@"category: %@", [_info valueForKey:@"LSApplicationCategoryType"]);
+    //DLog(@"category: %@", [_info valueForKey:@"LSApplicationCategoryType"]);
     return [_info valueForKey:@"LSApplicationCategoryType"];
 }
 
@@ -145,7 +144,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 {
     //[self willChangeValueForKey:@"running"];
     _opened = newValue;
-    DLog(@"self: %@, opened: %d", self, _opened);
+    //DLog(@"self: %@, opened: %d", self, _opened);
     if (_opened) {
         _applicationIcon->_iconLabel.textColor = [UIColor yellowColor];
         _homePageIcon->_iconLabel.textColor = [UIColor yellowColor];
@@ -279,7 +278,6 @@ static void UIChildApplicationProxyRun(NSString *appName)
         close(animationPipe2[1]);
         _animationPipeRead = animationPipeRead;
         _animationPipeWrite = animationPipeWrite;
-        //DLog();
 #endif
         CFArrayAppendValue(_openedChildApplicationProxies, self);
         [self setAsCurrent:NO];
