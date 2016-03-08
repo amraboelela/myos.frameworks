@@ -58,10 +58,12 @@
 void _EAGLTextureLoad(EAGLTexture *texture, NSArray *images)
 {
     //DLog();
-    _EAGLTextureUnload(texture);
-    texture->_numberOfTextures = images.count;
-    texture->_textureIDs = malloc(texture->_numberOfTextures * sizeof(GLuint));
-    glGenTextures(texture->_numberOfTextures, texture->_textureIDs);
+    if (texture->_numberOfTextures != images.count) {
+        _EAGLTextureUnload(texture);
+        texture->_numberOfTextures = images.count;
+        texture->_textureIDs = malloc(texture->_numberOfTextures * sizeof(GLuint));
+        glGenTextures(texture->_numberOfTextures, texture->_textureIDs);
+    }
     //DLog(@"glGetError: %d", glGetError());
     //DLog(@"image: %@", image);
     for (int i=0; i<texture->_numberOfTextures; i++) {
