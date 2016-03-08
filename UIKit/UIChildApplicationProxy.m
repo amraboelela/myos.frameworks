@@ -156,7 +156,6 @@ static void UIChildApplicationProxyRun(NSString *appName)
 
 - (UIApplicationIcon *)homePageIcon
 {
-    //DLog();
     if (!_homePageIcon) {
         _homePageIcon = [[UIApplicationIcon alloc] initWithApplication:self];
     }
@@ -200,6 +199,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 
 - (void)presentAppScreen
 {
+    DLog();
     UIChildApplicationProxyRunApp(self, YES);
 }
 
@@ -321,6 +321,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 - (void)gotoBackground
 {
     //DLog(@"self: %@", self);
+    //self.opened = YES;
     if (_running) {
         //DLog(@"_running");
         _running = NO;
