@@ -79,7 +79,7 @@ void UIChildApplicationInitialize()
     message = IOPipeReadMessage();
     if (message == ChildPipeMessageInt) {
         int parentWindowID = IOPipeReadInt();
-        DLog(@"parentWindowID: 0x%lx", parentWindowID);
+        //DLog(@"parentWindowID: 0x%lx", parentWindowID);
         IOWindowSetParentID(parentWindowID);
     } else {
         //DLog(@"message: %d", message);

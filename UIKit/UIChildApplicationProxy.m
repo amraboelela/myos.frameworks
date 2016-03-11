@@ -188,7 +188,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 {
     //DLog();
     if (!_opened) {
-        self.opened = YES;
+        //self.opened = YES;
         [self performSelector:@selector(presentAppScreen) withObject:nil afterDelay:0.01];
         //UIChildApplicationProxyRunApp(self, YES);
     } else {
@@ -199,7 +199,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 
 - (void)presentAppScreen
 {
-    DLog();
+    //DLog();
     UIChildApplicationProxyRunApp(self, YES);
 }
 
@@ -208,7 +208,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 - (void)startApp
 {
     //DLog(@"name: %@", self.name);
-    //self.opened = YES;
+    self.opened = YES;
     int pipe1[2];
     int pipe2[2];
     
@@ -321,6 +321,7 @@ static void UIChildApplicationProxyRun(NSString *appName)
 - (void)gotoBackground
 {
     //DLog(@"self: %@", self);
+    //self.opened = YES;
     //self.opened = YES;
     if (_running) {
         //DLog(@"_running");
