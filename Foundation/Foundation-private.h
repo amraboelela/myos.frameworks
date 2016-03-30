@@ -16,31 +16,31 @@
  */
 
 #import <Foundation/Foundation.h>
-#import	<Foundation/GNUstepBase/GSVersionMacros.h>
-#import	<Foundation/GNUstepBase/GNUstep.h>
+#import	<GNUstepBase/GSVersionMacros.h>
+#import	<GNUstepBase/GNUstep.h>
 
-#import	<Foundation/GNUstepBase/GSFunctions.h>
-#import	<Foundation/GNUstepBase/GSLocale.h>
-#import	<Foundation/GNUstepBase/GSLock.h>
-#import	<Foundation/GNUstepBase/GSMime.h>
-#import	<Foundation/GNUstepBase/GSXML.h>
-#import	<Foundation/GNUstepBase/Unicode.h>
+#import	<GNUstepBase/GSFunctions.h>
+#import	<GNUstepBase/GSLocale.h>
+#import	<GNUstepBase/GSLock.h>
+#import	<GNUstepBase/GSMime.h>
+#import	<GNUstepBase/GSXML.h>
+#import	<GNUstepBase/Unicode.h>
 
-#import	<Foundation/GNUstepBase/NSArray+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSAttributedString+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSBundle+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSCalendarDate+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSData+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSDebug+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSFileHandle+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSLock+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSMutableString+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSNetServices+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSNumber+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSObject+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSProcessInfo+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSStream+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSString+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSTask+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSThread+GNUstepBase.h>
-#import	<Foundation/GNUstepBase/NSURL+GNUstepBase.h>
+#import	<GNUstepBase/NSArray+GNUstepBase.h>
+#import	<GNUstepBase/NSAttributedString+GNUstepBase.h>
+#import	<GNUstepBase/NSBundle+GNUstepBase.h>
+#import	<GNUstepBase/NSCalendarDate+GNUstepBase.h>
+#import	<GNUstepBase/NSData+GNUstepBase.h>
+#import	<GNUstepBase/NSDebug+GNUstepBase.h>
+#import	<GNUstepBase/NSFileHandle+GNUstepBase.h>
+#import	<GNUstepBase/NSLock+GNUstepBase.h>
+#import	<GNUstepBase/NSMutableString+GNUstepBase.h>
+#import	<GNUstepBase/NSNetServices+GNUstepBase.h>
+#import	<GNUstepBase/NSNumber+GNUstepBase.h>
+#import	<GNUstepBase/NSObject+GNUstepBase.h>
+#import	<GNUstepBase/NSProcessInfo+GNUstepBase.h>
+#import	<GNUstepBase/NSStream+GNUstepBase.h>
+#import	<GNUstepBase/NSString+GNUstepBase.h>
+#import	<GNUstepBase/NSTask+GNUstepBase.h>
+#import	<GNUstepBase/NSThread+GNUstepBase.h>
+#import	<GNUstepBase/NSURL+GNUstepBase.h>
