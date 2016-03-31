@@ -15,4 +15,6 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#import <CFNetwork/CFNetwork.h>
+#import <CoreNetwork/WebServer.h>
+#import <CoreNetwork/WebServerBundles.h>
+#import <CoreNetwork/WebServerHTML.h>
