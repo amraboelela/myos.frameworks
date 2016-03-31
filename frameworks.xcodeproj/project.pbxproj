@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		639FAECE1CADCAB2004AD223 /* CoreNetwork */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreNetwork; sourceTree = "<group>"; };
 		63D9C3E81CA74F0F0002879F /* CFNetwork */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CFNetwork; sourceTree = "<group>"; };
 		F57545F919C7A91C000DDF29 /* CoreFoundation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreFoundation; sourceTree = "<group>"; };
 		F57545FA19C7A91C000DDF29 /* CoreGraphics */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreGraphics; sourceTree = "<group>"; };
@@ -24,6 +25,7 @@
 		4C7AEA5918BEA828007CFB3D = {
 			isa = PBXGroup;
 			children = (
+				639FAECE1CADCAB2004AD223 /* CoreNetwork */,
 				63D9C3E81CA74F0F0002879F /* CFNetwork */,
 				F57545F919C7A91C000DDF29 /* CoreFoundation */,
 				F57545FA19C7A91C000DDF29 /* CoreGraphics */,
