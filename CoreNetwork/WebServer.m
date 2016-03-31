@@ -3,7 +3,9 @@
    
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date:	June 2004
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date:    March 2016
+ 
    This file is part of the WebServer Library.
 
    This library is free software; you can redistribute it and/or
@@ -554,74 +556,74 @@ escapeData(const uint8_t *bytes, NSUInteger length, NSMutableData *d)
 
 + (BOOL) matchIP: (NSString*)address to: (NSString*)pattern
 {
-  uint32_t	remote;
-  NSArray	*parts;
-  NSArray	*items;
-  unsigned	count;
-  unsigned	index;
-
-  parts = [address componentsSeparatedByString: @"."];
-  remote = [[parts objectAtIndex: 0] intValue];
-  remote = remote * 256 + [[parts objectAtIndex: 1] intValue];
-  remote = remote * 256 + [[parts objectAtIndex: 2] intValue];
-  remote = remote * 256 + [[parts objectAtIndex: 3] intValue];
-
-  items = [pattern componentsSeparatedByString: @","];
-  count = [items count];
-  for (index = 0; index < count; index++)
+    uint32_t	remote;
+    NSArray	*parts;
+    NSArray	*items;
+    unsigned	count;
+    unsigned	index;
+    
+    parts = [address componentsSeparatedByString: @"."];
+    remote = [[parts objectAtIndex: 0] intValue];
+    remote = remote * 256 + [[parts objectAtIndex: 1] intValue];
+    remote = remote * 256 + [[parts objectAtIndex: 2] intValue];
+    remote = remote * 256 + [[parts objectAtIndex: 3] intValue];
+    
+    items = [pattern componentsSeparatedByString: @","];
+    count = [items count];
+    for (index = 0; index < count; index++)
     {
-      pattern = [[items objectAtIndex: index] stringByTrimmingSpaces];
-      if ([pattern length] > 0)
-	{
-	  NSRange	r = [pattern rangeOfString: @"/"];
-	  uint32_t	want;
-  
-	  if (0 == r.length)
-	    {
-	      /* An IPv4 address in dot format (nnn.nnn.nnn.nnn)
-	       */
-	      parts = [pattern componentsSeparatedByString: @"."];
-	      want = [[parts objectAtIndex: 0] intValue];
-	      want = want * 256 + [[parts objectAtIndex: 1] intValue];
-	      want = want * 256 + [[parts objectAtIndex: 2] intValue];
-	      want = want * 256 + [[parts objectAtIndex: 3] intValue];
-	      if (remote == want)
-		{
-		  return YES;
-		}
-	    }
-	  else
-	    {
-	      int           bits;
-	      uint32_t      mask;
-	      int           i;
-
-	      /* An IPv4 mask in dot format with a number of bits specified
-	       * after a slash (nnn.nnn.nnn.nnn/bits)
-	       */
-	      parts = [pattern componentsSeparatedByString: @"/"];
-	      bits = [[parts objectAtIndex: 1] intValue];
-	      pattern = [parts objectAtIndex: 0];
-	      parts = [pattern componentsSeparatedByString: @"."];
-	      want = [[parts objectAtIndex: 0] intValue];
-	      want = want * 256 + [[parts objectAtIndex: 1] intValue];
-	      want = want * 256 + [[parts objectAtIndex: 2] intValue];
-	      want = want * 256 + [[parts objectAtIndex: 3] intValue];
-	      mask = 0xffffffff;
-	      bits = 32 - bits;
-	      for (i = 0; i < bits; i++)
-		{
-		  mask &= ~(1<<i);
-		}
-	      NSAssert((want & mask) == want, NSInternalInconsistencyException);
-	      if ((remote & mask) == want)
-		{
-		  return YES;
-		}
-	    }
-	}
+        pattern = [[items objectAtIndex: index] stringByTrimmingSpaces];
+        if ([pattern length] > 0)
+        {
+            NSRange	r = [pattern rangeOfString: @"/"];
+            uint32_t	want;
+            
+            if (0 == r.length)
+            {
+                /* An IPv4 address in dot format (nnn.nnn.nnn.nnn)
+                 */
+                parts = [pattern componentsSeparatedByString: @"."];
+                want = [[parts objectAtIndex: 0] intValue];
+                want = want * 256 + [[parts objectAtIndex: 1] intValue];
+                want = want * 256 + [[parts objectAtIndex: 2] intValue];
+                want = want * 256 + [[parts objectAtIndex: 3] intValue];
+                if (remote == want)
+                {
+                    return YES;
+                }
+            }
+            else
+            {
+                int           bits;
+                uint32_t      mask;
+                int           i;
+                
+                /* An IPv4 mask in dot format with a number of bits specified
+                 * after a slash (nnn.nnn.nnn.nnn/bits)
+                 */
+                parts = [pattern componentsSeparatedByString: @"/"];
+                bits = [[parts objectAtIndex: 1] intValue];
+                pattern = [parts objectAtIndex: 0];
+                parts = [pattern componentsSeparatedByString: @"."];
+                want = [[parts objectAtIndex: 0] intValue];
+                want = want * 256 + [[parts objectAtIndex: 1] intValue];
+                want = want * 256 + [[parts objectAtIndex: 2] intValue];
+                want = want * 256 + [[parts objectAtIndex: 3] intValue];
+                mask = 0xffffffff;
+                bits = 32 - bits;
+                for (i = 0; i < bits; i++)
+                {
+                    mask &= ~(1<<i);
+                }
+                //NSAssert((want & mask) == want, NSInternalInconsistencyException);
+                if ((remote & mask) == (want & mask))
+                {
+                    return YES;
+                }
+            }
+        }
     }
-  return NO;
+    return NO;
 }
 
 + (NSURL*) linkPath: (NSString*)newPath
