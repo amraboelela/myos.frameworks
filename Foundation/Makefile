@@ -9,7 +9,7 @@ ifeq ($(BASE_OS),android)
 else
     CFLAGS+=-fexceptions -fobjc-exceptions -pthread -D_NATIVE_OBJC_EXCEPTIONS -DGNUSTEP_TARGET_CPU=\"x86_64\"
     -DGNUSTEP_TARGET_OS=\"linux-gnu\"
-    LDLIBS+=-lxml2 -lpthread -licui18n -licuuc -licudata
+    LDLIBS+=-lxml2 -lpthread -licui18n -licuuc -licudata -lgnutls -lxslt
 endif
 
 OBJECTS = \
