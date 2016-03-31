@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>CoreNetwork</string>
+	<string>WebServices</string>
 	<key>CFBundleExecutable</key>
-	<string>CoreNetwork</string>
+	<string>WebServices</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.myos.CoreNetwork</string>
+	<string>org.myos.WebServices</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>CoreNetwork</string>
+	<string>WebServices</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleSignature</key>

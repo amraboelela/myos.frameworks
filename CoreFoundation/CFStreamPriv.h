@@ -31,7 +31,7 @@
 
 /* 
  * This header file is intended to be used by CFStream implementations, namely
- * by CFStream itself and CoreNetwork.
+ * by CFStream itself and WebServer.
  * 
  */
 

@@ -15,6 +15,6 @@
  Amr Aboelela <amraboelela@gmail.com>
  */
 
-#import <CoreNetwork/WebServer.h>
-#import <CoreNetwork/WebServerBundles.h>
-#import <CoreNetwork/WebServerHTML.h>
+#import <WebServer/WebServer.h>
+#import <WebServer/WebServerBundles.h>
+#import <WebServer/WebServerHTML.h>

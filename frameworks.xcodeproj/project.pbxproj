@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		639FAECE1CADCAB2004AD223 /* CoreNetwork */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreNetwork; sourceTree = "<group>"; };
 		63D9C3E81CA74F0F0002879F /* CFNetwork */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CFNetwork; sourceTree = "<group>"; };
+		63F9D14F1CADED8D00D80CF6 /* WebServer */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebServer; sourceTree = "<group>"; };
+		63F9D1501CADEE3200D80CF6 /* WebServices */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebServices; sourceTree = "<group>"; };
+		63F9D1511CADEF6800D80CF6 /* COPYING.LIB */ = {isa = PBXFileReference; lastKnownFileType = text; path = COPYING.LIB; sourceTree = "<group>"; };
 		F57545F919C7A91C000DDF29 /* CoreFoundation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreFoundation; sourceTree = "<group>"; };
 		F57545FA19C7A91C000DDF29 /* CoreGraphics */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreGraphics; sourceTree = "<group>"; };
 		F57545FB19C7A91C000DDF29 /* CoreText */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreText; sourceTree = "<group>"; };
@@ -25,8 +27,8 @@
 		4C7AEA5918BEA828007CFB3D = {
 			isa = PBXGroup;
 			children = (
-				639FAECE1CADCAB2004AD223 /* CoreNetwork */,
 				63D9C3E81CA74F0F0002879F /* CFNetwork */,
+				63F9D1511CADEF6800D80CF6 /* COPYING.LIB */,
 				F57545F919C7A91C000DDF29 /* CoreFoundation */,
 				F57545FA19C7A91C000DDF29 /* CoreGraphics */,
 				F57545FB19C7A91C000DDF29 /* CoreText */,
@@ -36,6 +38,8 @@
 				F57545FF19C7A91C000DDF29 /* OpenGLES */,
 				F5E860851AC61D4D00FBCC41 /* QuartzCore */,
 				F575460019C7A91C000DDF29 /* README.md */,
+				63F9D1501CADEE3200D80CF6 /* WebServices */,
+				63F9D14F1CADED8D00D80CF6 /* WebServer */,
 				F575460119C7A91C000DDF29 /* UIKit */,
 			);
 			sourceTree = "<group>";
