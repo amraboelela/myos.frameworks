@@ -16,7 +16,6 @@
 		F57545FB19C7A91C000DDF29 /* CoreText */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CoreText; sourceTree = "<group>"; };
 		F57545FC19C7A91C000DDF29 /* Foundation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Foundation; sourceTree = "<group>"; };
 		F57545FD19C7A91C000DDF29 /* IOKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = IOKit; sourceTree = "<group>"; };
-		F57545FE19C7A91C000DDF29 /* libs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = libs; sourceTree = "<group>"; };
 		F57545FF19C7A91C000DDF29 /* OpenGLES */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OpenGLES; sourceTree = "<group>"; };
 		F575460019C7A91C000DDF29 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		F575460119C7A91C000DDF29 /* UIKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = UIKit; sourceTree = "<group>"; };
@@ -34,7 +33,6 @@
 				F57545FB19C7A91C000DDF29 /* CoreText */,
 				F57545FC19C7A91C000DDF29 /* Foundation */,
 				F57545FD19C7A91C000DDF29 /* IOKit */,
-				F57545FE19C7A91C000DDF29 /* libs */,
 				F57545FF19C7A91C000DDF29 /* OpenGLES */,
 				F5E860851AC61D4D00FBCC41 /* QuartzCore */,
 				F575460019C7A91C000DDF29 /* README.md */,
