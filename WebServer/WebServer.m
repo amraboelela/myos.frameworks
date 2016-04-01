@@ -1424,6 +1424,7 @@ escapeData(const uint8_t *bytes, NSUInteger length, NSMutableData *d)
 	      _listener = [NSFileHandle fileHandleAsServerAtAddress: _addr
 							    service: _port
 							   protocol: @"tcp"];
+              DLog(@"_listener: %@", _listener);
 	    }
 
 	  if (_listener == nil)
