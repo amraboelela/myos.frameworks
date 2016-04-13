@@ -4,7 +4,9 @@
    Written by:  Derek Zhou <derekzhou@gmail.com>
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: 2006
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2016
+ 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
@@ -354,7 +356,18 @@
 
 @implementation NSStream
 
-+ (void) getStreamsToHost: (NSHost *)host 
++ (void) getStreamsToHostWithName:(NSString *)hostName
+                     port:(NSInteger)port
+              inputStream:(NSInputStream **)inputStream
+             outputStream:(NSOutputStream **)outputStream
+{
+    [self getStreamsToHost:[NSHost hostWithAddress:hostName]
+                      port:port
+               inputStream:inputStream
+              outputStream:outputStream];
+}
+
++ (void) getStreamsToHost: (NSHost *)host
                      port: (NSInteger)port 
               inputStream: (NSInputStream **)inputStream 
              outputStream: (NSOutputStream **)outputStream

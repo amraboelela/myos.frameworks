@@ -1,6 +1,5 @@
 
 LDLIBS= -lCoreFoundation -lFoundation
-#LDLIBS= -lCoreFoundation -lFoundation -lPerformance
 
 OBJECTS = \
 

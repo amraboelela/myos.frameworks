@@ -1081,53 +1081,53 @@ debugWrite(WebServer *server, WebServerConnection *c, NSData *data)
  */
 - (void) run
 {
-  if (nil == owner)
+    if (nil == owner)
     {
-      return;	// Already finished.
+        return;	// Already finished.
     }
-  [nc addObserver: self
-	 selector: @selector(_didWrite:)
-	     name: GSFileHandleWriteCompletionNotification
-	   object: handle];
-
-  if (nil == result)
+    [nc addObserver: self
+           selector: @selector(_didWrite:)
+               name: GSFileHandleWriteCompletionNotification
+             object: handle];
+    
+    if (nil == result)
     {
-      [nc addObserver: self
-	     selector: @selector(_didRead:)
-		 name: NSFileHandleReadCompletionNotification
-	       object: handle];
-      [self performSelector: @selector(_doRead)
-		   onThread: ioThread->thread
-		 withObject: nil
-	      waitUntilDone: NO];
+        [nc addObserver: self
+               selector: @selector(_didRead:)
+                   name: NSFileHandleReadCompletionNotification
+                 object: handle];
+        [self performSelector: @selector(_doRead)
+                     onThread: ioThread->thread
+                   withObject: nil
+                waitUntilDone: NO];
     }
-  else
+    else
     {
-      NSString	*body;
-
-      [self setShouldClose: YES];
-
-      if ([result rangeOfString: @" 503 "].location != NSNotFound)
-	{
-          /* We use 503 for a throughput/connection limit issue.
-           * Tell the remote end to back-off and log an alert.
-           */
-	  [server _alert: result];
-	  body = [result stringByAppendingString:
-	    @"\r\nRetry-After: 120\r\n\r\n"];
-	}
-      else
-	{
-	  if (NO == quiet)
-	    {
-	      [server _log: result];
-	    }
-	  body = [result stringByAppendingString: @"\r\n\r\n"];
+        NSString	*body;
+        
+        [self setShouldClose: YES];
+        
+        if ([result rangeOfString: @" 503 "].location != NSNotFound)
+        {
+            /* We use 503 for a throughput/connection limit issue.
+             * Tell the remote end to back-off and log an alert.
+             */
+            [server _alert: result];
+            body = [result stringByAppendingString:
+                    @"\r\nRetry-After: 120\r\n\r\n"];
         }
-      [self performSelector: @selector(_doWrite:)
-		   onThread: ioThread->thread
-		 withObject: [body dataUsingEncoding: NSASCIIStringEncoding]
-	      waitUntilDone: NO];
+        else
+        {
+            if (NO == quiet)
+            {
+                [server _log: result];
+            }
+            body = [result stringByAppendingString: @"\r\n\r\n"];
+        }
+        [self performSelector: @selector(_doWrite:)
+                     onThread: ioThread->thread
+                   withObject: [body dataUsingEncoding: NSASCIIStringEncoding]
+                waitUntilDone: NO];
     }
 }
 
@@ -1364,461 +1364,461 @@ else if (YES == hadRequest) \
 
 - (void) _didData: (NSData*)d
 {
-  NSString		*method = @"";
-  NSString		*query = @"";
-  NSString		*path = @"";
-  NSString		*version = @"";
-  WebServerRequest	*doc = nil;
-
-  // Mark as having had I/O ... not idle.
-  ticked = [NSDateClass timeIntervalSinceReferenceDate];
-
-  if (nil == parser)
+    NSString		*method = @"";
+    NSString		*query = @"";
+    NSString		*path = @"";
+    NSString		*version = @"";
+    WebServerRequest	*doc = nil;
+    
+    // Mark as having had I/O ... not idle.
+    ticked = [NSDateClass timeIntervalSinceReferenceDate];
+    
+    if (nil == parser)
     {
-      uint8_t		*bytes;
-      NSUInteger	length;
-      NSUInteger	pos;
-
-      /*
-       * If we are starting to read a new request, record the request
-       * startup time.
-       */
-      if ([self requestDuration: ticked] == 0.0)
-	{
-	  [self setRequestStart: ticked];
-	}
-
-      /*
-       * Add new data to any we already have and search for the end
-       * of the initial request line.
-       */
-      if (nil == buffer)
-	{
-	  buffer = [[NSMutableDataClass alloc] initWithCapacity: 1024];
-	}
-      [buffer appendData: d];
-      bytes = [buffer mutableBytes];
-      length = [buffer length];
-
-      /* Some browsers/libraries add a CR-LF after POSTing data,
-       * while others do not.
-       * If we are using a connection which has been kept alive,
-       * we must eat up that initial white space.
-       */
-      while (length > 0 && isspace(bytes[0]))
+        uint8_t		*bytes;
+        NSUInteger	length;
+        NSUInteger	pos;
+        
+        /*
+         * If we are starting to read a new request, record the request
+         * startup time.
+         */
+        if ([self requestDuration: ticked] == 0.0)
         {
-	  bytes++;
-	  length--;
-	}
-
-      /* Try to find end of first line (the request line).
-       */
-      for (pos = 0; pos < length; pos++)
-	{
-	  if (bytes[pos] == '\n')
-	    {
-	      break;
-	    }
-	}
-
-      /*
-       * Attackers may try to send too much data in the hope of causing
-       * a buffer overflow ... so we try to detect it here.
-       */
-      if (pos >= conf->maxRequestSize)
-	{
-	  NSData	*data;
-
-	  [server _log: @"%@ Request too long ... rejected", self];
-	  [self setShouldClose: YES];
-	  [self setResult: @"HTTP/1.0 413 Request data too long"];
-	  [nc removeObserver: self
-			name: NSFileHandleReadCompletionNotification
-		      object: handle];
-	  data = [@"HTTP/1.0 413 Request data too long\r\n\r\n"
-	    dataUsingEncoding: NSASCIIStringEncoding];
-	  [self performSelector: @selector(_doWrite:)
-		       onThread: ioThread->thread
-		     withObject: data
-		  waitUntilDone: NO];
-	  return;
-	}
-
-      if (pos == length)
-	{
-	  /* Needs more data.
-	   */
-	  [self performSelector: @selector(_doRead)
-		       onThread: ioThread->thread
-		     withObject: nil
-		  waitUntilDone: NO];
-	  return;
-	}
-      else
-	{
-	  NSUInteger	back = pos;
-	  NSUInteger	start = 0;
-	  NSUInteger	end;
-
-	  /*
-	   * Trim trailing whitespace from request line.
-	   */
-	  bytes[pos++] = '\0';
-	  while (back > 0 && isspace(bytes[--back]))
-	    {
-	      bytes[back] = '\0';
-	    }
-
-	  /*
-	   * Store the actual command string used.
-	   */
-	  [command release];
-	  command = [NSStringClass alloc];
-	  command = [command initWithUTF8String: (const char*)bytes];
-
-	  /*
-	   * Remove and store trailing HTTP version extension
-	   */
-	  while (back > 0 && !isspace(bytes[back]))
-	    {
-	      back--;
-	    }
-	  if (isspace(bytes[back])
-	    && strncmp((char*)bytes + back + 1, "HTTP/", 5) == 0)
-	    {
-	      bytes[back] = '\0';
-	      end = back + 6;
-	      version
-		= [NSStringClass stringWithUTF8String: (char*)bytes + end];
-	      if ([version floatValue] < 1.1)
-		{
-		  [self setShouldClose: YES];	// Not persistent.
-		}
-	    }
-	  else
-	    {
-	      back = strlen((const char*)bytes);
-	      [self setSimple: YES];	// Old style simple request.
-	      [self setShouldClose: YES];	// Not persistent.
-	    }
-
-	  /*
-	   * Remove leading white space.
-	   */
-	  start = 0;
-	  while (start < back && isspace(bytes[start]))
-	    {
-	      start++;
-	    }
-
-	  /*
-	   * Extract method string as uppercase value.
-	   */
-	  end = start;
-	  while (end < back && !isspace(bytes[end]))
-	    {
-	      if (islower(bytes[end]))
-		{
-		  bytes[end] = toupper(bytes[end]);
-		}
-	      end++;
-	    }
-	  bytes[end++] = '\0';
-	  method = [NSStringClass stringWithUTF8String: (char*)bytes + start];
-
-	  /*
-	   * Extract path string.
-	   */
-	  start = end;
-	  while (start < back && isspace(bytes[start]))
-	    {
-	      start++;
-	    }
-	  end = start;
-	  while (end < back && bytes[end] != '?')
-	    {
-	      end++;
-	    }
-	  if (bytes[end] == '?')
-	    {
-	      /*
-	       * Extract query string.
-	       */
-	      bytes[end++] = '\0';
-	      query = [NSStringClass stringWithUTF8String: (char*)bytes + end];
-	      if (query == nil)
-		{
-		  NSData	*data;
-
-		  [server _log: @"%@ Request query string not valid UTF8",
-		    self];
-		  [self setShouldClose: YES];	// Not persistent.
-		  [self setResult: @"HTTP/1.0 413 Query string not UTF8"];
-		  data = [@"HTTP/1.0 413 Query string not UTF8\r\n\r\n"
-		    dataUsingEncoding: NSASCIIStringEncoding];
-		  [self performSelector: @selector(_doWrite:)
-			       onThread: ioThread->thread
-			     withObject: data
-			  waitUntilDone: NO];
-		  return;
-		}
-	    }
-	  else
-	    {
-	      bytes[end] = '\0';
-	    }
-	  path = [NSStringClass stringWithUTF8String: (char*)bytes + start];
-
-	  if (nil == [conf->permittedMethods member: method])
-	    {
-	      NSData	*data;
-
-	      [self setShouldClose: YES];	// Not persistent.
-	      [self setResult: @"HTTP/1.0 501 Method not implemented"];
-	      data = [@"HTTP/1.0 501 method not implemented\r\n\r\n"
-		dataUsingEncoding: NSASCIIStringEncoding];
-	      [self performSelector: @selector(_doWrite:)
-			   onThread: ioThread->thread
-			 withObject: data
-		      waitUntilDone: NO];
-	      return;
-	    }
-
-	  /* Step past any trailing space in the request line.
-            */
-	  while (pos < length && isspace(bytes[pos]))
-	    {
-	      pos++;
-	    }
-
-	  /*
-	   * Any left over data is passed to the mime parser.
-	   */
-	  if (pos < length)
-	    {
-	      memmove([buffer mutableBytes], bytes + pos, length - pos);
-	      [buffer setLength: length - pos];
-	      d = buffer;
-	    }
-	  else
-	    {
-	      d = nil;	// Need request body to parse
-	    }
-
-	  parser = [GSMimeParser new];
-	  [parser setIsHttp];
-	  if (NO == [method isEqualToString: @"POST"]
-	    && NO == [method isEqualToString: @"PUT"])
-	    {
-	      /* If it's not a POST or PUT, we don't need a body.
-	       */
-	      [parser setHeadersOnly];
-	    }
-	  [parser setDefaultCharset: @"utf-8"];
-
-	  doc = (WebServerRequest*)[parser mimeDocument];
-          GSClassSwizzle(doc, WebServerRequestClass);
-
-	  [doc setHeader: @"x-http-method"
-		   value: method
-	      parameters: nil];
-	  [doc setHeader: @"x-http-path"
-		   value: path
-	      parameters: nil];
-	  [doc setHeader: @"x-http-query"
-		   value: query
-	      parameters: nil];
-	  [doc setHeader: @"x-http-scheme"
-		   value: ((conf->secureProxy || ssl) ? @"https" : @"http")
-	      parameters: nil];
-	  [doc setHeader: @"x-http-version"
-		   value: version
-	      parameters: nil];
-
-	  if (pos >= length)
-	    {
-	      // Needs more data.
-	      [self performSelector: @selector(_doRead)
-			   onThread: ioThread->thread
-			 withObject: nil
-		      waitUntilDone: NO];
-	      return;
-	    }
-	  // Fall through to parse remaining data with mime parser
-	}
-    }
-
-  if (nil == doc)
-    {
-      doc = [self request];
-    }
-  method = [[doc headerNamed: @"x-http-method"] value];
-
-  /* Abandon request if the total data read is too long.
-   * NB.  If we are doing incremental parsing then no length is too great
-   * and it's the responsibility of the higher level application to end
-   * the request if too much has been read.
-   */
-  if ([self moreBytes: [d length]] > conf->maxBodySize && NO == incremental)
-    {
-      NSData	*data;
-
-      [server _log: @"%@ Request body too long ... rejected", self];
-      [self setShouldClose: YES];	// Not persistent.
-      [self setResult: @"HTTP/1.0 413 Request body too long"];
-      data = [@"HTTP/1.0 413 Request body too long\r\n\r\n"
-	dataUsingEncoding: NSASCIIStringEncoding];
-      [self performSelector: @selector(_doWrite:)
-		   onThread: ioThread->thread
-		 withObject: data
-	      waitUntilDone: NO];
-      return;
-    }
-
-  if (nil != d && [parser parse: d] == NO)
-    {
-      if (YES == (hadRequest = [parser isComplete]))
-	{
-          if (NO == hadHeader)
-            {
-              hadHeader = YES;
-              incremental = [server _incremental: self];
-            }
-	  requestCount++;
-	  [doc setHeader: @"x-webserver-completed"
-                   value: @"YES"
-              parameters: nil];
-	  PROCESS
-	}
-      else
-	{
-	  NSData	*data;
-
-	  [server _log: @"%@ HTTP parse failure - %@", self, parser];
-          [self setShouldClose: YES];	// Not persistent.
-          [self setResult: @"HTTP/1.0 400 Bad Request"];
-          data = [@"HTTP/1.0 400 Bad Request\r\n\r\n"
-            dataUsingEncoding: NSASCIIStringEncoding];
-	  [self performSelector: @selector(_doWrite:)
-		       onThread: ioThread->thread
-		     withObject: data
-		  waitUntilDone: NO];
-	}
-      return;
-    }
-
-  if (YES == (hadRequest = [parser isComplete]))
-    {
-      /* Parsing complete ... pass request on.
-       */
-      if (NO == hadHeader)
-        {
-          hadHeader = YES;
-          incremental = [server _incremental: self];
+            [self setRequestStart: ticked];
         }
-      requestCount++;
-      [doc setHeader: @"x-webserver-completed"
-               value: @"YES"
-          parameters: nil];
-      PROCESS
-      return;
-    }
-
-  if (NO == [parser isInHeaders])
-    {
-      if (NO == hadHeader)
+        
+        /*
+         * Add new data to any we already have and search for the end
+         * of the initial request line.
+         */
+        if (nil == buffer)
         {
-          hadHeader = YES;
-          incremental = [server _incremental: self];
-          if (YES == [method isEqualToString: @"GET"])
+            buffer = [[NSMutableDataClass alloc] initWithCapacity: 1024];
+        }
+        [buffer appendData: d];
+        bytes = [buffer mutableBytes];
+        length = [buffer length];
+        
+        /* Some browsers/libraries add a CR-LF after POSTing data,
+         * while others do not.
+         * If we are using a connection which has been kept alive,
+         * we must eat up that initial white space.
+         */
+        while (length > 0 && isspace(bytes[0]))
+        {
+            bytes++;
+            length--;
+        }
+        
+        /* Try to find end of first line (the request line).
+         */
+        for (pos = 0; pos < length; pos++)
+        {
+            if (bytes[pos] == '\n')
             {
-              /* A GET request has no body ... pass it on now.
-               */
-              hadRequest = YES;
-              requestCount++;
-              [doc setHeader: @"x-webserver-completed"
-                       value: @"YES"
-                  parameters: nil];
-              PROCESS
-              return;
+                break;
             }
         }
-      PROCESS
+        
+        /*
+         * Attackers may try to send too much data in the hope of causing
+         * a buffer overflow ... so we try to detect it here.
+         */
+        if (pos >= conf->maxRequestSize)
+        {
+            NSData	*data;
+            
+            [server _log: @"%@ Request too long ... rejected", self];
+            [self setShouldClose: YES];
+            [self setResult: @"HTTP/1.0 413 Request data too long"];
+            [nc removeObserver: self
+                          name: NSFileHandleReadCompletionNotification
+                        object: handle];
+            data = [@"HTTP/1.0 413 Request data too long\r\n\r\n"
+                    dataUsingEncoding: NSASCIIStringEncoding];
+            [self performSelector: @selector(_doWrite:)
+                         onThread: ioThread->thread
+                       withObject: data
+                    waitUntilDone: NO];
+            return;
+        }
+        
+        if (pos == length)
+        {
+            /* Needs more data.
+             */
+            [self performSelector: @selector(_doRead)
+                         onThread: ioThread->thread
+                       withObject: nil
+                    waitUntilDone: NO];
+            return;
+        }
+        else
+        {
+            NSUInteger	back = pos;
+            NSUInteger	start = 0;
+            NSUInteger	end;
+            
+            /*
+             * Trim trailing whitespace from request line.
+             */
+            bytes[pos++] = '\0';
+            while (back > 0 && isspace(bytes[--back]))
+            {
+                bytes[back] = '\0';
+            }
+            
+            /*
+             * Store the actual command string used.
+             */
+            [command release];
+            command = [NSStringClass alloc];
+            command = [command initWithUTF8String: (const char*)bytes];
+            
+            /*
+             * Remove and store trailing HTTP version extension
+             */
+            while (back > 0 && !isspace(bytes[back]))
+            {
+                back--;
+            }
+            if (isspace(bytes[back])
+                && strncmp((char*)bytes + back + 1, "HTTP/", 5) == 0)
+            {
+                bytes[back] = '\0';
+                end = back + 6;
+                version
+                = [NSStringClass stringWithUTF8String: (char*)bytes + end];
+                if ([version floatValue] < 1.1)
+                {
+                    [self setShouldClose: YES];	// Not persistent.
+                }
+            }
+            else
+            {
+                back = strlen((const char*)bytes);
+                [self setSimple: YES];	// Old style simple request.
+                [self setShouldClose: YES];	// Not persistent.
+            }
+            
+            /*
+             * Remove leading white space.
+             */
+            start = 0;
+            while (start < back && isspace(bytes[start]))
+            {
+                start++;
+            }
+            
+            /*
+             * Extract method string as uppercase value.
+             */
+            end = start;
+            while (end < back && !isspace(bytes[end]))
+            {
+                if (islower(bytes[end]))
+                {
+                    bytes[end] = toupper(bytes[end]);
+                }
+                end++;
+            }
+            bytes[end++] = '\0';
+            method = [NSStringClass stringWithUTF8String: (char*)bytes + start];
+            
+            /*
+             * Extract path string.
+             */
+            start = end;
+            while (start < back && isspace(bytes[start]))
+            {
+                start++;
+            }
+            end = start;
+            while (end < back && bytes[end] != '?')
+            {
+                end++;
+            }
+            if (bytes[end] == '?')
+            {
+                /*
+                 * Extract query string.
+                 */
+                bytes[end++] = '\0';
+                query = [NSStringClass stringWithUTF8String: (char*)bytes + end];
+                if (query == nil)
+                {
+                    NSData	*data;
+                    
+                    [server _log: @"%@ Request query string not valid UTF8",
+                     self];
+                    [self setShouldClose: YES];	// Not persistent.
+                    [self setResult: @"HTTP/1.0 413 Query string not UTF8"];
+                    data = [@"HTTP/1.0 413 Query string not UTF8\r\n\r\n"
+                            dataUsingEncoding: NSASCIIStringEncoding];
+                    [self performSelector: @selector(_doWrite:)
+                                 onThread: ioThread->thread
+                               withObject: data
+                            waitUntilDone: NO];
+                    return;
+                }
+            }
+            else
+            {
+                bytes[end] = '\0';
+            }
+            path = [NSStringClass stringWithUTF8String: (char*)bytes + start];
+            
+            if (nil == [conf->permittedMethods member: method])
+            {
+                NSData	*data;
+                
+                [self setShouldClose: YES];	// Not persistent.
+                [self setResult: @"HTTP/1.0 501 Method not implemented"];
+                data = [@"HTTP/1.0 501 method not implemented\r\n\r\n"
+                        dataUsingEncoding: NSASCIIStringEncoding];
+                [self performSelector: @selector(_doWrite:)
+                             onThread: ioThread->thread
+                           withObject: data
+                        waitUntilDone: NO];
+                return;
+            }
+            
+            /* Step past any trailing space in the request line.
+             */
+            while (pos < length && isspace(bytes[pos]))
+            {
+                pos++;
+            }
+            
+            /*
+             * Any left over data is passed to the mime parser.
+             */
+            if (pos < length)
+            {
+                memmove([buffer mutableBytes], bytes + pos, length - pos);
+                [buffer setLength: length - pos];
+                d = buffer;
+            }
+            else
+            {
+                d = nil;	// Need request body to parse
+            }
+            
+            parser = [GSMimeParser new];
+            [parser setIsHttp];
+            if (NO == [method isEqualToString: @"POST"]
+                && NO == [method isEqualToString: @"PUT"])
+            {
+                /* If it's not a POST or PUT, we don't need a body.
+                 */
+                [parser setHeadersOnly];
+            }
+            [parser setDefaultCharset: @"utf-8"];
+            
+            doc = (WebServerRequest*)[parser mimeDocument];
+            GSClassSwizzle(doc, WebServerRequestClass);
+            
+            [doc setHeader: @"x-http-method"
+                     value: method
+                parameters: nil];
+            [doc setHeader: @"x-http-path"
+                     value: path
+                parameters: nil];
+            [doc setHeader: @"x-http-query"
+                     value: query
+                parameters: nil];
+            [doc setHeader: @"x-http-scheme"
+                     value: ((conf->secureProxy || ssl) ? @"https" : @"http")
+                parameters: nil];
+            [doc setHeader: @"x-http-version"
+                     value: version
+                parameters: nil];
+            
+            if (pos >= length)
+            {
+                // Needs more data.
+                [self performSelector: @selector(_doRead)
+                             onThread: ioThread->thread
+                           withObject: nil
+                        waitUntilDone: NO];
+                return;
+            }
+            // Fall through to parse remaining data with mime parser
+        }
     }
-
-  [self performSelector: @selector(_doRead)
-               onThread: ioThread->thread
-             withObject: nil
-          waitUntilDone: NO];
+    
+    if (nil == doc)
+    {
+        doc = [self request];
+    }
+    method = [[doc headerNamed: @"x-http-method"] value];
+    
+    /* Abandon request if the total data read is too long.
+     * NB.  If we are doing incremental parsing then no length is too great
+     * and it's the responsibility of the higher level application to end
+     * the request if too much has been read.
+     */
+    if ([self moreBytes: [d length]] > conf->maxBodySize && NO == incremental)
+    {
+        NSData	*data;
+        
+        [server _log: @"%@ Request body too long ... rejected", self];
+        [self setShouldClose: YES];	// Not persistent.
+        [self setResult: @"HTTP/1.0 413 Request body too long"];
+        data = [@"HTTP/1.0 413 Request body too long\r\n\r\n"
+                dataUsingEncoding: NSASCIIStringEncoding];
+        [self performSelector: @selector(_doWrite:)
+                     onThread: ioThread->thread
+                   withObject: data
+                waitUntilDone: NO];
+        return;
+    }
+    
+    if (nil != d && [parser parse: d] == NO)
+    {
+        if (YES == (hadRequest = [parser isComplete]))
+        {
+            if (NO == hadHeader)
+            {
+                hadHeader = YES;
+                incremental = [server _incremental: self];
+            }
+            requestCount++;
+            [doc setHeader: @"x-webserver-completed"
+                     value: @"YES"
+                parameters: nil];
+            PROCESS
+        }
+        else
+        {
+            NSData	*data;
+            
+            [server _log: @"%@ HTTP parse failure - %@", self, parser];
+            [self setShouldClose: YES];	// Not persistent.
+            [self setResult: @"HTTP/1.0 400 Bad Request"];
+            data = [@"HTTP/1.0 400 Bad Request\r\n\r\n"
+                    dataUsingEncoding: NSASCIIStringEncoding];
+            [self performSelector: @selector(_doWrite:)
+                         onThread: ioThread->thread
+                       withObject: data
+                    waitUntilDone: NO];
+        }
+        return;
+    }
+    
+    if (YES == (hadRequest = [parser isComplete]))
+    {
+        /* Parsing complete ... pass request on.
+         */
+        if (NO == hadHeader)
+        {
+            hadHeader = YES;
+            incremental = [server _incremental: self];
+        }
+        requestCount++;
+        [doc setHeader: @"x-webserver-completed"
+                 value: @"YES"
+            parameters: nil];
+        PROCESS
+        return;
+    }
+    
+    if (NO == [parser isInHeaders])
+    {
+        if (NO == hadHeader)
+        {
+            hadHeader = YES;
+            incremental = [server _incremental: self];
+            if (YES == [method isEqualToString: @"GET"])
+            {
+                /* A GET request has no body ... pass it on now.
+                 */
+                hadRequest = YES;
+                requestCount++;
+                [doc setHeader: @"x-webserver-completed"
+                         value: @"YES"
+                    parameters: nil];
+                PROCESS
+                return;
+            }
+        }
+        PROCESS
+    }
+    
+    [self performSelector: @selector(_doRead)
+                 onThread: ioThread->thread
+               withObject: nil
+            waitUntilDone: NO];
 }
 
 - (void) _didRead: (NSNotification*)notification
 {
-  NSDictionary		*dict;
-  NSData		*d;
-  NSTimeInterval	now;
-
-  if ([notification object] != handle)
+    NSDictionary		*dict;
+    NSData		*d;
+    NSTimeInterval	now;
+    
+    if ([notification object] != handle)
     {
-      return;	// Must be an old notification
+        return;	// Must be an old notification
     }
-
-  if (owner == ioThread->keepalives)
+    
+    if (owner == ioThread->keepalives)
     {
-      [ioThread->threadLock lock];
-      if (owner == ioThread->keepalives)
-	{
-	  ioThread->keepaliveCount--;
-	  GSLinkedListRemove(self, owner);
-	  GSLinkedListInsertAfter(self, ioThread->readwrites,
-	    ioThread->readwrites->tail);
-	}
-      [ioThread->threadLock unlock];
+        [ioThread->threadLock lock];
+        if (owner == ioThread->keepalives)
+        {
+            ioThread->keepaliveCount--;
+            GSLinkedListRemove(self, owner);
+            GSLinkedListInsertAfter(self, ioThread->readwrites,
+                                    ioThread->readwrites->tail);
+        }
+        [ioThread->threadLock unlock];
     }
-
-  now = [NSDateClass timeIntervalSinceReferenceDate];
-  [self setTicked: now];
-
-  dict = [notification userInfo];
-  d = [dict objectForKey: NSFileHandleNotificationDataItem];
-
-  if ([d length] == 0)
+    
+    now = [NSDateClass timeIntervalSinceReferenceDate];
+    [self setTicked: now];
+    
+    dict = [notification userInfo];
+    d = [dict objectForKey: NSFileHandleNotificationDataItem];
+    
+    if ([d length] == 0)
     {
-      if (parser == nil)
-	{
-	  if ([buffer length] == 0)
-	    {
-	      /*
-	       * Don't log if we have already reset after handling
-	       * a request.
-	       * Don't log this in quiet mode as it could just be a
-	       * test connection that we are ignoring.
-	       */
-	      if (NO == quiet && [self hasReset] == NO)
-		{
-		  [server _log: @"%@ read end-of-file in empty request", self];
-		}
-	    }
-	  else
-	    {
-	      [server _log: @"%@ read end-of-file in partial request - %@",
-		self, buffer];
-	    }
-	}
-      else
-	{
-	  [server _log: @"%@ read end-of-file in incomplete request - %@",
-	    self, [parser mimeDocument]];
-	}
-      [self end];
-      return;
+        if (parser == nil)
+        {
+            if ([buffer length] == 0)
+            {
+                /*
+                 * Don't log if we have already reset after handling
+                 * a request.
+                 * Don't log this in quiet mode as it could just be a
+                 * test connection that we are ignoring.
+                 */
+                if (NO == quiet && [self hasReset] == NO)
+                {
+                    [server _log: @"%@ read end-of-file in empty request", self];
+                }
+            }
+            else
+            {
+                [server _log: @"%@ read end-of-file in partial request - %@",
+                 self, buffer];
+            }
+        }
+        else
+        {
+            [server _log: @"%@ read end-of-file in incomplete request - %@",
+             self, [parser mimeDocument]];
+        }
+        [self end];
+        return;
     }
-
-  if (YES == conf->logRawIO && NO == quiet)
+    
+    if (YES == conf->logRawIO && NO == quiet)
     {
-      debugRead(server, self, d);
+        debugRead(server, self, d);
     }
-  [self _didData: d];
+    [self _didData: d];
 }
 
 - (void) _didWrite: (NSNotification*)notification

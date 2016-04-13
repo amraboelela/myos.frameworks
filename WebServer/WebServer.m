@@ -1314,145 +1314,145 @@ escapeData(const uint8_t *bytes, NSUInteger length, NSMutableData *d)
 	       port: (NSString*)aPort
 	     secure: (NSDictionary*)secure
 {
-  CREATE_AUTORELEASE_POOL(pool);
-  BOOL	ok = YES;
-  BOOL	update = NO;
-
-  if ([anAddress length] == 0)
+    CREATE_AUTORELEASE_POOL(pool);
+    BOOL	ok = YES;
+    BOOL	update = NO;
+    
+    if ([anAddress length] == 0)
     {
-      anAddress = nil;
+        anAddress = nil;
     }
-  if (anAddress != _addr && [anAddress isEqual: _addr] == NO)
+    if (anAddress != _addr && [anAddress isEqual: _addr] == NO)
     {
-      update = YES;
+        update = YES;
     }
-  if ([aPort length] == 0)
+    if ([aPort length] == 0)
     {
-      aPort = nil;
+        aPort = nil;
     }
-  if (aPort != _port && [aPort isEqual: _port] == NO)
+    if (aPort != _port && [aPort isEqual: _port] == NO)
     {
-      update = YES;
+        update = YES;
     }
-  if ((secure == nil && _sslConfig != nil)
-    || (secure != nil && [secure isEqual: _sslConfig] == NO))
+    if ((secure == nil && _sslConfig != nil)
+        || (secure != nil && [secure isEqual: _sslConfig] == NO))
     {
-      update = YES;
+        update = YES;
     }
-
-  if (update == YES)
+    
+    if (update == YES)
     {
-      ASSIGNCOPY(_sslConfig, secure);
-      if (_listener != nil)
-	{
-	  [_nc removeObserver: self
-			 name: NSFileHandleConnectionAcceptedNotification
-		       object: _listener];
-	  [_listener closeFile];
-	  DESTROY(_listener);
-	}
-      _accepting = NO;	// No longer listening for connections.
-      DESTROY(_addr);
-      DESTROY(_port);
-      if (nil == aPort)
-	{
-	  NSEnumerator		*enumerator;
-	  WebServerConnection	*connection;
-          NSDate                *limit = nil;
-
-	  [_lock lock];
-	  /* If we have been shut down (port is nil) then we want any
-	   * outstanding connections to close down as soon as possible.
-	   */
-	  enumerator = [_connections objectEnumerator];
-	  while ((connection = [enumerator nextObject]) != nil)
-	    {
-              if (nil == limit)
-                {
-                  limit = [NSDate dateWithTimeIntervalSinceNow: 30.0];
-                }
-	      [connection shutdown];
-	    }
-	  /* We also get rid of the headers which refer to us, so that
-	   * we can be released as soon as any connections/requests using
-	   * those headers have released us.
-	   */
-	  DESTROY(_xCountRequests);
-	  DESTROY(_xCountConnections);
-	  DESTROY(_xCountConnectedHosts);
-
-	  [_lock unlock];
-
-          /* Wait for all connections to close.
-           */
-          while (nil != limit && [limit timeIntervalSinceNow] > 0.0)
+        ASSIGNCOPY(_sslConfig, secure);
+        if (_listener != nil)
+        {
+            [_nc removeObserver: self
+                           name: NSFileHandleConnectionAcceptedNotification
+                         object: _listener];
+            [_listener closeFile];
+            DESTROY(_listener);
+        }
+        _accepting = NO;	// No longer listening for connections.
+        DESTROY(_addr);
+        DESTROY(_port);
+        if (nil == aPort)
+        {
+            NSEnumerator		*enumerator;
+            WebServerConnection	*connection;
+            NSDate                *limit = nil;
+            
+            [_lock lock];
+            /* If we have been shut down (port is nil) then we want any
+             * outstanding connections to close down as soon as possible.
+             */
+            enumerator = [_connections objectEnumerator];
+            while ((connection = [enumerator nextObject]) != nil)
             {
-              [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
-                                       beforeDate: limit];
-              [_lock lock];
-              if (0 == [_connections count])
+                if (nil == limit)
                 {
-                  limit = nil;  // No more to close
+                    limit = [NSDate dateWithTimeIntervalSinceNow: 30.0];
                 }
-              [_lock unlock];
+                [connection shutdown];
             }
-	}
-      else
-	{
-	  _addr = [anAddress copy];
-	  _port = [aPort copy];
-
-	  /* Set up headers to be used by requests on incoming connections
-	   * to find information about this instance.
-           */
-	  _xCountRequests = [[WebServerHeader alloc]
-	    initWithType: WSHCountRequests andObject: self];
-	  _xCountConnections = [[WebServerHeader alloc]
-	    initWithType: WSHCountConnections andObject: self];
-	  _xCountConnectedHosts = [[WebServerHeader alloc]
-	    initWithType: WSHCountConnectedHosts andObject: self];
-
-	  if (_sslConfig != nil)
-	    {
-	      _listener = [[NSFileHandle sslClass]
-		fileHandleAsServerAtAddress: nil
-		service: _port
-		protocol: @"tcp"];
-	    }
-	  else
-	    {
-	      _listener = [NSFileHandle fileHandleAsServerAtAddress: _addr
-							    service: _port
-							   protocol: @"tcp"];
-	    }
-
-	  if (_listener == nil)
-	    {
-	      if (nil == _addr)
-		{
-		  [self _alert: @"Failed to listen on port %@", _port];
-		}
-	      else
-		{
-		  [self _alert: @"Failed to listen on %@:%@", _addr, _port];
-		}
-	      DESTROY(_addr);
-	      DESTROY(_port);
-	      ok = NO;
-	    }
-	  else
-	    {
-	      RETAIN(_listener);
-	      [_nc addObserver: self
-		      selector: @selector(_didConnect:)
-			  name: NSFileHandleConnectionAcceptedNotification
-			object: _listener];
-	      [self _listen];
-	    }
-	}
+            /* We also get rid of the headers which refer to us, so that
+             * we can be released as soon as any connections/requests using
+             * those headers have released us.
+             */
+            DESTROY(_xCountRequests);
+            DESTROY(_xCountConnections);
+            DESTROY(_xCountConnectedHosts);
+            
+            [_lock unlock];
+            
+            /* Wait for all connections to close.
+             */
+            while (nil != limit && [limit timeIntervalSinceNow] > 0.0)
+            {
+                [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                         beforeDate: limit];
+                [_lock lock];
+                if (0 == [_connections count])
+                {
+                    limit = nil;  // No more to close
+                }
+                [_lock unlock];
+            }
+        }
+        else
+        {
+            _addr = [anAddress copy];
+            _port = [aPort copy];
+            
+            /* Set up headers to be used by requests on incoming connections
+             * to find information about this instance.
+             */
+            _xCountRequests = [[WebServerHeader alloc]
+                               initWithType: WSHCountRequests andObject: self];
+            _xCountConnections = [[WebServerHeader alloc]
+                                  initWithType: WSHCountConnections andObject: self];
+            _xCountConnectedHosts = [[WebServerHeader alloc]
+                                     initWithType: WSHCountConnectedHosts andObject: self];
+            
+            if (_sslConfig != nil)
+            {
+                _listener = [[NSFileHandle sslClass]
+                             fileHandleAsServerAtAddress: nil
+                             service: _port
+                             protocol: @"tcp"];
+            }
+            else
+            {
+                _listener = [NSFileHandle fileHandleAsServerAtAddress: _addr
+                                                              service: _port
+                                                             protocol: @"tcp"];
+            }
+            
+            if (_listener == nil)
+            {
+                if (nil == _addr)
+                {
+                    [self _alert: @"Failed to listen on port %@", _port];
+                }
+                else
+                {
+                    [self _alert: @"Failed to listen on %@:%@", _addr, _port];
+                }
+                DESTROY(_addr);
+                DESTROY(_port);
+                ok = NO;
+            }
+            else
+            {
+                RETAIN(_listener);
+                [_nc addObserver: self
+                        selector: @selector(_didConnect:)
+                            name: NSFileHandleConnectionAcceptedNotification
+                          object: _listener];
+                [self _listen];
+            }
+        }
     }
-  DESTROY(pool);
-  return ok;
+    DESTROY(pool);
+    return ok;
 }
 
 - (void) setDelegate: (id)anObject
@@ -1952,142 +1952,142 @@ escapeData(const uint8_t *bytes, NSUInteger length, NSMutableData *d)
 
 - (void) _didConnect: (NSNotification*)notification
 {
-  NSDictionary		*userInfo = [notification userInfo];
-  NSFileHandle		*hdl;
-
-  _accepting = NO;
-  _ticked = [NSDateClass timeIntervalSinceReferenceDate];
-  hdl = [userInfo objectForKey: NSFileHandleNotificationFileHandleItem];
-  if (hdl == nil)
+    NSDictionary		*userInfo = [notification userInfo];
+    NSFileHandle		*hdl;
+    
+    _accepting = NO;
+    _ticked = [NSDateClass timeIntervalSinceReferenceDate];
+    hdl = [userInfo objectForKey: NSFileHandleNotificationFileHandleItem];
+    if (hdl == nil)
     {
-      /* Try to allow more connections to be accepted.
-       */
-      [self _listen];
-      NSLog(@"[%@ -%@] missing handle ... %@",
-	NSStringFromClass([self class]), NSStringFromSelector(_cmd), userInfo);
+        /* Try to allow more connections to be accepted.
+         */
+        [self _listen];
+        NSLog(@"[%@ -%@] missing handle ... %@",
+              NSStringFromClass([self class]), NSStringFromSelector(_cmd), userInfo);
     }
-  else
+    else
     {
-      WebServerConnection	*connection;
-      NSString			*address;
-      NSString			*refusal;
-      NSArray                   *hosts;
-      BOOL			quiet;
-      BOOL			ssl;
-      IOThread			*ioThread = nil;
-      NSUInteger		counter;
-      NSUInteger		ioConns = NSNotFound;
-
-      [_lock lock];
-      if (nil == _sslConfig)
-	{
-	  ssl = NO;
-	}
-      else
-	{
-	  NSString	*address = [hdl socketLocalAddress];
-	  NSDictionary	*primary = [_sslConfig objectForKey: address];
-	  NSString	*certificateFile;
-	  NSString	*keyFile;
-	  NSString	*password;
-
-	  certificateFile = [primary objectForKey: @"CertificateFile"];
-	  if (certificateFile == nil)
-	    {
-	      certificateFile = [_sslConfig objectForKey: @"CertificateFile"];
-	    }
-	  keyFile = [primary objectForKey: @"KeyFile"];
-	  if (keyFile == nil)
-	    {
-	      keyFile = [_sslConfig objectForKey: @"KeyFile"];
-	    }
-	  password = [primary objectForKey: @"Password"];
-	  if (password == nil)
-	    {
-	      password = [_sslConfig objectForKey: @"Password"];
-	    }
-	  [hdl sslSetCertificate: certificateFile
-		      privateKey: keyFile
-		       PEMpasswd: password];
-	  ssl = YES;
-	}
-
-      address = [hdl socketAddress];
-      if (nil == address)
-	{
-	  refusal = @"HTTP/1.0 403 Unable to determine client host address";
-	}
-      else if (nil != (hosts = [_defs arrayForKey: @"WebServerHosts"])
-        && [hosts containsObject: address] == NO)
-	{
-	  refusal = @"HTTP/1.0 403 Not a permitted client host";
-	}
-      else if (_maxConnections > 0
-        && [_connections count] >= _maxConnections)
-	{
-	  refusal =  @"HTTP/1.0 503 Too many existing connections";
-	}
-      else if (_maxPerHost > 0
-	&& [_perHost countForObject: address] >= _maxPerHost)
-	{
-	  refusal = @"HTTP/1.0 503 Too many existing connections from host";
-	}
-      else
-	{
-	  refusal = nil;
-	}
-      quiet = [[_defs arrayForKey: @"WebServerQuiet"] containsObject: address];
-
-      /* Find the I/O thread handling the fewest connections and use that.
-       */
-      counter = [_ioThreads count];
-      while (counter-- > 0)
-	{
-	  IOThread	*tmp = [_ioThreads objectAtIndex: counter];
-	  NSUInteger	c;
-
-	  c = tmp->readwrites->count
-	    + tmp->handshakes->count
-	    + tmp->processing->count;
-	  if (c < ioConns)
-	    {
-	      ioThread = tmp;
-	      ioConns = c;
-	    }
-	}
-      if (nil == ioThread)
-	{
-	  ioThread = _ioMain;
-	}
-
-      connection = [WebServerConnection alloc]; 
-      connection = [connection initWithHandle: hdl
-				     onThread: ioThread
-					  for: self
-				      address: address
-				       config: _conf
-					quiet: quiet
-					  ssl: ssl
-				      refusal: refusal];
-      [connection setTicked: _ticked];
-      [connection setConnectionStart: _ticked];
-
-      [_connections addObject: connection];
-      [connection release];	// Retained in _connections map
-      [_perHost addObject: address];
-      [_lock unlock];
-
-      /* Ensure we always have an 'accept' in progress unless we are already
-       * handling the maximum number of connections.
-       */
-      [self _listen];
-
-      /* Start the connection I/O on the correct thread.
-       */
-      [connection performSelector: @selector(start)
-			 onThread: ioThread->thread
-		       withObject: nil
-		    waitUntilDone: NO];
+        WebServerConnection	*connection;
+        NSString			*address;
+        NSString			*refusal;
+        NSArray                   *hosts;
+        BOOL			quiet;
+        BOOL			ssl;
+        IOThread			*ioThread = nil;
+        NSUInteger		counter;
+        NSUInteger		ioConns = NSNotFound;
+        
+        [_lock lock];
+        if (nil == _sslConfig)
+        {
+            ssl = NO;
+        }
+        else
+        {
+            NSString	*address = [hdl socketLocalAddress];
+            NSDictionary	*primary = [_sslConfig objectForKey: address];
+            NSString	*certificateFile;
+            NSString	*keyFile;
+            NSString	*password;
+            
+            certificateFile = [primary objectForKey: @"CertificateFile"];
+            if (certificateFile == nil)
+            {
+                certificateFile = [_sslConfig objectForKey: @"CertificateFile"];
+            }
+            keyFile = [primary objectForKey: @"KeyFile"];
+            if (keyFile == nil)
+            {
+                keyFile = [_sslConfig objectForKey: @"KeyFile"];
+            }
+            password = [primary objectForKey: @"Password"];
+            if (password == nil)
+            {
+                password = [_sslConfig objectForKey: @"Password"];
+            }
+            [hdl sslSetCertificate: certificateFile
+                        privateKey: keyFile
+                         PEMpasswd: password];
+            ssl = YES;
+        }
+        
+        address = [hdl socketAddress];
+        if (nil == address)
+        {
+            refusal = @"HTTP/1.0 403 Unable to determine client host address";
+        }
+        else if (nil != (hosts = [_defs arrayForKey: @"WebServerHosts"])
+                 && [hosts containsObject: address] == NO)
+        {
+            refusal = @"HTTP/1.0 403 Not a permitted client host";
+        }
+        else if (_maxConnections > 0
+                 && [_connections count] >= _maxConnections)
+        {
+            refusal =  @"HTTP/1.0 503 Too many existing connections";
+        }
+        else if (_maxPerHost > 0
+                 && [_perHost countForObject: address] >= _maxPerHost)
+        {
+            refusal = @"HTTP/1.0 503 Too many existing connections from host";
+        }
+        else
+        {
+            refusal = nil;
+        }
+        quiet = [[_defs arrayForKey: @"WebServerQuiet"] containsObject: address];
+        
+        /* Find the I/O thread handling the fewest connections and use that.
+         */
+        counter = [_ioThreads count];
+        while (counter-- > 0)
+        {
+            IOThread	*tmp = [_ioThreads objectAtIndex: counter];
+            NSUInteger	c;
+            
+            c = tmp->readwrites->count
+            + tmp->handshakes->count
+            + tmp->processing->count;
+            if (c < ioConns)
+            {
+                ioThread = tmp;
+                ioConns = c;
+            }
+        }
+        if (nil == ioThread)
+        {
+            ioThread = _ioMain;
+        }
+        
+        connection = [WebServerConnection alloc];
+        connection = [connection initWithHandle: hdl
+                                       onThread: ioThread
+                                            for: self
+                                        address: address
+                                         config: _conf
+                                          quiet: quiet
+                                            ssl: ssl
+                                        refusal: refusal];
+        [connection setTicked: _ticked];
+        [connection setConnectionStart: _ticked];
+        
+        [_connections addObject: connection];
+        [connection release];	// Retained in _connections map
+        [_perHost addObject: address];
+        [_lock unlock];
+        
+        /* Ensure we always have an 'accept' in progress unless we are already
+         * handling the maximum number of connections.
+         */
+        [self _listen];
+        
+        /* Start the connection I/O on the correct thread.
+         */
+        [connection performSelector: @selector(start)
+                           onThread: ioThread->thread
+                         withObject: nil
+                      waitUntilDone: NO];
     }
 }
 
@@ -2132,21 +2132,21 @@ escapeData(const uint8_t *bytes, NSUInteger length, NSMutableData *d)
 
 - (void) _listen
 {
-  [_lock lock];
-  if (_accepting == NO && (_maxConnections == 0
-    || [_connections count] < (_maxConnections + _reject)))
+    [_lock lock];
+    if (_accepting == NO && (_maxConnections == 0
+                             || [_connections count] < (_maxConnections + _reject)))
     {
-      _accepting = YES;
-      [_lock unlock];
-      [_listener performSelector:
-	@selector(acceptConnectionInBackgroundAndNotify)
-	onThread: _ioMain->thread
-	withObject: nil
-	waitUntilDone: NO];
+        _accepting = YES;
+        [_lock unlock];
+        [_listener performSelector:
+         @selector(acceptConnectionInBackgroundAndNotify)
+                          onThread: _ioMain->thread
+                        withObject: nil
+                     waitUntilDone: NO];
     }
-  else
+    else
     {
-      [_lock unlock];
+        [_lock unlock];
     }
 }
 

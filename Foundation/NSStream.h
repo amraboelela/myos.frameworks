@@ -3,7 +3,9 @@
 
    Written by:  Derek Zhou <derekzhou@gmail.com>
    Date: 2006
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2016
+ 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
@@ -67,14 +69,19 @@ typedef NSUInteger NSStreamEvent;
  */
 @interface NSStream : NSObject
 
++ (void) getStreamsToHostWithName:(NSString *)hostName
+                             port:(NSInteger)port
+                      inputStream:(NSInputStream **)inputStream
+                     outputStream:(NSOutputStream **)outputStream;
+
 /**
  * Creates and returns by reference an NSInputStream object and NSOutputStream 
  * object for a socket connection with the specified port on host.
  */
-+ (void) getStreamsToHost: (NSHost *)host 
-                     port: (NSInteger)port 
-              inputStream: (NSInputStream **)inputStream 
-             outputStream: (NSOutputStream **)outputStream;
++ (void) getStreamsToHost:(NSHost *)host
+                     port:(NSInteger)port
+              inputStream:(NSInputStream **)inputStream
+             outputStream:(NSOutputStream **)outputStream;
 
 /**
  * Closes the receiver.<br />

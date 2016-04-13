@@ -974,18 +974,14 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
 {
     GSRunLoopCtxt		*context;
     NSDate		*when = nil;
-    //DLog();
     context = NSMapGet(_contextMap, mode);
     if (context != nil) {
         //DLog(); //both thread
         NSString		*savedMode = _currentMode;
-        //DLog();
         NSAutoreleasePool	*arp = [NSAutoreleasePool new];
-        //DLog();
         _currentMode = mode;
         //NS_DURING
         //{
-            //DLog();
             GSIArray		timers = context->timers;
             NSTimeInterval	now;
             NSDate                *earliest;
@@ -995,7 +991,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             NSTimeInterval	ei;
             unsigned              c;
             unsigned              i;
-            //DLog();
             ei = 0.0;	// Only needed to avoid compiler warning
             
             /*
@@ -1022,7 +1017,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                     updateTimer(t, d, now);
                 }
             }
-            //DLog();
             /* Fire the oldest/first valid timer whose fire date has passed
              * and fire it.
              * We fire timers in the order in which they were added to the
@@ -1033,21 +1027,16 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             c = GSIArrayCount(timers);
             for (i = 0; i < c; i++)
             {
-                //DLog();
                 t = GSIArrayItemAtIndex(timers, i).obj;
                 if (timerInvalidated(t) == NO)
                 {
-                    //DLog();
                     d = timerDate(t);
                     ti = [d timeIntervalSinceReferenceDate];
                     //DLog(@"ti: %f, now: %f", ti, now);
                     if (ti < now)
                     {
-                        //DLog();
                         GSIArrayRemoveItemAtIndexNoRelease(timers, i);
-                        //DLog();
                         [t fire];
-                        //DLog();
                         GSPrivateNotifyASAP(_currentMode);
                         IF_NO_GC([arp emptyPool];)
                         if (updateTimer(t, d, now) == YES)
@@ -1059,7 +1048,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                         }
                         else
                         {
-                            //DLog();
                             /* The timer was invalidated, so we can
                              * release it as we aren't putting it back
                              * in the array.
@@ -1070,7 +1058,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                     }
                 }
             }
-            //DLog();
             /* Now, find the earliest remaining timer date while removing
              * any invalidated timers.  We iterate from the end of the
              * array to minimise the amount of array alteration needed.
@@ -1112,7 +1099,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             [localException raise];
         }
          NS_ENDHANDLER*/
-        //DLog();
         [arp release];
         
         if (when == nil)
@@ -1140,7 +1126,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             AUTORELEASE(when);
         }
 #endif
-        //DLog();
         NSDebugMLLog(@"NSRunLoop", @"limit date %f in %@",
                      nil == when ? 0.0 : [when timeIntervalSinceReferenceDate], mode);
     }
@@ -1268,7 +1253,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     }
      NS_ENDHANDLER*/
     //[arp drain];
-    //DLog();
 }
 
 - (BOOL)runMode:(NSString *)mode beforeDate:(NSDate *)date
@@ -1284,7 +1268,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
      */
     GSPrivateCheckTasks();
     GSPrivateNotifyASAP(mode);
-    //DLog();
     /* And process any performers scheduled in the loop (eg something from
      * another thread.
      */
@@ -1302,7 +1285,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         [arp drain];
         return NO;
     }
-    //DLog();
     /* Use the earlier of the two dates we have.
      * Retain the date in case the firing of a timer (or some other event)
      * releases it.
@@ -1347,7 +1329,6 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         NSDebugMLLog(@"NSRunLoop", @"run until date %f seconds from now", ti);
         //DLog(@"run until date %f seconds from now", ti);
         mayDoMore = [self runMode:NSDefaultRunLoopMode beforeDate:date];
-        //DLog();
         ti = [date timeIntervalSinceNow];
         //DLog();
     }

@@ -790,26 +790,6 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
             //_application->_lastActivityTime = CACurrentMediaTime();
             _application->_currentEvent->_timestamp = timestamp;
         }
-        //currentTime = CACurrentMediaTime();
-        /*if (currentTime - _application->_lastActivityTime > _kInactiveTimeLimit
-            && _application->_screenMode == _UIApplicationScreenModeActive) {
-            _application->_screenMode = _UIApplicationScreenModeSleeping;
-            [_application->_keyWindow addSubview:_application->_blackScreen];
-            _application->_blackScreen.alpha = 0.0;
-            [UIView beginAnimations:@"gotoSleep" context:nil];
-            [UIView setAnimationDuration:0.5];
-            _application->_blackScreen.alpha = 0.8;
-            [UIView commitAnimations];
-            //[NSTimer scheduledTimerWithTimeInterval:2 target:_application selector:@selector(turnONScreen) userInfo:nil repeats:NO];
-        }
-        if (currentTime - _application->_lastActivityTime > _kLongInactiveTimeLimit
-            && _application->_screenMode == _UIApplicationScreenModeSleeping) {
-            _application->_screenMode = _UIApplicationScreenModeOff;
-            [UIView beginAnimations:@"gotoSleep" context:nil];
-            [UIView setAnimationDuration:1.0];
-            _application->_blackScreen.alpha = 1.0;
-            [UIView commitAnimations];
-        }*/
         UIChildApplicationHandleMessages();
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
