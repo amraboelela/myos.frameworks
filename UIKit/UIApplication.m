@@ -725,10 +725,8 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
 
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];
-  //  DLog();
         NSDate *limit = [[NSDate alloc] initWithTimeIntervalSinceNow:0.01];
         [[NSRunLoop currentRunLoop] runUntilDate:limit];
-   // DLog();
         [limit release];
         timestamp = CACurrentMediaTime();
     //DLog();
@@ -741,7 +739,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
         [pool2 release];
         //DLog(@"Free memory: %ld KB", CFGetFreeMemory());
     }
-#else
+#else // Child app
     DLog();
     UIChildApplicationInitialize();
     CGRect cr = CGRectMake(0,0,_kScreenWidth*_kScreenScaleFactor,_kScreenHeight*_kScreenScaleFactor);
@@ -766,18 +764,7 @@ int UIApplicationMain(int argc, char *argv[], NSString *principalClassName, NSSt
     [_CAAnimatorConditionLock unlock];
     
     NSTimeInterval timestamp = CACurrentMediaTime();
-    // Setting up the screen sleeping ability
-    //_application->_lastActivityTime = CACurrentMediaTime();
-    //DLog(@"5");
-    //_application->_blackScreen = [[UIView alloc] initWithFrame:cr];
-    //_application->_blackScreen.backgroundColor = [UIColor blackColor];
-    //UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:_application action:@selector(turnOnScreen:)];
-    //[_application->_blackScreen addGestureRecognizer:tapGesture];
-    
     _UIApplicationLaunchApplicationWithDefaultWindow(nil);
-    
-    //NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-    //DLog(@"6");
     
     while (YES) {
         NSAutoreleasePool *pool2 = [[NSAutoreleasePool alloc] init];

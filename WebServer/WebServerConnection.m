@@ -615,35 +615,35 @@ debugWrite(WebServer *server, WebServerConnection *c, NSData *data)
 		  ssl: (BOOL)s
 	      refusal: (NSString*)r
 {
-  static NSUInteger	connectionIdentity = 0;
-
-  if ((self = [super init]) != nil)
+    static NSUInteger	connectionIdentity = 0;
+    
+    if ((self = [super init]) != nil)
     {
-      nc = [[NSNotificationCenter defaultCenter] retain];
-      server = svr;
-      identity = ++connectionIdentity;
-      requestStart = 0.0;
-      duration = 0.0;
-      requests = 0;
-      ASSIGN(handle, hdl);
-      address = [adr copy];
-      conf = [c retain];
-      quiet = q;
-      ssl = s;
-      result = [r copy];
-      ioThread = [t retain];
-      [ioThread->threadLock lock];
-      if (YES == ssl)
-	{
-	  GSLinkedListInsertAfter(self, t->handshakes, t->handshakes->tail);
-	}
-      else
-	{
-	  GSLinkedListInsertAfter(self, t->readwrites, t->readwrites->tail);
-	}
-      [ioThread->threadLock unlock];
+        nc = [[NSNotificationCenter defaultCenter] retain];
+        server = svr;
+        identity = ++connectionIdentity;
+        requestStart = 0.0;
+        duration = 0.0;
+        requests = 0;
+        ASSIGN(handle, hdl);
+        address = [adr copy];
+        conf = [c retain];
+        quiet = q;
+        ssl = s;
+        result = [r copy];
+        ioThread = [t retain];
+        [ioThread->threadLock lock];
+        if (YES == ssl)
+        {
+            GSLinkedListInsertAfter(self, t->handshakes, t->handshakes->tail);
+        }
+        else
+        {
+            GSLinkedListInsertAfter(self, t->readwrites, t->readwrites->tail);
+        }
+        [ioThread->threadLock unlock];
     }
-  return self;
+    return self;
 }
 
 - (IOThread*) ioThread
@@ -1271,55 +1271,55 @@ debugWrite(WebServer *server, WebServerConnection *c, NSData *data)
  */
 - (void) start
 {
-  NSHost	*host;
-
-  if (YES == conf->reverse && nil == result)
+    NSHost	*host;
+    
+    if (YES == conf->reverse && nil == result)
     {
-      host = [NSHost hostWithAddress: address];
-      if (nil == host)
-	{
-	  result = @"HTTP/1.0 403 Bad client host";
-	  [self setShouldClose: YES];
-	}
+        host = [NSHost hostWithAddress: address];
+        if (nil == host)
+        {
+            result = @"HTTP/1.0 403 Bad client host";
+            [self setShouldClose: YES];
+        }
     }
-  else
+    else
     {
-      host = nil;
+        host = nil;
     }
-
-  if (YES == conf->verbose && NO == quiet)
+    
+    if (YES == conf->verbose && NO == quiet)
     {
-      if (host == nil)
-	{
-	  [server _log: @"%@ connect", self];
-	}
-      else
-	{
-	  [server _log: @"%@ connect from %@", self, [host name]];
-	}
+        if (host == nil)
+        {
+            [server _log: @"%@ connect", self];
+        }
+        else
+        {
+            [server _log: @"%@ connect from %@", self, [host name]];
+        }
     }
-
-  if (YES == ssl)
+    
+    if (YES == ssl)
     {
-      if ([handle respondsToSelector:
-	@selector(sslHandshakeEstablished:outgoing:)])
-	{
-	  handshakeRetry = 0.01;
-	  handshakeTimer
-	    = [NSTimer scheduledTimerWithTimeInterval: handshakeRetry
-					       target: self
-					     selector: @selector(_timeout:)
-					     userInfo: nil
-					      repeats: NO];
-	}
-      else
-	{
-	  [self handshake];
-	}
+        if ([handle respondsToSelector:
+             @selector(sslHandshakeEstablished:outgoing:)])
+        {
+            handshakeRetry = 0.01;
+            handshakeTimer
+            = [NSTimer scheduledTimerWithTimeInterval: handshakeRetry
+                                               target: self
+                                             selector: @selector(_timeout:)
+                                             userInfo: nil
+                                              repeats: NO];
+        }
+        else
+        {
+            [self handshake];
+        }
     }
-  else
+    else
     {
-      [self run];
+        [self run];
     }
 }
 

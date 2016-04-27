@@ -4,7 +4,9 @@
    
    Written by: Stefan Bidigaray
    Date: January, 2010
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2016
+ 
    This file is part of GNUstep CoreBase Library.
    
    This library is free software; you can redistribute it and/or

@@ -35,7 +35,7 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the `dispatch' library (-ldispatch). */
-/* #undef HAVE_LIBDISPATCH */
+#define HAVE_LIBDISPATCH 1
 
 /* Define to 1 if you have the `objc' library (-lobjc). */
 #define HAVE_LIBOBJC 1

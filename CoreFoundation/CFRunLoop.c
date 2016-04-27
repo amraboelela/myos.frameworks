@@ -699,228 +699,228 @@ static struct pollfd*
 CFRunLoopPrepareForPoll(struct pollfd* pfd, int* numSources,
         CFRunLoopRef rl, GSRunLoopContextRef context)
 {
-  int newSourceCount = 2;
-  struct pollfd* pos;
-
-  newSourceCount += CFSetGetCount(context->sources1);
-
-  if (pfd == NULL)
+    int newSourceCount = 2;
+    struct pollfd* pos;
+    
+    newSourceCount += CFSetGetCount(context->sources1);
+    
+    if (pfd == NULL)
     {
-      pfd = (struct pollfd*) CFAllocatorAllocate(NULL,
-                newSourceCount * sizeof(struct pollfd), 0);
-
-      pfd[0].fd = rl->_wakeUpPipe[0];
-      pfd[0].events = POLLIN;
-
+        pfd = (struct pollfd*) CFAllocatorAllocate(NULL,
+                                                   newSourceCount * sizeof(struct pollfd), 0);
+        
+        pfd[0].fd = rl->_wakeUpPipe[0];
+        pfd[0].events = POLLIN;
+        
 #if HAVE_LIBDISPATCH
-      if (CFRunLoopGetCurrent() == CFRunLoopGetMain())
+        if (CFRunLoopGetCurrent() == CFRunLoopGetMain())
         {
-          // integrate libdispatch
-          pfd[1].fd = dispatch_get_main_queue_eventfd_np();
-          pfd[1].events = POLLIN;
+            // integrate libdispatch
+            pfd[1].fd = dispatch_get_main_queue_eventfd_np();
+            pfd[1].events = POLLIN;
         }
-          else
+        else
 #endif
         {
-          pfd[1].fd = -1;
+            pfd[1].fd = -1;
         }
     }
-  else
+    else
     {
-      pfd = (struct pollfd*) CFAllocatorReallocate(NULL,
-              pfd, newSourceCount * sizeof(struct pollfd), 0);
+        pfd = (struct pollfd*) CFAllocatorReallocate(NULL,
+                                                     pfd, newSourceCount * sizeof(struct pollfd), 0);
     }
-
-  pos = &pfd[2];
-
-  GSMutexLock (&rl->_lock);
-  CFSetApplyFunction(context->sources1, Source1Applier, &pos);
-  GSMutexUnlock (&rl->_lock);
-  
-  *numSources = newSourceCount;
-
-  return pfd;
+    
+    pos = &pfd[2];
+    
+    GSMutexLock (&rl->_lock);
+    CFSetApplyFunction(context->sources1, Source1Applier, &pos);
+    GSMutexUnlock (&rl->_lock);
+    
+    *numSources = newSourceCount;
+    
+    return pfd;
 }
 
 SInt32
 CFRunLoopRunInMode (CFStringRef mode, CFTimeInterval seconds,
                     Boolean returnAfterSourceHandled)
 {
-  /* This is the sequence of events:
-   * 1. Notify observers with kCFRunLoopEntry activity.
-   * 2. Notify observers with kCFRunLoopBeforeTimers activitiy.
-   * 3. Notify observers with kCFRunLoopBeforeSources activity.
-   * 4. Fire version 0 sources.
-   * 5. If a version 1 source is ready and waiting to fire, process the
-   *    event immediately. Go to step 9.
-   * 6. Notify observers with kCFRunLoopBeforeWaiting activity.
-   * 7. Put the thread to sleep until one of the following events occurs:
-   *   - An event arrives for a port-based input source.
-   *   - A timer fires.
-   *   - The seconds argument expires.
-   *   - Someone calls CFRunLoopWakeUp(). 
-   * 8. Notify observers with kCFRunLoopAfterWaiting activity.
-   * 9. Process the pending event.
-   *   - Process timers with fire dates in the past.
-   *   - If an input source fired, deliver the event.
-   *   - If CFRunLoopWakeUp() was called but the run loop has not timed out,
-   *     restart the loop. Go to step 2.
-   * 10. Notify observers with kCFRunLoopExit activity.
-   */
-  CFRunLoopRef rl = CFRunLoopGetCurrent();
-  const CFAbsoluteTime timeStart = CFAbsoluteTimeGetCurrent();
-  CFAbsoluteTime timeNow = timeStart;
-  SInt32 exitReason = 0;
-  Boolean hadSource = false;
-  struct pollfd* pfd = NULL;
-  int numSources = 0;
-  GSRunLoopContextRef context = GSRunLoopContextGet(rl, mode);
-
-  rl->_currentMode = mode;
-
-  // Notify observers with kCFRunLoopEntry activity.
-  CFRunLoopNotifyObservers(rl, context, kCFRunLoopEntry);
-
-  CFRunLoopProcessTimers(rl, timeStart, context, returnAfterSourceHandled);
-  if (!returnAfterSourceHandled || !hadSource)
-    hadSource |= CFRunLoopProcessSourcesVersion0(rl, timeStart, context, returnAfterSourceHandled);
-  GSMutexUnlock (&rl->_lock);
-
-  if (returnAfterSourceHandled && hadSource)
+    /* This is the sequence of events:
+     * 1. Notify observers with kCFRunLoopEntry activity.
+     * 2. Notify observers with kCFRunLoopBeforeTimers activitiy.
+     * 3. Notify observers with kCFRunLoopBeforeSources activity.
+     * 4. Fire version 0 sources.
+     * 5. If a version 1 source is ready and waiting to fire, process the
+     *    event immediately. Go to step 9.
+     * 6. Notify observers with kCFRunLoopBeforeWaiting activity.
+     * 7. Put the thread to sleep until one of the following events occurs:
+     *   - An event arrives for a port-based input source.
+     *   - A timer fires.
+     *   - The seconds argument expires.
+     *   - Someone calls CFRunLoopWakeUp().
+     * 8. Notify observers with kCFRunLoopAfterWaiting activity.
+     * 9. Process the pending event.
+     *   - Process timers with fire dates in the past.
+     *   - If an input source fired, deliver the event.
+     *   - If CFRunLoopWakeUp() was called but the run loop has not timed out,
+     *     restart the loop. Go to step 2.
+     * 10. Notify observers with kCFRunLoopExit activity.
+     */
+    CFRunLoopRef rl = CFRunLoopGetCurrent();
+    const CFAbsoluteTime timeStart = CFAbsoluteTimeGetCurrent();
+    CFAbsoluteTime timeNow = timeStart;
+    SInt32 exitReason = 0;
+    Boolean hadSource = false;
+    struct pollfd* pfd = NULL;
+    int numSources = 0;
+    GSRunLoopContextRef context = GSRunLoopContextGet(rl, mode);
+    
+    rl->_currentMode = mode;
+    
+    // Notify observers with kCFRunLoopEntry activity.
+    CFRunLoopNotifyObservers(rl, context, kCFRunLoopEntry);
+    
+    CFRunLoopProcessTimers(rl, timeStart, context, returnAfterSourceHandled);
+    if (!returnAfterSourceHandled || !hadSource)
+        hadSource |= CFRunLoopProcessSourcesVersion0(rl, timeStart, context, returnAfterSourceHandled);
+    GSMutexUnlock (&rl->_lock);
+    
+    if (returnAfterSourceHandled && hadSource)
     {
-      exitReason = kCFRunLoopRunHandledSource;
+        exitReason = kCFRunLoopRunHandledSource;
     }
-
-  timeNow = CFAbsoluteTimeGetCurrent();
-
-  while (exitReason == 0)
+    
+    timeNow = CFAbsoluteTimeGetCurrent();
+    
+    while (exitReason == 0)
     {
-      int sourcesFired, timeout;
-
-      hadSource = false;
-
-      if (!returnAfterSourceHandled)
+        int sourcesFired, timeout;
+        
+        hadSource = false;
+        
+        if (!returnAfterSourceHandled)
         {
-          if (seconds == 0)
-            timeout = 0; // only one pass
-          else if (seconds >= DISTANT_FUTURE)
+            if (seconds == 0)
+                timeout = 0; // only one pass
+            else if (seconds >= DISTANT_FUTURE)
+                timeout = -1;
+            else
+                timeout = (int) ((seconds - (timeNow - timeStart)) * 1000);
+        }
+        else
+        {
             timeout = -1;
-          else
-            timeout = (int) ((seconds - (timeNow - timeStart)) * 1000);
-        }
-      else
-        {
-          timeout = -1;
         }
         
-      if (!CFRunLoopHasAnyValidSources(rl, context))
+        if (!CFRunLoopHasAnyValidSources(rl, context))
         {
-          exitReason = kCFRunLoopRunFinished;
-          break;
+            exitReason = kCFRunLoopRunFinished;
+            break;
         }
-
-      if (timeout != 0)
-        {
-          // Check all timers in current mode and plan the timeout accordingly.
-          CFAbsoluteTime nextTimer = CFRunLoopGetNextTimerFireDate(rl, mode);
-          if (nextTimer < DISTANT_FUTURE)
-            {
-              int delay = (int) ( (nextTimer - timeNow)*1000 );
-              // printf("(%f-%f)*1000=%d\n", nextTimer, timeNow, delay);
-              if (timeout == -1 || delay < timeout)
-                timeout = delay;
-              if (timeout < 0)
-                timeout = 0;
-            }
-        }
-
-      if (rl->_stop)
-        {
-          exitReason = kCFRunLoopRunStopped;
-          rl->_stop = false;
-          break;
-        }
-
-      GSMutexLock (&rl->_lock);
-      CFRunLoopPerformBlocks(context);
-      GSMutexUnlock (&rl->_lock);
         
-      // Notify observers with kCFRunLoopBeforeWaiting activity.
-      CFRunLoopNotifyObservers(rl, context, kCFRunLoopBeforeWaiting);
-      rl->_isWaiting = true;
-
-      pfd = CFRunLoopPrepareForPoll(pfd, &numSources, rl, context);
-
-      // printf("poll: %d ms\n", timeout);
-      // printf("poll %d sources\n", numSources);
-      sourcesFired = poll(pfd, numSources, timeout);
-
-      rl->_isWaiting = false;
-      // Notify observers with kCFRunLoopAfterWaiting activity.
-      CFRunLoopNotifyObservers(rl, context, kCFRunLoopAfterWaiting);
-
-      if (sourcesFired < 0) // error
+        if (timeout != 0)
         {
-          // TODO: print explanation into the console?
-          exitReason = kCFRunLoopRunFinished;
-          break;
-        }
-      else if (sourcesFired > 0)
-        {
-          if (pfd[0].revents != 0)
+            // Check all timers in current mode and plan the timeout accordingly.
+            CFAbsoluteTime nextTimer = CFRunLoopGetNextTimerFireDate(rl, mode);
+            if (nextTimer < DISTANT_FUTURE)
             {
-              int dummy;
-              // printf("loop woken up!\n");
-
-              // Remove everything from the notification pipe that woke us up
-              while (read(pfd[0].fd, &dummy, sizeof(dummy)) > 0);
+                int delay = (int) ( (nextTimer - timeNow)*1000 );
+                // printf("(%f-%f)*1000=%d\n", nextTimer, timeNow, delay);
+                if (timeout == -1 || delay < timeout)
+                    timeout = delay;
+                if (timeout < 0)
+                    timeout = 0;
             }
-
+        }
+        
+        if (rl->_stop)
+        {
+            exitReason = kCFRunLoopRunStopped;
+            rl->_stop = false;
+            break;
+        }
+        
+        GSMutexLock (&rl->_lock);
+        CFRunLoopPerformBlocks(context);
+        GSMutexUnlock (&rl->_lock);
+        
+        // Notify observers with kCFRunLoopBeforeWaiting activity.
+        CFRunLoopNotifyObservers(rl, context, kCFRunLoopBeforeWaiting);
+        rl->_isWaiting = true;
+        
+        pfd = CFRunLoopPrepareForPoll(pfd, &numSources, rl, context);
+        
+        // printf("poll: %d ms\n", timeout);
+        // printf("poll %d sources\n", numSources);
+        sourcesFired = poll(pfd, numSources, timeout);
+        
+        rl->_isWaiting = false;
+        // Notify observers with kCFRunLoopAfterWaiting activity.
+        CFRunLoopNotifyObservers(rl, context, kCFRunLoopAfterWaiting);
+        
+        if (sourcesFired < 0) // error
+        {
+            // TODO: print explanation into the console?
+            exitReason = kCFRunLoopRunFinished;
+            break;
+        }
+        else if (sourcesFired > 0)
+        {
+            if (pfd[0].revents != 0)
+            {
+                int dummy;
+                // printf("loop woken up!\n");
+                
+                // Remove everything from the notification pipe that woke us up
+                while (read(pfd[0].fd, &dummy, sizeof(dummy)) > 0);
+            }
+            
 #if HAVE_LIBDISPATCH
-          if (pfd[1].revents != 0)
+            if (pfd[1].revents != 0)
             {
-              dispatch_main_queue_drain_np();
-              hadSource = true;
+                dispatch_main_queue_drain_np();
+                hadSource = true;
             }
 #endif
-
+            
         }
         
-      CFRunLoopProcessTimers(rl, timeNow, context,
-                                          returnAfterSourceHandled);
-      
-      if (!returnAfterSourceHandled || !hadSource)
+        CFRunLoopProcessTimers(rl, timeNow, context,
+                               returnAfterSourceHandled);
+        
+        if (!returnAfterSourceHandled || !hadSource)
         {
-          hadSource |= CFRunLoopProcessSourcesVersion0(rl, timeNow, context,
-                                                   returnAfterSourceHandled);
+            hadSource |= CFRunLoopProcessSourcesVersion0(rl, timeNow, context,
+                                                         returnAfterSourceHandled);
         }
-      if (!returnAfterSourceHandled || !hadSource)
+        if (!returnAfterSourceHandled || !hadSource)
         {
-          hadSource |= CFRunLoopProcessSourcesVersion1(rl, timeNow, context,
-                                                   &pfd[2], numSources-2);
+            hadSource |= CFRunLoopProcessSourcesVersion1(rl, timeNow, context,
+                                                         &pfd[2], numSources-2);
         }
-
-      if (returnAfterSourceHandled && hadSource)
+        
+        if (returnAfterSourceHandled && hadSource)
         {
-          exitReason = kCFRunLoopRunHandledSource;
-          break;
+            exitReason = kCFRunLoopRunHandledSource;
+            break;
         }
-
-      timeNow = CFAbsoluteTimeGetCurrent();
-      if (CFAbsoluteTimeGetCurrent() >= timeStart+seconds)
+        
+        timeNow = CFAbsoluteTimeGetCurrent();
+        if (CFAbsoluteTimeGetCurrent() >= timeStart+seconds)
         {
-          exitReason = kCFRunLoopRunTimedOut;
-          break;
+            exitReason = kCFRunLoopRunTimedOut;
+            break;
         }
     }
-
-  // Notify observers with kCFRunLoopExit activity.
-  CFRunLoopNotifyObservers(rl, context, kCFRunLoopExit);
-  rl->_currentMode = NULL;
-
-  CFAllocatorDeallocate(NULL, pfd);
-
-  return exitReason;
+    
+    // Notify observers with kCFRunLoopExit activity.
+    CFRunLoopNotifyObservers(rl, context, kCFRunLoopExit);
+    rl->_currentMode = NULL;
+    
+    CFAllocatorDeallocate(NULL, pfd);
+    
+    return exitReason;
 }
 
 void

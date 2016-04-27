@@ -1662,62 +1662,62 @@ typedef	struct {
 		 extra: (void*)extra
 	       forMode: (NSString*)mode
 {
-  int		desc = (int)(uintptr_t)extra;
-  GSMessageHandle	*handle;
-
-  if (desc == lDesc)
+    int		desc = (int)(uintptr_t)extra;
+    GSMessageHandle	*handle;
+    
+    if (desc == lDesc)
     {
-      struct sockaddr_un	sockAddr;
-      unsigned			size = sizeof(sockAddr);
-
-      desc = accept(lDesc, (struct sockaddr*)&sockAddr, &size);
-      if (desc < 0)
+        struct sockaddr_un	sockAddr;
+        unsigned			size = sizeof(sockAddr);
+        
+        desc = accept(lDesc, (struct sockaddr*)&sockAddr, &size);
+        if (desc < 0)
         {
-	  NSDebugMLLog(@"NSMessagePort",
-	    @"accept failed - handled in other thread?");
+            NSDebugMLLog(@"NSMessagePort",
+                         @"accept failed - handled in other thread?");
         }
-      else
-	{
-	  int	status = 1;
-
-	  setsockopt(desc, SOL_SOCKET, SO_KEEPALIVE, (char*)&status,
-	    sizeof(status));
-	  /*
-	   * Create a handle for the socket and set it up so we are its
-	   * receiving port, and it's waiting to get the port name from
-	   * the other end.
-	   */
-	  handle = [GSMessageHandle handleWithDescriptor: desc];
-	  memcpy(&handle->sockAddr, &sockAddr, sizeof(sockAddr));
-
-	  [handle setState: GS_H_ACCEPT];
-	  [self addHandle: handle forSend: NO];
-	}
+        else
+        {
+            int	status = 1;
+            
+            setsockopt(desc, SOL_SOCKET, SO_KEEPALIVE, (char*)&status,
+                       sizeof(status));
+            /*
+             * Create a handle for the socket and set it up so we are its
+             * receiving port, and it's waiting to get the port name from
+             * the other end.
+             */
+            handle = [GSMessageHandle handleWithDescriptor: desc];
+            memcpy(&handle->sockAddr, &sockAddr, sizeof(sockAddr));
+            
+            [handle setState: GS_H_ACCEPT];
+            [self addHandle: handle forSend: NO];
+        }
     }
-  else
+    else
     {
-      M_LOCK(myLock);
-      handle = (GSMessageHandle*)NSMapGet(handles, (void*)(uintptr_t)desc);
-      IF_NO_GC(AUTORELEASE(RETAIN(handle)));
-      M_UNLOCK(myLock);
-      if (handle == nil)
-	{
-	  const char	*t;
-
-	  if (type == ET_RDESC) t = "rdesc";
-	  else if (type == ET_WDESC) t = "wdesc";
-	  else if (type == ET_RPORT) t = "rport";
-	  else t = "unknown";
-	  NSLog(@"No handle for event %s on descriptor %d", t, desc);
-	  [[runLoopClass currentRunLoop] removeEvent: extra
-						type: type
-					     forMode: mode
-						 all: YES];
-	}
-      else
-	{
-	  [handle receivedEvent: data type: type extra: extra forMode: mode];
-	}
+        M_LOCK(myLock);
+        handle = (GSMessageHandle*)NSMapGet(handles, (void*)(uintptr_t)desc);
+        IF_NO_GC(AUTORELEASE(RETAIN(handle)));
+        M_UNLOCK(myLock);
+        if (handle == nil)
+        {
+            const char	*t;
+            
+            if (type == ET_RDESC) t = "rdesc";
+            else if (type == ET_WDESC) t = "wdesc";
+            else if (type == ET_RPORT) t = "rport";
+            else t = "unknown";
+            NSLog(@"No handle for event %s on descriptor %d", t, desc);
+            [[runLoopClass currentRunLoop] removeEvent: extra
+                                                  type: type
+                                               forMode: mode
+                                                   all: YES];
+        }
+        else
+        {
+            [handle receivedEvent: data type: type extra: extra forMode: mode];
+        }
     }
 }
 

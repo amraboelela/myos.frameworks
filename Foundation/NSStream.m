@@ -372,34 +372,34 @@
               inputStream: (NSInputStream **)inputStream 
              outputStream: (NSOutputStream **)outputStream
 {
-  NSString *address = host ? (id)[host address] : (id)@"127.0.0.1";
-  id ins = nil;
-  id outs = nil;
-
-  // try ipv4 first
-  ins = AUTORELEASE([[GSInetInputStream alloc]
-    initToAddr: address port: port]);
-  outs = AUTORELEASE([[GSInetOutputStream alloc]
-    initToAddr: address port: port]);
-  if (!ins)
+    NSString *address = host ? (id)[host address] : (id)@"127.0.0.1";
+    id ins = nil;
+    id outs = nil;
+    
+    // try ipv4 first
+    ins = AUTORELEASE([[GSInetInputStream alloc]
+                       initToAddr: address port: port]);
+    outs = AUTORELEASE([[GSInetOutputStream alloc]
+                        initToAddr: address port: port]);
+    if (!ins)
     {
 #if	defined(PF_INET6)
-      ins = AUTORELEASE([[GSInet6InputStream alloc]
-	initToAddr: address port: port]);
-      outs = AUTORELEASE([[GSInet6OutputStream alloc]
-	initToAddr: address port: port]);
+        ins = AUTORELEASE([[GSInet6InputStream alloc]
+                           initToAddr: address port: port]);
+        outs = AUTORELEASE([[GSInet6OutputStream alloc]
+                            initToAddr: address port: port]);
 #endif
-    }  
-
-  if (inputStream)
-    {
-      [ins _setSibling: outs];
-      *inputStream = (NSInputStream*)ins;
     }
-  if (outputStream)
+    
+    if (inputStream)
     {
-      [outs _setSibling: ins];
-      *outputStream = (NSOutputStream*)outs;
+        [ins _setSibling: outs];
+        *inputStream = (NSInputStream*)ins;
+    }
+    if (outputStream)
+    {
+        [outs _setSibling: ins];
+        *outputStream = (NSOutputStream*)outs;
     }
 }
 

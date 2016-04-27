@@ -4,7 +4,9 @@
    
    Author: Stefan Bidigaray <stefanbidi@gmail.com>
    Date: September, 2012
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2016
+ 
    This file is part of the GNUstep CoreBase Library.
    
    This library is free software; you can redistribute it and/or
@@ -199,72 +201,72 @@ CFSocketCreateWithNative (CFAllocatorRef alloc, CFSocketNativeHandle sock,
                           CFSocketCallBack callback,
                           const CFSocketContext *ctx)
 {
-  CFSocketRef new = NULL;
-  
-  GSMutexLock (&_kCFSocketObjectsLock);
-  
-  if (_kCFSocketObjects == NULL)
+    CFSocketRef new = NULL;
+    
+    GSMutexLock (&_kCFSocketObjectsLock);
+    
+    if (_kCFSocketObjects == NULL)
     {
-      _kCFSocketObjects = CFDictionaryCreateMutable (kCFAllocatorSystemDefault,
-                            0, NULL,  &kCFTypeDictionaryValueCallBacks);
+        _kCFSocketObjects = CFDictionaryCreateMutable (kCFAllocatorSystemDefault,
+                                                       0, NULL,  &kCFTypeDictionaryValueCallBacks);
     }
-  if (CFDictionaryGetValueIfPresent (_kCFSocketObjects,
-                                     (const void*)(uintptr_t)sock,
-                                     (const void**)&new))
+    if (CFDictionaryGetValueIfPresent (_kCFSocketObjects,
+                                       (const void*)(uintptr_t)sock,
+                                       (const void**)&new))
     {
-      GSMutexUnlock (&_kCFSocketObjectsLock);
-      CFRetain(new);
-      return new;
+        GSMutexUnlock (&_kCFSocketObjectsLock);
+        CFRetain(new);
+        return new;
     }
-  
-  if (new == NULL)
+    
+    if (new == NULL)
     {
-      new = (CFSocketRef)_CFRuntimeCreateInstance (alloc, _kCFSocketTypeID,
-                                                   CFSOCKET_SIZE, 0);
-      if (new != NULL)
+        new = (CFSocketRef)_CFRuntimeCreateInstance (alloc, _kCFSocketTypeID,
+                                                     CFSOCKET_SIZE, 0);
+        if (new != NULL)
         {
-          new->_socket = sock;
-          new->_cbTypes = cbTypes;
-          new->_callback = callback;
-          new->_opts = kCFSocketCloseOnInvalidate
-                       | kCFSocketAutomaticallyReenableAcceptCallBack
-                       | kCFSocketAutomaticallyReenableDataCallBack
-                       | kCFSocketAutomaticallyReenableReadCallBack;
-          
-          if (ctx != NULL)
+            new->_socket = sock;
+            new->_cbTypes = cbTypes;
+            new->_callback = callback;
+            new->_opts = kCFSocketCloseOnInvalidate
+            | kCFSocketAutomaticallyReenableAcceptCallBack
+            | kCFSocketAutomaticallyReenableDataCallBack
+            | kCFSocketAutomaticallyReenableReadCallBack;
+            
+            if (ctx != NULL)
             {
-              if (ctx->info != NULL)
-                new->_ctx.info = (void*)(ctx->retain ? ctx->retain (ctx->info)
-                                                     : ctx->info);
-              new->_ctx.retain = ctx->retain;
-              new->_ctx.release = ctx->release;
-              new->_ctx.copyDescription = ctx->copyDescription;
+                if (ctx->info != NULL)
+                    new->_ctx.info = (void*)(ctx->retain ? ctx->retain (ctx->info)
+                                             : ctx->info);
+                new->_ctx.retain = ctx->retain;
+                new->_ctx.release = ctx->release;
+                new->_ctx.copyDescription = ctx->copyDescription;
             }
-          CFDictionaryAddValue (_kCFSocketObjects,
-                                (const void*)(uintptr_t)sock, new);
-          
+            CFDictionaryAddValue (_kCFSocketObjects,
+                                  (const void*)(uintptr_t)sock, new);
+            
 #if HAVE_LIBDISPATCH
-          dispatch_queue_t q = dispatch_get_global_queue(
-              DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-          
-          new->_readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ,
-                                                    new->_socket, 0, q);
-          dispatch_set_context(new->_readSource, new);
-          dispatch_source_set_event_handler_f(new->_readSource,
-                                              CFSocketDispatchReadEvent);
-          
-          new->_writeSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_WRITE,
-                                                    new->_socket, 0, q);
-          dispatch_set_context(new->_writeSource, new);
-          dispatch_source_set_event_handler_f(new->_writeSource,
-                                              CFSocketDispatchWriteEvent);
+            dispatch_queue_t q = dispatch_get_global_queue(
+                                                           DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+            
+            new->_readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ,
+                                                      new->_socket, 0, q);
+            dispatch_set_context(new->_readSource, new);
+            dispatch_source_set_event_handler_f(new->_readSource,
+                                                CFSocketDispatchReadEvent);
+            
+            new->_writeSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_WRITE,
+                                                       new->_socket, 0, q);
+            dispatch_set_context(new->_writeSource, new);
+            dispatch_source_set_event_handler_f(new->_writeSource,
+                                                CFSocketDispatchWriteEvent);
 #endif
         }
     }
-  
-  GSMutexUnlock (&_kCFSocketObjectsLock);
-  
-  return new;
+    
+    GSMutexUnlock (&_kCFSocketObjectsLock);
+    
+    return new;
 }
 
 #if defined(_WIN32)
@@ -279,37 +281,37 @@ CFSocketCreate (CFAllocatorRef alloc, SInt32 protocolFamily,
                 CFOptionFlags cbTypes, CFSocketCallBack callback,
                 const CFSocketContext *ctx)
 {
-  CFSocketRef new = NULL;
-  CFSocketNativeHandle s;
+    CFSocketRef new = NULL;
+    CFSocketNativeHandle s;
 #if defined(_WIN32)
-  if (_kWinsockInitialized == false)
+    if (_kWinsockInitialized == false)
     {
-      WORD winsockVersionRequested;
-      WSADATA winsockData;
-      int winsockErr;
-      
-      _kWinsockInitialized = true;
-      /* High-byte = minor && low-byte = major */
-      winsockVersionRequested = MAKEWORD(WINSOCK_MAJOR_VERSION,
-                                         WINSOCK_MINOR_VERSION);
-      winsockErr = WSAStartup (winsockVersionRequested, &winsockData);
-      if (winsockErr != 0)
-        return NULL;
-      if (LOBYTE(wsaData.wVersion) != WINSOCK_MAJOR_VERSION
-          || HIBYTE(wsaData.wVersion) != WINSOCK_MINOR_VERSION)
+        WORD winsockVersionRequested;
+        WSADATA winsockData;
+        int winsockErr;
+        
+        _kWinsockInitialized = true;
+        /* High-byte = minor && low-byte = major */
+        winsockVersionRequested = MAKEWORD(WINSOCK_MAJOR_VERSION,
+                                           WINSOCK_MINOR_VERSION);
+        winsockErr = WSAStartup (winsockVersionRequested, &winsockData);
+        if (winsockErr != 0)
+            return NULL;
+        if (LOBYTE(wsaData.wVersion) != WINSOCK_MAJOR_VERSION
+            || HIBYTE(wsaData.wVersion) != WINSOCK_MINOR_VERSION)
         {
-          WSACleanup ();
-          _kWinsockInitialized = false;
-          return NULL;
+            WSACleanup ();
+            _kWinsockInitialized = false;
+            return NULL;
         }
     }
 #endif
-  
-  s = socket (protocolFamily, socketType, protocol);
-  if (s != INVALID_SOCKET)
-    new = CFSocketCreateWithNative (alloc, s, cbTypes, callback, ctx);
-  
-  return new;
+    
+    s = socket (protocolFamily, socketType, protocol);
+    if (s != INVALID_SOCKET)
+        new = CFSocketCreateWithNative (alloc, s, cbTypes, callback, ctx);
+    
+    return new;
 }
 
 CFSocketRef
@@ -319,21 +321,21 @@ CFSocketCreateWithSocketSignature (CFAllocatorRef alloc,
                                    CFSocketCallBack callback,
                                    const CFSocketContext *ctx)
 {
-  CFSocketRef new;
-  new = CFSocketCreate (alloc, sign->protocolFamily, sign->socketType,
-                        sign->protocol, cbTypes, callback, ctx);
-  if (new)
+    CFSocketRef new;
+    new = CFSocketCreate (alloc, sign->protocolFamily, sign->socketType,
+                          sign->protocol, cbTypes, callback, ctx);
+    if (new)
     {
-      CFSocketError err;
-      err = CFSocketSetAddress (new, sign->address);
-      if (err != kCFSocketSuccess)
+        CFSocketError err;
+        err = CFSocketSetAddress (new, sign->address);
+        if (err != kCFSocketSuccess)
         {
-          CFRelease (new);
-          new = NULL;
+            CFRelease (new);
+            new = NULL;
         }
     }
-  
-  return new;
+    
+    return new;
 }
 
 CFSocketRef
@@ -344,21 +346,21 @@ CFSocketCreateConnectedToSocketSignature (CFAllocatorRef alloc,
                                           const CFSocketContext *ctx,
                                           CFTimeInterval timeout)
 {
-  CFSocketRef new;
-  new = CFSocketCreate (alloc, sign->protocolFamily, sign->socketType,
-                        sign->protocol, cbTypes, callback, ctx);
-  if (new)
+    CFSocketRef new;
+    new = CFSocketCreate (alloc, sign->protocolFamily, sign->socketType,
+                          sign->protocol, cbTypes, callback, ctx);
+    if (new)
     {
-      CFSocketError err;
-      err = CFSocketConnectToAddress (new, sign->address, timeout);
-      if (err != kCFSocketSuccess)
+        CFSocketError err;
+        err = CFSocketConnectToAddress (new, sign->address, timeout);
+        if (err != kCFSocketSuccess)
         {
-          CFRelease (new);
-          new = NULL;
+            CFRelease (new);
+            new = NULL;
         }
     }
-  
-  return new;
+    
+    return new;
 }
 
 CFDataRef
@@ -406,28 +408,28 @@ CFSocketCopyPeerAddress (CFSocketRef s)
 CFSocketError
 CFSocketSetAddress (CFSocketRef s, CFDataRef address)
 {
-  CFSocketNativeHandle sock;
-  struct sockaddr *addr;
-  socklen_t addrlen;
-  int err;
-  
-  if (CFSocketIsValid (s) == false || address == NULL)
-    return kCFSocketError;
-  
-  addr = (struct sockaddr*)CFDataGetBytePtr (address);
-  addrlen = CFDataGetLength (address);
-  if (addr == NULL || addrlen == 0)
-    return kCFSocketError;
-  sock = CFSocketGetNative (s);
-  
-  err = bind (sock, addr, addrlen);
-  if (err == 0)
+    CFSocketNativeHandle sock;
+    struct sockaddr *addr;
+    socklen_t addrlen;
+    int err;
+    
+    if (CFSocketIsValid (s) == false || address == NULL)
+        return kCFSocketError;
+    
+    addr = (struct sockaddr*)CFDataGetBytePtr (address);
+    addrlen = CFDataGetLength (address);
+    if (addr == NULL || addrlen == 0)
+        return kCFSocketError;
+    sock = CFSocketGetNative (s);
+    
+    err = bind (sock, addr, addrlen);
+    if (err == 0)
     {
-      listen (sock, 1024);
-      s->_isListening = true;
-      return kCFSocketSuccess;
+        listen (sock, 1024);
+        s->_isListening = true;
+        return kCFSocketSuccess;
     }
-  return kCFSocketError;
+    return kCFSocketError;
 }
 
 CFSocketError
@@ -504,32 +506,32 @@ CFSocketUpdateDispatchSources (CFSocketRef s)
 #   define READ_EVENTS (kCFSocketReadCallBack|kCFSocketAcceptCallBack|kCFSocketDataCallBack)
 #   define WRITE_EVENTS (kCFSocketConnectCallBack|kCFSocketWriteCallBack)
     
-  if (s->_cbTypes & READ_EVENTS)
+    if (s->_cbTypes & READ_EVENTS)
     {
-      if (!s->_readResumed)
+        if (!s->_readResumed)
         {
-          dispatch_resume(s->_readSource);
-          s->_readResumed = true;
+            dispatch_resume(s->_readSource);
+            s->_readResumed = true;
         }
     }
-  else if (s->_readResumed)
+    else if (s->_readResumed)
     {
-      dispatch_suspend(s->_readSource);
-      s->_readResumed = false;
+        dispatch_suspend(s->_readSource);
+        s->_readResumed = false;
     }
-  
-  if (s->_cbTypes & WRITE_EVENTS)
+    
+    if (s->_cbTypes & WRITE_EVENTS)
     {
-      if (!s->_writeResumed)
+        if (!s->_writeResumed)
         {
-          dispatch_resume(s->_writeSource);
-          s->_writeResumed = true;
+            dispatch_resume(s->_writeSource);
+            s->_writeResumed = true;
         }
     }
-  else if (s->_writeResumed)
+    else if (s->_writeResumed)
     {
-      dispatch_suspend(s->_writeSource);
-      s->_writeResumed = false;
+        dispatch_suspend(s->_writeSource);
+        s->_writeResumed = false;
     }
 #endif
 }
@@ -643,113 +645,113 @@ CFSocketRLSSchedule (void* p, CFRunLoopRef rl, CFStringRef mode)
 static void
 CFSocketRLSPerform (void* p)
 {
-  CFSocketRef s = (CFSocketRef) p;
-  
-  if (s->_callback == NULL)
-    return;
-  
-  if (s->_readFired)
+    CFSocketRef s = (CFSocketRef) p;
+    
+    if (s->_callback == NULL)
+        return;
+    
+    if (s->_readFired)
     {
-      if (s->_isListening)
+        if (s->_isListening)
         {
-          if (s->_cbTypes & kCFSocketAcceptCallBack)
+            if (s->_cbTypes & kCFSocketAcceptCallBack)
             {
-              struct sockaddr addr;
-              socklen_t len = sizeof(addr);
-              int err;
-          
-              err = accept (s->_socket, &addr, &len);
-              
-              if (!(s->_opts & kCFSocketAutomaticallyReenableAcceptCallBack))
-                CFSocketDisableCallBacks(s, kCFSocketAcceptCallBack);
-          
-              if (err != 0)
+                struct sockaddr addr;
+                socklen_t len = sizeof(addr);
+                int err;
+                
+                err = accept (s->_socket, &addr, &len);
+                
+                if (!(s->_opts & kCFSocketAutomaticallyReenableAcceptCallBack))
+                    CFSocketDisableCallBacks(s, kCFSocketAcceptCallBack);
+                
+                if (err != 0)
                 {
-                  CFSocketNativeHandle handle = (CFSocketNativeHandle) err;
-                  CFDataRef addrData;
-                  
-                  addrData = CFDataCreate(NULL, (UInt8*) &addr, len);
-                  s->_callback(s, kCFSocketAcceptCallBack, addrData, &handle,
-                               s->_ctx.info);
-                  
-                  CFRelease(addrData);
+                    CFSocketNativeHandle handle = (CFSocketNativeHandle) err;
+                    CFDataRef addrData;
+                    
+                    addrData = CFDataCreate(NULL, (UInt8*) &addr, len);
+                    s->_callback(s, kCFSocketAcceptCallBack, addrData, &handle,
+                                 s->_ctx.info);
+                    
+                    CFRelease(addrData);
                 }
             }
         }
         
-      if (s->_cbTypes & kCFSocketDataCallBack)
+        if (s->_cbTypes & kCFSocketDataCallBack)
         {
-          char buffer[512];
-          int err;
-          CFDataRef data, addrData;
-          struct sockaddr addr;
-          socklen_t len = sizeof(addr);
-          
-          if (!(s->_opts & kCFSocketAutomaticallyReenableDataCallBack))
-            CFSocketDisableCallBacks(s, kCFSocketDataCallBack);
-          
-          err = recvfrom (s->_socket, buffer, sizeof(buffer), MSG_DONTWAIT,
-                          &addr, &len);
-          
-          if (err < 0)
-            err = 0;
-          
-          data = CFDataCreate(NULL, (UInt8*) buffer, err);
-          addrData = CFDataCreate(NULL, (UInt8*) &addr, len);
-          
-          s->_callback(s, kCFSocketDataCallBack, addrData, data,
-                       s->_ctx.info);
-          
-          CFRelease(data);
-          CFRelease(addrData);
+            char buffer[512];
+            int err;
+            CFDataRef data, addrData;
+            struct sockaddr addr;
+            socklen_t len = sizeof(addr);
+            
+            if (!(s->_opts & kCFSocketAutomaticallyReenableDataCallBack))
+                CFSocketDisableCallBacks(s, kCFSocketDataCallBack);
+            
+            err = recvfrom (s->_socket, buffer, sizeof(buffer), MSG_DONTWAIT,
+                            &addr, &len);
+            
+            if (err < 0)
+                err = 0;
+            
+            data = CFDataCreate(NULL, (UInt8*) buffer, err);
+            addrData = CFDataCreate(NULL, (UInt8*) &addr, len);
+            
+            s->_callback(s, kCFSocketDataCallBack, addrData, data,
+                         s->_ctx.info);
+            
+            CFRelease(data);
+            CFRelease(addrData);
         }
-      else if (s->_cbTypes & kCFSocketReadCallBack)
+        else if (s->_cbTypes & kCFSocketReadCallBack)
         {
-          if (!(s->_opts & kCFSocketAutomaticallyReenableReadCallBack))
-            CFSocketDisableCallBacks(s, kCFSocketReadCallBack);
-          
-          s->_callback(s, kCFSocketReadCallBack, NULL, NULL, s->_ctx.info);
-        }  
-      s->_readFired = false;
+            if (!(s->_opts & kCFSocketAutomaticallyReenableReadCallBack))
+                CFSocketDisableCallBacks(s, kCFSocketReadCallBack);
+            
+            s->_callback(s, kCFSocketReadCallBack, NULL, NULL, s->_ctx.info);
+        }
+        s->_readFired = false;
     }
-  
-  if (s->_writeFired)
+    
+    if (s->_writeFired)
     {
-      if (!s->_isConnected && s->_cbTypes & kCFSocketConnectCallBack)
+        if (!s->_isConnected && s->_cbTypes & kCFSocketConnectCallBack)
         {
-          SInt32 err;
-          socklen_t len = sizeof(err);
-          int rv = getsockopt(s->_socket, SOL_SOCKET, SO_ERROR, &err, &len);
-          
-          if (rv == -1)
-            err = errno;
-
-          void* data;
-              
-          if (err != 0)
-            data = &err;
-          else
-            data = NULL;
-              
-          s->_callback(s, kCFSocketConnectCallBack, NULL, data, s->_ctx.info);
+            SInt32 err;
+            socklen_t len = sizeof(err);
+            int rv = getsockopt(s->_socket, SOL_SOCKET, SO_ERROR, &err, &len);
+            
+            if (rv == -1)
+                err = errno;
+            
+            void* data;
+            
+            if (err != 0)
+                data = &err;
+            else
+                data = NULL;
+            
+            s->_callback(s, kCFSocketConnectCallBack, NULL, data, s->_ctx.info);
         }
-      else
+        else
         {
-          s->_isConnected = true;
-          if (!(s->_opts & kCFSocketAutomaticallyReenableWriteCallBack))
-            CFSocketDisableCallBacks(s, kCFSocketWriteCallBack);
-          
-          if (!(s->_opts & kCFSocketLeaveErrors))
+            s->_isConnected = true;
+            if (!(s->_opts & kCFSocketAutomaticallyReenableWriteCallBack))
+                CFSocketDisableCallBacks(s, kCFSocketWriteCallBack);
+            
+            if (!(s->_opts & kCFSocketLeaveErrors))
             {
-              // Clear out last error
-              SInt32 err;
-              socklen_t len = sizeof(err);
-              
-              getsockopt(s->_socket, SOL_SOCKET, SO_ERROR, &err, &len);
+                // Clear out last error
+                SInt32 err;
+                socklen_t len = sizeof(err);
+                
+                getsockopt(s->_socket, SOL_SOCKET, SO_ERROR, &err, &len);
             }  
-          s->_callback(s, kCFSocketWriteCallBack, NULL, NULL, s->_ctx.info);
+            s->_callback(s, kCFSocketWriteCallBack, NULL, NULL, s->_ctx.info);
         }
-      s->_writeFired = false;
+        s->_writeFired = false;
     }
 }
 
@@ -764,28 +766,28 @@ CFSocketCreateRunLoopSource (CFAllocatorRef alloc, CFSocketRef s,
                              CFIndex order)
 {
 #if HAVE_LIBDISPATCH
-  CFRunLoopSourceRef source;
-  CFRunLoopSourceContext context;
-  
-  if (s->_source != NULL)
-    return (CFRunLoopSourceRef) CFRetain(s->_source);
-  
-  memset(&context, 0, sizeof(context));
-  context.info = s;
-  context.retain = CFRetain;
-  context.release = CFRelease;
-  context.schedule = CFSocketRLSSchedule;
-  context.cancel = CFSocketRLSCancel;
-  context.perform = CFSocketRLSPerform;
-  
-  source = CFRunLoopSourceCreate(CFGetAllocator(s), order, &context);
-  s->_source = (CFRunLoopSourceRef) CFRetain(source);
-  
-  return source;
+    CFRunLoopSourceRef source;
+    CFRunLoopSourceContext context;
+    
+    if (s->_source != NULL)
+        return (CFRunLoopSourceRef) CFRetain(s->_source);
+    
+    memset(&context, 0, sizeof(context));
+    context.info = s;
+    context.retain = CFRetain;
+    context.release = CFRelease;
+    context.schedule = CFSocketRLSSchedule;
+    context.cancel = CFSocketRLSCancel;
+    context.perform = CFSocketRLSPerform;
+    
+    source = CFRunLoopSourceCreate(CFGetAllocator(s), order, &context);
+    s->_source = (CFRunLoopSourceRef) CFRetain(source);
+    
+    return source;
 #else
-  fprintf(stderr, "CFSocketCreateRunLoopSource(): dummy implementation, "
-                  "GCD support not enabled\n");
-  return NULL;
+    fprintf(stderr, "CFSocketCreateRunLoopSource(): dummy implementation, "
+            "GCD support not enabled\n");
+    return NULL;
 #endif
 }
 

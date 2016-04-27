@@ -1711,101 +1711,101 @@ setNonBlocking(SOCKET fd)
 
 - (void) open
 {
-  // could be opened because of sibling
-  if ([self _isOpened])
-    return;
-  if (_passive || (_sibling && [_sibling _isOpened]))
-    goto open_ok;
-  // check sibling status, avoid double connect
-  if (_sibling && [_sibling streamStatus] == NSStreamStatusOpening)
+    // could be opened because of sibling
+    if ([self _isOpened])
+        return;
+    if (_passive || (_sibling && [_sibling _isOpened]))
+        goto open_ok;
+    // check sibling status, avoid double connect
+    if (_sibling && [_sibling streamStatus] == NSStreamStatusOpening)
     {
-      [self _setStatus: NSStreamStatusOpening];
-      return;
+        [self _setStatus: NSStreamStatusOpening];
+        return;
     }
-  else
+    else
     {
-      int result;
-
-      if ([self _sock] == INVALID_SOCKET)
+        int result;
+        
+        if ([self _sock] == INVALID_SOCKET)
         {
-          SOCKET        s;
-
-          if (_handler == nil)
+            SOCKET        s;
+            
+            if (_handler == nil)
             {
-              [GSSOCKS tryInput: self output: _sibling];
+                [GSSOCKS tryInput: self output: _sibling];
             }
-          s = socket(_address.s.sa_family, SOCK_STREAM, 0);
-          if (BADSOCKET(s))
+            s = socket(_address.s.sa_family, SOCK_STREAM, 0);
+            if (BADSOCKET(s))
             {
-              [self _recordError];
-              return;
+                [self _recordError];
+                return;
             }
-          else
+            else
             {
-              [self _setSock: s];
-              [_sibling _setSock: s];
+                [self _setSock: s];
+                [_sibling _setSock: s];
             }
         }
-
-      if (_handler == nil)
+        
+        if (_handler == nil)
         {
-          [GSTLSHandler tryInput: self output: _sibling];
+            [GSTLSHandler tryInput: self output: _sibling];
         }
-      result = connect([self _sock], &_address.s,
-        GSPrivateSockaddrLength(&_address.s));
-      if (socketError(result))
+        result = connect([self _sock], &_address.s,
+                         GSPrivateSockaddrLength(&_address.s));
+        if (socketError(result))
         {
-          if (!socketWouldBlock())
+            if (!socketWouldBlock())
             {
-              [self _recordError];
-              [self _setHandler: nil];
-              [_sibling _setHandler: nil];
-              return;
+                [self _recordError];
+                [self _setHandler: nil];
+                [_sibling _setHandler: nil];
+                return;
             }
-          /*
-           * Need to set the status first, so that the run loop can tell
-           * it needs to add the stream as waiting on writable, as an
-           * indication of opened
-           */
-          [self _setStatus: NSStreamStatusOpening];
+            /*
+             * Need to set the status first, so that the run loop can tell
+             * it needs to add the stream as waiting on writable, as an
+             * indication of opened
+             */
+            [self _setStatus: NSStreamStatusOpening];
 #if	defined(__MINGW__)
-          WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
+            WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
 #endif
-	  if (NSCountMapTable(_loops) > 0)
-	    {
-	      [self _schedule];
-	      return;
-	    }
-          else
+            if (NSCountMapTable(_loops) > 0)
             {
-              NSRunLoop *r;
-              NSDate    *d;
-
-              /* The stream was not scheduled in any run loop, so we
-               * implement a blocking connect by running in the default
-               * run loop mode.
-               */
-              r = [NSRunLoop currentRunLoop];
-              d = [NSDate distantFuture];
-              [r addStream: self mode: NSDefaultRunLoopMode];
-              while ([r runMode: NSDefaultRunLoopMode beforeDate: d] == YES)
+                [self _schedule];
+                return;
+            }
+            else
+            {
+                NSRunLoop *r;
+                NSDate    *d;
+                
+                /* The stream was not scheduled in any run loop, so we
+                 * implement a blocking connect by running in the default
+                 * run loop mode.
+                 */
+                r = [NSRunLoop currentRunLoop];
+                d = [NSDate distantFuture];
+                [r addStream: self mode: NSDefaultRunLoopMode];
+                while ([r runMode: NSDefaultRunLoopMode beforeDate: d] == YES)
                 {
-                  if (_currentStatus != NSStreamStatusOpening)
+                    if (_currentStatus != NSStreamStatusOpening)
                     {
-                      break;
+                        break;
                     }
                 }
-              [r removeStream: self mode: NSDefaultRunLoopMode];
-              return;
+                [r removeStream: self mode: NSDefaultRunLoopMode];
+                return;
             }
         }
     }
-
- open_ok:
+    
+open_ok:
 #if	defined(__MINGW__)
-  WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
+    WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
 #endif
-  [super open];
+    [super open];
 }
 
 - (void) close
@@ -2182,103 +2182,103 @@ setNonBlocking(SOCKET fd)
 
 - (void) open
 {
-  // could be opened because of sibling
-  if ([self _isOpened])
-    return;
-  if (_passive || (_sibling && [_sibling _isOpened]))
-    goto open_ok;
-  // check sibling status, avoid double connect
-  if (_sibling && [_sibling streamStatus] == NSStreamStatusOpening)
+    // could be opened because of sibling
+    if ([self _isOpened])
+        return;
+    if (_passive || (_sibling && [_sibling _isOpened]))
+        goto open_ok;
+    // check sibling status, avoid double connect
+    if (_sibling && [_sibling streamStatus] == NSStreamStatusOpening)
     {
-      [self _setStatus: NSStreamStatusOpening];
-      return;
+        [self _setStatus: NSStreamStatusOpening];
+        return;
     }
-  else
+    else
     {
-      int result;
-
-      if ([self _sock] == INVALID_SOCKET)
+        int result;
+        
+        if ([self _sock] == INVALID_SOCKET)
         {
-          SOCKET        s;
-
-          if (_handler == nil)
+            SOCKET        s;
+            
+            if (_handler == nil)
             {
-              [GSSOCKS tryInput: _sibling output: self];
+                [GSSOCKS tryInput: _sibling output: self];
             }
-          s = socket(_address.s.sa_family, SOCK_STREAM, 0);
-          if (BADSOCKET(s))
+            s = socket(_address.s.sa_family, SOCK_STREAM, 0);
+            if (BADSOCKET(s))
             {
-              [self _recordError];
-              return;
+                [self _recordError];
+                return;
             }
-          else
+            else
             {
-              [self _setSock: s];
-              [_sibling _setSock: s];
+                [self _setSock: s];
+                [_sibling _setSock: s];
             }
         }
-
-      if (_handler == nil)
+        
+        if (_handler == nil)
         {
-          [GSTLSHandler tryInput: _sibling output: self];
+            [GSTLSHandler tryInput: _sibling output: self];
         }
-
-      result = connect([self _sock], &_address.s,
-        GSPrivateSockaddrLength(&_address.s));
-      if (socketError(result))
+        
+        result = connect([self _sock], &_address.s,
+                         GSPrivateSockaddrLength(&_address.s));
+        if (socketError(result))
         {
-          if (!socketWouldBlock())
+            if (!socketWouldBlock())
             {
-              [self _recordError];
-              [self _setHandler: nil];
-              [_sibling _setHandler: nil];
-              return;
+                [self _recordError];
+                [self _setHandler: nil];
+                [_sibling _setHandler: nil];
+                return;
             }
-          /*
-           * Need to set the status first, so that the run loop can tell
-           * it needs to add the stream as waiting on writable, as an
-           * indication of opened
-           */
-          [self _setStatus: NSStreamStatusOpening];
+            /*
+             * Need to set the status first, so that the run loop can tell
+             * it needs to add the stream as waiting on writable, as an
+             * indication of opened
+             */
+            [self _setStatus: NSStreamStatusOpening];
 #if	defined(__MINGW__)
-          WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
+            WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
 #endif
-	  if (NSCountMapTable(_loops) > 0)
-	    {
-	      [self _schedule];
-	      return;
-	    }
-          else
+            if (NSCountMapTable(_loops) > 0)
             {
-              NSRunLoop *r;
-              NSDate    *d;
-
-              /* The stream was not scheduled in any run loop, so we
-               * implement a blocking connect by running in the default
-               * run loop mode.
-               */
-              r = [NSRunLoop currentRunLoop];
-              d = [NSDate distantFuture];
-              [r addStream: self mode: NSDefaultRunLoopMode];
-              while ([r runMode: NSDefaultRunLoopMode beforeDate: d] == YES)
+                [self _schedule];
+                return;
+            }
+            else
+            {
+                NSRunLoop *r;
+                NSDate    *d;
+                
+                /* The stream was not scheduled in any run loop, so we
+                 * implement a blocking connect by running in the default
+                 * run loop mode.
+                 */
+                r = [NSRunLoop currentRunLoop];
+                d = [NSDate distantFuture];
+                [r addStream: self mode: NSDefaultRunLoopMode];
+                while ([r runMode: NSDefaultRunLoopMode beforeDate: d] == YES)
                 {
-                  if (_currentStatus != NSStreamStatusOpening)
+                    if (_currentStatus != NSStreamStatusOpening)
                     {
-                      break;
+                        break;
                     }
                 }
-              [r removeStream: self mode: NSDefaultRunLoopMode];
-              return;
+                [r removeStream: self mode: NSDefaultRunLoopMode];
+                return;
             }
         }
     }
-
- open_ok:
+    
+open_ok:
 #if	defined(__MINGW__)
-  WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
+    WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
 #endif
-  [super open];
-
+    [super open];
+    
 }
 
 
@@ -2564,68 +2564,68 @@ setNonBlocking(SOCKET fd)
 
 - (void) open
 {
-  int bindReturn;
-  int listenReturn;
-  SOCKET s;
-
-  if (_currentStatus != NSStreamStatusNotOpen)
+    int bindReturn;
+    int listenReturn;
+    SOCKET s;
+    
+    if (_currentStatus != NSStreamStatusNotOpen)
     {
-      NSDebugMLLog(@"NSStream",
-        @"Attempt to re-open stream %@", self);
-      return;
+        NSDebugMLLog(@"NSStream",
+                     @"Attempt to re-open stream %@", self);
+        return;
     }
-
-  s = socket(_address.s.sa_family, SOCK_STREAM, 0);
-  if (BADSOCKET(s))
+    
+    s = socket(_address.s.sa_family, SOCK_STREAM, 0);
+    if (BADSOCKET(s))
     {
-      [self _recordError];
-      [self _sendEvent: NSStreamEventErrorOccurred];
-      return;
+        [self _recordError];
+        [self _sendEvent: NSStreamEventErrorOccurred];
+        return;
     }
-  else
+    else
     {
-      [(GSSocketStream*)self _setSock: s];
+        [(GSSocketStream*)self _setSock: s];
     }
-
+    
 #ifndef	BROKEN_SO_REUSEADDR
-  if (_address.s.sa_family == AF_INET
+    if (_address.s.sa_family == AF_INET
 #ifdef  AF_INET6
-    || _address.s.sa_family == AF_INET6
+        || _address.s.sa_family == AF_INET6
 #endif
-  )
+        )
     {
-      /*
-       * Under decent systems, SO_REUSEADDR means that the port can be reused
-       * immediately that this process exits.  Under some it means
-       * that multiple processes can serve the same port simultaneously.
-       * We don't want that broken behavior!
-       */
-      int	status = 1;
-
-      setsockopt([self _sock], SOL_SOCKET, SO_REUSEADDR,
-        (char *)&status, sizeof(status));
+        /*
+         * Under decent systems, SO_REUSEADDR means that the port can be reused
+         * immediately that this process exits.  Under some it means
+         * that multiple processes can serve the same port simultaneously.
+         * We don't want that broken behavior!
+         */
+        int	status = 1;
+        
+        setsockopt([self _sock], SOL_SOCKET, SO_REUSEADDR,
+                   (char *)&status, sizeof(status));
     }
 #endif
-
-  bindReturn = bind([self _sock],
-    &_address.s, GSPrivateSockaddrLength(&_address.s));
-  if (socketError(bindReturn))
+    
+    bindReturn = bind([self _sock],
+                      &_address.s, GSPrivateSockaddrLength(&_address.s));
+    if (socketError(bindReturn))
     {
-      [self _recordError];
-      [self _sendEvent: NSStreamEventErrorOccurred];
-      return;
+        [self _recordError];
+        [self _sendEvent: NSStreamEventErrorOccurred];
+        return;
     }
-  listenReturn = listen([self _sock], GSBACKLOG);
-  if (socketError(listenReturn))
+    listenReturn = listen([self _sock], GSBACKLOG);
+    if (socketError(listenReturn))
     {
-      [self _recordError];
-      [self _sendEvent: NSStreamEventErrorOccurred];
-      return;
+        [self _recordError];
+        [self _sendEvent: NSStreamEventErrorOccurred];
+        return;
     }
 #if	defined(__MINGW__)
-  WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
+    WSAEventSelect(_sock, _loopID, FD_ALL_EVENTS);
 #endif
-  [super open];
+    [super open];
 }
 
 - (void) close
@@ -2655,85 +2655,85 @@ setNonBlocking(SOCKET fd)
 - (void) acceptWithInputStream: (NSInputStream **)inputStream
                   outputStream: (NSOutputStream **)outputStream
 {
-  NSArray *keys;
-  NSUInteger count;
-  NSMutableDictionary *opts;
-  NSString *str;
-
-  GSSocketStream *ins = AUTORELEASE([[self _inputStreamClass] new]);
-  GSSocketStream *outs = AUTORELEASE([[self _outputStreamClass] new]);
-  /* Align on a 2 byte boundary for a 16bit port number in the sockaddr
-   */
-  struct {
-    uint8_t bytes[BUFSIZ];
-  } __attribute__((aligned(2)))buf;
-  struct sockaddr       *addr = (struct sockaddr*)&buf;
-  socklen_t		len = sizeof(buf);
-  int			acceptReturn;
-
-  acceptReturn = accept([self _sock], addr, &len);
-  _events &= ~NSStreamEventHasBytesAvailable;
-  if (socketError(acceptReturn))
+    NSArray *keys;
+    NSUInteger count;
+    NSMutableDictionary *opts;
+    NSString *str;
+    
+    GSSocketStream *ins = AUTORELEASE([[self _inputStreamClass] new]);
+    GSSocketStream *outs = AUTORELEASE([[self _outputStreamClass] new]);
+    /* Align on a 2 byte boundary for a 16bit port number in the sockaddr
+     */
+    struct {
+        uint8_t bytes[BUFSIZ];
+    } __attribute__((aligned(2)))buf;
+    struct sockaddr       *addr = (struct sockaddr*)&buf;
+    socklen_t		len = sizeof(buf);
+    int			acceptReturn;
+    
+    acceptReturn = accept([self _sock], addr, &len);
+    _events &= ~NSStreamEventHasBytesAvailable;
+    if (socketError(acceptReturn))
     { // test for real error
-      if (!socketWouldBlock())
-	{
-          [self _recordError];
-	}
-      ins = nil;
-      outs = nil;
+        if (!socketWouldBlock())
+        {
+            [self _recordError];
+        }
+        ins = nil;
+        outs = nil;
     }
-  else
+    else
     {
-      // no need to connect again
-      [ins _setPassive: YES];
-      [outs _setPassive: YES];
-      // copy the addr to outs
-      [ins _setAddress: addr];
-      [outs _setAddress: addr];
-      [ins _setSock: acceptReturn];
-      [outs _setSock: acceptReturn];
-      [ins _setStatus: NSStreamStatusOpen];
-      [outs _setStatus: NSStreamStatusOpen];
-      /* Set property to indicate that the input stream was accepted by
-       * a listening socket (server) rather than produced by an outgoing
-       * connection (client).
-       */
-      [ins setProperty: @"YES" forKey: @"IsServer"];
-
-      str = [self propertyForKey: NSStreamSocketSecurityLevelKey];
-      if(nil != str)
-	{
-	  opts = [NSMutableDictionary new];
-	  [opts setObject: str forKey: NSStreamSocketSecurityLevelKey];
-	  // copy the properties in the 'opts'
-	  [GSTLSHandler populateProperties: &opts
-			   withTLSPriority: str
-			   fromInputStream: self
-			    orOutputStream: nil];
-	  // and set the input/output streams's properties from the 'opts'
-	  keys = [opts allKeys];
-	  count = [keys count];
-	  while(count-- > 0)
-	    {
-	      NSString *key = [keys objectAtIndex: count];
-	      str = [opts objectForKey: key];
-	      [ins setProperty: str forKey: key];
-	      [outs setProperty: str forKey: key];
-	    }
-
-	  [GSTLSHandler tryInput: (GSSocketInputStream *)ins output: (GSSocketOutputStream *)outs];
-	  DESTROY(opts);
-	}
+        // no need to connect again
+        [ins _setPassive: YES];
+        [outs _setPassive: YES];
+        // copy the addr to outs
+        [ins _setAddress: addr];
+        [outs _setAddress: addr];
+        [ins _setSock: acceptReturn];
+        [outs _setSock: acceptReturn];
+        [ins _setStatus: NSStreamStatusOpen];
+        [outs _setStatus: NSStreamStatusOpen];
+        /* Set property to indicate that the input stream was accepted by
+         * a listening socket (server) rather than produced by an outgoing
+         * connection (client).
+         */
+        [ins setProperty: @"YES" forKey: @"IsServer"];
+        
+        str = [self propertyForKey: NSStreamSocketSecurityLevelKey];
+        if(nil != str)
+        {
+            opts = [NSMutableDictionary new];
+            [opts setObject: str forKey: NSStreamSocketSecurityLevelKey];
+            // copy the properties in the 'opts'
+            [GSTLSHandler populateProperties: &opts
+                             withTLSPriority: str
+                             fromInputStream: self
+                              orOutputStream: nil];
+            // and set the input/output streams's properties from the 'opts'
+            keys = [opts allKeys];
+            count = [keys count];
+            while(count-- > 0)
+            {
+                NSString *key = [keys objectAtIndex: count];
+                str = [opts objectForKey: key];
+                [ins setProperty: str forKey: key];
+                [outs setProperty: str forKey: key];
+            }
+            
+            [GSTLSHandler tryInput: (GSSocketInputStream *)ins output: (GSSocketOutputStream *)outs];
+            DESTROY(opts);
+        }
     }
-  if (inputStream)
+    if (inputStream)
     {
-      [ins _setSibling: outs];
-      *inputStream = (NSInputStream*)ins;
+        [ins _setSibling: outs];
+        *inputStream = (NSInputStream*)ins;
     }
-  if (outputStream)
+    if (outputStream)
     {
-      [outs _setSibling: ins];
-      *outputStream = (NSOutputStream*)outs;
+        [outs _setSibling: ins];
+        *outputStream = (NSOutputStream*)outs;
     }
 }
 
@@ -2771,14 +2771,14 @@ setNonBlocking(SOCKET fd)
 
 - (id) initToAddr: (NSString*)addr port: (NSInteger)port
 {
-  if ((self = [super init]) != nil)
+    if ((self = [super init]) != nil)
     {
-      if ([self _setSocketAddress: addr port: port family: AF_INET] == NO)
+        if ([self _setSocketAddress: addr port: port family: AF_INET] == NO)
         {
-          DESTROY(self);
+            DESTROY(self);
         }
     }
-  return self;
+    return self;
 }
 
 @end

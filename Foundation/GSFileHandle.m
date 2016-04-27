@@ -1984,34 +1984,34 @@ NSString * const GSSOCKSRecvAddr = @"GSSOCKSRecvAddr";
 
 - (void) watchReadDescriptorForModes: (NSArray*)modes;
 {
-  NSRunLoop	*l;
-
-  if (descriptor < 0)
+    NSRunLoop	*l;
+    
+    if (descriptor < 0)
     {
-      return;
+        return;
     }
-
-  l = [NSRunLoop currentRunLoop];
-  [self setNonBlocking: YES];
-  if (modes && [modes count])
+    
+    l = [NSRunLoop currentRunLoop];
+    [self setNonBlocking: YES];
+    if (modes && [modes count])
     {
-      unsigned int	i;
-
-      for (i = 0; i < [modes count]; i++)
-	{
-	  [l addEvent: (void*)(uintptr_t)descriptor
-		 type: ET_RDESC
-	      watcher: self
-	      forMode: [modes objectAtIndex: i]];
+        unsigned int	i;
+        
+        for (i = 0; i < [modes count]; i++)
+        {
+            [l addEvent: (void*)(uintptr_t)descriptor
+                   type: ET_RDESC
+                watcher: self
+                forMode: [modes objectAtIndex: i]];
         }
-      [readInfo setObject: modes forKey: NSFileHandleNotificationMonitorModes];
+        [readInfo setObject: modes forKey: NSFileHandleNotificationMonitorModes];
     }
-  else
+    else
     {
-      [l addEvent: (void*)(uintptr_t)descriptor
-	     type: ET_RDESC
-	  watcher: self
-	  forMode: NSDefaultRunLoopMode];
+        [l addEvent: (void*)(uintptr_t)descriptor
+               type: ET_RDESC
+            watcher: self
+            forMode: NSDefaultRunLoopMode];
     }
 }
 
@@ -2054,98 +2054,98 @@ NSString * const GSSOCKSRecvAddr = @"GSSOCKSRecvAddr";
 
 - (void) receivedEventRead
 {
-  NSString	*operation;
-
-  operation = [readInfo objectForKey: NotificationKey];
-  if (operation == NSFileHandleConnectionAcceptedNotification)
+    NSString	*operation;
+    
+    operation = [readInfo objectForKey: NotificationKey];
+    if (operation == NSFileHandleConnectionAcceptedNotification)
     {
-      struct sockaddr	buf;
-      int			desc;
-      unsigned int		blen = sizeof(buf);
-
-      desc = accept(descriptor, &buf, &blen);
-      if (desc == -1)
-	{
-	  NSString	*s;
-
-	  s = [NSString stringWithFormat: @"Accept attempt failed - %@",
-	    [NSError _last]];
-	  [readInfo setObject: s forKey: GSFileHandleNotificationError];
-	}
-      else
-	{ // Accept attempt completed.
-	  GSFileHandle		*h;
-	  struct sockaddr	sin;
-	  unsigned int		size = sizeof(sin);
-
-          [tune tune: (void*)(intptr_t)desc];
+        struct sockaddr	buf;
+        int			desc;
+        unsigned int		blen = sizeof(buf);
         
-	  h = [[[self class] alloc] initWithFileDescriptor: desc
-					    closeOnDealloc: YES];
-	  h->isSocket = YES;
-	  getpeername(desc, &sin, &size);
-	  [h setAddr: &sin];
-	  [readInfo setObject: h
-		   forKey: NSFileHandleNotificationFileHandleItem];
-	  RELEASE(h);
-	}
-      [self postReadNotification];
-    }
-  else if (operation == NSFileHandleDataAvailableNotification)
-    {
-      [self postReadNotification];
-    }
-  else
-    {
-      NSMutableData	*item;
-      int		length;
-      int		received = 0;
-      int		rmax = [tune recvSize];
-      char		buf[rmax];
-
-      item = [readInfo objectForKey: NSFileHandleNotificationDataItem];
-      /*
-       * We may have a maximum data size set...
-       */
-      if (readMax > 0)
+        desc = accept(descriptor, &buf, &blen);
+        if (desc == -1)
         {
-          length = (unsigned int)readMax - [item length];
-          if (length > (int)sizeof(buf))
-            {
-	      length = sizeof(buf);
-	    }
-	}
-      else
-	{
-	  length = sizeof(buf);
-	}
-
-      received = [self read: buf length: length];
-      if (received == 0)
-        { // Read up to end of file.
-          [self postReadNotification];
+            NSString	*s;
+            
+            s = [NSString stringWithFormat: @"Accept attempt failed - %@",
+                 [NSError _last]];
+            [readInfo setObject: s forKey: GSFileHandleNotificationError];
         }
-      else if (received < 0)
+        else
+        { // Accept attempt completed.
+            GSFileHandle		*h;
+            struct sockaddr	sin;
+            unsigned int		size = sizeof(sin);
+            
+            [tune tune: (void*)(intptr_t)desc];
+            
+            h = [[[self class] alloc] initWithFileDescriptor: desc
+                                              closeOnDealloc: YES];
+            h->isSocket = YES;
+            getpeername(desc, &sin, &size);
+            [h setAddr: &sin];
+            [readInfo setObject: h
+                         forKey: NSFileHandleNotificationFileHandleItem];
+            RELEASE(h);
+        }
+        [self postReadNotification];
+    }
+    else if (operation == NSFileHandleDataAvailableNotification)
+    {
+        [self postReadNotification];
+    }
+    else
+    {
+        NSMutableData	*item;
+        int		length;
+        int		received = 0;
+        int		rmax = [tune recvSize];
+        char		buf[rmax];
+        
+        item = [readInfo objectForKey: NSFileHandleNotificationDataItem];
+        /*
+         * We may have a maximum data size set...
+         */
+        if (readMax > 0)
         {
-          if (errno != EAGAIN && errno != EINTR)
+            length = (unsigned int)readMax - [item length];
+            if (length > (int)sizeof(buf))
             {
-	      NSString	*s;
-
-	      s = [NSString stringWithFormat: @"Read attempt failed - %@",
-		[NSError _last]];
-	      [readInfo setObject: s forKey: GSFileHandleNotificationError];
-	      [self postReadNotification];
-	    }
-	}
-      else
-	{
-	  [item appendBytes: buf length: received];
-	  if (readMax < 0 || (readMax > 0 && (int)[item length] == readMax))
-	    {
-	      // Read a single chunk of data
-	      [self postReadNotification];
-	    }
-	}
+                length = sizeof(buf);
+            }
+        }
+        else
+        {
+            length = sizeof(buf);
+        }
+        
+        received = [self read: buf length: length];
+        if (received == 0)
+        { // Read up to end of file.
+            [self postReadNotification];
+        }
+        else if (received < 0)
+        {
+            if (errno != EAGAIN && errno != EINTR)
+            {
+                NSString	*s;
+                
+                s = [NSString stringWithFormat: @"Read attempt failed - %@",
+                     [NSError _last]];
+                [readInfo setObject: s forKey: GSFileHandleNotificationError];
+                [self postReadNotification];
+            }
+        }
+        else
+        {
+            [item appendBytes: buf length: received];
+            if (readMax < 0 || (readMax > 0 && (int)[item length] == readMax))
+            {
+                // Read a single chunk of data
+                [self postReadNotification];
+            }
+        }
     }
 }
 
