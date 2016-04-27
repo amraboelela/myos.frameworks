@@ -617,13 +617,14 @@ CFWriteStreamOpen (CFWriteStreamRef stream)
   return true;
 }
 
+/*
 void
 CFWriteStreamScheduleWithRunLoop (CFWriteStreamRef stream,
                                   CFRunLoopRef runLoop,
                                   CFStringRef runLoopMode)
 {
   ;
-}
+}*/
 
 Boolean
 CFWriteStreamSetClient (CFWriteStreamRef stream, CFOptionFlags streamEvents,

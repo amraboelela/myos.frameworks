@@ -107,6 +107,10 @@ typedef void (*CFReadStreamClientCallBack) (CFReadStreamRef stream,
   CFStreamEventType eventType, void *clientCallBackInfo);
 
 
+void
+CFStreamCreatePairWithSocket (CFAllocatorRef alloc, CFSocketNativeHandle sock,
+                              CFReadStreamRef *readStream,
+                              CFWriteStreamRef *writeStream);
 
 /*
  * NSStream functions

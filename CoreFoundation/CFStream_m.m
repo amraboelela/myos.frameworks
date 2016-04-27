@@ -97,7 +97,7 @@ _CFStreamUnscheduleFromRunLoop (CFTypeRef stream, CFRunLoopRef runLoop,
 
 
 void
-CFStreamCreateBoundPair (CFAllocatorRef alloc, CFReadStreamRef *readStream,
+NSCFStreamCreateBoundPair (CFAllocatorRef alloc, CFReadStreamRef *readStream,
                          CFWriteStreamRef *writeStream, CFIndex transferBufferSize)
 {
   // FIXME
@@ -111,6 +111,7 @@ CFStreamCreatePairWithPeerSocketSignature (CFAllocatorRef alloc,
 {
   // FIXME
 }
+*/
 
 void
 CFStreamCreatePairWithSocket (CFAllocatorRef alloc, CFSocketNativeHandle sock,
@@ -119,9 +120,9 @@ CFStreamCreatePairWithSocket (CFAllocatorRef alloc, CFSocketNativeHandle sock,
 {
   // FIXME
 }
-*/
+
 void
-CFStreamCreatePairWithSocketToHost (CFAllocatorRef alloc, CFStringRef host,
+NSCFStreamCreatePairWithSocketToHost (CFAllocatorRef alloc, CFStringRef host,
                                     UInt32 port, CFReadStreamRef *readStream,
                                     CFWriteStreamRef *writeStream)
 {
@@ -134,31 +135,31 @@ CFStreamCreatePairWithSocketToHost (CFAllocatorRef alloc, CFStringRef host,
 
 
 Boolean
-CFWriteStreamCanAcceptBytes (CFWriteStreamRef stream)
+NSCFWriteStreamCanAcceptBytes (CFWriteStreamRef stream)
 {
   return (Boolean)[(NSOutputStream *)stream hasSpaceAvailable];
 }
 
 void
-CFWriteStreamClose (CFWriteStreamRef stream)
+NSCFWriteStreamClose (CFWriteStreamRef stream)
 {
   _CFStreamClose (stream);
 }
 
 CFErrorRef
-CFWriteStreamCopyError (CFWriteStreamRef stream)
+NSCFWriteStreamCopyError (CFWriteStreamRef stream)
 {
   return _CFStreamCopyError (stream);
 }
 
 CFTypeRef
-CFWriteStreamCopyProperty (CFWriteStreamRef stream, CFStringRef propertyName)
+NSCFWriteStreamCopyProperty (CFWriteStreamRef stream, CFStringRef propertyName)
 {
   return _CFStreamCopyProperty (stream, propertyName);
 }
 
 CFWriteStreamRef
-CFWriteStreamCreateWithAllocatedBuffers (CFAllocatorRef alloc,
+NSCFWriteStreamCreateWithAllocatedBuffers (CFAllocatorRef alloc,
                                          CFAllocatorRef bufferAllocator)
 {
   // FIXME: ???
@@ -166,7 +167,7 @@ CFWriteStreamCreateWithAllocatedBuffers (CFAllocatorRef alloc,
 }
 
 CFWriteStreamRef
-CFWriteStreamCreateWithBuffer (CFAllocatorRef alloc, UInt8 *buffer,
+NSCFWriteStreamCreateWithBuffer (CFAllocatorRef alloc, UInt8 *buffer,
                                CFIndex bufferCapacity)
 {
   return (CFWriteStreamRef)[[NSOutputStream alloc]
@@ -175,7 +176,7 @@ CFWriteStreamCreateWithBuffer (CFAllocatorRef alloc, UInt8 *buffer,
 }
 
 CFWriteStreamRef
-CFWriteStreamCreateWithFile (CFAllocatorRef alloc, CFURLRef fileURL)
+NSCFWriteStreamCreateWithFile (CFAllocatorRef alloc, CFURLRef fileURL)
 {
   // FIXME: there's nothing in -base to set the append option at a later time.
   return (CFWriteStreamRef)[[NSOutputStream alloc]
@@ -184,31 +185,31 @@ CFWriteStreamCreateWithFile (CFAllocatorRef alloc, CFURLRef fileURL)
 }
 
 CFStreamError
-CFWriteStreamGetError (CFWriteStreamRef stream)
+NSCFWriteStreamGetError (CFWriteStreamRef stream)
 {
   return _CFStreamGetError (stream);
 }
 
 CFStreamStatus
-CFWriteStreamGetStatus (CFWriteStreamRef stream)
+NSCFWriteStreamGetStatus (CFWriteStreamRef stream)
 {
   return _CFStreamGetStatus (stream);
 }
 
 CFTypeID
-CFWriteStreamGetTypeID (void)
+NSCFWriteStreamGetTypeID (void)
 {
   return (CFTypeID)[NSOutputStream class];
 }
 
 Boolean
-CFWriteStreamOpen (CFWriteStreamRef stream)
+NSCFWriteStreamOpen (CFWriteStreamRef stream)
 {
   return _CFStreamOpen (stream);
 }
 
 void
-CFWriteStreamScheduleWithRunLoop (CFWriteStreamRef stream,
+NSCFWriteStreamScheduleWithRunLoop (CFWriteStreamRef stream,
                                   CFRunLoopRef runLoop,
                                   CFStringRef runLoopMode)
 {
@@ -216,7 +217,7 @@ CFWriteStreamScheduleWithRunLoop (CFWriteStreamRef stream,
 }
 
 Boolean
-CFWriteStreamSetClient (CFWriteStreamRef stream, CFOptionFlags streamEvents,
+NSCFWriteStreamSetClient (CFWriteStreamRef stream, CFOptionFlags streamEvents,
                         CFWriteStreamClientCallBack clientCB,
                         CFStreamClientContext *clientContext)
 {
@@ -225,14 +226,14 @@ CFWriteStreamSetClient (CFWriteStreamRef stream, CFOptionFlags streamEvents,
 }
 
 Boolean
-CFWriteStreamSetProperty (CFWriteStreamRef stream, CFStringRef propertyName,
+NSCFWriteStreamSetProperty (CFWriteStreamRef stream, CFStringRef propertyName,
                           CFTypeRef propertyValue)
 {
   return _CFStreamSetProperty (stream, propertyName, propertyValue);
 }
 
 void
-CFWriteStreamUnscheduleFromRunLoop (CFWriteStreamRef stream,
+NSCFWriteStreamUnscheduleFromRunLoop (CFWriteStreamRef stream,
                                     CFRunLoopRef runLoop,
                                     CFStringRef runLoopMode)
 {
@@ -240,7 +241,7 @@ CFWriteStreamUnscheduleFromRunLoop (CFWriteStreamRef stream,
 }
 
 CFIndex
-CFWriteStreamWrite (CFWriteStreamRef stream, const UInt8 *buffer,
+NSCFWriteStreamWrite (CFWriteStreamRef stream, const UInt8 *buffer,
                     CFIndex bufferLength)
 {
   return (CFIndex)[(NSOutputStream *)stream write: buffer
@@ -250,25 +251,25 @@ CFWriteStreamWrite (CFWriteStreamRef stream, const UInt8 *buffer,
 
 
 void
-CFReadStreamClose (CFReadStreamRef stream)
+NSCFReadStreamClose (CFReadStreamRef stream)
 {
   [(NSInputStream *)stream close];
 }
 
 CFErrorRef
-CFReadStreamCopyError (CFReadStreamRef stream)
+NSCFReadStreamCopyError (CFReadStreamRef stream)
 {
   return (CFErrorRef)[(NSInputStream *)stream streamError];
 }
 
 CFTypeRef
-CFReadStreamCopyProperty (CFReadStreamRef stream, CFStringRef propertyName)
+NSCFReadStreamCopyProperty (CFReadStreamRef stream, CFStringRef propertyName)
 {
   return _CFStreamCopyProperty (stream, propertyName);
 }
 
 CFReadStreamRef
-CFReadStreamCreateWithBytesNoCopy (CFAllocatorRef alloc, const UInt8 *bytes,
+NSCFReadStreamCreateWithBytesNoCopy (CFAllocatorRef alloc, const UInt8 *bytes,
                                    CFIndex length, CFAllocatorRef bytesDeallocator)
 {
   // FIXME
@@ -276,14 +277,14 @@ CFReadStreamCreateWithBytesNoCopy (CFAllocatorRef alloc, const UInt8 *bytes,
 }
 
 CFReadStreamRef
-CFReadStreamCreateWithFile (CFAllocatorRef alloc, CFURLRef fileURL)
+NSCFReadStreamCreateWithFile (CFAllocatorRef alloc, CFURLRef fileURL)
 {
   return (CFReadStreamRef)[[NSInputStream alloc]
                            initWithFileAtPath: [(NSURL *)fileURL absoluteString]];
 }
 
 const UInt8 *
-CFReadStreamGetBuffer (CFReadStreamRef stream, CFIndex maxBytesToRead,
+NSCFReadStreamGetBuffer (CFReadStreamRef stream, CFIndex maxBytesToRead,
                        CFIndex *numBytesRead)
 {
   // FIXME: docs are  bit confusing
@@ -291,51 +292,51 @@ CFReadStreamGetBuffer (CFReadStreamRef stream, CFIndex maxBytesToRead,
 }
 
 CFStreamError
-CFReadStreamGetError (CFReadStreamRef stream)
+NSCFReadStreamGetError (CFReadStreamRef stream)
 {
   return _CFStreamGetError (stream);
 }
 
 CFStreamStatus
-CFReadStreamGetStatus (CFReadStreamRef stream)
+NSCFReadStreamGetStatus (CFReadStreamRef stream)
 {
   return (CFStreamStatus)[(NSInputStream *)stream streamStatus];
 }
 
 CFTypeID
-CFReadStreamGetTypeID (void)
+NSCFReadStreamGetTypeID (void)
 {
   return (CFTypeID)[NSInputStream class];
 }
 
 Boolean
-CFReadStreamHasBytesAvailable (CFReadStreamRef stream)
+NSCFReadStreamHasBytesAvailable (CFReadStreamRef stream)
 {
   return [(NSInputStream *)stream hasBytesAvailable];
 }
 
 Boolean
-CFReadStreamOpen (CFReadStreamRef stream)
+NSCFReadStreamOpen (CFReadStreamRef stream)
 {
   return _CFStreamOpen (stream);
 }
 
 CFIndex
-CFReadStreamRead (CFReadStreamRef stream, UInt8 *buffer, CFIndex bufferLength)
+NSCFReadStreamRead (CFReadStreamRef stream, UInt8 *buffer, CFIndex bufferLength)
 {
   return (CFIndex)[(NSInputStream *)stream read: buffer
                                       maxLength: (NSUInteger)bufferLength];
 }
 
 void
-CFReadStreamScheduleWithRunLoop (CFReadStreamRef stream, CFRunLoopRef runLoop,
+NSCFReadStreamScheduleWithRunLoop (CFReadStreamRef stream, CFRunLoopRef runLoop,
                                  CFStringRef runLoopMode)
 {
   _CFStreamScheduleInRunLoop (stream, runLoop, runLoopMode);
 }
 
 Boolean
-CFReadStreamSetClient (CFReadStreamRef stream, CFOptionFlags streamEvents,
+NSCFReadStreamSetClient (CFReadStreamRef stream, CFOptionFlags streamEvents,
                        CFReadStreamClientCallBack clientCB,
                        CFStreamClientContext *clientContext)
 {
@@ -344,14 +345,14 @@ CFReadStreamSetClient (CFReadStreamRef stream, CFOptionFlags streamEvents,
 }
 
 Boolean
-CFReadStreamSetProperty (CFReadStreamRef stream, CFStringRef propertyName,
+NSCFReadStreamSetProperty (CFReadStreamRef stream, CFStringRef propertyName,
                          CFTypeRef propertyValue)
 {
   return _CFStreamSetProperty (stream, propertyName, propertyValue);
 }
 
 void
-CFReadStreamUnscheduleFromRunLoop (CFReadStreamRef stream, CFRunLoopRef runLoop,
+NSCFReadStreamUnscheduleFromRunLoop (CFReadStreamRef stream, CFRunLoopRef runLoop,
                                    CFStringRef runLoopMode)
 {
   _CFStreamUnscheduleFromRunLoop (stream, runLoop, runLoopMode);
