@@ -716,7 +716,7 @@ CFRunLoopPrepareForPoll(struct pollfd* pfd, int* numSources,
         if (CFRunLoopGetCurrent() == CFRunLoopGetMain())
         {
             // integrate libdispatch
-            pfd[1].fd = dispatch_get_main_queue_eventfd_np();
+            pfd[1].fd = dispatch_get_main_queue_handle_np();
             pfd[1].events = POLLIN;
         }
         else
