@@ -1058,29 +1058,29 @@ static void
 CFRunLoopAddSource_nolock (CFRunLoopRef rl, CFRunLoopSourceRef source,
                            CFStringRef mode)
 {
-  GSRunLoopContextRef ctxt;
-
-  if (source->_runloop != NULL && source->_runloop != rl)
-    return; // This source is already added elsewhere
-
-  source->_runloop = rl;
-  
-  ctxt = GSRunLoopContextGet (rl, mode);
-  if (source->_context.version == 0)
+    GSRunLoopContextRef ctxt;
+    
+    if (source->_runloop != NULL && source->_runloop != rl)
+        return; // This source is already added elsewhere
+    
+    source->_runloop = rl;
+    
+    ctxt = GSRunLoopContextGet (rl, mode);
+    if (source->_context.version == 0)
     {
-      if (!CFSetContainsValue(ctxt->sources0set, source))
+        if (!CFSetContainsValue(ctxt->sources0set, source))
         {
-          CFSetAddValue (ctxt->sources0set, source);
-          CFArrayAppendValue (ctxt->sources0, source);
-          CFArraySortValues (ctxt->sources0,
-                             CFRangeMake(0, CFArrayGetCount (ctxt->sources0)),
-                             Context0Comparator, NULL);
+            CFSetAddValue (ctxt->sources0set, source);
+            CFArrayAppendValue (ctxt->sources0, source);
+            CFArraySortValues (ctxt->sources0,
+                               CFRangeMake(0, CFArrayGetCount (ctxt->sources0)),
+                               Context0Comparator, NULL);
         }
     }
-  else if (source->_context.version == 1)
-    CFSetAddValue (ctxt->sources1, source);
-
-  CFRunLoopWakeUp(rl);
+    else if (source->_context.version == 1)
+        CFSetAddValue (ctxt->sources1, source);
+    
+    CFRunLoopWakeUp(rl);
 }
 
 static void
@@ -1315,16 +1315,16 @@ void
 CFRunLoopAddSource (CFRunLoopRef rl, CFRunLoopSourceRef source,
                     CFStringRef mode)
 {
-  GSMutexLock (&rl->_lock);
-  if (mode == kCFRunLoopCommonModes)
-    CFRunLoopCommonModesAdd (rl, source);
-  else
-    CFRunLoopAddSource_nolock (rl, source, mode);
-  GSMutexUnlock (&rl->_lock);
-  
-  /* Call the schedule callback if it exists, but do it only once */
-  if (source->_context.version == 0 && source->_context.schedule != NULL)
-    source->_context.schedule (source->_context.info, rl, mode);
+    GSMutexLock (&rl->_lock);
+    if (mode == kCFRunLoopCommonModes)
+        CFRunLoopCommonModesAdd (rl, source);
+    else
+        CFRunLoopAddSource_nolock (rl, source, mode);
+    GSMutexUnlock (&rl->_lock);
+    
+    /* Call the schedule callback if it exists, but do it only once */
+    if (source->_context.version == 0 && source->_context.schedule != NULL)
+        source->_context.schedule (source->_context.info, rl, mode);
 }
 
 void
@@ -1445,36 +1445,36 @@ CFRunLoopSourceRef
 CFRunLoopSourceCreate (CFAllocatorRef  alloc, CFIndex order,
                        CFRunLoopSourceContext *context)
 {
-  CFRunLoopSourceRef new;
-  
-  new = (CFRunLoopSourceRef)_CFRuntimeCreateInstance (alloc,
-                                                      _kCFRunLoopSourceTypeID,
-                                                      CFRUNLOOPSOURCE_SIZE,
-                                                      0);
-  if (new)
+    CFRunLoopSourceRef new;
+    
+    new = (CFRunLoopSourceRef)_CFRuntimeCreateInstance (alloc,
+                                                        _kCFRunLoopSourceTypeID,
+                                                        CFRUNLOOPSOURCE_SIZE,
+                                                        0);
+    if (new)
     {
-      GSMutexInitialize (&(new->_lock));
-      new->_isValid = true;
-      new->_order = order;
-      if (context)
+        GSMutexInitialize (&(new->_lock));
+        new->_isValid = true;
+        new->_order = order;
+        if (context)
         {
-          switch (context->version)
+            switch (context->version)
             {
-              case 0:
-                new->_context = *context;
-                if (context->retain)
-                  new->_context.info = (void*)context->retain (context->info);
-                break;
-              case 1:
-                new->_context1 = *((CFRunLoopSourceContext1*)context);
-                if (new->_context1.retain)
-                  new->_context1.info = (void*)new->_context1.retain (((CFRunLoopSourceContext1*)context)->info);
-                break;
+                case 0:
+                    new->_context = *context;
+                    if (context->retain)
+                        new->_context.info = (void*)context->retain (context->info);
+                    break;
+                case 1:
+                    new->_context1 = *((CFRunLoopSourceContext1*)context);
+                    if (new->_context1.retain)
+                        new->_context1.info = (void*)new->_context1.retain (((CFRunLoopSourceContext1*)context)->info);
+                    break;
             }
         }
     }
-  
-  return new;
+    
+    return new;
 }
 
 void

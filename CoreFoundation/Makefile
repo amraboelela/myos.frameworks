@@ -53,7 +53,7 @@ OBJECTS = \
     GSCArray.o \
     CFBundle.o \
     CFStream.o \
-    CFStream_m.o \
+    NSCFStream.o \
     GSUnicode.o \
     GSFunctions.o \
     CFPropertyList.o \
