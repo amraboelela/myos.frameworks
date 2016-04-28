@@ -202,7 +202,6 @@ CFSocketCreateWithNative (CFAllocatorRef alloc, CFSocketNativeHandle sock,
                           const CFSocketContext *ctx)
 {
     CFSocketRef new = NULL;
-    
     GSMutexLock (&_kCFSocketObjectsLock);
     
     if (_kCFSocketObjects == NULL)
@@ -219,12 +218,14 @@ CFSocketCreateWithNative (CFAllocatorRef alloc, CFSocketNativeHandle sock,
         return new;
     }
     
-    if (new == NULL)
-    {
+    //if (new == NULL)
+    //{
         new = (CFSocketRef)_CFRuntimeCreateInstance (alloc, _kCFSocketTypeID,
                                                      CFSOCKET_SIZE, 0);
+        //printf("CFSocketCreateWithNative 1 new: %@\n", new);    
         if (new != NULL)
         {
+            //printf("CFSocketCreateWithNative 2 new: %@\n", new);    
             new->_socket = sock;
             new->_cbTypes = cbTypes;
             new->_callback = callback;
@@ -255,6 +256,7 @@ CFSocketCreateWithNative (CFAllocatorRef alloc, CFSocketNativeHandle sock,
             dispatch_source_set_event_handler_f(new->_readSource,
                                                 CFSocketDispatchReadEvent);
             
+            //printf("CFSocketCreateWithNative 4 new: %@\n", new);    
             new->_writeSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_WRITE,
                                                        new->_socket, 0, q);
             dispatch_set_context(new->_writeSource, new);
@@ -262,9 +264,10 @@ CFSocketCreateWithNative (CFAllocatorRef alloc, CFSocketNativeHandle sock,
                                                 CFSocketDispatchWriteEvent);
 #endif
         }
-    }
+    //}
     
     GSMutexUnlock (&_kCFSocketObjectsLock);
+    //printf("CFSocketCreateWithNative 5 new: %@\n", new);    
     
     return new;
 }
@@ -308,6 +311,7 @@ CFSocketCreate (CFAllocatorRef alloc, SInt32 protocolFamily,
 #endif
     
     s = socket (protocolFamily, socketType, protocol);
+    //printf("s: %p \n", s);
     if (s != INVALID_SOCKET)
         new = CFSocketCreateWithNative (alloc, s, cbTypes, callback, ctx);
     
@@ -412,22 +416,33 @@ CFSocketSetAddress (CFSocketRef s, CFDataRef address)
     struct sockaddr *addr;
     socklen_t addrlen;
     int err;
-    
-    if (CFSocketIsValid (s) == false || address == NULL)
+    //printf("CFSocketSetAddress 1\n");
+
+    if (CFSocketIsValid(s) == false || address == NULL) {
+        //printf("CFSocketSetAddress 1.1\n");
         return kCFSocketError;
+    }
     
+    //printf("CFSocketSetAddress 2\n");
     addr = (struct sockaddr*)CFDataGetBytePtr (address);
     addrlen = CFDataGetLength (address);
+    //printf("CFSocketSetAddress 3\n");
     if (addr == NULL || addrlen == 0)
         return kCFSocketError;
+    //printf("CFSocketSetAddress 4\n");
     sock = CFSocketGetNative (s);
     
+    printf("CFSocketSetAddress sock: %d\n", sock);
+    //printf("CFSocketSetAddress addrlen: %d\n", addrlen);
     err = bind (sock, addr, addrlen);
     if (err == 0)
     {
         listen (sock, 1024);
+        //printf("CFSocketSetAddress 6\n");
         s->_isListening = true;
         return kCFSocketSuccess;
+    } else {
+       printf("Socket bind error: %d\n", err);
     }
     return kCFSocketError;
 }
@@ -628,9 +643,14 @@ CFSocketInvalidate (CFSocketRef s)
 Boolean
 CFSocketIsValid (CFSocketRef s)
 {
-  if (s->_source != NULL)
-    return CFRunLoopSourceIsValid(s->_source); // !kCFSocketCloseOnInvalidate case
-  return s->_socket != -1;
+    //printf("CFSocketIsValid 0\n");
+    //printf("CFSocketIsValid s: %p\n", s);
+    if (s->_source != NULL) {
+        //printf("CFSocketIsValid 1\n");
+        return CFRunLoopSourceIsValid(s->_source); // !kCFSocketCloseOnInvalidate case
+    }
+    //printf("CFSocketIsValid 2\n");
+    return s->_socket != -1;
 }
 
 #if HAVE_LIBDISPATCH
