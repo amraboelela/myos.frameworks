@@ -171,6 +171,7 @@ CFSocketGetTypeID (void)
 static void
 CFSocketDispatchReadEvent(void* p)
 {
+  //printf("CFSocketDispatchReadEvent p: %p\n", p);
   CFSocketRef socket = (CFSocketRef) p;
   CFRunLoopSourceRef src = socket->_source;
   
@@ -183,6 +184,7 @@ CFSocketDispatchReadEvent(void* p)
 static void
 CFSocketDispatchWriteEvent(void* p)
 {
+  printf("CFSocketDispatchReadEvent p: %p\n", p);
   CFSocketRef socket = (CFSocketRef) p;
   CFRunLoopSourceRef src = socket->_source;
   
@@ -521,10 +523,12 @@ CFSocketUpdateDispatchSources (CFSocketRef s)
 #   define READ_EVENTS (kCFSocketReadCallBack|kCFSocketAcceptCallBack|kCFSocketDataCallBack)
 #   define WRITE_EVENTS (kCFSocketConnectCallBack|kCFSocketWriteCallBack)
     
+    //printf("CFSocketUpdateDispatchSources 1\n");
     if (s->_cbTypes & READ_EVENTS)
     {
         if (!s->_readResumed)
         {
+            printf("CFSocketUpdateDispatchSources _readResumed\n");
             dispatch_resume(s->_readSource);
             s->_readResumed = true;
         }
@@ -672,25 +676,27 @@ CFSocketRLSPerform (void* p)
     
     if (s->_readFired)
     {
+        //printf("s->_cbTypes: %d\n", s->_cbTypes);
         if (s->_isListening)
         {
-            if (s->_cbTypes & kCFSocketAcceptCallBack)
+            if (s->_cbTypes == kCFSocketAcceptCallBack)
             {
                 struct sockaddr addr;
                 socklen_t len = sizeof(addr);
-                int err;
+                int acceptResult;
                 
-                err = accept (s->_socket, &addr, &len);
+                acceptResult = accept (s->_socket, &addr, &len);
                 
                 if (!(s->_opts & kCFSocketAutomaticallyReenableAcceptCallBack))
                     CFSocketDisableCallBacks(s, kCFSocketAcceptCallBack);
                 
-                if (err != 0)
+                if (acceptResult != 0)
                 {
-                    CFSocketNativeHandle handle = (CFSocketNativeHandle) err;
+                    CFSocketNativeHandle handle = (CFSocketNativeHandle) acceptResult;
                     CFDataRef addrData;
                     
                     addrData = CFDataCreate(NULL, (UInt8*) &addr, len);
+                    //printf("CFSocketRLSPerform kCFSocketAcceptCallBack\n");
                     s->_callback(s, kCFSocketAcceptCallBack, addrData, &handle,
                                  s->_ctx.info);
                     
@@ -698,8 +704,11 @@ CFSocketRLSPerform (void* p)
                 }
             }
         }
-        
-        if (s->_cbTypes & kCFSocketDataCallBack)
+        //printf("s->_cbTypes 2: %d\n", s->_cbTypes);
+        //printf("kCFSocketDataCallBack: %d\n", kCFSocketDataCallBack);
+        //printf("s->_cbTypes & kCFSocketDataCallBack: %d\n", s->_cbTypes & kCFSocketDataCallBack);
+        //printf("2 & 3: %d\n", s->_cbTypes & kCFSocketDataCallBack);
+        if (s->_cbTypes == kCFSocketDataCallBack)
         {
             char buffer[512];
             int err;
@@ -718,18 +727,17 @@ CFSocketRLSPerform (void* p)
             
             data = CFDataCreate(NULL, (UInt8*) buffer, err);
             addrData = CFDataCreate(NULL, (UInt8*) &addr, len);
-            
+            printf("CFSocketRLSPerform kCFSocketDataCallBack\n");
             s->_callback(s, kCFSocketDataCallBack, addrData, data,
                          s->_ctx.info);
-            
             CFRelease(data);
             CFRelease(addrData);
         }
-        else if (s->_cbTypes & kCFSocketReadCallBack)
+        else if (s->_cbTypes == kCFSocketReadCallBack)
         {
             if (!(s->_opts & kCFSocketAutomaticallyReenableReadCallBack))
                 CFSocketDisableCallBacks(s, kCFSocketReadCallBack);
-            
+            printf("CFSocketRLSPerform kCFSocketReadCallBack\n");
             s->_callback(s, kCFSocketReadCallBack, NULL, NULL, s->_ctx.info);
         }
         s->_readFired = false;
