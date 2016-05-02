@@ -2781,6 +2781,18 @@ open_ok:
     return self;
 }
 
+- (id)initWithSocket:(int)socket
+{
+    if ((self = [super init]) != nil)
+    {
+        if ([self _setSocketAddress: addr port: port family: AF_INET] == NO)
+        {
+            DESTROY(self);
+        }
+    }
+    return self;
+}
+
 @end
 
 @implementation GSInet6InputStream

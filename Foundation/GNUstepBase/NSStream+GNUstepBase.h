@@ -3,7 +3,9 @@
    Copyright (C) 2010 Free Software Foundation, Inc.
 
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: May 2016
+ 
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
@@ -59,6 +61,9 @@ extern "C" {
  */
 + (void) pipeWithInputStream: (NSInputStream **)inputStream 
                 outputStream: (NSOutputStream **)outputStream;
+
++ (void)getStreamsWithSocket:(int)socket inputStream:(NSInputStream **)readStream outputStream:(NSOutputStream **)writeStream;
+
 @end
 
 /**

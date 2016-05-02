@@ -208,63 +208,63 @@ static const NSMapTableValueCallBacks WatcherMapValueCallBacks =
 
 static void setPollfd(int fd, int event, GSRunLoopCtxt *ctxt)
 {
-  int		index;
-  struct pollfd *pollfds = ctxt->pollfds;
-  pollextra	*pe = (pollextra*)ctxt->extra;
-
-  if (fd >= pe->limit)
+    int		index;
+    struct pollfd *pollfds = ctxt->pollfds;
+    pollextra	*pe = (pollextra*)ctxt->extra;
+    
+    if (fd >= pe->limit)
     {
-      int oldfd_limit = pe->limit;
-
-      pe->limit = fd + 1;
-      if (pe->index == 0)
-	{
+        int oldfd_limit = pe->limit;
+        
+        pe->limit = fd + 1;
+        if (pe->index == 0)
+        {
 #if	GS_WITH_GC
-	  pe->index
-	    = NSAllocateCollectable(pe->limit * sizeof(*(pe->index)), 0);
+            pe->index
+            = NSAllocateCollectable(pe->limit * sizeof(*(pe->index)), 0);
 #else
-	  pe->index = NSZoneMalloc(NSDefaultMallocZone(),
-	    pe->limit * sizeof(*(pe->index)));
+            pe->index = NSZoneMalloc(NSDefaultMallocZone(),
+                                     pe->limit * sizeof(*(pe->index)));
 #endif
-	}
-      else
-	{
+        }
+        else
+        {
 #if	GS_WITH_GC
-	  pe->index = NSReallocateCollectable(pe->index,
-	    pe->limit * sizeof(*(pe->index)), 0);
+            pe->index = NSReallocateCollectable(pe->index,
+                                                pe->limit * sizeof(*(pe->index)), 0);
 #else
-	  pe->index = NSZoneRealloc(NSDefaultMallocZone(),
-	    pe->index, pe->limit * sizeof(*(pe->index)));
+            pe->index = NSZoneRealloc(NSDefaultMallocZone(),
+                                      pe->index, pe->limit * sizeof(*(pe->index)));
 #endif
-	}
-      do
-	{
-	  pe->index[oldfd_limit++] = -1;
-	}
-      while (oldfd_limit < pe->limit);
+        }
+        do
+        {
+            pe->index[oldfd_limit++] = -1;
+        }
+        while (oldfd_limit < pe->limit);
     }
-  index = pe->index[fd];
-  if (index == -1)
+    index = pe->index[fd];
+    if (index == -1)
     {
-      if (ctxt->pollfds_count >= ctxt->pollfds_capacity)
-	{
-	  ctxt->pollfds_capacity += 8;
+        if (ctxt->pollfds_count >= ctxt->pollfds_capacity)
+        {
+            ctxt->pollfds_capacity += 8;
 #if	GS_WITH_GC
-	  pollfds = NSReallocateCollectable(pollfds,
-	    ctxt->pollfds_capacity * sizeof (*pollfds), 0);
+            pollfds = NSReallocateCollectable(pollfds,
+                                              ctxt->pollfds_capacity * sizeof (*pollfds), 0);
 #else
-	  pollfds = NSZoneRealloc(NSDefaultMallocZone(),
-	    pollfds, ctxt->pollfds_capacity * sizeof (*pollfds));
+            pollfds = NSZoneRealloc(NSDefaultMallocZone(),
+                                    pollfds, ctxt->pollfds_capacity * sizeof (*pollfds));
 #endif
-	  ctxt->pollfds = pollfds;
-	}
-      index = ctxt->pollfds_count++;
-      pe->index[fd] = index;
-      pollfds[index].fd = fd;
-      pollfds[index].events = 0;
-      pollfds[index].revents = 0;
+            ctxt->pollfds = pollfds;
+        }
+        index = ctxt->pollfds_count++;
+        pe->index[fd] = index;
+        pollfds[index].fd = fd;
+        pollfds[index].events = 0;
+        pollfds[index].revents = 0;
     }
-  pollfds[index].events |= event;
+    pollfds[index].events |= event;
 }
 
 /**

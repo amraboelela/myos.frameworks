@@ -574,45 +574,45 @@ static Boolean
 CFRunLoopProcessSourcesVersion0 (CFRunLoopRef rl, CFAbsoluteTime now,
 		GSRunLoopContextRef context, Boolean singleSource)
 {
-  CFIndex i, count;
-  CFRunLoopSourceRef *sources;
-  Boolean hadSource = false;
-
-  // Notify observers with kCFRunLoopBeforeSources activity.
-  CFRunLoopNotifyObservers(rl, context, kCFRunLoopBeforeSources);
-
-  GSMutexLock (&rl->_lock);
-  count = CFArrayGetCount(context->sources0);
-  sources = (CFRunLoopSourceRef*) CFAllocatorAllocate(NULL,
-                                  sizeof(CFRunLoopSourceRef)*count, 0);
-
-  CFArrayGetValues(context->sources0, CFRangeMake(0, CFArrayGetCount(context->sources0)),
-                   (const void**) sources);
-  GSMutexUnlock (&rl->_lock);
-
-  for (i = 0; i < count; i++)
-    CFRetain(sources[i]);
-
-  for (i = 0; i < count; i++)
+    CFIndex i, count;
+    CFRunLoopSourceRef *sources;
+    Boolean hadSource = false;
+    
+    // Notify observers with kCFRunLoopBeforeSources activity.
+    CFRunLoopNotifyObservers(rl, context, kCFRunLoopBeforeSources);
+    
+    GSMutexLock (&rl->_lock);
+    count = CFArrayGetCount(context->sources0);
+    sources = (CFRunLoopSourceRef*) CFAllocatorAllocate(NULL,
+                                                        sizeof(CFRunLoopSourceRef)*count, 0);
+    
+    CFArrayGetValues(context->sources0, CFRangeMake(0, CFArrayGetCount(context->sources0)),
+                     (const void**) sources);
+    GSMutexUnlock (&rl->_lock);
+    
+    for (i = 0; i < count; i++)
+        CFRetain(sources[i]);
+    
+    for (i = 0; i < count; i++)
     {
-      CFRunLoopSourceRef source = sources[i];
-
-      if (source->_isValid && source->_isSignaled)
+        CFRunLoopSourceRef source = sources[i];
+        
+        if (source->_isValid && source->_isSignaled)
         {
-          hadSource = true;
-          source->_isSignaled = false;
-          source->_context.perform(source->_context.info);
+            hadSource = true;
+            source->_isSignaled = false;
+            source->_context.perform(source->_context.info);
         }
-
-      CFRelease(source);
-      
-      if (singleSource && hadSource)
-        break;
+        
+        CFRelease(source);
+        
+        if (singleSource && hadSource)
+            break;
     }
-
-  CFAllocatorDeallocate(NULL, (void*) sources);
-
-  return hadSource;
+    
+    CFAllocatorDeallocate(NULL, (void*) sources);
+    
+    return hadSource;
 }
 
 static void

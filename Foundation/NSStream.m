@@ -403,6 +403,34 @@
     }
 }
 
++ (void)getStreamsWithSocket:(int)socket inputStream:(NSInputStream **)readStream outputStream:(NSOutputStream **)writeStream
+{
+    id ins = nil;
+    id outs = nil;
+    
+    // try ipv4 first
+    ins = AUTORELEASE([[GSInetInputStream alloc] initWithSocket:socket]);
+    outs = AUTORELEASE([[GSInetOutputStream alloc] initWithSocket:socket]);
+    if (!ins)
+    {
+#if	defined(PF_INET6)
+        ins = AUTORELEASE([[GSInet6InputStream alloc] initWithSocket:socket]);
+        outs = AUTORELEASE([[GSInet6OutputStream alloc] initWithSocket:socket]);
+#endif
+    }
+    
+    if (inputStream)
+    {
+        [ins _setSibling: outs];
+        *inputStream = (NSInputStream*)ins;
+    }
+    if (outputStream)
+    {
+        [outs _setSibling: ins];
+        *outputStream = (NSOutputStream*)outs;
+    }
+}
+
 + (void) getLocalStreamsToPath: (NSString *)path 
                    inputStream: (NSInputStream **)inputStream 
                   outputStream: (NSOutputStream **)outputStream

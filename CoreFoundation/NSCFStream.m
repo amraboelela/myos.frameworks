@@ -26,9 +26,9 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <Foundation/NSStream.h>
-#import <Foundation/NSHost.h>
-#import <Foundation/NSURL.h>
+#import <Foundation/Foundation-private.h>
+//#import <Foundation/NSHost.h>
+//#import <Foundation/NSURL.h>
 
 #include "CoreFoundation/CFStream.h"
 
@@ -118,7 +118,7 @@ CFStreamCreatePairWithSocket (CFAllocatorRef alloc, CFSocketNativeHandle sock,
                               CFReadStreamRef *readStream,
                               CFWriteStreamRef *writeStream)
 {
-  // FIXME
+    [NSStream getStreamsWithSocket:sock inputStream:(NSInputStream **)readStream outputStream:(NSOutputStream **)writeStream];
 }
 
 void
@@ -126,10 +126,10 @@ NSCFStreamCreatePairWithSocketToHost (CFAllocatorRef alloc, CFStringRef host,
                                     UInt32 port, CFReadStreamRef *readStream,
                                     CFWriteStreamRef *writeStream)
 {
-  [NSStream getStreamsToHost: [NSHost hostWithName: (NSString *)host]
-                        port: (NSUInteger)port
-                 inputStream: (NSInputStream **)readStream
-                outputStream: (NSOutputStream **)writeStream];
+    [NSStream getStreamsToHost:[NSHost hostWithName:(NSString *)host]
+                          port:(NSUInteger)port
+                   inputStream:(NSInputStream **)readStream
+                  outputStream:(NSOutputStream **)writeStream];
 }
 
 
