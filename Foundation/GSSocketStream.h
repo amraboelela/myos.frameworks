@@ -137,7 +137,7 @@ SOCKIVARS
  */
 - (id)initToAddr:(NSString *)addr port:(NSInteger)port;
 
-- (id)initWithSocket:(int)socket;
+//- (id)initWithSocket:(int)socket;
 
 @end
 

@@ -198,14 +198,14 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) open
 {
-  if (_currentStatus != NSStreamStatusNotOpen
-    && _currentStatus != NSStreamStatusOpening)
+    if (_currentStatus != NSStreamStatusNotOpen
+        && _currentStatus != NSStreamStatusOpening)
     {
-      NSDebugMLLog(@"NSStream", @"Attempt to re-open stream %@", self);
+        NSDebugMLLog(@"NSStream", @"Attempt to re-open stream %@", self);
     }
-  [self _setStatus: NSStreamStatusOpen];
-  [self _schedule];
-  [self _sendEvent: NSStreamEventOpenCompleted];
+    [self _setStatus: NSStreamStatusOpen];
+    [self _schedule];
+    [self _sendEvent: NSStreamEventOpenCompleted];
 }
 
 - (id) propertyForKey: (NSString *)key
@@ -242,31 +242,31 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) scheduleInRunLoop: (NSRunLoop *)aRunLoop forMode: (NSString *)mode
 {
-  if (aRunLoop != nil && mode != nil)
+    if (aRunLoop != nil && mode != nil)
     {
-      NSMutableArray	*modes;
-
-      modes = (NSMutableArray*)NSMapGet(_loops, (void*)aRunLoop);
-      if (modes == nil)
-	{
-	  modes = [[NSMutableArray alloc] initWithCapacity: 1];
-	  NSMapInsert(_loops, (void*)aRunLoop, (void*)modes);
-	  RELEASE(modes);
-	}
-      if ([modes containsObject: mode] == NO)
-	{
-	  mode = [mode copy];
-	  [modes addObject: mode];
-	  RELEASE(mode);
-	  /* We only add open streams to the runloop .. subclasses may add
-	   * streams when they are in the process of opening if they need
-	   * to do so.
-	   */
-	  if ([self _isOpened])
-	    {
-	      [aRunLoop addStream: self mode: mode];
-	    }
-	}
+        NSMutableArray	*modes;
+        
+        modes = (NSMutableArray*)NSMapGet(_loops, (void*)aRunLoop);
+        if (modes == nil)
+        {
+            modes = [[NSMutableArray alloc] initWithCapacity: 1];
+            NSMapInsert(_loops, (void*)aRunLoop, (void*)modes);
+            RELEASE(modes);
+        }
+        if ([modes containsObject: mode] == NO)
+        {
+            mode = [mode copy];
+            [modes addObject: mode];
+            RELEASE(mode);
+            /* We only add open streams to the runloop .. subclasses may add
+             * streams when they are in the process of opening if they need
+             * to do so.
+             */
+            if ([self _isOpened])
+            {
+                [aRunLoop addStream: self mode: mode];
+            }
+        }
     }
 }
 
@@ -306,12 +306,12 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (BOOL) setProperty: (id)property forKey: (NSString *)key
 {
-  if (_properties == nil)
+    if (_properties == nil)
     {
-      _properties = [NSMutableDictionary new];
+        _properties = [NSMutableDictionary new];
     }
-  [_properties setObject: property forKey: key];
-  return YES;
+    [_properties setObject: property forKey: key];
+    return YES;
 }
 
 - (NSError *) streamError
@@ -420,21 +420,21 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) _schedule
 {
-  NSMapEnumerator	enumerator;
-  NSRunLoop		*k;
-  NSMutableArray	*v;
-
-  enumerator = NSEnumerateMapTable(_loops);
-  while (NSNextMapEnumeratorPair(&enumerator, (void **)(&k), (void**)&v))
+    NSMapEnumerator	enumerator;
+    NSRunLoop		*k;
+    NSMutableArray	*v;
+    
+    enumerator = NSEnumerateMapTable(_loops);
+    while (NSNextMapEnumeratorPair(&enumerator, (void **)(&k), (void**)&v))
     {
-      unsigned	i = [v count];
-
-      while (i-- > 0)
-	{
-	  [k addStream: self mode: [v objectAtIndex: i]];
-	}
+        unsigned	i = [v count];
+        
+        while (i-- > 0)
+        {
+            [k addStream: self mode: [v objectAtIndex: i]];
+        }
     }
-  NSEndMapTableEnumeration(&enumerator);
+    NSEndMapTableEnumeration(&enumerator);
 }
 
 - (void) _sendEvent: (NSStreamEvent)event

@@ -405,29 +405,32 @@
 
 + (void)getStreamsWithSocket:(int)socket inputStream:(NSInputStream **)readStream outputStream:(NSOutputStream **)writeStream
 {
-    id ins = nil;
-    id outs = nil;
-    
-    // try ipv4 first
-    ins = AUTORELEASE([[GSInetInputStream alloc] initWithSocket:socket]);
-    outs = AUTORELEASE([[GSInetOutputStream alloc] initWithSocket:socket]);
-    if (!ins)
-    {
-#if	defined(PF_INET6)
-        ins = AUTORELEASE([[GSInet6InputStream alloc] initWithSocket:socket]);
-        outs = AUTORELEASE([[GSInet6OutputStream alloc] initWithSocket:socket]);
-#endif
+    GSSocketStream *ins = AUTORELEASE([GSSocketInputStream new]);
+    GSSocketStream *outs = AUTORELEASE([GSSocketOutputStream new]);
+    if (socketError(socket)) { // test for real error
+        DLog(@"socketError(socket)");
+        if (!socketWouldBlock()) {
+            [self _recordError];
+        }
+        ins = nil;
+        outs = nil;
+    } else {
+        // no need to connect again
+        [ins _setPassive:YES];
+        [outs _setPassive:YES];
+        [ins _setSock:socket];
+        [outs _setSock:socket];
+        [self setProperty:@"YES" forKey:@"IsServer"];
     }
-    
     if (inputStream)
     {
-        [ins _setSibling: outs];
-        *inputStream = (NSInputStream*)ins;
+        [ins _setSibling:outs];
+        *inputStream = (NSInputStream *)ins;
     }
     if (outputStream)
     {
         [outs _setSibling: ins];
-        *outputStream = (NSOutputStream*)outs;
+        *outputStream = (NSOutputStream *)outs;
     }
 }
 
