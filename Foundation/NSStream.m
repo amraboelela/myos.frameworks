@@ -403,15 +403,15 @@
     }
 }
 
-+ (void)getStreamsWithSocket:(int)socket inputStream:(NSInputStream **)readStream outputStream:(NSOutputStream **)writeStream
++ (void)getStreamsWithSocket:(int)socket inputStream:(NSInputStream **)inputStream outputStream:(NSOutputStream **)outputStream
 {
-    GSSocketStream *ins = AUTORELEASE([GSSocketInputStream new]);
-    GSSocketStream *outs = AUTORELEASE([GSSocketOutputStream new]);
-    if (socketError(socket)) { // test for real error
+    GSSocketInputStream *ins = AUTORELEASE([GSSocketInputStream new]);
+    GSSocketOutputStream *outs = AUTORELEASE([GSSocketOutputStream new]);
+    if (socket < 0) { // test for real error
         DLog(@"socketError(socket)");
-        if (!socketWouldBlock()) {
+        /*if (!GSWOULDBLOCK) {
             [self _recordError];
-        }
+        }*/
         ins = nil;
         outs = nil;
     } else {
@@ -420,7 +420,7 @@
         [outs _setPassive:YES];
         [ins _setSock:socket];
         [outs _setSock:socket];
-        [self setProperty:@"YES" forKey:@"IsServer"];
+        [ins setProperty:@"YES" forKey:@"IsServer"];
     }
     if (inputStream)
     {
