@@ -565,7 +565,6 @@ static const char * const _StandardGlyphNames[_MaximumNumberOfGlyphs] =
     //TODO using #import <CoreGraphics/StandardGlyphNames.h>
     result = (CGGlyph)FT_Get_Name_Index(ft_face, (FT_String*)[glyphName UTF8String]);
     
-    //DLog(@"result: %p", result);
     if (result == 0) {
         //DLog(@"result == 0");
         FT_String* nameFromKey = [self glyphNameForKey:glyphName];

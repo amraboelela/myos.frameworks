@@ -654,62 +654,62 @@ static NSArray  *keys = nil;
 
 - (void) stream: (NSStream*)stream handleEvent: (NSStreamEvent)event
 {
-  NSDebugMLLog(@"NSStream",
-    @"GSTLSHandler got %"PRIdPTR" on %p", event, stream);
-
-  if (handshake == YES)
+    NSDebugMLLog(@"NSStream",
+                 @"GSTLSHandler got %"PRIdPTR" on %p", event, stream);
+    
+    if (handshake == YES)
     {
-      switch (event)
+        switch (event)
         {
-          case NSStreamEventHasSpaceAvailable:
-          case NSStreamEventHasBytesAvailable:
-          case NSStreamEventOpenCompleted:
-            /* try to complete the handshake.
-             */
-            [self hello];
-            break;
-
-          case NSStreamEventErrorOccurred:
-          case NSStreamEventEndEncountered:
-            /* stream error or close ... handshake fails.
-             */
-            handshake = NO;
-            break;
-
-          default:
-            break;
+            case NSStreamEventHasSpaceAvailable:
+            case NSStreamEventHasBytesAvailable:
+            case NSStreamEventOpenCompleted:
+                /* try to complete the handshake.
+                 */
+                [self hello];
+                break;
+                
+            case NSStreamEventErrorOccurred:
+            case NSStreamEventEndEncountered:
+                /* stream error or close ... handshake fails.
+                 */
+                handshake = NO;
+                break;
+                
+            default:
+                break;
         }
-      if (NO == handshake)
+        if (NO == handshake)
         {
-          NSDebugMLLog(@"NSStream",
-            @"GSTLSHandler completed on %p", stream);
-
-          /* Make sure that, if ostream gets released as a result of
-           * the event we send to istream, it doesn't get deallocated
-           * and cause a crash when we try to send to it.
-           */
-          AUTORELEASE(RETAIN(ostream));
-          if ([istream streamStatus] == NSStreamStatusOpen)
+            NSDebugMLLog(@"NSStream",
+                         @"GSTLSHandler completed on %p", stream);
+            
+            /* Make sure that, if ostream gets released as a result of
+             * the event we send to istream, it doesn't get deallocated
+             * and cause a crash when we try to send to it.
+             */
+            AUTORELEASE(RETAIN(ostream));
+            if ([istream streamStatus] == NSStreamStatusOpen)
             {
-              [istream _resetEvents: NSStreamEventOpenCompleted];
-              [istream _sendEvent: NSStreamEventOpenCompleted];
+                [istream _resetEvents: NSStreamEventOpenCompleted];
+                [istream _sendEvent: NSStreamEventOpenCompleted];
             }
-          else
+            else
             {
-              [istream _resetEvents: NSStreamEventErrorOccurred];
-              [istream _sendEvent: NSStreamEventErrorOccurred];
+                [istream _resetEvents: NSStreamEventErrorOccurred];
+                [istream _sendEvent: NSStreamEventErrorOccurred];
             }
-          if ([ostream streamStatus] == NSStreamStatusOpen)
+            if ([ostream streamStatus] == NSStreamStatusOpen)
             {
-              [ostream _resetEvents: NSStreamEventOpenCompleted
-                | NSStreamEventHasSpaceAvailable];
-              [ostream _sendEvent: NSStreamEventOpenCompleted];
-              [ostream _sendEvent: NSStreamEventHasSpaceAvailable];
+                [ostream _resetEvents: NSStreamEventOpenCompleted
+                 | NSStreamEventHasSpaceAvailable];
+                [ostream _sendEvent: NSStreamEventOpenCompleted];
+                [ostream _sendEvent: NSStreamEventHasSpaceAvailable];
             }
-          else
+            else
             {
-              [ostream _resetEvents: NSStreamEventErrorOccurred];
-              [ostream _sendEvent: NSStreamEventErrorOccurred];
+                [ostream _resetEvents: NSStreamEventErrorOccurred];
+                [ostream _sendEvent: NSStreamEventErrorOccurred];
             }
         }
     }
@@ -1780,6 +1780,7 @@ setNonBlocking(SOCKET fd)
             }
             else
             {
+                DLog(@"NSCountMapTable(_loops) == 0");
                 NSRunLoop *r;
                 NSDate    *d;
                 
@@ -2063,6 +2064,7 @@ open_ok:
     
     if ([self streamStatus] == NSStreamStatusOpening)
     {
+        DLog(@"NSStreamStatusOpening");
         int error;
         int result;
         socklen_t len = sizeof(error);
@@ -2093,10 +2095,12 @@ open_ok:
     }
     else if ([self streamStatus] == NSStreamStatusAtEnd)
     {
+        DLog(@"NSStreamStatusAtEnd");
         myEvent = NSStreamEventEndEncountered;
     }
     else
     {
+        DLog(@"self _setStatus: NSStreamStatusOpen");
         [self _setStatus: NSStreamStatusOpen];
         myEvent = NSStreamEventHasBytesAvailable;
     }
@@ -2372,155 +2376,158 @@ open_ok:
 - (void) _dispatch
 {
 #if	defined(__MINGW__)
-  AUTORELEASE(RETAIN(self));
-  /*
-   * Windows only permits a single event to be associated with a socket
-   * at any time, but the runloop system only allows an event handle to
-   * be added to the loop once, and we have two streams for each socket.
-   * So we use two events, one for each stream, and the _dispatch method
-   * must handle things for both streams.
-   */
-  if ([self streamStatus] == NSStreamStatusClosed)
+    AUTORELEASE(RETAIN(self));
+    /*
+     * Windows only permits a single event to be associated with a socket
+     * at any time, but the runloop system only allows an event handle to
+     * be added to the loop once, and we have two streams for each socket.
+     * So we use two events, one for each stream, and the _dispatch method
+     * must handle things for both streams.
+     */
+    if ([self streamStatus] == NSStreamStatusClosed)
     {
-      /*
-       * It is possible the stream is closed yet recieving event because
-       * of not closed sibling
-       */
-      NSAssert([_sibling streamStatus] != NSStreamStatusClosed,
-	@"Received event for closed stream");
-      [_sibling _dispatch];
+        /*
+         * It is possible the stream is closed yet recieving event because
+         * of not closed sibling
+         */
+        NSAssert([_sibling streamStatus] != NSStreamStatusClosed,
+                 @"Received event for closed stream");
+        [_sibling _dispatch];
     }
-  else
+    else
     {
-      WSANETWORKEVENTS events;
-      int error = 0;
-      int getReturn = -1;
-
-      if (WSAEnumNetworkEvents(_sock, _loopID, &events) == SOCKET_ERROR)
-	{
-	  error = WSAGetLastError();
-	}
-// else NSLog(@"EVENTS 0x%x on %p", events.lNetworkEvents, self);
-
-      if ([self streamStatus] == NSStreamStatusOpening)
-	{
-	  [self _unschedule];
-	  if (error == 0)
-	    {
-	      socklen_t len = sizeof(error);
-
-	      getReturn = getsockopt(_sock, SOL_SOCKET, SO_ERROR,
-		(char*)&error, &len);
-	    }
-
-	  if (getReturn >= 0 && error == 0
-	    && (events.lNetworkEvents & FD_CONNECT))
-	    { // finish up the opening
-	      events.lNetworkEvents ^= FD_CONNECT;
-	      _passive = YES;
-	      [self open];
-	      // notify sibling
-	      if (_sibling)
-		{
-		  [_sibling open];
-		  [_sibling _sendEvent: NSStreamEventOpenCompleted];
-		}
-	      [self _sendEvent: NSStreamEventOpenCompleted];
-	    }
-	}
-
-      if (error != 0)
-	{
-	  errno = error;
-	  [self _recordError];
-	  [_sibling _recordError];
-	  [self _sendEvent: NSStreamEventErrorOccurred];
-	  [_sibling _sendEvent: NSStreamEventErrorOccurred];
-	}
-      else
-	{
-	  if (events.lNetworkEvents & FD_WRITE)
-	    {
-	      /* Clear NSStreamStatusWriting if it was set */
-	      [self _setStatus: NSStreamStatusOpen];
-	    }
-
-	  /* On winsock a socket is always writable unless it has had
-	   * failure/closure or a write blocked and we have not been
-	   * signalled again.
-	   */
-	  while ([self _unhandledData] == NO && [self hasSpaceAvailable])
-	    {
-	      [self _sendEvent: NSStreamEventHasSpaceAvailable];
-	    }
-
-	  if (events.lNetworkEvents & FD_READ)
-	    {
-	      [_sibling _setStatus: NSStreamStatusOpen];
-	      while ([_sibling hasBytesAvailable]
-		&& [_sibling _unhandledData] == NO)
-		{
-	          [_sibling _sendEvent: NSStreamEventHasBytesAvailable];
-		}
-	    }
-	  if (events.lNetworkEvents & FD_CLOSE)
-	    {
-	      [self _setClosing: YES];
-	      [_sibling _setClosing: YES];
-	      while ([_sibling hasBytesAvailable]
-		&& [_sibling _unhandledData] == NO)
-		{
-		  [_sibling _sendEvent: NSStreamEventHasBytesAvailable];
-		}
-	    }
-	  if (events.lNetworkEvents == 0)
-	    {
-	      [self _sendEvent: NSStreamEventHasSpaceAvailable];
-	    }
-	}
+        WSANETWORKEVENTS events;
+        int error = 0;
+        int getReturn = -1;
+        
+        if (WSAEnumNetworkEvents(_sock, _loopID, &events) == SOCKET_ERROR)
+        {
+            error = WSAGetLastError();
+        }
+        // else NSLog(@"EVENTS 0x%x on %p", events.lNetworkEvents, self);
+        
+        if ([self streamStatus] == NSStreamStatusOpening)
+        {
+            [self _unschedule];
+            if (error == 0)
+            {
+                socklen_t len = sizeof(error);
+                
+                getReturn = getsockopt(_sock, SOL_SOCKET, SO_ERROR,
+                                       (char*)&error, &len);
+            }
+            
+            if (getReturn >= 0 && error == 0
+                && (events.lNetworkEvents & FD_CONNECT))
+            { // finish up the opening
+                events.lNetworkEvents ^= FD_CONNECT;
+                _passive = YES;
+                [self open];
+                // notify sibling
+                if (_sibling)
+                {
+                    [_sibling open];
+                    [_sibling _sendEvent: NSStreamEventOpenCompleted];
+                }
+                [self _sendEvent: NSStreamEventOpenCompleted];
+            }
+        }
+        
+        if (error != 0)
+        {
+            errno = error;
+            [self _recordError];
+            [_sibling _recordError];
+            [self _sendEvent: NSStreamEventErrorOccurred];
+            [_sibling _sendEvent: NSStreamEventErrorOccurred];
+        }
+        else
+        {
+            if (events.lNetworkEvents & FD_WRITE)
+            {
+                /* Clear NSStreamStatusWriting if it was set */
+                [self _setStatus: NSStreamStatusOpen];
+            }
+            
+            /* On winsock a socket is always writable unless it has had
+             * failure/closure or a write blocked and we have not been
+             * signalled again.
+             */
+            while ([self _unhandledData] == NO && [self hasSpaceAvailable])
+            {
+                [self _sendEvent: NSStreamEventHasSpaceAvailable];
+            }
+            
+            if (events.lNetworkEvents & FD_READ)
+            {
+                [_sibling _setStatus: NSStreamStatusOpen];
+                while ([_sibling hasBytesAvailable]
+                       && [_sibling _unhandledData] == NO)
+                {
+                    [_sibling _sendEvent: NSStreamEventHasBytesAvailable];
+                }
+            }
+            if (events.lNetworkEvents & FD_CLOSE)
+            {
+                [self _setClosing: YES];
+                [_sibling _setClosing: YES];
+                while ([_sibling hasBytesAvailable]
+                       && [_sibling _unhandledData] == NO)
+                {
+                    [_sibling _sendEvent: NSStreamEventHasBytesAvailable];
+                }
+            }
+            if (events.lNetworkEvents == 0)
+            {
+                [self _sendEvent: NSStreamEventHasSpaceAvailable];
+            }
+        }
     }
 #else
-  NSStreamEvent myEvent;
-
-  if ([self streamStatus] == NSStreamStatusOpening)
+    NSStreamEvent myEvent;
+    
+    if ([self streamStatus] == NSStreamStatusOpening)
     {
-      int error;
-      socklen_t len = sizeof(error);
-      int result;
-
-      IF_NO_GC([[self retain] autorelease];)
-      [self _schedule];
-      result
-	= getsockopt((intptr_t)_loopID, SOL_SOCKET, SO_ERROR, &error, &len);
-      if (result >= 0 && !error)
+        DLog(@"NSStreamStatusOpening");
+        int error;
+        socklen_t len = sizeof(error);
+        int result;
+        
+        IF_NO_GC([[self retain] autorelease];)
+        [self _schedule];
+        result
+        = getsockopt((intptr_t)_loopID, SOL_SOCKET, SO_ERROR, &error, &len);
+        if (result >= 0 && !error)
         { // finish up the opening
-          myEvent = NSStreamEventOpenCompleted;
-          _passive = YES;
-          [self open];
-          // notify sibling
-          [_sibling open];
-          [_sibling _sendEvent: myEvent];
+            myEvent = NSStreamEventOpenCompleted;
+            _passive = YES;
+            [self open];
+            // notify sibling
+            [_sibling open];
+            [_sibling _sendEvent: myEvent];
         }
-      else // must be an error
+        else // must be an error
         {
-          if (error)
-            errno = error;
-          [self _recordError];
-          myEvent = NSStreamEventErrorOccurred;
-          [_sibling _recordError];
-          [_sibling _sendEvent: myEvent];
+            if (error)
+                errno = error;
+            [self _recordError];
+            myEvent = NSStreamEventErrorOccurred;
+            [_sibling _recordError];
+            [_sibling _sendEvent: myEvent];
         }
     }
-  else if ([self streamStatus] == NSStreamStatusAtEnd)
+    else if ([self streamStatus] == NSStreamStatusAtEnd)
     {
-      myEvent = NSStreamEventEndEncountered;
+        DLog(@"NSStreamStatusAtEnd");
+        myEvent = NSStreamEventEndEncountered;
     }
-  else
+    else
     {
-      [self _setStatus: NSStreamStatusOpen];
-      myEvent = NSStreamEventHasSpaceAvailable;
+        DLog(@"self _setStatus: NSStreamStatusOpen");
+        [self _setStatus: NSStreamStatusOpen];
+        myEvent = NSStreamEventHasSpaceAvailable;
     }
-  [self _sendEvent: myEvent];
+    [self _sendEvent: myEvent];
 #endif
 }
 
