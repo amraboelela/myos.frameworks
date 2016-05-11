@@ -4,7 +4,9 @@
    Written by:  Derek Zhou <derekzhou@gmail.com>
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: 2006
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: May 2016
+ 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
@@ -535,40 +537,40 @@ static NSArray  *keys = nil;
 
 - (void) hello
 {
-  if (active == NO)
+    if (active == NO)
     {
-      if (handshake == NO)
+        if (handshake == NO)
         {
-          /* Set flag to say we are now doing a handshake.
-           */
-          handshake = YES;
+            /* Set flag to say we are now doing a handshake.
+             */
+            handshake = YES;
         }
-      if ([session handshake] == YES)
+        if ([session handshake] == YES)
         {
-          handshake = NO;               // Handshake is now complete.
-          active = [session active];    // Is the TLS session now active?
-          if (NO == active)
+            handshake = NO;               // Handshake is now complete.
+            active = [session active];    // Is the TLS session now active?
+            if (NO == active)
             {
-              NSString  *problem = [session problem];
-              NSError   *theError;
-
-              if (nil == problem)
+                NSString  *problem = [session problem];
+                NSError   *theError;
+                
+                if (nil == problem)
                 {
-                  problem = @"TLS handshake failure";
+                    problem = @"TLS handshake failure";
                 }
-              theError = [NSError errorWithDomain: NSCocoaErrorDomain
-                code: 0
-                userInfo: [NSDictionary dictionaryWithObject: problem
-                  forKey: NSLocalizedDescriptionKey]];
-              if ([istream streamStatus] != NSStreamStatusError)
+                theError = [NSError errorWithDomain: NSCocoaErrorDomain
+                                               code: 0
+                                           userInfo: [NSDictionary dictionaryWithObject: problem
+                                                                                 forKey: NSLocalizedDescriptionKey]];
+                if ([istream streamStatus] != NSStreamStatusError)
                 {
-                  [istream _recordError: theError];
+                    [istream _recordError: theError];
                 }
-              if ([ostream streamStatus] != NSStreamStatusError)
+                if ([ostream streamStatus] != NSStreamStatusError)
                 {
-                  [ostream _recordError: theError];
+                    [ostream _recordError: theError];
                 }
-              [self bye];
+                [self bye];
             }
         }
     }
