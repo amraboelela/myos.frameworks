@@ -1713,6 +1713,7 @@ setNonBlocking(SOCKET fd)
 
 - (void) open
 {
+    //DLog(@"input stream");
     // could be opened because of sibling
     if ([self _isOpened])
         return;
@@ -1755,11 +1756,12 @@ setNonBlocking(SOCKET fd)
         }
         result = connect([self _sock], &_address.s,
                          GSPrivateSockaddrLength(&_address.s));
-        DLog(@"result: %d", result);
+        //DLog(@"result: %d", result);
         if (socketError(result))
         {
             if (!socketWouldBlock())
             {
+                DLog(@"!socketWouldBlock()");
                 [self _recordError];
                 [self _setHandler: nil];
                 [_sibling _setHandler: nil];
@@ -1782,7 +1784,7 @@ setNonBlocking(SOCKET fd)
             }
             else
             {
-                DLog(@"NSCountMapTable(_loops) == 0");
+                //DLog(@"NSCountMapTable(_loops) == 0");
                 NSRunLoop *r;
                 NSDate    *d;
                 
@@ -1795,11 +1797,13 @@ setNonBlocking(SOCKET fd)
                 [r addStream: self mode: NSDefaultRunLoopMode];
                 while ([r runMode: NSDefaultRunLoopMode beforeDate: d] == YES)
                 {
+                    //DLog(@"_currentStatus: %d", _currentStatus);
                     if (_currentStatus != NSStreamStatusOpening)
                     {
                         break;
                     }
                 }
+                //DLog();
                 [r removeStream: self mode: NSDefaultRunLoopMode];
                 return;
             }
@@ -1956,6 +1960,7 @@ open_ok:
 
 - (void) _dispatch
 {
+    //DLog();
 #if	defined(__MINGW__)
     AUTORELEASE(RETAIN(self));
     /*
@@ -2082,7 +2087,7 @@ open_ok:
         
         if (result >= 0 && !error)
         { // finish up the opening
-            DLog(@"result >= 0 && !error");
+            //DLog(@"result >= 0 && !error");
             myEvent = NSStreamEventOpenCompleted;
             _passive = YES;
             [self open];
@@ -2196,6 +2201,7 @@ open_ok:
 
 - (void) open
 {
+    //DLog();
     // could be opened because of sibling
     if ([self _isOpened])
         return;
@@ -2239,8 +2245,10 @@ open_ok:
         
         result = connect([self _sock], &_address.s,
                          GSPrivateSockaddrLength(&_address.s));
+        DLog(@"output stream result: %d", result);
         if (socketError(result))
         {
+            //DLog();
             if (!socketWouldBlock())
             {
                 [self _recordError];
@@ -2382,6 +2390,7 @@ open_ok:
 
 - (void) _dispatch
 {
+    //DLog();
 #if	defined(__MINGW__)
     AUTORELEASE(RETAIN(self));
     /*
