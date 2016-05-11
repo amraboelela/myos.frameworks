@@ -114,37 +114,41 @@
 
 - (NSInteger) read: (uint8_t *)buffer maxLength: (NSUInteger)len
 {
-  int readLen;
-
-  if (buffer == 0)
+    DLog(@"len: %d", len);
+    int readLen;
+    
+    if (buffer == 0)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"null pointer for buffer"];
+        [NSException raise: NSInvalidArgumentException
+                    format: @"null pointer for buffer"];
     }
-  if (len == 0)
+    if (len == 0)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"zero byte read write requested"];
+        [NSException raise: NSInvalidArgumentException
+                    format: @"zero byte read write requested"];
     }
-
-  _events &= ~NSStreamEventHasBytesAvailable;
-
-  if ([self streamStatus] == NSStreamStatusClosed)
+    
+    _events &= ~NSStreamEventHasBytesAvailable;
+    
+    if ([self streamStatus] == NSStreamStatusClosed)
     {
-      return 0;
+        return 0;
     }
-
-  readLen = read((intptr_t)_loopID, buffer, len);
-  if (readLen < 0 && errno != EAGAIN && errno != EINTR)
+    DLog(@"_loopID: %d", _loopID);
+    readLen = read((intptr_t)_loopID, buffer, len);
+    if (readLen < 0 && errno != EAGAIN && errno != EINTR)
     {
-      [self _recordError];
-      readLen = -1;
+        DLog(@"readLen < 0 && errno != EAGAIN && errno != EINTR");
+        DLog(@"errno: %d", errno);
+        [self _recordError];
+        readLen = -1;
     }
-  else if (readLen == 0)
+    else if (readLen == 0)
     {
-      [self _setStatus: NSStreamStatusAtEnd];
+        [self _setStatus: NSStreamStatusAtEnd];
     }
-  return readLen;
+    DLog(@"readLen: %d", readLen);
+    return readLen;
 }
 
 - (BOOL) getBuffer: (uint8_t **)buffer length: (NSUInteger *)len

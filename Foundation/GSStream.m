@@ -4,7 +4,9 @@
    Written by:  Derek Zhou <derekzhou@gmail.com>
    Written by:  Richard Frith-Macdonald <rfm@gnu.org>
    Date: 2006
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: May 2016
+ 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
@@ -439,93 +441,93 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) _sendEvent: (NSStreamEvent)event
 {
-  if (event == NSStreamEventNone)
+    if (event == NSStreamEventNone)
     {
-      return;
+        return;
     }
-  else if (event == NSStreamEventOpenCompleted)
+    else if (event == NSStreamEventOpenCompleted)
     {
-      if ((_events & event) == 0)
-	{
-	  _events |= NSStreamEventOpenCompleted;
-	  if (_delegateValid == YES)
-	    {
-	      [_delegate stream: self
-		    handleEvent: NSStreamEventOpenCompleted];
-	    }
-	}
+        if ((_events & event) == 0)
+        {
+            _events |= NSStreamEventOpenCompleted;
+            if (_delegateValid == YES)
+            {
+                [_delegate stream: self
+                      handleEvent: NSStreamEventOpenCompleted];
+            }
+        }
     }
-  else if (event == NSStreamEventHasBytesAvailable)
+    else if (event == NSStreamEventHasBytesAvailable)
     {
-      if ((_events & NSStreamEventOpenCompleted) == 0)
-	{
-	  _events |= NSStreamEventOpenCompleted;
-	  if (_delegateValid == YES)
-	    {
-	      [_delegate stream: self
-		    handleEvent: NSStreamEventOpenCompleted];
-	    }
-	}
-      if ((_events & NSStreamEventHasBytesAvailable) == 0)
-	{
-	  _events |= NSStreamEventHasBytesAvailable;
-	  if (_delegateValid == YES)
-	    {
-	      [_delegate stream: self
-		    handleEvent: NSStreamEventHasBytesAvailable];
-	    }
-	}
+        if ((_events & NSStreamEventOpenCompleted) == 0)
+        {
+            _events |= NSStreamEventOpenCompleted;
+            if (_delegateValid == YES)
+            {
+                [_delegate stream: self
+                      handleEvent: NSStreamEventOpenCompleted];
+            }
+        }
+        if ((_events & NSStreamEventHasBytesAvailable) == 0)
+        {
+            _events |= NSStreamEventHasBytesAvailable;
+            if (_delegateValid == YES)
+            {
+                [_delegate stream: self
+                      handleEvent: NSStreamEventHasBytesAvailable];
+            }
+        }
     }
-  else if (event == NSStreamEventHasSpaceAvailable)
+    else if (event == NSStreamEventHasSpaceAvailable)
     {
-      if ((_events & NSStreamEventOpenCompleted) == 0)
-	{
-	  _events |= NSStreamEventOpenCompleted;
-	  if (_delegateValid == YES)
-	    {
-	      [_delegate stream: self
-		    handleEvent: NSStreamEventOpenCompleted];
-	    }
-	}
-      if ((_events & NSStreamEventHasSpaceAvailable) == 0)
-	{
-	  _events |= NSStreamEventHasSpaceAvailable;
-	  if (_delegateValid == YES)
-	    {
-	      [_delegate stream: self
-		    handleEvent: NSStreamEventHasSpaceAvailable];
-	    }
-	}
+        if ((_events & NSStreamEventOpenCompleted) == 0)
+        {
+            _events |= NSStreamEventOpenCompleted;
+            if (_delegateValid == YES)
+            {
+                [_delegate stream: self
+                      handleEvent: NSStreamEventOpenCompleted];
+            }
+        }
+        if ((_events & NSStreamEventHasSpaceAvailable) == 0)
+        {
+            _events |= NSStreamEventHasSpaceAvailable;
+            if (_delegateValid == YES)
+            {
+                [_delegate stream: self
+                      handleEvent: NSStreamEventHasSpaceAvailable];
+            }
+        }
     }
-  else if (event == NSStreamEventErrorOccurred)
+    else if (event == NSStreamEventErrorOccurred)
     {
-      if ((_events & NSStreamEventErrorOccurred) == 0)
-	{
-	  _events |= NSStreamEventErrorOccurred;
-	  if (_delegateValid == YES)
-	    {
-	      [_delegate stream: self
-		    handleEvent: NSStreamEventErrorOccurred];
-	    }
-	}
+        if ((_events & NSStreamEventErrorOccurred) == 0)
+        {
+            _events |= NSStreamEventErrorOccurred;
+            if (_delegateValid == YES)
+            {
+                [_delegate stream: self
+                      handleEvent: NSStreamEventErrorOccurred];
+            }
+        }
     }
-  else if (event == NSStreamEventEndEncountered)
+    else if (event == NSStreamEventEndEncountered)
     {
-      if ((_events & NSStreamEventEndEncountered) == 0)
-	{
-	  _events |= NSStreamEventEndEncountered;
-	  if (_delegateValid == YES)
-	    {
-	      [_delegate stream: self
-		    handleEvent: NSStreamEventEndEncountered];
-	    }
-	}
+        if ((_events & NSStreamEventEndEncountered) == 0)
+        {
+            _events |= NSStreamEventEndEncountered;
+            if (_delegateValid == YES)
+            {
+                [_delegate stream: self
+                      handleEvent: NSStreamEventEndEncountered];
+            }
+        }
     }
-  else
+    else
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"Unknown event (%"PRIuPTR") passed to _sendEvent:",
-	event];
+        [NSException raise: NSInvalidArgumentException
+                    format: @"Unknown event (%"PRIuPTR") passed to _sendEvent:",
+         event];
     }
 }
 
@@ -716,42 +718,44 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (NSInteger) read: (uint8_t *)buffer maxLength: (NSUInteger)len
 {
-  NSUInteger dataSize;
-
-  if (buffer == 0)
+    DLog(@"len: %d", len);
+    NSUInteger dataSize;
+    
+    if (buffer == 0)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"null pointer for buffer"];
+        [NSException raise: NSInvalidArgumentException
+                    format: @"null pointer for buffer"];
     }
-  if (len == 0)
+    if (len == 0)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"zero byte read write requested"];
+        [NSException raise: NSInvalidArgumentException
+                    format: @"zero byte read write requested"];
     }
-
-  if ([self streamStatus] == NSStreamStatusClosed
-    || [self streamStatus] == NSStreamStatusAtEnd)
+    
+    if ([self streamStatus] == NSStreamStatusClosed
+        || [self streamStatus] == NSStreamStatusAtEnd)
     {
-      return 0;
+        return 0;
     }
-
-  /* Mark the data availability event as handled, so we can generate more.
-   */
-  _events &= ~NSStreamEventHasBytesAvailable;
-
-  dataSize = [_data length];
-  NSAssert(dataSize >= _pointer, @"Buffer overflow!");
-  if (len + _pointer >= dataSize)
+    
+    /* Mark the data availability event as handled, so we can generate more.
+     */
+    _events &= ~NSStreamEventHasBytesAvailable;
+    
+    dataSize = [_data length];
+    NSAssert(dataSize >= _pointer, @"Buffer overflow!");
+    if (len + _pointer >= dataSize)
     {
-      len = dataSize - _pointer;
-      [self _setStatus: NSStreamStatusAtEnd];
+        len = dataSize - _pointer;
+        [self _setStatus: NSStreamStatusAtEnd];
     }
-  if (len > 0) 
+    if (len > 0)
     {
-      memcpy(buffer, [_data bytes] + _pointer, len);
-      _pointer = _pointer + len;
+        memcpy(buffer, [_data bytes] + _pointer, len);
+        _pointer = _pointer + len;
     }
-  return len;
+    DLog(@"len: %d", len);
+    return len;
 }
 
 - (BOOL) getBuffer: (uint8_t **)buffer length: (NSUInteger *)len
@@ -780,13 +784,14 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) _dispatch
 {
-  BOOL av = [self hasBytesAvailable];
-  NSStreamEvent myEvent = av ? NSStreamEventHasBytesAvailable : 
+    //DLog();
+    BOOL av = [self hasBytesAvailable];
+    NSStreamEvent myEvent = av ? NSStreamEventHasBytesAvailable :
     NSStreamEventEndEncountered;
-  NSStreamStatus myStatus = av ? NSStreamStatusOpen : NSStreamStatusAtEnd;
-  
-  [self _setStatus: myStatus];
-  [self _sendEvent: myEvent];
+    NSStreamStatus myStatus = av ? NSStreamStatusOpen : NSStreamStatusAtEnd;
+    DLog(@"myStatus: %d", myStatus);
+    [self _setStatus: myStatus];
+    [self _sendEvent: myEvent];
 }
 
 @end
