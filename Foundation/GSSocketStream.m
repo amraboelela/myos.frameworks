@@ -2393,7 +2393,7 @@ open_ok:
 
 - (void) _dispatch
 {
-    //DLog();
+    DLog();
 #if	defined(__MINGW__)
     AUTORELEASE(RETAIN(self));
     /*
