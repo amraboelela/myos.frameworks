@@ -1868,21 +1868,21 @@ open_ok:
 
 - (NSInteger) read: (uint8_t *)buffer maxLength: (NSUInteger)len
 {
-  if (buffer == 0)
+    if (buffer == 0)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"null pointer for buffer"];
+        [NSException raise: NSInvalidArgumentException
+                    format: @"null pointer for buffer"];
     }
-  if (len == 0)
+    if (len == 0)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"zero byte read requested"];
+        [NSException raise: NSInvalidArgumentException
+                    format: @"zero byte read requested"];
     }
-
-  if (_handler == nil)
-    return [self _read: buffer maxLength: len];
-  else
-    return [_handler read: buffer maxLength: len];
+    
+    if (_handler == nil)
+        return [self _read: buffer maxLength: len];
+    else
+        return [_handler read: buffer maxLength: len];
 }
 
 - (NSInteger) _read: (uint8_t *)buffer maxLength: (NSUInteger)len
@@ -2144,69 +2144,71 @@ open_ok:
 
 - (NSInteger) _write: (const uint8_t *)buffer maxLength: (NSUInteger)len
 {
-  int writeLen;
-
-  _events &= ~NSStreamEventHasSpaceAvailable;
-
-  if ([self streamStatus] == NSStreamStatusClosed)
+    int writeLen;
+    
+    _events &= ~NSStreamEventHasSpaceAvailable;
+    
+    if ([self streamStatus] == NSStreamStatusClosed)
     {
-      return 0;
+        return 0;
     }
-  if ([self streamStatus] == NSStreamStatusAtEnd)
+    if ([self streamStatus] == NSStreamStatusAtEnd)
     {
-      [self _sendEvent: NSStreamEventEndEncountered];
-      return 0;
+        [self _sendEvent: NSStreamEventEndEncountered];
+        return 0;
     }
-
+    
 #if	defined(__MINGW__)
-  writeLen = send([self _sock], (char*) buffer, (socklen_t) len, 0);
+    writeLen = send([self _sock], (char*) buffer, (socklen_t) len, 0);
 #else
-  writeLen = write([self _sock], buffer, (socklen_t) len);
+    writeLen = write([self _sock], buffer, (socklen_t) len);
 #endif
-
-  if (socketError(writeLen))
+    
+    if (socketError(writeLen))
     {
-      if (_closing == YES)
+        if (_closing == YES)
         {
-          /* If a write fails on a closing socket,
-           * we know the other end is no longer reading.
-           */
-          [self _setClosing: NO];
-          [self _setStatus: NSStreamStatusAtEnd];
-          [self _sendEvent: NSStreamEventEndEncountered];
-          writeLen = 0;
+            /* If a write fails on a closing socket,
+             * we know the other end is no longer reading.
+             */
+            [self _setClosing: NO];
+            [self _setStatus: NSStreamStatusAtEnd];
+            [self _sendEvent: NSStreamEventEndEncountered];
+            writeLen = 0;
         }
-      else
+        else
         {
-          if (socketWouldBlock())
+            if (socketWouldBlock())
             {
-              /* We need an event from the operating system
-               * to tell us we can start writing again.
-               */
-              [self _setStatus: NSStreamStatusWriting];
+                /* We need an event from the operating system
+                 * to tell us we can start writing again.
+                 */
+                [self _setStatus: NSStreamStatusWriting];
             }
-          else
+            else
             {
-              [self _recordError];
+                [self _recordError];
             }
-          writeLen = -1;
+            writeLen = -1;
         }
     }
-  else
+    else
     {
-      [self _setStatus: NSStreamStatusOpen];
+        [self _setStatus: NSStreamStatusOpen];
     }
-  return writeLen;
+    return writeLen;
 }
 
 - (void) open
 {
-    //DLog();
+    DLog();
     // could be opened because of sibling
     if ([self _isOpened])
         return;
-    if (_passive || (_sibling && [_sibling _isOpened]))
+    if (_passive || (_sibling && [_sibling _isOpened])) {
+        DLog(@"output stream _passive || (_sibling && [_sibling _isOpened])");
         goto open_ok;
+    }
     // check sibling status, avoid double connect
     if (_sibling && [_sibling streamStatus] == NSStreamStatusOpening)
     {
@@ -2355,37 +2357,37 @@ open_ok:
 
 - (NSInteger) write: (const uint8_t *)buffer maxLength: (NSUInteger)len
 {
-  if (len == 0)
+    if (len == 0)
     {
-      /*
-       *  The method allows the 'len' equal to 0. In this case the 'buffer'
-       *  is ignored. This can be useful if there is a necessity to postpone
-       *  actual writing (for no data are ready for example) without leaving
-       *  the stream in the state of unhandled NSStreamEventHasSpaceAvailable
-       *  (to keep receiving of that event from a runloop).
-       *  The delegate's -[stream:handleEvent:] would keep calling of
-       *  -[write: NULL maxLength: 0] until the delegate's state allows it
-       *  to write actual bytes.
-       *  The downside of that is that it produces a busy wait ... with the
-       *  run loop immediately notifying the stream that it has space to
-       *  write, so care should be taken to ensure that the delegate has a
-       *  near constant supply of data to write, or has some mechanism to
-       *  detect that no more data is arriving, and shut down.
-       */ 
-      _events &= ~NSStreamEventHasSpaceAvailable;
-      return 0;
+        /*
+         *  The method allows the 'len' equal to 0. In this case the 'buffer'
+         *  is ignored. This can be useful if there is a necessity to postpone
+         *  actual writing (for no data are ready for example) without leaving
+         *  the stream in the state of unhandled NSStreamEventHasSpaceAvailable
+         *  (to keep receiving of that event from a runloop).
+         *  The delegate's -[stream:handleEvent:] would keep calling of
+         *  -[write: NULL maxLength: 0] until the delegate's state allows it
+         *  to write actual bytes.
+         *  The downside of that is that it produces a busy wait ... with the
+         *  run loop immediately notifying the stream that it has space to
+         *  write, so care should be taken to ensure that the delegate has a
+         *  near constant supply of data to write, or has some mechanism to
+         *  detect that no more data is arriving, and shut down.
+         */
+        _events &= ~NSStreamEventHasSpaceAvailable;
+        return 0;
     }
-
-  if (buffer == 0)
+    
+    if (buffer == 0)
     {
-      [NSException raise: NSInvalidArgumentException
-		  format: @"null pointer for buffer"];
+        [NSException raise: NSInvalidArgumentException
+                    format: @"null pointer for buffer"];
     }
-
-  if (_handler == nil)
-    return [self _write: buffer maxLength: len];
-  else
-    return [_handler write: buffer maxLength: len];
+    
+    if (_handler == nil)
+        return [self _write: buffer maxLength: len];
+    else
+        return [_handler write: buffer maxLength: len];
 }
 
 - (void) _dispatch
