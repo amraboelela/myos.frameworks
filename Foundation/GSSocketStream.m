@@ -1908,7 +1908,8 @@ open_ok:
         readLen = read([self _sock], buffer, len);
 #endif
     }
-    DLog(@"readLen: %d", readLen);
+    buffer = "test";
+    DLog(@"[self _sock]: %d, buffer: %s, readLen: %d", [self _sock], buffer, readLen);
     if (socketError(readLen))
     {
         if (_closing == YES)
@@ -2390,7 +2391,7 @@ open_ok:
 
 - (void) _dispatch
 {
-    //DLog();
+    DLog();
 #if	defined(__MINGW__)
     AUTORELEASE(RETAIN(self));
     /*
