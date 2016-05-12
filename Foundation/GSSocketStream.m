@@ -951,13 +951,13 @@ static NSString * const GSSOCKSAckConn = @"GSSOCKSAckConn";
 
 - (void) hello
 {
-  if (handshake == NO)
+    if (handshake == NO)
     {
-      handshake = YES;
-      /* Now send self an event to say we can write, to kick off the
-       * handshake with the SOCKS server.
-       */
-      [self stream: ostream handleEvent: NSStreamEventHasSpaceAvailable];
+        handshake = YES;
+        /* Now send self an event to say we can write, to kick off the
+         * handshake with the SOCKS server.
+         */
+        [self stream: ostream handleEvent: NSStreamEventHasSpaceAvailable];
     }
 }
 
@@ -1761,7 +1761,7 @@ setNonBlocking(SOCKET fd)
         {
             if (!socketWouldBlock())
             {
-                DLog(@"!socketWouldBlock()");
+                //DLog(@"!socketWouldBlock()");
                 [self _recordError];
                 [self _setHandler: nil];
                 [_sibling _setHandler: nil];
@@ -1778,7 +1778,7 @@ setNonBlocking(SOCKET fd)
 #endif
             if (NSCountMapTable(_loops) > 0)
             {
-                DLog(@"NSCountMapTable(_loops): %d", NSCountMapTable(_loops));
+                //DLog(@"NSCountMapTable(_loops): %d", NSCountMapTable(_loops));
                 [self _schedule];
                 return;
             }
@@ -1887,7 +1887,7 @@ open_ok:
 
 - (NSInteger) _read: (uint8_t *)buffer maxLength: (NSUInteger)len
 {
-    DLog(@"len: %d", len);
+    //DLog(@"len: %d", len);
     int readLen;
     
     _events &= ~NSStreamEventHasBytesAvailable;
@@ -1908,7 +1908,7 @@ open_ok:
         readLen = read([self _sock], buffer, len);
 #endif
     }
-    DLog(@"readLen: %d", readLen);
+    //DLog(@"readLen: %d", readLen);
     if (socketError(readLen))
     {
         if (_closing == YES)
@@ -1926,7 +1926,7 @@ open_ok:
         {
             if (socketWouldBlock())
             {
-                DLog(@"socketWouldBlock()");
+                //DLog(@"socketWouldBlock()");
                 /* We need an event from the operating system
                  * to tell us we can start reading again.
                  */
@@ -1934,7 +1934,7 @@ open_ok:
             }
             else
             {
-                DLog(@"[self _recordError]");
+                //DLog(@"[self _recordError]");
                 [self _recordError];
             }
             readLen = -1;
@@ -1949,7 +1949,7 @@ open_ok:
     {
         [self _setStatus: NSStreamStatusOpen];
     }
-    DLog(@"readLen: %d", readLen);
+    //DLog(@"readLen: %d", readLen);
     return readLen;
 }
 
@@ -2076,7 +2076,7 @@ open_ok:
     
     if ([self streamStatus] == NSStreamStatusOpening)
     {
-        DLog(@"NSStreamStatusOpening");
+        //DLog(@"NSStreamStatusOpening");
         int error;
         int result;
         socklen_t len = sizeof(error);
@@ -2107,14 +2107,15 @@ open_ok:
     }
     else if ([self streamStatus] == NSStreamStatusAtEnd)
     {
-        DLog(@"NSStreamStatusAtEnd");
+        //DLog(@"NSStreamStatusAtEnd");
         myEvent = NSStreamEventEndEncountered;
     }
     else
     {
-        DLog(@"self _setStatus: NSStreamStatusOpen");
+        //DLog(@"self _setStatus: NSStreamStatusOpen");
         [self _setStatus: NSStreamStatusOpen];
         myEvent = NSStreamEventHasBytesAvailable;
+        //DLog(@"NSStreamEventHasBytesAvailable");
     }
     [self _sendEvent: myEvent];
 #endif
@@ -2201,12 +2202,12 @@ open_ok:
 
 - (void) open
 {
-    DLog();
+    //DLog();
     // could be opened because of sibling
     if ([self _isOpened])
         return;
     if (_passive || (_sibling && [_sibling _isOpened])) {
-        DLog(@"output stream _passive || (_sibling && [_sibling _isOpened])");
+        //DLog(@"output stream _passive || (_sibling && [_sibling _isOpened])");
         goto open_ok;
     }
     // check sibling status, avoid double connect
@@ -2247,7 +2248,7 @@ open_ok:
         
         result = connect([self _sock], &_address.s,
                          GSPrivateSockaddrLength(&_address.s));
-        DLog(@"output stream result: %d", result);
+        //DLog(@"output stream result: %d", result);
         if (socketError(result))
         {
             //DLog();
@@ -2506,7 +2507,7 @@ open_ok:
     
     if ([self streamStatus] == NSStreamStatusOpening)
     {
-        DLog(@"NSStreamStatusOpening");
+        //DLog(@"NSStreamStatusOpening");
         int error;
         socklen_t len = sizeof(error);
         int result;
@@ -2536,14 +2537,15 @@ open_ok:
     }
     else if ([self streamStatus] == NSStreamStatusAtEnd)
     {
-        DLog(@"NSStreamStatusAtEnd");
+        //DLog(@"NSStreamStatusAtEnd");
         myEvent = NSStreamEventEndEncountered;
     }
     else
     {
-        DLog(@"self _setStatus: NSStreamStatusOpen");
+        //DLog(@"self _setStatus: NSStreamStatusOpen");
         [self _setStatus: NSStreamStatusOpen];
         myEvent = NSStreamEventHasSpaceAvailable;
+        //DLog(@"NSStreamEventHasSpaceAvailable");
     }
     [self _sendEvent: myEvent];
 #endif

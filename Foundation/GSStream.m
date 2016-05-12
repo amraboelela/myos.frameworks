@@ -200,7 +200,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) open
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     if (_currentStatus != NSStreamStatusNotOpen
         && _currentStatus != NSStreamStatusOpening)
     {
@@ -221,7 +221,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 		 extra: (void*)extra
 	       forMode: (NSString*)mode
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     [self _dispatch];
 }
 
@@ -424,7 +424,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) _schedule
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     NSMapEnumerator	enumerator;
     NSRunLoop		*k;
     NSMutableArray	*v;
@@ -721,7 +721,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (NSInteger) read: (uint8_t *)buffer maxLength: (NSUInteger)len
 {
-    DLog(@"len: %d", len);
+    //DLog(@"len: %d", len);
     NSUInteger dataSize;
     
     if (buffer == 0)
@@ -757,7 +757,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
         memcpy(buffer, [_data bytes] + _pointer, len);
         _pointer = _pointer + len;
     }
-    DLog(@"len: %d", len);
+    //DLog(@"len: %d", len);
     return len;
 }
 
@@ -792,7 +792,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
     NSStreamEvent myEvent = av ? NSStreamEventHasBytesAvailable :
     NSStreamEventEndEncountered;
     NSStreamStatus myStatus = av ? NSStreamStatusOpen : NSStreamStatusAtEnd;
-    DLog(@"myStatus: %d", myStatus);
+    //DLog(@"myStatus: %d", myStatus);
     [self _setStatus: myStatus];
     [self _sendEvent: myEvent];
 }

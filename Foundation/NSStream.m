@@ -114,7 +114,7 @@
 
 - (NSInteger) read: (uint8_t *)buffer maxLength: (NSUInteger)len
 {
-    DLog(@"len: %d", len);
+    //DLog(@"len: %d", len);
     int readLen;
     
     if (buffer == 0)
@@ -134,11 +134,11 @@
     {
         return 0;
     }
-    DLog(@"_loopID: %d", _loopID);
+    //DLog(@"_loopID: %d", _loopID);
     readLen = read((intptr_t)_loopID, buffer, len);
     if (readLen < 0 && errno != EAGAIN && errno != EINTR)
     {
-        DLog(@"readLen < 0 && errno != EAGAIN && errno != EINTR");
+        //DLog(@"readLen < 0 && errno != EAGAIN && errno != EINTR");
         DLog(@"errno: %d", errno);
         [self _recordError];
         readLen = -1;
@@ -147,7 +147,7 @@
     {
         [self _setStatus: NSStreamStatusAtEnd];
     }
-    DLog(@"readLen: %d", readLen);
+    //DLog(@"readLen: %d", readLen);
     return readLen;
 }
 
@@ -412,7 +412,7 @@
     GSSocketInputStream *ins = AUTORELEASE([GSSocketInputStream new]);
     GSSocketOutputStream *outs = AUTORELEASE([GSSocketOutputStream new]);
     if (socket < 0) { // test for real error
-        DLog(@"socketError(socket)");
+        //DLog(@"socketError(socket)");
         /*if (!GSWOULDBLOCK) {
             [self _recordError];
         }*/
