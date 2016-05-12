@@ -201,13 +201,13 @@
 
 - (void) _dispatch
 {
-  if ([self streamStatus] == NSStreamStatusOpen)
+    if ([self streamStatus] == NSStreamStatusOpen)
     {
-      [self _sendEvent: NSStreamEventHasBytesAvailable];
+        [self _sendEvent: NSStreamEventHasBytesAvailable];
     }
-  else
+    else
     {
-      NSLog(@"_dispatch with unexpected status %"PRIuPTR, [self streamStatus]);
+        NSLog(@"_dispatch with unexpected status %"PRIuPTR, [self streamStatus]);
     }
 }
 @end

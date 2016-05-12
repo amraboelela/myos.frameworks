@@ -200,6 +200,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) open
 {
+    DLog(@"self: %@", self);
     if (_currentStatus != NSStreamStatusNotOpen
         && _currentStatus != NSStreamStatusOpening)
     {
@@ -220,7 +221,8 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 		 extra: (void*)extra
 	       forMode: (NSString*)mode
 {
-  [self _dispatch];
+    DLog(@"self: %@", self);
+    [self _dispatch];
 }
 
 - (void) removeFromRunLoop: (NSRunLoop *)aRunLoop forMode: (NSString *)mode
@@ -422,6 +424,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) _schedule
 {
+    DLog(@"self: %@", self);
     NSMapEnumerator	enumerator;
     NSRunLoop		*k;
     NSMutableArray	*v;

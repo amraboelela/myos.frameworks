@@ -1523,99 +1523,99 @@ static NSMutableDictionary      *credentialsCache = nil;
 
 - (BOOL) handshake
 {
-  int   ret;
-
-  if (YES == active || NO == setup)
+    int   ret;
+    
+    if (YES == active || NO == setup)
     {
-      return YES;       // Handshake completed or impossible.
+        return YES;       // Handshake completed or impossible.
     }
-
-  handshake = YES;
-  ret = gnutls_handshake(session);
-  if (ret < 0)
+    
+    handshake = YES;
+    ret = gnutls_handshake(session);
+    if (ret < 0)
     {
-      if (gnutls_error_is_fatal(ret))
+        if (gnutls_error_is_fatal(ret))
         {
-          NSString      *p;
-
-          p = [NSString stringWithFormat: @"%s", gnutls_strerror(ret)];
-
-          /* We want to differentiate between errors which are usually
-           * due to the remote end not expecting to be using TLS/SSL,
-           * and errors which are caused by other interoperability
-           * issues.  The first sort are not normally worth reporting.
-           */
-          if (ret == GNUTLS_E_UNEXPECTED_PACKET_LENGTH
-            || ret == GNUTLS_E_FATAL_ALERT_RECEIVED
-            || ret == GNUTLS_E_DECRYPTION_FAILED
+            NSString      *p;
+            
+            p = [NSString stringWithFormat: @"%s", gnutls_strerror(ret)];
+            
+            /* We want to differentiate between errors which are usually
+             * due to the remote end not expecting to be using TLS/SSL,
+             * and errors which are caused by other interoperability
+             * issues.  The first sort are not normally worth reporting.
+             */
+            if (ret == GNUTLS_E_UNEXPECTED_PACKET_LENGTH
+                || ret == GNUTLS_E_FATAL_ALERT_RECEIVED
+                || ret == GNUTLS_E_DECRYPTION_FAILED
 #ifdef GNUTLS_E_PREMATURE_TERMINATION
-            || ret == GNUTLS_E_PREMATURE_TERMINATION
+                || ret == GNUTLS_E_PREMATURE_TERMINATION
 #endif
-            || ret == GNUTLS_E_UNSUPPORTED_VERSION_PACKET)
+                || ret == GNUTLS_E_UNSUPPORTED_VERSION_PACKET)
             {
-              p = [p stringByAppendingString:
-                @"\nmost often due to the remote end not expecting TLS/SSL"];
-              ASSIGN(problem, p);
-              if (YES == debug)
+                p = [p stringByAppendingString:
+                     @"\nmost often due to the remote end not expecting TLS/SSL"];
+                ASSIGN(problem, p);
+                if (YES == debug)
                 {
-                  NSLog(@"%@ in handshake: %@", self, p);
+                    NSLog(@"%@ in handshake: %@", self, p);
                 }
             }
-          else
+            else
             {
-              ASSIGN(problem, p);
-              NSLog(@"%@ in handshake: %@", self, p);
+                ASSIGN(problem, p);
+                NSLog(@"%@ in handshake: %@", self, p);
             }
-          [self disconnect: NO];
-          return YES;   // Failed ... not active.
+            [self disconnect: NO];
+            return YES;   // Failed ... not active.
         }
-      else
+        else
         {
-          return NO;    // Non-fatal error needs a retry.
+            return NO;    // Non-fatal error needs a retry.
         }
     }
-  else
+    else
     {
-      NSString  *str;
-      BOOL      shouldVerify = NO;
-
-      active = YES;     // The TLS session is now active.
-      handshake = NO;   // Handshake is over.
-
-      if (YES == outgoing)
+        NSString  *str;
+        BOOL      shouldVerify = NO;
+        
+        active = YES;     // The TLS session is now active.
+        handshake = NO;   // Handshake is over.
+        
+        if (YES == outgoing)
         {
-          shouldVerify = verifyServer;  // Verify remote server certificate?
+            shouldVerify = verifyServer;  // Verify remote server certificate?
         }
-      else
+        else
         {
-          shouldVerify = verifyClient;  // Verify remote client certificate?
+            shouldVerify = verifyClient;  // Verify remote client certificate?
         }
-      str = [opts objectForKey: GSTLSVerify];
-      if (nil != str)
+        str = [opts objectForKey: GSTLSVerify];
+        if (nil != str)
         {
-          shouldVerify = [str boolValue];
+            shouldVerify = [str boolValue];
         }
-
-      if (globalDebug > 1)
+        
+        if (globalDebug > 1)
         {
-          NSLog(@"%@ before verify:\n%@", self, [self sessionInfo]);
+            NSLog(@"%@ before verify:\n%@", self, [self sessionInfo]);
         }
-      if (YES == shouldVerify)
+        if (YES == shouldVerify)
         {
-          ret = [self verify];
-          if (ret < 0)
+            ret = [self verify];
+            if (ret < 0)
             {
-              if (globalDebug > 0
-                || YES == [[opts objectForKey: GSTLSDebug] boolValue])
+                if (globalDebug > 0
+                    || YES == [[opts objectForKey: GSTLSDebug] boolValue])
                 {
-                  NSLog(@"%@ unable to verify SSL connection - %s",
-                    self, gnutls_strerror(ret));
-                  NSLog(@"%@ %@", self, [self sessionInfo]);
+                    NSLog(@"%@ unable to verify SSL connection - %s",
+                          self, gnutls_strerror(ret));
+                    NSLog(@"%@ %@", self, [self sessionInfo]);
                 }
-              [self disconnect: NO];
+                [self disconnect: NO];
             }
         }
-      return YES;       // Handshake complete
+        return YES;       // Handshake complete
     }
 }
 
@@ -1673,40 +1673,40 @@ static NSMutableDictionary      *credentialsCache = nil;
 
 - (NSInteger) write: (const void*)buf length: (NSUInteger)len
 {
-  int   result = gnutls_record_send(session, buf, len);
-
-  if (result < 0)
+    int   result = gnutls_record_send(session, buf, len);
+    
+    if (result < 0)
     {
-      if (GNUTLS_E_AGAIN == result)
+        if (GNUTLS_E_AGAIN == result)
         {
-          errno = EAGAIN;       // Need to retry.
+            errno = EAGAIN;       // Need to retry.
         }
-      else if (GNUTLS_E_INTERRUPTED == result)
+        else if (GNUTLS_E_INTERRUPTED == result)
         {
-          errno = EINTR;        // Need to retry
+            errno = EINTR;        // Need to retry
         }
-      else if (gnutls_error_is_fatal(result))
+        else if (gnutls_error_is_fatal(result))
         {
-          NSString      *p;
-
-          p = [NSString stringWithFormat: @"%s", gnutls_strerror(result)];
-          ASSIGN(problem, p);
-          if (YES == debug)
+            NSString      *p;
+            
+            p = [NSString stringWithFormat: @"%s", gnutls_strerror(result)];
+            ASSIGN(problem, p);
+            if (YES == debug)
             {
-              NSLog(@"%@ in write: %@", self, p);
+                NSLog(@"%@ in write: %@", self, p);
             }
-          if (EAGAIN == errno || EINTR == errno)
+            if (EAGAIN == errno || EINTR == errno)
             {
-              errno = EBADF;    // Fatal ... don't retry
+                errno = EBADF;    // Fatal ... don't retry
             }
         }
-      else
+        else
         {
-          errno = EAGAIN;       // Need to retry.
+            errno = EAGAIN;       // Need to retry.
         }
-      result = -1;
+        result = -1;
     }
-  return result;
+    return result;
 }
 
 /* Copied/based on the public domain code provided by gnutls
