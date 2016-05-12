@@ -1761,7 +1761,7 @@ setNonBlocking(SOCKET fd)
         {
             if (!socketWouldBlock())
             {
-                DLog(@"!socketWouldBlock()");
+                //DLog(@"!socketWouldBlock()");
                 [self _recordError];
                 [self _setHandler: nil];
                 [_sibling _setHandler: nil];
@@ -1887,7 +1887,7 @@ open_ok:
 
 - (NSInteger) _read: (uint8_t *)buffer maxLength: (NSUInteger)len
 {
-    DLog(@"len: %d", len);
+    //DLog(@"len: %d", len);
     int readLen;
     
     _events &= ~NSStreamEventHasBytesAvailable;
@@ -1908,8 +1908,8 @@ open_ok:
         readLen = read([self _sock], buffer, len);
 #endif
     }
-    buffer = "test";
-    DLog(@"[self _sock]: %d, buffer: %s, readLen: %d", [self _sock], buffer, readLen);
+    //buffer = "test";
+    //DLog(@"[self _sock]: %d, buffer: %s, readLen: %d", [self _sock], buffer, readLen);
     if (socketError(readLen))
     {
         if (_closing == YES)
@@ -1927,7 +1927,7 @@ open_ok:
         {
             if (socketWouldBlock())
             {
-                DLog(@"socketWouldBlock()");
+                //DLog(@"socketWouldBlock()");
                 /* We need an event from the operating system
                  * to tell us we can start reading again.
                  */
@@ -1935,7 +1935,7 @@ open_ok:
             }
             else
             {
-                DLog(@"[self _recordError]");
+                //DLog(@"[self _recordError]");
                 [self _recordError];
             }
             readLen = -1;
@@ -1950,7 +1950,7 @@ open_ok:
     {
         [self _setStatus: NSStreamStatusOpen];
     }
-    DLog(@"readLen: %d", readLen);
+    //DLog(@"readLen: %d", readLen);
     return readLen;
 }
 
@@ -2113,7 +2113,7 @@ open_ok:
     }
     else
     {
-        DLog(@"self _setStatus: NSStreamStatusOpen");
+        //DLog(@"self _setStatus: NSStreamStatusOpen");
         [self _setStatus: NSStreamStatusOpen];
         myEvent = NSStreamEventHasBytesAvailable;
     }

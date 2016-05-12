@@ -221,7 +221,7 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 		 extra: (void*)extra
 	       forMode: (NSString*)mode
 {
-    DLog(@"self: %@", self);
+    //DLog(@"self: %@", self);
     [self _dispatch];
 }
 
