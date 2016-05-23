@@ -1,8 +1,8 @@
 
 LDLIBS=-lCoreFoundation -lFoundation
 OBJECTS = \
-    EAGL.o \
-    EAGLTexture.o \
+    EAGL \
+    EAGLTexture \
 
 ifeq ($(BASE_OS),android)
     ifeq ($(APP_TYPE),NativeApp)
