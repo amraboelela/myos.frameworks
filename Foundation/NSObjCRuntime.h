@@ -37,6 +37,7 @@
 
 #import	<GNUstepBase/GSVersionMacros.h>
 #import	<GNUstepBase/GSConfig.h>
+#import	<GNUstepBase/GNUstep.h>
 #import	<GNUstepBase/GSBlocks.h>
 
 #include <stdarg.h>
@@ -47,7 +48,7 @@
 #if defined(__hppa__) && defined(__hpux__) && !defined(PRIuPTR)
 #define PRIuPTR "lu"
 #endif
- 
+
 /* IRIX kludge.  */
 #if defined(__sgi)
 /* IRIX 6.5 <inttypes.h> provides all definitions, but only for C99
@@ -69,7 +70,7 @@
    are uintptr_t, which is always unsigned long.  */
 #define PRIuPTR "lu"
 #endif
- 
+
 /* Solaris < 10 kludge.  */
 #if defined(__sun__) && defined(__svr4__) && !defined(PRIuPTR)
 #if defined(__arch64__) || defined (__x86_64__)
@@ -124,7 +125,65 @@ typedef float           CGFloat;
 extern "C" {
 #endif
 
-enum
+
+/*
+ * We can have strongly typed enums in C++11 mode or when the objc_fixed_enum
+ * feature is availble.
+ */
+#if (__has_feature(objc_fixed_enum) || (__cplusplus && (__cplusplus > 199711L) && __has_extension(cxx_strong_enums)))
+#  define _GS_NAMED_ENUM(ty, name) enum name : ty name; enum name : ty
+#  define _GS_ANON_ENUM(ty) enum : ty
+#  if __cplusplus
+#    define NS_OPTIONS(ty,name) ty name; enum : ty
+#  else
+#    define NS_OPTIONS(ty,name) NS_ENUM(ty,name)
+#  endif
+#else // this provides less information, but works with older compilers
+#  define _GS_NAMED_ENUM(ty, name) ty name; enum
+#  define _GS_ANON_ENUM(ty) enum
+#  define NS_OPTIONS(ty, name) NS_ENUM(ty, name)
+#endif
+// A bit of fairy dust to expand NS_ENUM to the correct variant
+#define _GS_GET_ENUM_MACRO(_first,_second,NAME,...) NAME
+/* The trick here is that placing the variadic args first will push the name
+ * that the _GS_GET_ENUM_MACRO expands to into the correct position.
+ */
+#define NS_ENUM(...) _GS_GET_ENUM_MACRO(__VA_ARGS__,_GS_NAMED_ENUM,_GS_ANON_ENUM)(__VA_ARGS__)
+
+/*
+ * If the compiler supports nullability qualifiers, we define the macros for
+ * non-null sections.
+ */
+#if __has_feature(nullability)
+#  define NS_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
+#  define NS_ASSUME_NONNULL_END   _Pragma("clang assume_nonnull end")
+#else
+#  define NS_ASSUME_NONNULL_BEGIN
+#  define NS_ASSUME_NONNULL_END
+#endif
+
+/*
+ * Backwards compatibility macro for instance type.
+ */
+#if !__has_feature(objc_instancetype)
+# define instancetype id
+#endif
+
+/*
+ * Backwards compatibility macros for Objective-C lightweight generics.
+ */
+#if __has_feature(objc_generics)
+# define GS_GENERIC_CLASS(clz, ...) clz<__VA_ARGS__>
+# define GS_GENERIC_TYPE_F(typeRef, fallback) typeRef
+#else
+# define GS_GENERIC_CLASS(clz, ...) clz
+# define GS_GENERIC_TYPE_F(typeRef, fallback) fallback
+#endif
+#define GS_GENERIC_TYPE(typeRef) GS_GENERIC_TYPE_F(typeRef, id)
+
+/** Bitfield used to specify options to control enumeration over collections.
+ */
+typedef NS_OPTIONS(NSUInteger, NSEnumerationOptions)
 {
   NSEnumerationConcurrent = (1UL << 0), /** Specifies that the enumeration
    * is concurrency-safe.  Note that this does not mean that it will be
@@ -136,11 +195,10 @@ enum
    */
 };
 
-/** Bitfield used to specify options to control enumeration over collections.
- */
-typedef NSUInteger NSEnumerationOptions;
 
-enum
+/** Bitfield used to specify options to control the sorting of collections.
+ */
+typedef NS_OPTIONS(NSUInteger, NSSortOptions)
 {
     NSSortConcurrent = (1UL << 0), /** Specifies that the sort
      * is concurrency-safe.  Note that this does not mean that it will be
@@ -151,9 +209,6 @@ enum
      */
 };
 
-/** Bitfield used to specify options to control the sorting of collections.
- */
-typedef NSUInteger NSSortOptions;
 
 #import <GNUstepBase/GSObjCRuntime.h>
 
@@ -210,6 +265,11 @@ NSComparisonResult;
 enum {NSNotFound = NSIntegerMax};
 
 DEFINE_BLOCK_TYPE(NSComparator, NSComparisonResult, id, id);
+
+/**
+ * Declare the foundation export macro as an alias to GS_EXPORT 
+ */
+#define FOUNDATION_EXPORT GS_EXPORT
 
 #if	defined(__cplusplus)
 }
