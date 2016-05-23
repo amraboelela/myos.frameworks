@@ -2,12 +2,12 @@
 LDLIBS= -lCoreFoundation -lFoundation -lPerformance
 
 OBJECTS = \
-	WebServer.o \
-	WebServerBundles.o \
-	WebServerConnection.o \
-	WebServerField.o \
-	WebServerForm.o \
-	WebServerHeader.o \
-	WebServerTable.o \
+	WebServer \
+	WebServerBundles \
+	WebServerConnection \
+	WebServerField \
+	WebServerForm \
+	WebServerHeader \
+	WebServerTable \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared

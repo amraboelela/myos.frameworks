@@ -1,10 +1,10 @@
 
 LDLIBS=-lCoreFoundation -lFoundation
 OBJECTS = \
-    IOWindow.o \
-    IOPipe.o \
-    NSFileHandle+IOKit.o \
-    NSFileManager+IOKit.o \
+    IOWindow \
+    IOPipe \
+    NSFileHandle+IOKit \
+    NSFileManager+IOKit \
 
 ifeq ($(APP_TYPE),NativeApp)
     LDLIBS+=-lCoreGraphics_native
@@ -21,8 +21,8 @@ ifeq ($(BASE_OS),android)
     endif
 else
     OBJECTS+= \
-        IOEvent.o \
-        opal-x11.o \
+        IOEvent \
+        opal-x11 \
 
 endif
 
