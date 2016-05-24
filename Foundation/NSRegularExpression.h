@@ -1,6 +1,9 @@
 /* Definition of class NSRegularExpression
    Copyright (C) 2011 Free Software Foundation, Inc.
    
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: May 2016
+ 
    This file is part of the GNUstep Library.
    
    This library is free software; you can redistribute it and/or
@@ -103,9 +106,9 @@ DEFINE_BLOCK_TYPE(GSRegexBlock, void, NSTextCheckingResult*,
 + (NSRegularExpression*) regularExpressionWithPattern: (NSString*)aPattern
   options: (NSRegularExpressionOptions)opts
   error: (NSError**)e;
-- (id) initWithPattern: (NSString*)aPattern
+/*- (id) initWithPattern: (NSString*)aPattern
 	       options: (NSRegularExpressionOptions)opts
-		 error: (NSError**)e;
+		 error: (NSError**)e;*/
 - (NSString*) pattern;
 - (void) enumerateMatchesInString: (NSString*)string
                           options: (NSMatchingOptions)options
