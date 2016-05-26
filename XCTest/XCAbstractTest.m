@@ -26,7 +26,9 @@
 
 - (void)runTest
 {
-    
+    [self setup];
+    DLog(@"To Do : run the tests");
+    [self tearDown];
 }
 
 - (void)tearDown
