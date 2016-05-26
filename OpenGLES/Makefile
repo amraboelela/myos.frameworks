@@ -14,7 +14,7 @@ ifeq ($(BASE_OS),android)
 endif
 
 ifeq ($(APP_TYPE),NativeApp)
-    LDLIBS+=-lIOKit_native -lCoreGraphics_native
+    LDLIBS+=-lEGL -lIOKit_native -lCoreGraphics_native
 else ifeq ($(APP_TYPE),ParentApp)
     LDLIBS+=-lIOKit_parent -lCoreGraphics_parent
 else
