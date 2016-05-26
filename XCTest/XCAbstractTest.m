@@ -27,24 +27,30 @@
 - (void)runTest
 {
     [self setup];
-    //DLog(@"To Do : run the tests");
     
     Class clz = [self class];
+    NSString *className = NSStringFromClass(clz);
+    NSLog(@"Test Suite '%@' started.", className);
+
     unsigned int methodCount = 0;
     Method *methods = class_copyMethodList(clz, &methodCount);
-    
+    int count = 0;
+    NSTimeInterval totalTime = 0;
     for (unsigned int i = 0; i < methodCount; i++) {
         Method method = methods[i];
         NSString *methodName = [NSString stringWithFormat:@"%s", sel_getName(method_getName(method))];
         if ([methodName rangeOfString:@"test"].location == 0) {
-            DLog(@"Test case %@ started", methodName);
+            count++;
             NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
+            NSLog(@"Test Case '%@' started.", methodName);
             SEL selector = NSSelectorFromString(methodName);
             [self performSelector:selector];
-            DLog(@"Test case %@ passed (%0.3f seconds)", methodName, [NSDate timeIntervalSinceReferenceDate] - currentTime);
+            totalTime += [NSDate timeIntervalSinceReferenceDate] - currentTime;
+            NSLog(@"Test Case '%@' passed (%0.3f seconds).", methodName, [NSDate timeIntervalSinceReferenceDate] - currentTime);
         }
     }
-    
+    NSLog(@"Test Suite '%@' passed.", className);
+    NSLog(@"     Executed %d tests, with 0 failures in %0.3f seconds", count, totalTime);
     free(methods);
     
     
