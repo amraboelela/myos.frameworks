@@ -33,7 +33,7 @@
     unsigned int methodCount = 0;
     Method *methods = class_copyMethodList(clz, &methodCount);
     
-    printf("Found %d methods on '%s'\n", methodCount, class_getName(clz));
+    //printf("Found %d methods on '%s'\n", methodCount, class_getName(clz));
     
     for (unsigned int i = 0; i < methodCount; i++) {
         Method method = methods[i];
