@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		63036D151CF62C3B009F2030 /* XCTest */ = {isa = PBXFileReference; lastKnownFileType = folder; path = XCTest; sourceTree = "<group>"; };
 		63D9C3E81CA74F0F0002879F /* CFNetwork */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CFNetwork; sourceTree = "<group>"; };
 		63F9D14F1CADED8D00D80CF6 /* WebServer */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebServer; sourceTree = "<group>"; };
 		63F9D1501CADEE3200D80CF6 /* WebServices */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebServices; sourceTree = "<group>"; };
@@ -39,6 +40,7 @@
 				F575460119C7A91C000DDF29 /* UIKit */,
 				63F9D1501CADEE3200D80CF6 /* WebServices */,
 				63F9D14F1CADED8D00D80CF6 /* WebServer */,
+				63036D151CF62C3B009F2030 /* XCTest */,
 			);
 			sourceTree = "<group>";
 		};
