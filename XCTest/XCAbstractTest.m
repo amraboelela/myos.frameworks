@@ -46,6 +46,9 @@
         NSString *methodName = [NSString stringWithFormat:@"%s", sel_getName(method_getName(method))];
         if ([methodName rangeOfString:@"test"].location == 0) {
             DLog(@"test methodName: %@", methodName);
+            
+            SEL selector = NSSelectorFromString(methodName);
+            [self performSelector:selector];
         }
         /**
          *  Or do whatever you need here...
