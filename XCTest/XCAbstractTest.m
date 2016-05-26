@@ -33,26 +33,16 @@
     unsigned int methodCount = 0;
     Method *methods = class_copyMethodList(clz, &methodCount);
     
-    //printf("Found %d methods on '%s'\n", methodCount, class_getName(clz));
-    
     for (unsigned int i = 0; i < methodCount; i++) {
         Method method = methods[i];
-        
-        /*printf("\t'%s' has method named '%s' of encoding '%s'\n",
-               class_getName(clz),
-               sel_getName(method_getName(method)),
-               method_getTypeEncoding(method));
-        */
         NSString *methodName = [NSString stringWithFormat:@"%s", sel_getName(method_getName(method))];
         if ([methodName rangeOfString:@"test"].location == 0) {
-            //DLog(@"test methodName: %@", methodName);
-            
+            DLog(@"Test case %@ started", methodName);
+            NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
             SEL selector = NSSelectorFromString(methodName);
             [self performSelector:selector];
+            DLog(@"Test case %@ passed (%0.3f seconds)", methodName, [NSDate timeIntervalSinceReferenceDate] - currentTime);
         }
-        /**
-         *  Or do whatever you need here...
-         */
     }
     
     free(methods);
