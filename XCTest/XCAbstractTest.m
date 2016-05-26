@@ -43,6 +43,10 @@
                sel_getName(method_getName(method)),
                method_getTypeEncoding(method));
         
+        NSString *methodName = [NSString stringWithFormat:@"%s", sel_getName(method_getName(method))];
+        if ([methodName rangeOfString:@"test"].location == 0) {
+            DLog(@"test methodName: %@", methodName);
+        }
         /**
          *  Or do whatever you need here...
          */
