@@ -38,14 +38,14 @@
     for (unsigned int i = 0; i < methodCount; i++) {
         Method method = methods[i];
         
-        printf("\t'%s' has method named '%s' of encoding '%s'\n",
+        /*printf("\t'%s' has method named '%s' of encoding '%s'\n",
                class_getName(clz),
                sel_getName(method_getName(method)),
                method_getTypeEncoding(method));
-        
+        */
         NSString *methodName = [NSString stringWithFormat:@"%s", sel_getName(method_getName(method))];
         if ([methodName rangeOfString:@"test"].location == 0) {
-            DLog(@"test methodName: %@", methodName);
+            //DLog(@"test methodName: %@", methodName);
             
             SEL selector = NSSelectorFromString(methodName);
             [self performSelector:selector];
