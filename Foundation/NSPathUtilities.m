@@ -2164,11 +2164,11 @@ static NSString *_RunCommand(NSString *command)
     NSMutableString *commandOutput = [[NSMutableString alloc] init];
     char data[kDataSize];
     while (fgets(data, kDataSize , pf)) {
-        //DLog(@"data: %s", data);
+        DLog(@"data: %s", data);
         [commandOutput appendString:[NSString stringWithFormat:@"%s", data]];
     }
     pclose(pf);
-    //DLog(@"commandOutput: %@", commandOutput);
+    DLog(@"commandOutput: %@", commandOutput);
     return [commandOutput autorelease];
 }
 
@@ -2303,6 +2303,7 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
             ADD_PLATFORM_PATH(NSAllDomainsMask, uninstalled);
             
             NSString *currentDirectory = _RunCommand(@"$(pwd | awk -F'/' '{print $NF}')");
+            DLog(@"currentDirectory: %@", currentDirectory);
             gnustepUserLibrary = [NSString stringWithFormat:@"%@.app/Library", currentDirectory];
             DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
