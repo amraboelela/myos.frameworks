@@ -21,8 +21,6 @@
 
 - (void)runTest
 {
-    [self setup];
-    
     Class clz = [self class];
     NSString *className = NSStringFromClass(clz);
     NSLog(@"Test Suite '%@' started.", className);
@@ -37,19 +35,19 @@
         if ([methodName rangeOfString:@"test"].location == 0) {
             count++;
             NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
+            [self setup];
             //NSLog(@"currentTime: %0.0f", currentTime);
             NSLog(@"Test Case '%@' started.", methodName);
             SEL selector = NSSelectorFromString(methodName);
             [self performSelector:selector];
             totalTime += [NSDate timeIntervalSinceReferenceDate] - currentTime;
+            [self tearDown];
             NSLog(@"Test Case '%@' passed (%0.3f seconds).", methodName, [NSDate timeIntervalSinceReferenceDate] - currentTime);
         }
     }
     NSLog(@"Test Suite '%@' passed.", className);
     NSLog(@"     Executed %d tests, with 0 failures in %0.3f seconds", count, totalTime);
     free(methods);
-    
-    [self tearDown];
 }
 
 @end
