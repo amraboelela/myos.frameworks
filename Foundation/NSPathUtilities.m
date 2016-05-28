@@ -2302,7 +2302,7 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
              */
             ADD_PLATFORM_PATH(NSAllDomainsMask, uninstalled);
             
-            NSString *currentDirectory = _RunCommand(@"$(pwd | awk -F'/' '{print $NF}')");
+            NSString *currentDirectory = _RunCommand(@"(pwd | awk -F'/' '{print $NF}')");
             DLog(@"currentDirectory: %@", currentDirectory);
             gnustepUserLibrary = [NSString stringWithFormat:@"%@.app/Library", currentDirectory];
             DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
