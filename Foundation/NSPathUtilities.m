@@ -7,7 +7,9 @@
    Date:    Jan 2004
    Rewrites by:  Richard Frith-Macdonald
    Date:    2004-2005
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: May 2016
+ 
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
@@ -535,9 +537,9 @@ static void ExtractValuesFromConfig(NSDictionary *config)
   TEST_ASSIGN(gnustepUserDirAdminTools,
     @GNUSTEP_TARGET_USER_DIR_ADMIN_TOOLS);
   ASSIGN_USER(gnustepUserDirLibrary, c,
-    @"GNUSTEP_USER_DIR_LIBRARY");
+    @"Library"); //"GNUSTEP_USER_DIR_LIBRARY"
   TEST_ASSIGN(gnustepUserDirLibrary,
-    @GNUSTEP_TARGET_USER_DIR_LIBRARY);
+    @"Library"); //@GNUSTEP_TARGET_USER_DIR_LIBRARY
   ASSIGN_USER(gnustepUserDirLibraries, c,
     @"GNUSTEP_USER_DIR_LIBRARIES");
   TEST_ASSIGN(gnustepUserDirLibraries,
@@ -630,7 +632,7 @@ static void ExtractValuesFromConfig(NSDictionary *config)
     }
   if (gnustepUserDirLibrary == nil)
     {
-      ASSIGN(gnustepUserDirLibrary, @GNUSTEP_TARGET_USER_DIR_LIBRARY);
+      ASSIGN(gnustepUserDirLibrary, @"Library"); //@GNUSTEP_TARGET_USER_DIR_LIBRARY
     }
   if (gnustepUserDirLibraries == nil)
     {
