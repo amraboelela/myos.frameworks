@@ -2283,7 +2283,7 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
              * on software prior to installation.
              */
             ADD_PLATFORM_PATH(NSAllDomainsMask, uninstalled);
-            
+            gnustepUserLibrary = @"Library";
             DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalLibrary);
