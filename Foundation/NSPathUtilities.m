@@ -424,363 +424,366 @@ getPathConfig(NSDictionary *dict, NSString *key)
 
 static void ExtractValuesFromConfig(NSDictionary *config)
 {
-  NSMutableDictionary	*c = [config mutableCopy];
-  BOOL			createLibraryPath;
-  id		        extra;
-
-  /*
-   * Move values out of the dictionary and into variables for rapid reference.
-   */
-  ASSIGN_IF_SET(gnustepUserDefaultsDir, c,
-    @"GNUSTEP_USER_DEFAULTS_DIR");
-
-  ASSIGN_PATH(gnustepMakefiles, c,
-    @"GNUSTEP_MAKEFILES");
-
-  ASSIGN_PATH(gnustepDeveloperDir, c,
-    @"GNUSTEP_DEVELOPER_DIR");
-
-  ASSIGN_PATH(gnustepSystemUsersDir, c,
-    @"GNUSTEP_SYSTEM_USERS_DIR");
-  ASSIGN_PATH(gnustepNetworkUsersDir, c,
-    @"GNUSTEP_NETWORK_USERS_DIR");
-  ASSIGN_PATH(gnustepLocalUsersDir, c,
-    @"GNUSTEP_LOCAL_USERS_DIR");
-
-  ASSIGN_PATH(gnustepSystemApps, c,
-    @"GNUSTEP_SYSTEM_APPS");
-  ASSIGN_PATH(gnustepSystemAdminApps, c,
-    @"GNUSTEP_SYSTEM_ADMIN_APPS");
-  ASSIGN_PATH(gnustepSystemWebApps, c,
-    @"GNUSTEP_SYSTEM_WEB_APPS");
-  ASSIGN_PATH(gnustepSystemTools, c,
-    @"GNUSTEP_SYSTEM_TOOLS");
-  ASSIGN_PATH(gnustepSystemAdminTools, c,
-    @"GNUSTEP_SYSTEM_ADMIN_TOOLS");
-  ASSIGN_PATH(gnustepSystemLibrary, c,
-    @"GNUSTEP_SYSTEM_LIBRARY");
-  ASSIGN_PATH(gnustepSystemLibraries, c,
-    @"GNUSTEP_SYSTEM_LIBRARIES");
-  ASSIGN_PATH(gnustepSystemHeaders, c,
-    @"GNUSTEP_SYSTEM_HEADERS");
-  ASSIGN_PATH(gnustepSystemDocumentation, c,
-    @"GNUSTEP_SYSTEM_DOC");
-  ASSIGN_PATH(gnustepSystemDocumentationMan, c,
-    @"GNUSTEP_SYSTEM_DOC_MAN");
-  ASSIGN_PATH(gnustepSystemDocumentationInfo, c,
-    @"GNUSTEP_SYSTEM_DOC_INFO");
-
-  ASSIGN_PATH(gnustepNetworkApps, c,
-    @"GNUSTEP_NETWORK_APPS");
-  ASSIGN_PATH(gnustepNetworkAdminApps, c,
-    @"GNUSTEP_NETWORK_ADMIN_APPS");
-  ASSIGN_PATH(gnustepNetworkWebApps, c,
-    @"GNUSTEP_NETWORK_WEB_APPS");
-  ASSIGN_PATH(gnustepNetworkTools, c,
-    @"GNUSTEP_NETWORK_TOOLS");
-  ASSIGN_PATH(gnustepNetworkAdminTools, c,
-    @"GNUSTEP_NETWORK_ADMIN_TOOLS");
-  ASSIGN_PATH(gnustepNetworkLibrary, c,
-    @"GNUSTEP_NETWORK_LIBRARY");
-  ASSIGN_PATH(gnustepNetworkLibraries, c,
-    @"GNUSTEP_NETWORK_LIBRARIES");
-  ASSIGN_PATH(gnustepNetworkHeaders, c,
-    @"GNUSTEP_NETWORK_HEADERS");
-  ASSIGN_PATH(gnustepNetworkDocumentation, c,
-    @"GNUSTEP_NETWORK_DOC");
-  ASSIGN_PATH(gnustepNetworkDocumentationMan, c,
-    @"GNUSTEP_NETWORK_DOC_MAN");
-  ASSIGN_PATH(gnustepNetworkDocumentationInfo, c,
-    @"GNUSTEP_NETWORK_DOC_INFO");
-
-  ASSIGN_PATH(gnustepLocalApps, c,
-    @"GNUSTEP_LOCAL_APPS");
-  ASSIGN_PATH(gnustepLocalAdminApps, c,
-    @"GNUSTEP_LOCAL_ADMIN_APPS");
-  ASSIGN_PATH(gnustepLocalWebApps, c,
-    @"GNUSTEP_LOCAL_WEB_APPS");
-  ASSIGN_PATH(gnustepLocalTools, c,
-    @"GNUSTEP_LOCAL_TOOLS");
-  ASSIGN_PATH(gnustepLocalAdminTools, c,
-    @"GNUSTEP_LOCAL_ADMIN_TOOLS");
-  ASSIGN_PATH(gnustepLocalLibrary, c,
-    @"GNUSTEP_LOCAL_LIBRARY");
-  ASSIGN_PATH(gnustepLocalLibraries, c,
-    @"GNUSTEP_LOCAL_LIBRARIES");
-  ASSIGN_PATH(gnustepLocalHeaders, c,
-    @"GNUSTEP_LOCAL_HEADERS");
-  ASSIGN_PATH(gnustepLocalDocumentation, c,
-    @"GNUSTEP_LOCAL_DOC");
-  ASSIGN_PATH(gnustepLocalDocumentationMan, c,
-    @"GNUSTEP_LOCAL_DOC_MAN");
-  ASSIGN_PATH(gnustepLocalDocumentationInfo, c,
-    @"GNUSTEP_LOCAL_DOC_INFO");
-
-  ASSIGN_USER(gnustepUserDirApps, c,
-    @"GNUSTEP_USER_DIR_APPS");
-  TEST_ASSIGN(gnustepUserDirApps,
-    @GNUSTEP_TARGET_USER_DIR_APPS);
-  ASSIGN_USER(gnustepUserDirAdminApps, c,
-    @"GNUSTEP_USER_DIR_ADMIN_APPS");
-  TEST_ASSIGN(gnustepUserDirAdminApps,
-    @GNUSTEP_TARGET_USER_DIR_ADMIN_APPS);
-  ASSIGN_USER(gnustepUserDirWebApps, c,
-    @"GNUSTEP_USER_DIR_WEB_APPS");
-  TEST_ASSIGN(gnustepUserDirWebApps,
-    @GNUSTEP_TARGET_USER_DIR_WEB_APPS);
-  ASSIGN_USER(gnustepUserDirTools, c,
-    @"GNUSTEP_USER_DIR_TOOLS");
-  TEST_ASSIGN(gnustepUserDirTools,
-    @GNUSTEP_TARGET_USER_DIR_TOOLS);
-  ASSIGN_USER(gnustepUserDirAdminTools, c,
-    @"GNUSTEP_USER_DIR_ADMIN_TOOLS");
-  TEST_ASSIGN(gnustepUserDirAdminTools,
-    @GNUSTEP_TARGET_USER_DIR_ADMIN_TOOLS);
-  ASSIGN_USER(gnustepUserDirLibrary, c,
-    @"Library"); //"GNUSTEP_USER_DIR_LIBRARY"
-  TEST_ASSIGN(gnustepUserDirLibrary,
-    @"Library"); //@GNUSTEP_TARGET_USER_DIR_LIBRARY
-  ASSIGN_USER(gnustepUserDirLibraries, c,
-    @"GNUSTEP_USER_DIR_LIBRARIES");
-  TEST_ASSIGN(gnustepUserDirLibraries,
-    @GNUSTEP_TARGET_USER_DIR_LIBRARIES);
-  ASSIGN_USER(gnustepUserDirHeaders, c,
-    @"GNUSTEP_USER_DIR_HEADERS");
-  TEST_ASSIGN(gnustepUserDirHeaders,
-    @GNUSTEP_TARGET_USER_DIR_HEADERS);
-  ASSIGN_USER(gnustepUserDirDocumentation, c,
-    @"GNUSTEP_USER_DIR_DOC");
-  TEST_ASSIGN(gnustepUserDirDocumentation,
-    @GNUSTEP_TARGET_USER_DIR_DOC);
-  ASSIGN_USER(gnustepUserDirDocumentationMan, c,
-    @"GNUSTEP_USER_DIR_DOC_MAN");
-  TEST_ASSIGN(gnustepUserDirDocumentationMan,
-    @GNUSTEP_TARGET_USER_DIR_DOC_MAN);
-  ASSIGN_USER(gnustepUserDirDocumentationInfo, c,
-    @"GNUSTEP_USER_DIR_DOC_INFO");
-  TEST_ASSIGN(gnustepUserDirDocumentationInfo,
-    @GNUSTEP_TARGET_USER_DIR_DOC_INFO);
-
-  /*
-   * The GNUSTEP_EXTRA field may contain a list of extra keys which
-   * we permit in the dictionary without generating a warning.
-   */
-  extra = [c objectForKey: @"GNUSTEP_EXTRA"];
-  if (extra != nil)
+    NSMutableDictionary	*c = [config mutableCopy];
+    BOOL			createLibraryPath;
+    id		        extra;
+    
+    /*
+     * Move values out of the dictionary and into variables for rapid reference.
+     */
+    ASSIGN_IF_SET(gnustepUserDefaultsDir, c,
+                  @"GNUSTEP_USER_DEFAULTS_DIR");
+    
+    ASSIGN_PATH(gnustepMakefiles, c,
+                @"GNUSTEP_MAKEFILES");
+    
+    ASSIGN_PATH(gnustepDeveloperDir, c,
+                @"GNUSTEP_DEVELOPER_DIR");
+    
+    ASSIGN_PATH(gnustepSystemUsersDir, c,
+                @"GNUSTEP_SYSTEM_USERS_DIR");
+    ASSIGN_PATH(gnustepNetworkUsersDir, c,
+                @"GNUSTEP_NETWORK_USERS_DIR");
+    ASSIGN_PATH(gnustepLocalUsersDir, c,
+                @"GNUSTEP_LOCAL_USERS_DIR");
+    
+    ASSIGN_PATH(gnustepSystemApps, c,
+                @"GNUSTEP_SYSTEM_APPS");
+    ASSIGN_PATH(gnustepSystemAdminApps, c,
+                @"GNUSTEP_SYSTEM_ADMIN_APPS");
+    ASSIGN_PATH(gnustepSystemWebApps, c,
+                @"GNUSTEP_SYSTEM_WEB_APPS");
+    ASSIGN_PATH(gnustepSystemTools, c,
+                @"GNUSTEP_SYSTEM_TOOLS");
+    ASSIGN_PATH(gnustepSystemAdminTools, c,
+                @"GNUSTEP_SYSTEM_ADMIN_TOOLS");
+    ASSIGN_PATH(gnustepSystemLibrary, c,
+                @"GNUSTEP_SYSTEM_LIBRARY");
+    ASSIGN_PATH(gnustepSystemLibraries, c,
+                @"GNUSTEP_SYSTEM_LIBRARIES");
+    ASSIGN_PATH(gnustepSystemHeaders, c,
+                @"GNUSTEP_SYSTEM_HEADERS");
+    ASSIGN_PATH(gnustepSystemDocumentation, c,
+                @"GNUSTEP_SYSTEM_DOC");
+    ASSIGN_PATH(gnustepSystemDocumentationMan, c,
+                @"GNUSTEP_SYSTEM_DOC_MAN");
+    ASSIGN_PATH(gnustepSystemDocumentationInfo, c,
+                @"GNUSTEP_SYSTEM_DOC_INFO");
+    
+    ASSIGN_PATH(gnustepNetworkApps, c,
+                @"GNUSTEP_NETWORK_APPS");
+    ASSIGN_PATH(gnustepNetworkAdminApps, c,
+                @"GNUSTEP_NETWORK_ADMIN_APPS");
+    ASSIGN_PATH(gnustepNetworkWebApps, c,
+                @"GNUSTEP_NETWORK_WEB_APPS");
+    ASSIGN_PATH(gnustepNetworkTools, c,
+                @"GNUSTEP_NETWORK_TOOLS");
+    ASSIGN_PATH(gnustepNetworkAdminTools, c,
+                @"GNUSTEP_NETWORK_ADMIN_TOOLS");
+    ASSIGN_PATH(gnustepNetworkLibrary, c,
+                @"GNUSTEP_NETWORK_LIBRARY");
+    ASSIGN_PATH(gnustepNetworkLibraries, c,
+                @"GNUSTEP_NETWORK_LIBRARIES");
+    ASSIGN_PATH(gnustepNetworkHeaders, c,
+                @"GNUSTEP_NETWORK_HEADERS");
+    ASSIGN_PATH(gnustepNetworkDocumentation, c,
+                @"GNUSTEP_NETWORK_DOC");
+    ASSIGN_PATH(gnustepNetworkDocumentationMan, c,
+                @"GNUSTEP_NETWORK_DOC_MAN");
+    ASSIGN_PATH(gnustepNetworkDocumentationInfo, c,
+                @"GNUSTEP_NETWORK_DOC_INFO");
+    
+    ASSIGN_PATH(gnustepLocalApps, c,
+                @"GNUSTEP_LOCAL_APPS");
+    ASSIGN_PATH(gnustepLocalAdminApps, c,
+                @"GNUSTEP_LOCAL_ADMIN_APPS");
+    ASSIGN_PATH(gnustepLocalWebApps, c,
+                @"GNUSTEP_LOCAL_WEB_APPS");
+    ASSIGN_PATH(gnustepLocalTools, c,
+                @"GNUSTEP_LOCAL_TOOLS");
+    ASSIGN_PATH(gnustepLocalAdminTools, c,
+                @"GNUSTEP_LOCAL_ADMIN_TOOLS");
+    ASSIGN_PATH(gnustepLocalLibrary, c,
+                @"GNUSTEP_LOCAL_LIBRARY");
+    ASSIGN_PATH(gnustepLocalLibraries, c,
+                @"GNUSTEP_LOCAL_LIBRARIES");
+    ASSIGN_PATH(gnustepLocalHeaders, c,
+                @"GNUSTEP_LOCAL_HEADERS");
+    ASSIGN_PATH(gnustepLocalDocumentation, c,
+                @"GNUSTEP_LOCAL_DOC");
+    ASSIGN_PATH(gnustepLocalDocumentationMan, c,
+                @"GNUSTEP_LOCAL_DOC_MAN");
+    ASSIGN_PATH(gnustepLocalDocumentationInfo, c,
+                @"GNUSTEP_LOCAL_DOC_INFO");
+    
+    ASSIGN_USER(gnustepUserDirApps, c,
+                @"GNUSTEP_USER_DIR_APPS");
+    TEST_ASSIGN(gnustepUserDirApps,
+                @GNUSTEP_TARGET_USER_DIR_APPS);
+    ASSIGN_USER(gnustepUserDirAdminApps, c,
+                @"GNUSTEP_USER_DIR_ADMIN_APPS");
+    TEST_ASSIGN(gnustepUserDirAdminApps,
+                @GNUSTEP_TARGET_USER_DIR_ADMIN_APPS);
+    ASSIGN_USER(gnustepUserDirWebApps, c,
+                @"GNUSTEP_USER_DIR_WEB_APPS");
+    TEST_ASSIGN(gnustepUserDirWebApps,
+                @GNUSTEP_TARGET_USER_DIR_WEB_APPS);
+    ASSIGN_USER(gnustepUserDirTools, c,
+                @"GNUSTEP_USER_DIR_TOOLS");
+    TEST_ASSIGN(gnustepUserDirTools,
+                @GNUSTEP_TARGET_USER_DIR_TOOLS);
+    ASSIGN_USER(gnustepUserDirAdminTools, c,
+                @"GNUSTEP_USER_DIR_ADMIN_TOOLS");
+    TEST_ASSIGN(gnustepUserDirAdminTools,
+                @GNUSTEP_TARGET_USER_DIR_ADMIN_TOOLS);
+    ASSIGN_USER(gnustepUserDirLibrary, c,
+                @"Library"); //"GNUSTEP_USER_DIR_LIBRARY"
+    TEST_ASSIGN(gnustepUserDirLibrary,
+                @"Library"); //@GNUSTEP_TARGET_USER_DIR_LIBRARY
+    ASSIGN_USER(gnustepUserDirLibraries, c,
+                @"GNUSTEP_USER_DIR_LIBRARIES");
+    TEST_ASSIGN(gnustepUserDirLibraries,
+                @GNUSTEP_TARGET_USER_DIR_LIBRARIES);
+    ASSIGN_USER(gnustepUserDirHeaders, c,
+                @"GNUSTEP_USER_DIR_HEADERS");
+    TEST_ASSIGN(gnustepUserDirHeaders,
+                @GNUSTEP_TARGET_USER_DIR_HEADERS);
+    ASSIGN_USER(gnustepUserDirDocumentation, c,
+                @"GNUSTEP_USER_DIR_DOC");
+    TEST_ASSIGN(gnustepUserDirDocumentation,
+                @GNUSTEP_TARGET_USER_DIR_DOC);
+    ASSIGN_USER(gnustepUserDirDocumentationMan, c,
+                @"GNUSTEP_USER_DIR_DOC_MAN");
+    TEST_ASSIGN(gnustepUserDirDocumentationMan,
+                @GNUSTEP_TARGET_USER_DIR_DOC_MAN);
+    ASSIGN_USER(gnustepUserDirDocumentationInfo, c,
+                @"GNUSTEP_USER_DIR_DOC_INFO");
+    TEST_ASSIGN(gnustepUserDirDocumentationInfo,
+                @GNUSTEP_TARGET_USER_DIR_DOC_INFO);
+    
+    /*
+     * The GNUSTEP_EXTRA field may contain a list of extra keys which
+     * we permit in the dictionary without generating a warning.
+     */
+    extra = [c objectForKey: @"GNUSTEP_EXTRA"];
+    if (extra != nil)
     {
-      NSEnumerator	*enumerator;
-      NSString		*key;
-
-      if ([extra isKindOfClass: [NSString class]] == YES)
+        NSEnumerator	*enumerator;
+        NSString		*key;
+        
+        if ([extra isKindOfClass: [NSString class]] == YES)
         {
-          extra = [extra componentsSeparatedByString: @","];
+            extra = [extra componentsSeparatedByString: @","];
         }
-      enumerator = [extra objectEnumerator];
-      [c removeObjectForKey: @"GNUSTEP_EXTRA"];
-      while ((key = [enumerator nextObject]) != nil)
+        enumerator = [extra objectEnumerator];
+        [c removeObjectForKey: @"GNUSTEP_EXTRA"];
+        while ((key = [enumerator nextObject]) != nil)
         {
-	  key = [key stringByTrimmingSpaces];
-	  [c removeObjectForKey: key];
-	}
+            key = [key stringByTrimmingSpaces];
+            [c removeObjectForKey: key];
+        }
     }
-  [c removeObjectForKey: @"GNUSTEP_SYSTEM_DEFAULTS_FILE"];
-
-  /* If GNUSTEP_CREATE_LIBRARY_PATH is YES then we should ensure that the
-   * per-user directory and the Library subdirectory exist so resources
-   * can safely be stored in them.
-   */
-  createLibraryPath
+    [c removeObjectForKey: @"GNUSTEP_SYSTEM_DEFAULTS_FILE"];
+    
+    /* If GNUSTEP_CREATE_LIBRARY_PATH is YES then we should ensure that the
+     * per-user directory and the Library subdirectory exist so resources
+     * can safely be stored in them.
+     */
+    createLibraryPath
     = [[c objectForKey: @"GNUSTEP_CREATE_LIBRARY_PATH"] boolValue];
-  [c removeObjectForKey: @"GNUSTEP_CREATE_LIBRARY_PATH"];
-
-  /*
-   * Remove any other dictionary entries we have used.
-   */
-  [c removeObjectForKey: @"GNUSTEP_USER_CONFIG_FILE"];
-
-  /* FIXME ... for the time being we just ignore obsolete keys */
-  [c removeObjectForKey: @"GNUSTEP_USER_ROOT"];
-  [c removeObjectForKey: @"GNUSTEP_LOCAL_ROOT"];
-  [c removeObjectForKey: @"GNUSTEP_SYSTEM_ROOT"];
-  [c removeObjectForKey: @"GNUSTEP_NETWORK_ROOT"];
-  [c removeObjectForKey: @"GNUSTEP_USER_DIR"];
-
-  if ([c count] > 0)
+    [c removeObjectForKey: @"GNUSTEP_CREATE_LIBRARY_PATH"];
+    
+    /*
+     * Remove any other dictionary entries we have used.
+     */
+    [c removeObjectForKey: @"GNUSTEP_USER_CONFIG_FILE"];
+    
+    /* FIXME ... for the time being we just ignore obsolete keys */
+    [c removeObjectForKey: @"GNUSTEP_USER_ROOT"];
+    [c removeObjectForKey: @"GNUSTEP_LOCAL_ROOT"];
+    [c removeObjectForKey: @"GNUSTEP_SYSTEM_ROOT"];
+    [c removeObjectForKey: @"GNUSTEP_NETWORK_ROOT"];
+    [c removeObjectForKey: @"GNUSTEP_USER_DIR"];
+    
+    if ([c count] > 0)
     {
-      /*
-       * The dictionary should be empty ... report problems
-       */
-      fprintf(stderr, "Configuration contains unknown keys - %s\n",
-	[[[c allKeys] description] UTF8String]);
+        /*
+         * The dictionary should be empty ... report problems
+         */
+        fprintf(stderr, "Configuration contains unknown keys - %s\n",
+                [[[c allKeys] description] UTF8String]);
     }
-  DESTROY(c);
-
-  /*
-   * Set default locations for user files if necessary.
-   */
-  if (gnustepUserDefaultsDir == nil)
+    DESTROY(c);
+    
+    /*
+     * Set default locations for user files if necessary.
+     */
+    if (gnustepUserDefaultsDir == nil)
     {
-      ASSIGN(gnustepUserDefaultsDir, @GNUSTEP_TARGET_USER_DEFAULTS_DIR);
+        ASSIGN(gnustepUserDefaultsDir, @GNUSTEP_TARGET_USER_DEFAULTS_DIR);
     }
-  if (gnustepUserDirApps == nil)
+    if (gnustepUserDirApps == nil)
     {
-      ASSIGN(gnustepUserDirApps, @GNUSTEP_TARGET_USER_DIR_APPS);
+        ASSIGN(gnustepUserDirApps, @GNUSTEP_TARGET_USER_DIR_APPS);
     }
-  if (gnustepUserDirTools == nil)
+    if (gnustepUserDirTools == nil)
     {
-      ASSIGN(gnustepUserDirTools, @GNUSTEP_TARGET_USER_DIR_TOOLS);
+        ASSIGN(gnustepUserDirTools, @GNUSTEP_TARGET_USER_DIR_TOOLS);
     }
-  if (gnustepUserDirLibrary == nil)
+    if (gnustepUserDirLibrary == nil)
     {
-      ASSIGN(gnustepUserDirLibrary, @"Library"); //@GNUSTEP_TARGET_USER_DIR_LIBRARY
+        ASSIGN(gnustepUserDirLibrary, @"Library"); //@GNUSTEP_TARGET_USER_DIR_LIBRARY
     }
-  if (gnustepUserDirLibraries == nil)
+    if (gnustepUserDirLibraries == nil)
     {
-      ASSIGN(gnustepUserDirLibraries, @GNUSTEP_TARGET_USER_DIR_LIBRARIES);
+        ASSIGN(gnustepUserDirLibraries, @GNUSTEP_TARGET_USER_DIR_LIBRARIES);
     }
-  if (gnustepUserDirHeaders == nil)
+    if (gnustepUserDirHeaders == nil)
     {
-      ASSIGN(gnustepUserDirHeaders, @GNUSTEP_TARGET_USER_DIR_HEADERS);
+        ASSIGN(gnustepUserDirHeaders, @GNUSTEP_TARGET_USER_DIR_HEADERS);
     }
-  if (gnustepUserDirDocumentation == nil)
+    if (gnustepUserDirDocumentation == nil)
     {
-      ASSIGN(gnustepUserDirDocumentation,
-	     @GNUSTEP_TARGET_USER_DIR_DOC);
+        ASSIGN(gnustepUserDirDocumentation,
+               @GNUSTEP_TARGET_USER_DIR_DOC);
     }
-  if (gnustepUserDirDocumentationMan == nil)
+    if (gnustepUserDirDocumentationMan == nil)
     {
-      ASSIGN(gnustepUserDirDocumentationMan,
-	     @GNUSTEP_TARGET_USER_DIR_DOC_MAN);
+        ASSIGN(gnustepUserDirDocumentationMan,
+               @GNUSTEP_TARGET_USER_DIR_DOC_MAN);
     }
-  if (gnustepUserDirDocumentationInfo == nil)
+    if (gnustepUserDirDocumentationInfo == nil)
     {
-      ASSIGN(gnustepUserDirDocumentationInfo,
-	     @GNUSTEP_TARGET_USER_DIR_DOC_INFO);
+        ASSIGN(gnustepUserDirDocumentationInfo,
+               @GNUSTEP_TARGET_USER_DIR_DOC_INFO);
     }
-
-  /*
-   * Set the GNUSTEP_USER_xxx variables from the user home and the
-   * GNUSTEP_USER_DIR_xxx variables.
-   */
-  ASSIGN_USER_PATH(gnustepUserApps, gnustepUserDirApps);
-  ASSIGN_USER_PATH(gnustepUserAdminApps, gnustepUserDirAdminApps);
-  ASSIGN_USER_PATH(gnustepUserWebApps, gnustepUserDirWebApps);
-  ASSIGN_USER_PATH(gnustepUserTools, gnustepUserDirTools);
-  ASSIGN_USER_PATH(gnustepUserAdminTools, gnustepUserDirAdminTools);
-  ASSIGN_USER_PATH(gnustepUserLibrary, gnustepUserDirLibrary);
-  ASSIGN_USER_PATH(gnustepUserLibraries, gnustepUserDirLibraries);
-  ASSIGN_USER_PATH(gnustepUserHeaders, gnustepUserDirHeaders);
-  ASSIGN_USER_PATH(gnustepUserDocumentation, gnustepUserDocumentation);
-  ASSIGN_USER_PATH(gnustepUserDocumentationMan, gnustepUserDocumentationMan);
-  ASSIGN_USER_PATH(gnustepUserDocumentationInfo, gnustepUserDocumentationInfo);
-
-  /*
-   * Try to ensure that essential user directories exist if we need to.
-   */
-  if (YES == createLibraryPath)
+    
+    /*
+     * Set the GNUSTEP_USER_xxx variables from the user home and the
+     * GNUSTEP_USER_DIR_xxx variables.
+     */
+    ASSIGN_USER_PATH(gnustepUserApps, gnustepUserDirApps);
+    ASSIGN_USER_PATH(gnustepUserAdminApps, gnustepUserDirAdminApps);
+    ASSIGN_USER_PATH(gnustepUserWebApps, gnustepUserDirWebApps);
+    ASSIGN_USER_PATH(gnustepUserTools, gnustepUserDirTools);
+    ASSIGN_USER_PATH(gnustepUserAdminTools, gnustepUserDirAdminTools);
+    DLog(@"gnustepUserDirLibrary: %@", gnustepUserDirLibrary);
+    DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
+    ASSIGN_USER_PATH(gnustepUserLibrary, gnustepUserDirLibrary);
+    ASSIGN_USER_PATH(gnustepUserLibraries, gnustepUserDirLibraries);
+    ASSIGN_USER_PATH(gnustepUserHeaders, gnustepUserDirHeaders);
+    ASSIGN_USER_PATH(gnustepUserDocumentation, gnustepUserDocumentation);
+    ASSIGN_USER_PATH(gnustepUserDocumentationMan, gnustepUserDocumentationMan);
+    ASSIGN_USER_PATH(gnustepUserDocumentationInfo, gnustepUserDocumentationInfo);
+    
+    /*
+     * Try to ensure that essential user directories exist if we need to.
+     */
+    if (YES == createLibraryPath)
     {
-      NSFileManager	*manager;
-      NSString		*path;
-      NSDictionary	*attr;
-      BOOL		flag;
-
-      manager = [NSFileManager defaultManager];
-      attr = [NSDictionary dictionaryWithObject: [NSNumber numberWithInt: 0750]
-					 forKey: NSFilePosixPermissions];
-
-      // Make sure library directory exists (to store resources).
-      path = gnustepUserLibrary;
-      if ([manager fileExistsAtPath: path isDirectory: &flag] == NO
-	|| flag == NO)
-	{
-	  [manager createDirectoryAtPath: path
-             withIntermediateDirectories: YES
-                              attributes: attr
-                                   error: NULL];
-	}
+        NSFileManager	*manager;
+        NSString		*path;
+        NSDictionary	*attr;
+        BOOL		flag;
+        
+        manager = [NSFileManager defaultManager];
+        attr = [NSDictionary dictionaryWithObject: [NSNumber numberWithInt: 0750]
+                                           forKey: NSFilePosixPermissions];
+        
+        // Make sure library directory exists (to store resources).
+        DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary):
+        path = gnustepUserLibrary;
+        if ([manager fileExistsAtPath: path isDirectory: &flag] == NO
+            || flag == NO)
+        {
+            [manager createDirectoryAtPath: path
+               withIntermediateDirectories: YES
+                                attributes: attr
+                                     error: NULL];
+        }
     }
-
-  /*
-   * Finally set default locations for the essential paths if required.
-   */
-  ASSIGN_DEFAULT_PATH(gnustepSystemApps,
-    @GNUSTEP_TARGET_SYSTEM_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepSystemAdminApps,
-    @GNUSTEP_TARGET_SYSTEM_ADMIN_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepSystemWebApps,
-    @GNUSTEP_TARGET_SYSTEM_WEB_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepSystemTools,
-    @GNUSTEP_TARGET_SYSTEM_TOOLS);
-  ASSIGN_DEFAULT_PATH(gnustepSystemAdminTools,
-    @GNUSTEP_TARGET_SYSTEM_ADMIN_TOOLS);
-  ASSIGN_DEFAULT_PATH(gnustepSystemLibrary,
-    @GNUSTEP_TARGET_SYSTEM_LIBRARY);
-  ASSIGN_DEFAULT_PATH(gnustepSystemLibraries,
-    @GNUSTEP_TARGET_SYSTEM_LIBRARIES);
-  ASSIGN_DEFAULT_PATH(gnustepSystemHeaders,
-    @GNUSTEP_TARGET_SYSTEM_HEADERS);
-  ASSIGN_DEFAULT_PATH(gnustepSystemDocumentation,
-    @GNUSTEP_TARGET_SYSTEM_DOC);
-  ASSIGN_DEFAULT_PATH(gnustepSystemDocumentationMan,
-    @GNUSTEP_TARGET_SYSTEM_DOC_MAN);
-  ASSIGN_DEFAULT_PATH(gnustepSystemDocumentationInfo,
-    @GNUSTEP_TARGET_SYSTEM_DOC_INFO);
-
-  ASSIGN_DEFAULT_PATH(gnustepNetworkApps,
-    @GNUSTEP_TARGET_NETWORK_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkAdminApps,
-    @GNUSTEP_TARGET_NETWORK_ADMIN_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkWebApps,
-    @GNUSTEP_TARGET_NETWORK_WEB_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkTools,
-    @GNUSTEP_TARGET_NETWORK_TOOLS);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkAdminTools,
-    @GNUSTEP_TARGET_NETWORK_ADMIN_TOOLS);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkLibrary,
-    @GNUSTEP_TARGET_NETWORK_LIBRARY);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkLibraries,
-    @GNUSTEP_TARGET_NETWORK_LIBRARIES);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkHeaders,
-    @GNUSTEP_TARGET_NETWORK_HEADERS);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkDocumentation,
-    @GNUSTEP_TARGET_NETWORK_DOC);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkDocumentationMan,
-    @GNUSTEP_TARGET_NETWORK_DOC_MAN);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkDocumentationInfo,
-    @GNUSTEP_TARGET_NETWORK_DOC_INFO);
-
-  ASSIGN_DEFAULT_PATH(gnustepLocalApps,
-    @GNUSTEP_TARGET_LOCAL_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepLocalAdminApps,
-    @GNUSTEP_TARGET_LOCAL_ADMIN_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepLocalWebApps,
-    @GNUSTEP_TARGET_LOCAL_WEB_APPS);
-  ASSIGN_DEFAULT_PATH(gnustepLocalTools,
-    @GNUSTEP_TARGET_LOCAL_TOOLS);
-  ASSIGN_DEFAULT_PATH(gnustepLocalAdminTools,
-    @GNUSTEP_TARGET_LOCAL_ADMIN_TOOLS);
-  ASSIGN_DEFAULT_PATH(gnustepLocalLibrary,
-    @GNUSTEP_TARGET_LOCAL_LIBRARY);
-  ASSIGN_DEFAULT_PATH(gnustepLocalLibraries,
-    @GNUSTEP_TARGET_LOCAL_LIBRARIES);
-  ASSIGN_DEFAULT_PATH(gnustepLocalHeaders,
-    @GNUSTEP_TARGET_LOCAL_HEADERS);
-  ASSIGN_DEFAULT_PATH(gnustepLocalDocumentation,
-    @GNUSTEP_TARGET_LOCAL_DOC);
-  ASSIGN_DEFAULT_PATH(gnustepLocalDocumentationMan,
-    @GNUSTEP_TARGET_LOCAL_DOC_MAN);
-  ASSIGN_DEFAULT_PATH(gnustepLocalDocumentationInfo,
-    @GNUSTEP_TARGET_LOCAL_DOC_INFO);
-
-  ASSIGN_DEFAULT_PATH(gnustepMakefiles,
-    @GNUSTEP_TARGET_MAKEFILES);
-
-  ASSIGN_DEFAULT_PATH(gnustepSystemUsersDir,
-    @GNUSTEP_TARGET_SYSTEM_USERS_DIR);
-  ASSIGN_DEFAULT_PATH(gnustepNetworkUsersDir,
-    @GNUSTEP_TARGET_NETWORK_USERS_DIR);
-  ASSIGN_DEFAULT_PATH(gnustepLocalUsersDir,
-    @GNUSTEP_TARGET_LOCAL_USERS_DIR);
+    
+    /*
+     * Finally set default locations for the essential paths if required.
+     */
+    ASSIGN_DEFAULT_PATH(gnustepSystemApps,
+                        @GNUSTEP_TARGET_SYSTEM_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepSystemAdminApps,
+                        @GNUSTEP_TARGET_SYSTEM_ADMIN_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepSystemWebApps,
+                        @GNUSTEP_TARGET_SYSTEM_WEB_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepSystemTools,
+                        @GNUSTEP_TARGET_SYSTEM_TOOLS);
+    ASSIGN_DEFAULT_PATH(gnustepSystemAdminTools,
+                        @GNUSTEP_TARGET_SYSTEM_ADMIN_TOOLS);
+    ASSIGN_DEFAULT_PATH(gnustepSystemLibrary,
+                        @GNUSTEP_TARGET_SYSTEM_LIBRARY);
+    ASSIGN_DEFAULT_PATH(gnustepSystemLibraries,
+                        @GNUSTEP_TARGET_SYSTEM_LIBRARIES);
+    ASSIGN_DEFAULT_PATH(gnustepSystemHeaders,
+                        @GNUSTEP_TARGET_SYSTEM_HEADERS);
+    ASSIGN_DEFAULT_PATH(gnustepSystemDocumentation,
+                        @GNUSTEP_TARGET_SYSTEM_DOC);
+    ASSIGN_DEFAULT_PATH(gnustepSystemDocumentationMan,
+                        @GNUSTEP_TARGET_SYSTEM_DOC_MAN);
+    ASSIGN_DEFAULT_PATH(gnustepSystemDocumentationInfo,
+                        @GNUSTEP_TARGET_SYSTEM_DOC_INFO);
+    
+    ASSIGN_DEFAULT_PATH(gnustepNetworkApps,
+                        @GNUSTEP_TARGET_NETWORK_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkAdminApps,
+                        @GNUSTEP_TARGET_NETWORK_ADMIN_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkWebApps,
+                        @GNUSTEP_TARGET_NETWORK_WEB_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkTools,
+                        @GNUSTEP_TARGET_NETWORK_TOOLS);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkAdminTools,
+                        @GNUSTEP_TARGET_NETWORK_ADMIN_TOOLS);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkLibrary,
+                        @GNUSTEP_TARGET_NETWORK_LIBRARY);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkLibraries,
+                        @GNUSTEP_TARGET_NETWORK_LIBRARIES);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkHeaders,
+                        @GNUSTEP_TARGET_NETWORK_HEADERS);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkDocumentation,
+                        @GNUSTEP_TARGET_NETWORK_DOC);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkDocumentationMan,
+                        @GNUSTEP_TARGET_NETWORK_DOC_MAN);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkDocumentationInfo,
+                        @GNUSTEP_TARGET_NETWORK_DOC_INFO);
+    
+    ASSIGN_DEFAULT_PATH(gnustepLocalApps,
+                        @GNUSTEP_TARGET_LOCAL_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepLocalAdminApps,
+                        @GNUSTEP_TARGET_LOCAL_ADMIN_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepLocalWebApps,
+                        @GNUSTEP_TARGET_LOCAL_WEB_APPS);
+    ASSIGN_DEFAULT_PATH(gnustepLocalTools,
+                        @GNUSTEP_TARGET_LOCAL_TOOLS);
+    ASSIGN_DEFAULT_PATH(gnustepLocalAdminTools,
+                        @GNUSTEP_TARGET_LOCAL_ADMIN_TOOLS);
+    ASSIGN_DEFAULT_PATH(gnustepLocalLibrary,
+                        @GNUSTEP_TARGET_LOCAL_LIBRARY);
+    ASSIGN_DEFAULT_PATH(gnustepLocalLibraries,
+                        @GNUSTEP_TARGET_LOCAL_LIBRARIES);
+    ASSIGN_DEFAULT_PATH(gnustepLocalHeaders,
+                        @GNUSTEP_TARGET_LOCAL_HEADERS);
+    ASSIGN_DEFAULT_PATH(gnustepLocalDocumentation,
+                        @GNUSTEP_TARGET_LOCAL_DOC);
+    ASSIGN_DEFAULT_PATH(gnustepLocalDocumentationMan,
+                        @GNUSTEP_TARGET_LOCAL_DOC_MAN);
+    ASSIGN_DEFAULT_PATH(gnustepLocalDocumentationInfo,
+                        @GNUSTEP_TARGET_LOCAL_DOC_INFO);
+    
+    ASSIGN_DEFAULT_PATH(gnustepMakefiles,
+                        @GNUSTEP_TARGET_MAKEFILES);
+    
+    ASSIGN_DEFAULT_PATH(gnustepSystemUsersDir,
+                        @GNUSTEP_TARGET_SYSTEM_USERS_DIR);
+    ASSIGN_DEFAULT_PATH(gnustepNetworkUsersDir,
+                        @GNUSTEP_TARGET_NETWORK_USERS_DIR);
+    ASSIGN_DEFAULT_PATH(gnustepLocalUsersDir,
+                        @GNUSTEP_TARGET_LOCAL_USERS_DIR);
 }
 
 static void
@@ -2265,6 +2268,7 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
             
         case NSAllLibrariesDirectory:
         {
+            DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary):
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalLibrary);
             ADD_PLATFORM_PATH(NSNetworkDomainMask, gnustepNetworkLibrary);
@@ -2630,7 +2634,7 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
     for (i = 0; i < count; i++)
     {
         path = [paths objectAtIndex: i];
-        DLog(@"path: %@", path);
+        //DLog(@"path: %@", path);
         if (expandTilde == YES)
         {
             [paths replaceObjectAtIndex: i
