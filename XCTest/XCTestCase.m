@@ -36,7 +36,7 @@
             count++;
             NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
             [self setup];
-            NSLog(@"currentTime: %0.0f", currentTime);
+            //NSLog(@"currentTime: %0.0f", currentTime);
             NSLog(@"Test Case '%@' started.", methodName);
             SEL selector = NSSelectorFromString(methodName);
             [self performSelector:selector];
