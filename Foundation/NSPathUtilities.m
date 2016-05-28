@@ -691,7 +691,7 @@ static void ExtractValuesFromConfig(NSDictionary *config)
                                            forKey: NSFilePosixPermissions];
         
         // Make sure library directory exists (to store resources).
-        DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary):
+        DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
         path = gnustepUserLibrary;
         if ([manager fileExistsAtPath: path isDirectory: &flag] == NO
             || flag == NO)
@@ -2268,7 +2268,7 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
             
         case NSAllLibrariesDirectory:
         {
-            DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary):
+            DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalLibrary);
             ADD_PLATFORM_PATH(NSNetworkDomainMask, gnustepNetworkLibrary);
