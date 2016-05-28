@@ -2151,6 +2151,8 @@ devroot(NSFileManager *manager, NSString *path)
 }
 #endif
 
+#define kDataSize       512
+
 static NSString *_RunCommand(NSString *command)
 {
     const char *cCommand = [command cString];
@@ -2301,7 +2303,7 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
             ADD_PLATFORM_PATH(NSAllDomainsMask, uninstalled);
             
             NSString *currentDirectory = _RunCommand(@"$(pwd | awk -F'/' '{print $NF}')");
-            gnustepUserLibrary = [NSString stringWithFormat@"%@.app/Library", currentDirectory];
+            gnustepUserLibrary = [NSString stringWithFormat:@"%@.app/Library", currentDirectory];
             DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalLibrary);
