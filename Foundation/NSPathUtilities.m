@@ -537,9 +537,9 @@ static void ExtractValuesFromConfig(NSDictionary *config)
     TEST_ASSIGN(gnustepUserDirAdminTools,
                 @GNUSTEP_TARGET_USER_DIR_ADMIN_TOOLS);
     ASSIGN_USER(gnustepUserDirLibrary, c,
-                @"Library"); //"GNUSTEP_USER_DIR_LIBRARY"
+                @"GNUSTEP_USER_DIR_LIBRARY");
     TEST_ASSIGN(gnustepUserDirLibrary,
-                @"Library"); //@GNUSTEP_TARGET_USER_DIR_LIBRARY
+                @GNUSTEP_TARGET_USER_DIR_LIBRARY);
     ASSIGN_USER(gnustepUserDirLibraries, c,
                 @"GNUSTEP_USER_DIR_LIBRARIES");
     TEST_ASSIGN(gnustepUserDirLibraries,
@@ -632,7 +632,7 @@ static void ExtractValuesFromConfig(NSDictionary *config)
     }
     if (gnustepUserDirLibrary == nil)
     {
-        ASSIGN(gnustepUserDirLibrary, @"Library"); //@GNUSTEP_TARGET_USER_DIR_LIBRARY
+        ASSIGN(gnustepUserDirLibrary, @GNUSTEP_TARGET_USER_DIR_LIBRARY);
     }
     if (gnustepUserDirLibraries == nil)
     {
@@ -667,8 +667,6 @@ static void ExtractValuesFromConfig(NSDictionary *config)
     ASSIGN_USER_PATH(gnustepUserWebApps, gnustepUserDirWebApps);
     ASSIGN_USER_PATH(gnustepUserTools, gnustepUserDirTools);
     ASSIGN_USER_PATH(gnustepUserAdminTools, gnustepUserDirAdminTools);
-    DLog(@"gnustepUserDirLibrary: %@", gnustepUserDirLibrary);
-    DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
     ASSIGN_USER_PATH(gnustepUserLibrary, gnustepUserDirLibrary);
     ASSIGN_USER_PATH(gnustepUserLibraries, gnustepUserDirLibraries);
     ASSIGN_USER_PATH(gnustepUserHeaders, gnustepUserDirHeaders);
@@ -2153,6 +2151,25 @@ devroot(NSFileManager *manager, NSString *path)
 }
 #endif
 
+static NSString *_RunCommand(NSString *command)
+{
+    const char *cCommand = [command cString];
+    FILE *pf = popen(cCommand, "r");
+    if (!pf) {
+        DLog(@"Could not open pipe for output.");
+        return @"Could not open pipe for output.";
+    }
+    NSMutableString *commandOutput = [[NSMutableString alloc] init];
+    char data[kDataSize];
+    while (fgets(data, kDataSize , pf)) {
+        //DLog(@"data: %s", data);
+        [commandOutput appendString:[NSString stringWithFormat:@"%s", data]];
+    }
+    pclose(pf);
+    //DLog(@"commandOutput: %@", commandOutput);
+    return [commandOutput autorelease];
+}
+
 NSArray *
 NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory directoryKey,
   NSSearchPathDomainMask domainMask, BOOL expandTilde)
@@ -2268,7 +2285,6 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
             
         case NSAllLibrariesDirectory:
         {
-            DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalLibrary);
             ADD_PLATFORM_PATH(NSNetworkDomainMask, gnustepNetworkLibrary);
@@ -2283,7 +2299,9 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
              * on software prior to installation.
              */
             ADD_PLATFORM_PATH(NSAllDomainsMask, uninstalled);
-            gnustepUserLibrary = @"RengoTests.app/Library";
+            
+            NSString *currentDirectory = _RunCommand(@"$(pwd | awk -F'/' '{print $NF}')");
+            gnustepUserLibrary = [NSString stringWithFormat@"%@.app/Library", currentDirectory];
             DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalLibrary);
@@ -2634,7 +2652,7 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
     for (i = 0; i < count; i++)
     {
         path = [paths objectAtIndex: i];
-        //DLog(@"path: %@", path);
+        
         if (expandTilde == YES)
         {
             [paths replaceObjectAtIndex: i
