@@ -20,3 +20,18 @@
 @interface XCTestCase : XCTest
 
 @end
+
+extern int _failureCount;
+
+#define XCTAssertEqualObjects(object1, object2, message) \
+    if (![object1 isEqualTo:object2]) { \
+        _failureCount++; \
+        DLog(@"error: %@", message); \
+    } \
+
+
+#define XCTAssertNil(object1, message) \
+    if (object1 != nil) { \
+        _failureCount++; \
+        DLog(@"error: %@", message); \
+    } \

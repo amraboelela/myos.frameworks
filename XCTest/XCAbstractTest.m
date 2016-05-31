@@ -19,7 +19,7 @@
 
 @implementation XCTest
 
-- (void)setup
+- (void)setUp
 {
     
 }
