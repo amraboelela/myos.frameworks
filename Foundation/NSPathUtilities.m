@@ -2301,10 +2301,11 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
              * on software prior to installation.
              */
             ADD_PLATFORM_PATH(NSAllDomainsMask, uninstalled);
-            
-            NSString *currentDirectory = _RunCommand(@"(pwd | awk -F'/' '{print $NF}')");
-            DLog(@"currentDirectory: %@", currentDirectory);
-            gnustepUserLibrary = [NSString stringWithFormat:@"%@.app/Library", currentDirectory];
+            if (!gnustepUserLibrary) {
+                NSString *currentDirectory = _RunCommand(@"(pwd)");//_RunCommand(@"(pwd | awk -F'/' '{print $NF}')");
+                DLog(@"currentDirectory: %@", currentDirectory);
+                gnustepUserLibrary = [NSString stringWithFormat:@"%@/Library", currentDirectory];
+            }
             DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalLibrary);
