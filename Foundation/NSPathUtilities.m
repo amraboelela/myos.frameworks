@@ -2172,6 +2172,8 @@ static NSString *_RunCommand(NSString *command)
     return [commandOutput autorelease];
 }
 
+static NSString *_currentDirectory=nil;
+
 NSArray *
 NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory directoryKey,
   NSSearchPathDomainMask domainMask, BOOL expandTilde)
@@ -2301,10 +2303,10 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
              * on software prior to installation.
              */
             ADD_PLATFORM_PATH(NSAllDomainsMask, uninstalled);
-            if (!gnustepUserLibrary) {
-                NSString *currentDirectory = _RunCommand(@"(pwd)");//_RunCommand(@"(pwd | awk -F'/' '{print $NF}')");
-                DLog(@"currentDirectory: %@", currentDirectory);
-                gnustepUserLibrary = [NSString stringWithFormat:@"%@/Library", currentDirectory];
+            if (!_currentDirectory) {
+                _currentDirectory = _RunCommand(@"(pwd)");//_RunCommand(@"(pwd | awk -F'/' '{print $NF}')");
+                DLog(@"_currentDirectory: %@", _currentDirectory);
+                gnustepUserLibrary = [NSString stringWithFormat:@"%@/Library", _currentDirectory];
             }
             DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
