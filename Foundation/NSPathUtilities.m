@@ -689,7 +689,7 @@ static void ExtractValuesFromConfig(NSDictionary *config)
                                            forKey: NSFilePosixPermissions];
         
         // Make sure library directory exists (to store resources).
-        DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
+        //DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
         path = gnustepUserLibrary;
         if ([manager fileExistsAtPath: path isDirectory: &flag] == NO
             || flag == NO)
@@ -2164,15 +2164,21 @@ static NSString *_RunCommand(NSString *command)
     NSMutableString *commandOutput = [[NSMutableString alloc] init];
     char data[kDataSize];
     while (fgets(data, kDataSize , pf)) {
-        //DLog(@"data: %s", data);
+        //DLog(@"data: %sLibrary", data);
         [commandOutput appendString:[NSString stringWithFormat:@"%s", data]];
     }
     pclose(pf);
-    //DLog(@"commandOutput: %@", commandOutput);
+    //DLog(@"commandOutput: %@dd", commandOutput);
+    NSRange range = [commandOutput rangeOfString:@"\n"];
+    if (range.length > 0) {
+        //DLog(@"range.length > 0");
+        [commandOutput deleteCharactersInRange:range];
+    }
+    //DLog(@"commandOutput: %@dd", commandOutput);
     return [commandOutput autorelease];
 }
 
-static NSString *_currentDirectory=nil;
+static NSString *_currentDirectory = nil;
 
 NSArray *
 NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory directoryKey,
@@ -2303,12 +2309,12 @@ if ([add_dir length] > 0 && [paths containsObject: add_dir] == NO) \
              * on software prior to installation.
              */
             ADD_PLATFORM_PATH(NSAllDomainsMask, uninstalled);
-            if (!_currentDirectory) {
-                _currentDirectory = _RunCommand(@"(pwd | awk -F'\t' '{print $NF}')");//_RunCommand(@"(pwd | awk -F'/' '{print $NF}')");
-                DLog(@"_currentDirectory: %@", _currentDirectory);
-                gnustepUserLibrary = [NSString stringWithFormat:@"%@/Library", _currentDirectory];
+            if (_currentDirectory == nil) {
+                _currentDirectory = [_RunCommand(@"(pwd)") retain];//_RunCommand(@"(pwd | awk -F'/' '{print $NF}')");
+                gnustepUserLibrary = [[NSString stringWithFormat:@"%@/Library", _currentDirectory] retain];
             }
-            DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
+            //DLog(@"_currentDirectory: %@", _currentDirectory);
+            //DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSUserDomainMask, gnustepUserLibrary);
             ADD_PLATFORM_PATH(NSLocalDomainMask, gnustepLocalLibrary);
             ADD_PLATFORM_PATH(NSNetworkDomainMask, gnustepNetworkLibrary);

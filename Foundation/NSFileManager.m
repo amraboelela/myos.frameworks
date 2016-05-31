@@ -16,6 +16,9 @@
    Date: Sep 2002
    Rewritten attribute handling code
 
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: May 2016
+
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
@@ -736,13 +739,22 @@ static NSStringEncoding	defaultEncoding;
 
       while ((path = (NSString *)[paths nextObject]) != nil)
 	{
+          //DLog(@"path: %@", path);
 	  dir = [dir stringByAppendingPathComponent: path];
+          //DLog(@"dir: %@", dir);
 	  // create directory only if it doesn't exist
 	  if (NO == [self fileExistsAtPath: dir])
 	    {
+              //DLog(@"NO == [self fileExistsAtPath: dir]");
 	      result = [self createDirectoryAtPath: dir
 		     			attributes: attributes];
+              //DLog(@"result: %d", result);
 	    }
+          // an existing not created dir is equivalent to a created one
+          else
+            {
+              result = YES;
+            }
 	}
     }
   else

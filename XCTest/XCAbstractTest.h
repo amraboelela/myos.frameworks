@@ -19,7 +19,7 @@
 
 @interface XCTest : NSObject
 
-- (void)setup;
+- (void)setUp;
 - (void)runTest;
 - (void)tearDown;
 
