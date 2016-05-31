@@ -27,6 +27,7 @@
 #ifndef __Foundation_h_GNUSTEP_BASE_INCLUDE
 #define __Foundation_h_GNUSTEP_BASE_INCLUDE
 
+#import <bsd/stdlib.h>
 #import	<GNUstepBase/GSVersionMacros.h>
 #import	<objc/objc.h>
 

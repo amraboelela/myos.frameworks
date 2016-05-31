@@ -689,7 +689,7 @@ static void ExtractValuesFromConfig(NSDictionary *config)
                                            forKey: NSFilePosixPermissions];
         
         // Make sure library directory exists (to store resources).
-        DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
+        //DLog(@"gnustepUserLibrary: %@", gnustepUserLibrary);
         path = gnustepUserLibrary;
         if ([manager fileExistsAtPath: path isDirectory: &flag] == NO
             || flag == NO)
