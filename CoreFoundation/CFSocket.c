@@ -444,7 +444,7 @@ CFSocketSetAddress (CFSocketRef s, CFDataRef address)
         s->_isListening = true;
         return kCFSocketSuccess;
     } else {
-       printf("Socket bind error: %d\n", err);
+       printf("Socket bind error: %s\n", strerror(err));
     }
     return kCFSocketError;
 }
