@@ -523,12 +523,11 @@ CFSocketUpdateDispatchSources (CFSocketRef s)
 #   define READ_EVENTS (kCFSocketReadCallBack|kCFSocketAcceptCallBack|kCFSocketDataCallBack)
 #   define WRITE_EVENTS (kCFSocketConnectCallBack|kCFSocketWriteCallBack)
     
-    //printf("CFSocketUpdateDispatchSources 1\n");
     if (s->_cbTypes & READ_EVENTS)
     {
         if (!s->_readResumed)
         {
-            printf("CFSocketUpdateDispatchSources _readResumed\n");
+            //printf("CFSocketUpdateDispatchSources _readResumed\n");
             dispatch_resume(s->_readSource);
             s->_readResumed = true;
         }
