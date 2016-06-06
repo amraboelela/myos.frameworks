@@ -61,6 +61,7 @@ typedef enum {
     (orientation) == UIDeviceOrientationLandscapeRight)
 
 @interface UIDevice : NSObject {
+    NSUUID *_identifierForVendor;
 }
 
 + (UIDevice *)currentDevice;
@@ -73,6 +74,7 @@ typedef enum {
 @property (nonatomic, readonly, retain) NSString *systemVersion;
 @property (nonatomic, readonly, retain) NSString *model;
 @property (nonatomic, readonly, retain) NSString *uniqueIdentifier;
+@property (nonatomic, readonly, retain) NSUUID *identifierForVendor;
 @property (nonatomic, readonly, getter=isGeneratingDeviceOrientationNotifications) BOOL generatesDeviceOrientationNotifications; // aways returns NO
 
 - (void)beginGeneratingDeviceOrientationNotifications;  // no effect

@@ -49,6 +49,12 @@ static UIDevice *theDevice;
     return theDevice;
 }
 
+- (void)dealloc
+{
+    [_identifierForVendor release];
+    [super dealloc];
+}
+
 - (UIUserInterfaceIdiom)userInterfaceIdiom
 {
     return UIUserInterfaceIdiomDesktop;
@@ -112,6 +118,14 @@ static UIDevice *theDevice;
     }*/
 
     return aUniqueIdentifier;
+}
+
+- (NSUUID *)identifierForVendor
+{
+    if (!_identifierForVendor) {
+        _identifierForVendor = [[NSUUID UUID] retain];
+    }
+    return _identifierForVendor;
 }
 
 - (BOOL)isGeneratingDeviceOrientationNotifications
