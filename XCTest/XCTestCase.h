@@ -23,6 +23,7 @@
 
 extern int _testCount;
 extern int _failureCount;
+extern NSTimeInterval _totalTime;
 
 #define XCTAssertEqualObjects(object1, object2, message) \
     if (![object1 isEqualTo:object2]) { \

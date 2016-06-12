@@ -19,6 +19,7 @@
 
 int _testCount = 0;
 int _failureCount = 0;
+NSTimeInterval _totalTime = 0;
 
 @implementation XCTestCase
 
@@ -32,7 +33,7 @@ int _failureCount = 0;
     Method *methods = class_copyMethodList(clz, &methodCount);
     _testCount = 0;
     _failureCount = 0;
-    NSTimeInterval totalTime = 0;
+    _totalTime = 0;
     for (unsigned int i = 0; i < methodCount; i++) {
         Method method = methods[i];
         NSString *methodName = [NSString stringWithFormat:@"%s", sel_getName(method_getName(method))];
@@ -44,7 +45,7 @@ int _failureCount = 0;
             int prevFailureCount = _failureCount;
             SEL selector = NSSelectorFromString(methodName);
             [self performSelector:selector];
-            totalTime += [NSDate timeIntervalSinceReferenceDate] - currentTime;
+            _totalTime += [NSDate timeIntervalSinceReferenceDate] - currentTime;
             [self tearDown];
             if (_failureCount > prevFailureCount) {
                 NSLog(@"Test Case '%@' failed (%0.3f seconds).", methodName, [NSDate timeIntervalSinceReferenceDate] - currentTime);
@@ -58,7 +59,7 @@ int _failureCount = 0;
     } else {
         NSLog(@"Test Suite '%@' passed.", className);
     }
-    NSLog(@"     Executed %d test%@, with %d failure%@ in %0.3f seconds", _testCount, (_testCount > 1)?@"s":@"",  _failureCount, (_failureCount > 1)?@"s":@"", totalTime);
+    NSLog(@"     Executed %d test%@, with %d failure%@ in %0.3f seconds", _testCount, (_testCount > 1)?@"s":@"",  _failureCount, (_failureCount > 1)?@"s":@"", _totalTime);
     free(methods);
 }
 
