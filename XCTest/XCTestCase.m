@@ -17,6 +17,7 @@
 
 #import <XCTest/XCTestCase.h>
 
+int _testCount = 0;
 int _failureCount = 0;
 
 @implementation XCTestCase
@@ -29,14 +30,14 @@ int _failureCount = 0;
     
     unsigned int methodCount = 0;
     Method *methods = class_copyMethodList(clz, &methodCount);
-    int count = 0;
+    _testCount = 0;
     _failureCount = 0;
     NSTimeInterval totalTime = 0;
     for (unsigned int i = 0; i < methodCount; i++) {
         Method method = methods[i];
         NSString *methodName = [NSString stringWithFormat:@"%s", sel_getName(method_getName(method))];
         if ([methodName rangeOfString:@"test"].location == 0) {
-            count++;
+            _testCount++;
             NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
             [self setUp];
             NSLog(@"Test Case '%@' started.", methodName);
@@ -57,7 +58,7 @@ int _failureCount = 0;
     } else {
         NSLog(@"Test Suite '%@' passed.", className);
     }
-    NSLog(@"     Executed %d test%@, with %d failure%@ in %0.3f seconds", count, (count > 1)?@"s":@"",  _failureCount, (_failureCount > 1)?@"s":@"", totalTime);
+    NSLog(@"     Executed %d test%@, with %d failure%@ in %0.3f seconds", _testCount, (_testCount > 1)?@"s":@"",  _failureCount, (_failureCount > 1)?@"s":@"", totalTime);
     free(methods);
 }
 
