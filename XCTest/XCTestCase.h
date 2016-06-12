@@ -21,6 +21,7 @@
 
 @end
 
+extern int _testCount;
 extern int _failureCount;
 
 #define XCTAssertEqualObjects(object1, object2, message) \

@@ -2,13 +2,13 @@
 LDLIBS= -lCoreFoundation -lFoundation
 
 OBJECTS = \
-        WebServices \
+	WebServices \
 	GWSBinding \
 	GWSCoder \
 	GWSDocument \
 	GWSElement \
 	GWSExtensibility \
-        GWSHash \
+	GWSHash \
 	GWSMessage \
 	GWSPort \
 	GWSPortType \
