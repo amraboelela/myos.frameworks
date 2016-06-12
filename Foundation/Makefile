@@ -189,5 +189,6 @@ OBJECTS = \
     GSTLS \
     GSShellSort \
     GSTimSort \
+    NSUUID \
 
 include ${MYOS_PATH}/sdk/$(BASE_OS)/makefile-shared
