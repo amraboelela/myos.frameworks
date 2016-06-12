@@ -1391,7 +1391,6 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
             isApplication = NO;
             isNonInstalledTool = YES;
         }
-        //DLog(@"s: %@", s);
         /*if (isApplication == YES) {
          DLog(@"isApplication == YES");
          s = [path lastPathComponent];
@@ -1490,7 +1489,6 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
         _mainBundle = [self alloc];
         /* Please note that _mainBundle should *not* be nil.  */
         _mainBundle = [_mainBundle initWithPath:path];
-        //DLog(@"_mainBundle: %@", _mainBundle);
         NSAssert(_mainBundle != nil, NSInternalInconsistencyException);
     }
     
@@ -1507,7 +1505,6 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
   void		*key;
   NSBundle	*bundle;
   NSMapEnumerator enumerate;
-    //DLog();
     if (!aClass) {
     return nil;
     }
@@ -1668,7 +1665,6 @@ IF_NO_GC(
       [self dealloc];
       return nil;
     }
-    //DLog();
   /*
    * Make sure we have an absolute and fully expanded path,
    * so we can manipulate it without having to worry about
@@ -1681,7 +1677,6 @@ IF_NO_GC(
     {
       NSWarnMLog(@"NSBundle -initWithPath: requires absolute path names, "
 	@"given '%@'", path);
-        //DLog();
 #if defined(__MINGW__)
       if ([path length] > 0 &&
 	([path characterAtIndex: 0]=='/' || [path characterAtIndex: 0]=='\\'))
@@ -2195,7 +2190,7 @@ IF_NO_GC(
     {
       file = [name stringByAppendingPathExtension: extension];
     }
-
+    //DLog(@"file: %@", file);
   pathlist = [[self _bundleResourcePathsWithRootPath: rootPath
     subPath: subPath localization: nil] objectEnumerator];
   while ((path = [pathlist nextObject]) != nil)
@@ -2262,7 +2257,6 @@ IF_NO_GC(
 		   inDirectory: (NSString *)subPath
 {
   NSString *rootPath;
-    //DLog();
 #if !defined(__MINGW__)
   if (_frameworkVersion)
     rootPath = [NSString stringWithFormat:@"%@/Versions/%@", [self bundlePath],
@@ -2270,7 +2264,7 @@ IF_NO_GC(
   else
 #endif
     rootPath = [self bundlePath];
-
+    //DLog(@"rootPath: %@", rootPath);
   return [NSBundle _pathForResource: name
 			     ofType: extension
 			 inRootPath: rootPath
@@ -2323,7 +2317,6 @@ IF_NO_GC(
   NSString *path;
   NSMutableArray *resources;
   NSEnumerator *pathlist;
-    //DLog();
   pathlist = [[NSBundle _bundleResourcePathsWithRootPath: bundlePath
     subPath: subPath localization: localization] objectEnumerator];
   resources = [NSMutableArray arrayWithCapacity: 2];
@@ -2541,7 +2534,6 @@ IF_NO_GC(
 
 - (NSArray *) preferredLocalizations
 {
-    //DLog();
   return [NSBundle preferredLocalizationsFromArray: [self localizations]];
 }
 
@@ -2708,7 +2700,6 @@ IF_NO_GC(
 - (NSString *) executablePath
 {
   NSString *object, *path;
-    //DLog();
     if (!_mainBundle) {
       [NSBundle mainBundle];
     }
@@ -2810,7 +2801,6 @@ IF_NO_GC(
 				version]];
 #else
       /* No Versions (that require symlinks) on MINGW */
-        //DLog(@"_path: %@", _path);
       return [_path stringByAppendingPathComponent: @"Resources"];
 #endif
     }
