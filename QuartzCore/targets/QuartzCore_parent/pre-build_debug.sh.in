@@ -1,3 +1,3 @@
 
 export APP_TYPE=ParentApp
-export CFLAGS=
+export CFLAGS=-DDEBUG
