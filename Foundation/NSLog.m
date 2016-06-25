@@ -86,7 +86,7 @@ extern NSThread	*GSCurrentThread();
  * You may change this, but for thread safety should
  * use the lock provided by GSLogLock() to protect the change.
  */
-int _NSLogDescriptor = 2;
+int _NSLogDescriptor = 1;
 
 static NSRecursiveLock	*myLock = nil;
 
@@ -124,6 +124,8 @@ _NSLog_standard_printf_handler(NSString* message)
   char	*null_terminated_buf = NULL;
 #endif
 #endif
+
+  //printf("_NSLog_standard_printf_handler\n");
   static NSStringEncoding enc = 0;
 
   if (enc == 0)
@@ -179,13 +181,14 @@ _NSLog_standard_printf_handler(NSString* message)
 #else
 
 #if	defined(HAVE_SYSLOG)
+  //printf("HAVE_SYSLOG _NSLogDescriptor\n");
   if (GSPrivateDefaultsFlag(GSLogSyslog) == YES
     || write(_NSLogDescriptor, buf, len) != (int)len)
     {
       null_terminated_buf = malloc(sizeof (char) * (len + 1));
       strncpy (null_terminated_buf, buf, len);
       null_terminated_buf[len] = '\0';
-        printf("HAVE_SYSLOG\n");
+        //printf("HAVE_SYSLOG\n");
       syslog(SYSLOGMASK, "%s",  null_terminated_buf);
 
       free(null_terminated_buf);
@@ -199,7 +202,7 @@ _NSLog_standard_printf_handler(NSString* message)
        */
       const char *newBuf = buf;
       unsigned newLen = len;
-printf("HAVE_SLOGF\n");
+//printf("HAVE_SLOGF\n");
       // Allocate at most _SLOG_MAXSIZE bytes
       null_terminated_buf = malloc(sizeof(char) * MIN(newLen, _SLOG_MAXSIZE));
       // If it's shorter than that, we never even enter the loop
@@ -225,7 +228,7 @@ printf("HAVE_SLOGF\n");
       free(null_terminated_buf);
     }
 #else
-    printf("_NSLogDescriptor\n");
+    //printf("_NSLogDescriptor\n");
   write(_NSLogDescriptor, buf, len);
 #endif
 #endif // __MINGW__
@@ -349,7 +352,7 @@ NSLogv(NSString* format, va_list args)
       pid = (int)getpid();
 #endif
     }
-
+  //printf("NSLogv\n");
   if (GSPrivateDefaultsFlag(GSLogThread) == YES)
     {
       NSThread  *t = GSCurrentThread();
@@ -367,6 +370,7 @@ NSLogv(NSString* format, va_list args)
   prefix = [NSMutableString stringWithCapacity: 1000];
 
 #ifdef	HAVE_SYSLOG
+  //printf("HAVE_SYSLOG\n");
   if (GSPrivateDefaultsFlag(GSLogSyslog) == YES)
     {
       if (nil != threadName)
@@ -412,6 +416,7 @@ NSLogv(NSString* format, va_list args)
   message = [[NSString alloc] initWithFormat: format arguments: args];
   [prefix appendString: message];
   [message release];
+  //printf("prefix: %@\n", prefix);
   if ([prefix hasSuffix: @"\n"] ==  NO)
     {
       [prefix appendString: @"\n"];
@@ -423,7 +428,7 @@ NSLogv(NSString* format, va_list args)
     }
 
   [myLock lock];
-
+  //printf("_NSLog_printf_handler\n");
   _NSLog_printf_handler(prefix);
 
   [myLock unlock];

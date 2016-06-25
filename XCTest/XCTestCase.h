@@ -37,6 +37,12 @@ extern NSTimeInterval _totalTime;
         DLog(@"error: %@", message); \
     } \
 
+#define XCTAssertNotEqual(param1, param2, message) \
+    if (param1 == param2) { \
+        _failureCount++; \
+        DLog(@"error: %@", message); \
+    } \
+
 #define XCTAssertNil(object1, message) \
     if (object1 != nil) { \
         _failureCount++; \
