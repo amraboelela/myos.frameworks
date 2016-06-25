@@ -185,7 +185,7 @@ _NSLog_standard_printf_handler(NSString* message)
       null_terminated_buf = malloc(sizeof (char) * (len + 1));
       strncpy (null_terminated_buf, buf, len);
       null_terminated_buf[len] = '\0';
-
+        printf("HAVE_SYSLOG\n");
       syslog(SYSLOGMASK, "%s",  null_terminated_buf);
 
       free(null_terminated_buf);
@@ -199,7 +199,7 @@ _NSLog_standard_printf_handler(NSString* message)
        */
       const char *newBuf = buf;
       unsigned newLen = len;
-
+printf("HAVE_SLOGF\n");
       // Allocate at most _SLOG_MAXSIZE bytes
       null_terminated_buf = malloc(sizeof(char) * MIN(newLen, _SLOG_MAXSIZE));
       // If it's shorter than that, we never even enter the loop
@@ -225,6 +225,7 @@ _NSLog_standard_printf_handler(NSString* message)
       free(null_terminated_buf);
     }
 #else
+    printf("_NSLogDescriptor\n");
   write(_NSLogDescriptor, buf, len);
 #endif
 #endif // __MINGW__
