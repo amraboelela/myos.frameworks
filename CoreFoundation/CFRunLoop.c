@@ -461,6 +461,7 @@ CFRunLoopRun (void)
 static void
 CFRunLoopNotifyObservers (CFRunLoopRef rl, GSRunLoopContextRef context, CFRunLoopActivity activity)
 {
+  return;
   CFRunLoopObserverRef *observers;
   CFIndex i, count;
 
@@ -581,17 +582,17 @@ CFRunLoopProcessSourcesVersion0 (CFRunLoopRef rl, CFAbsoluteTime now,
     // Notify observers with kCFRunLoopBeforeSources activity.
     CFRunLoopNotifyObservers(rl, context, kCFRunLoopBeforeSources);
     
-    GSMutexLock (&rl->_lock);
+    //GSMutexLock (&rl->_lock);
     count = CFArrayGetCount(context->sources0);
     sources = (CFRunLoopSourceRef*) CFAllocatorAllocate(NULL,
                                                         sizeof(CFRunLoopSourceRef)*count, 0);
     
     CFArrayGetValues(context->sources0, CFRangeMake(0, CFArrayGetCount(context->sources0)),
                      (const void**) sources);
-    GSMutexUnlock (&rl->_lock);
-    
-    for (i = 0; i < count; i++)
-        CFRetain(sources[i]);
+    //GSMutexUnlock (&rl->_lock);
+    //printf("count: %d\n", count); 
+    //for (i = 0; i < count; i++)
+    //    CFRetain(sources[i]);
     
     for (i = 0; i < count; i++)
     {
@@ -599,15 +600,16 @@ CFRunLoopProcessSourcesVersion0 (CFRunLoopRef rl, CFAbsoluteTime now,
         
         if (source->_isValid && source->_isSignaled)
         {
+            //printf("CFRunLoopProcessSourcesVersion0 source: %@\n", source);
             hadSource = true;
             source->_isSignaled = false;
             source->_context.perform(source->_context.info);
         }
         
-        CFRelease(source);
+        //CFRelease(source);
         
-        if (singleSource && hadSource)
-            break;
+        //if (singleSource && hadSource)
+        //    break;
     }
     
     CFAllocatorDeallocate(NULL, (void*) sources);
@@ -767,6 +769,7 @@ CFRunLoopRunInMode (CFStringRef mode, CFTimeInterval seconds,
      *     restart the loop. Go to step 2.
      * 10. Notify observers with kCFRunLoopExit activity.
      */
+    //printf("CFRunLoopRunInMode 0\n");
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     const CFAbsoluteTime timeStart = CFAbsoluteTimeGetCurrent();
     CFAbsoluteTime timeNow = timeStart;
@@ -779,17 +782,26 @@ CFRunLoopRunInMode (CFStringRef mode, CFTimeInterval seconds,
     rl->_currentMode = mode;
     
     // Notify observers with kCFRunLoopEntry activity.
-    CFRunLoopNotifyObservers(rl, context, kCFRunLoopEntry);
+    //CFRunLoopNotifyObservers(rl, context, kCFRunLoopEntry);
     
+    //printf("CFRunLoopRunInMode 0.1\n");
     CFRunLoopProcessTimers(rl, timeStart, context, returnAfterSourceHandled);
-    if (!returnAfterSourceHandled || !hadSource)
+    //printf("CFRunLoopRunInMode 0.11\n");
+    //if (!returnAfterSourceHandled || !hadSource)
         hadSource |= CFRunLoopProcessSourcesVersion0(rl, timeStart, context, returnAfterSourceHandled);
-    GSMutexUnlock (&rl->_lock);
+    //printf("CFRunLoopRunInMode 0.12\n");
+    //GSMutexUnlock (&rl->_lock);
+    //printf("CFRunLoopRunInMode 0.2\n");
     
     if (returnAfterSourceHandled && hadSource)
     {
         exitReason = kCFRunLoopRunHandledSource;
     }
+    if (returnAfterSourceHandled) {
+        //printf("exitReason 1: %d\n", exitReason); 
+        return exitReason; 
+    }
+    //printf("CFRunLoopRunInMode 0.3\n");
     
     timeNow = CFAbsoluteTimeGetCurrent();
     
@@ -799,6 +811,7 @@ CFRunLoopRunInMode (CFStringRef mode, CFTimeInterval seconds,
         
         hadSource = false;
         
+        //printf("CFRunLoopRunInMode 0.4\n");
         if (!returnAfterSourceHandled)
         {
             if (seconds == 0)
@@ -841,24 +854,25 @@ CFRunLoopRunInMode (CFStringRef mode, CFTimeInterval seconds,
             break;
         }
         
-        GSMutexLock (&rl->_lock);
-        CFRunLoopPerformBlocks(context);
-        GSMutexUnlock (&rl->_lock);
+        //GSMutexLock (&rl->_lock);
+        //CFRunLoopPerformBlocks(context);
+        //GSMutexUnlock (&rl->_lock);
         
         // Notify observers with kCFRunLoopBeforeWaiting activity.
-        CFRunLoopNotifyObservers(rl, context, kCFRunLoopBeforeWaiting);
+        /*CFRunLoopNotifyObservers(rl, context, kCFRunLoopBeforeWaiting);
         rl->_isWaiting = true;
         
-        pfd = CFRunLoopPrepareForPoll(pfd, &numSources, rl, context);
+        //pfd = CFRunLoopPrepareForPoll(pfd, &numSources, rl, context);
         
         // printf("poll: %d ms\n", timeout);
-        // printf("poll %d sources\n", numSources);
-        sourcesFired = poll(pfd, numSources, timeout);
+        //printf("poll %d sources\n", numSources);
+        sourcesFired = 0;//poll(pfd, numSources, timeout);
+        //printf("sourcesFired %d\n", sourcesFired);
         
         rl->_isWaiting = false;
         // Notify observers with kCFRunLoopAfterWaiting activity.
-        CFRunLoopNotifyObservers(rl, context, kCFRunLoopAfterWaiting);
-        
+        //CFRunLoopNotifyObservers(rl, context, kCFRunLoopAfterWaiting);
+        */
         if (sourcesFired < 0) // error
         {
             // TODO: print explanation into the console?
@@ -870,15 +884,20 @@ CFRunLoopRunInMode (CFStringRef mode, CFTimeInterval seconds,
             if (pfd[0].revents != 0)
             {
                 int dummy;
-                // printf("loop woken up!\n");
+                 printf("loop woken up!\n");
                 
                 // Remove everything from the notification pipe that woke us up
-                while (read(pfd[0].fd, &dummy, sizeof(dummy)) > 0);
+                int readCount;
+                do {
+                    readCount = read(pfd[0].fd, &dummy, sizeof(dummy));
+                    printf("readCount: %d\n", readCount);
+                } while (readCount > 0);
             }
             
 #if HAVE_LIBDISPATCH
             if (pfd[1].revents != 0)
             {
+                printf("pfd[1].revents != 0\n");
                 dispatch_main_queue_drain_np();
                 hadSource = true;
             }
@@ -886,40 +905,52 @@ CFRunLoopRunInMode (CFStringRef mode, CFTimeInterval seconds,
             
         }
         
-        CFRunLoopProcessTimers(rl, timeNow, context,
-                               returnAfterSourceHandled);
+        //printf("CFRunLoopProcessTimers\n");
+        //CFRunLoopProcessTimers(rl, timeNow, context,
+        //                       returnAfterSourceHandled);
         
+        //printf("after CFRunLoopProcessTimers\n");
         if (!returnAfterSourceHandled || !hadSource)
         {
+            //printf("CFRunLoopProcessSourcesVersion0\n");
             hadSource |= CFRunLoopProcessSourcesVersion0(rl, timeNow, context,
                                                          returnAfterSourceHandled);
         }
+        //printf("CFRunLoopRunInMode 0.9\n");
         if (!returnAfterSourceHandled || !hadSource)
         {
             hadSource |= CFRunLoopProcessSourcesVersion1(rl, timeNow, context,
                                                          &pfd[2], numSources-2);
         }
+        //printf("CFRunLoopRunInMode 1\n");
         
         if (returnAfterSourceHandled && hadSource)
         {
+            //printf("exitReason = kCFRunLoopRunHandledSource\n");
             exitReason = kCFRunLoopRunHandledSource;
             break;
         }
         
+        //printf("CFRunLoopRunInMode 2\n");
         timeNow = CFAbsoluteTimeGetCurrent();
         if (CFAbsoluteTimeGetCurrent() >= timeStart+seconds)
         {
+            //printf("CFAbsoluteTimeGetCurrent() >= timeStart+seconds\n");
             exitReason = kCFRunLoopRunTimedOut;
             break;
         }
+        /*if (returnAfterSourceHandled) {
+            break;
+        }*/
     }
     
+    //printf("CFRunLoopRunInMode 3\n");
     // Notify observers with kCFRunLoopExit activity.
-    CFRunLoopNotifyObservers(rl, context, kCFRunLoopExit);
+    //CFRunLoopNotifyObservers(rl, context, kCFRunLoopExit);
     rl->_currentMode = NULL;
     
-    CFAllocatorDeallocate(NULL, pfd);
-    
+    //CFAllocatorDeallocate(NULL, pfd);
+    //printf("exitReason: %d\n", exitReason); 
     return exitReason;
 }
 
@@ -1070,6 +1101,7 @@ CFRunLoopAddSource_nolock (CFRunLoopRef rl, CFRunLoopSourceRef source,
     {
         if (!CFSetContainsValue(ctxt->sources0set, source))
         {
+            //printf("source: %@\n", source);
             CFSetAddValue (ctxt->sources0set, source);
             CFArrayAppendValue (ctxt->sources0, source);
             CFArraySortValues (ctxt->sources0,

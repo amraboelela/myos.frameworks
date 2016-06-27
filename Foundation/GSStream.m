@@ -787,12 +787,12 @@ static RunLoopEventType typeForStream(NSStream *aStream)
 
 - (void) _dispatch
 {
-    //DLog();
+    DLog();
     BOOL av = [self hasBytesAvailable];
     NSStreamEvent myEvent = av ? NSStreamEventHasBytesAvailable :
     NSStreamEventEndEncountered;
     NSStreamStatus myStatus = av ? NSStreamStatusOpen : NSStreamStatusAtEnd;
-    //DLog(@"myStatus: %d", myStatus);
+    DLog(@"myStatus: %d", myStatus);
     [self _setStatus: myStatus];
     [self _sendEvent: myEvent];
 }
