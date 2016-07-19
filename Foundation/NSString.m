@@ -9,7 +9,9 @@
 
    Optimisations by Richard Frith-Macdonald <richard@brainstorm.co.uk>
    Date: October 1998 - 2000
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2016
+ 
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
@@ -110,7 +112,7 @@
 
 /* Create local inline versions of key functions for case-insensitive operations
  */
-#import "Additions/unicode/caseconv.h"
+#import "unicode/caseconv.h"
 static inline unichar
 uni_toupper(unichar ch)
 {
