@@ -35,7 +35,7 @@ typedef	union {
 #ifdef	AF_INET6
   struct sockaddr_in	i6;
 #endif
-#ifndef	__MINGW__
+#ifndef	_WIN32
   struct sockaddr_un	u;
 #endif
 } sockaddr_any;
@@ -135,9 +135,7 @@ SOCKIVARS
 /**
  * the designated initializer
  */
-- (id)initToAddr:(NSString *)addr port:(NSInteger)port;
-
-//- (id)initWithSocket:(int)socket;
+- (id) initToAddr: (NSString*)addr port: (NSInteger)port;
 
 @end
 

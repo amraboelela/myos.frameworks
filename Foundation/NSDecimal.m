@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSDecimal class reference</title>
-   $Date: 2014-01-21 07:06:17 -0800 (Tue, 21 Jan 2014) $ $Revision: 37628 $
+   $Date: 2016-06-26 03:10:20 -0700 (Sun, 26 Jun 2016) $ $Revision: 39925 $
    */
 
 #import "common.h"
@@ -1238,7 +1238,7 @@ GSSimpleSubtract(NSDecimal *result, const NSDecimal *left,
 
   // check borrow
   if (borrow)
-    NSLog(@"Impossible error in substraction");
+    NSLog(@"Impossible error in subtraction");
 
   return error;
 }
@@ -1498,7 +1498,7 @@ GSSimpleSubtract(NSDecimal *result, const NSDecimal *left,
 
       if (-1 == i)
 	{
-	  NSLog(@"Impossible error in substraction left: %@, right: %@",
+	  NSLog(@"Impossible error in subtraction left: %@, right: %@",
 		NSDecimalString(left, nil), NSDecimalString(right, nil));
 	}
     }

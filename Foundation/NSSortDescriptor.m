@@ -42,13 +42,16 @@ static BOOL     initialized = NO;
 #endif
 
 #if     GS_USE_TIMSORT
-@class  GSTimSortDescriptor;
+@interface GSTimSortDescriptor : NSObject
+@end
 #endif
 #if     GS_USE_QUICKSORT
-@class  GSQuickSortPlaceHolder;
+@interface GSQuickSortPlaceHolder : NSObject
+@end
 #endif
 #if     GS_USE_SHELLSORT
-@class  GSShellSortPlaceHolder;
+@interface GSShellSortPlaceHolder : NSObject
+@end
 #endif
 
 @implementation NSSortDescriptor
@@ -350,7 +353,7 @@ GSSortUnstableConcurrent(id* buffer, NSRange range, id descriptorOrComparator,
 
   [sortedArray sortUsingDescriptors: sortDescriptors];
 
-  return [sortedArray makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(sortedArray);
 }
 
 @end

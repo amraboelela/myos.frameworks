@@ -21,7 +21,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2014-01-26 05:50:26 -0800 (Sun, 26 Jan 2014) $ $Revision: 37637 $
+   $Date: 2016-07-02 11:56:02 -0700 (Sat, 02 Jul 2016) $ $Revision: 39958 $
 */
 
 #import "common.h"
@@ -573,6 +573,12 @@ cifframe_callback(ffi_cif *cif, void *retp, void **args, void *user)
                 imp = [[GSKVOSetter class]
                   instanceMethodForSelector: @selector(setterDouble:)];
                 break;
+#if __GNUC__ > 2 && defined(_C_BOOL)
+              case _C_BOOL:
+                imp = [[GSKVOSetter class]
+                  instanceMethodForSelector: @selector(setterChar:)];
+                break;
+#endif
               case _C_ID:
               case _C_CLASS:
               case _C_PTR:
@@ -986,16 +992,6 @@ cifframe_callback(ffi_cif *cif, void *retp, void **args, void *user)
 
 
 @implementation	GSKVOObservation
-#if	GS_WITH_GC
-+ (void) initialize
-{
-  GSMakeWeakPointer(self, "observer");
-}
-- (void) finalize
-{
-  GSAssignZeroingWeakPointer((void**)&observer, nil);
-}
-#endif
 @end
 
 @implementation	GSKVOPathInfo
@@ -1159,15 +1155,6 @@ cifframe_callback(ffi_cif *cif, void *retp, void **args, void *user)
           o->options = options;
           observation = o;
         }
-#if	GS_WITH_GC
-      else if (o->observer == nil)
-	{
-	  /* The observer for thsi observation must have been collected.
-	   */
-	  [pathInfo->observations removeObjectAtIndex: count];
-	  continue;
-	}
-#endif
       pathInfo->allOptions |= o->options;
     }
   if (observation == nil)
@@ -1296,14 +1283,6 @@ cifframe_callback(ffi_cif *cif, void *retp, void **args, void *user)
               context = o->context;
               break;
             }
-#if	GS_WITH_GC
-	  else if (o->observer == nil)
-	    {
-	      /* The observer for thsi observation must have been collected.
-	       */
-	      [pathInfo->observations removeObjectAtIndex: count];
-	    }
-#endif
 	}
     }
   [iLock unlock];
@@ -1554,10 +1533,8 @@ cifframe_callback(ffi_cif *cif, void *retp, void **args, void *user)
 - (void) removeObserver: (NSObject*)anObserver forKeyPath: (NSString*)aPath
 {
   GSKVOInfo	*info;
-  id forwarder;
+  id            forwarder;
 
-  setup();
-  [kvoLock lock];
   /*
    * Get the observation information and remove this observation.
    */
@@ -1574,7 +1551,6 @@ cifframe_callback(ffi_cif *cif, void *retp, void **args, void *user)
       IF_NO_GC(AUTORELEASE(info);)
       [self setObservationInfo: nil];
     }
-  [kvoLock unlock];
   if ([aPath rangeOfString:@"."].location != NSNotFound)
     [forwarder finalize];
 }

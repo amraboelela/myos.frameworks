@@ -254,7 +254,7 @@ typedef enum {
   GSMacOSXCompatible,			// General behavior flag.
   GSOldStyleGeometry,			// Control geometry string output.
   GSLogSyslog,				// Force logging to go to syslog.
-  GSLogThread,				// Include thread ID in log message.
+  GSLogThread,				// Include thread name in log message.
   GSLogOffset,			        // Include time zone offset in message.
   NSWriteOldStylePropertyLists,		// Control PList output.
   GSUserDefaultMaxFlag			// End marker.
@@ -312,7 +312,7 @@ typedef enum {
   NSRunLoop             *loop;
   NSLock                *lock;
   NSMutableArray        *performers;
-#ifdef __MINGW__
+#ifdef _WIN32
   HANDLE	        event;
 #else
   int                   inputFd;
@@ -418,10 +418,16 @@ GSPrivateLoadModule(NSString *filename, FILE *errorStream,
 
 /* Get the native C-string encoding as used by locale specific code in the
  * operating system.  This may differ from the default C-string encoding
- * if the latter has bewen set via an environment variable.
+ * if the latter has been set via an environment variable.
  */
 NSStringEncoding
 GSPrivateNativeCStringEncoding() GS_ATTRIB_PRIVATE;
+
+/* Get the native C-string encoding as used by the ICU library, which may
+ * differ from the native locale encoding or the default C-string encoding
+ */
+NSStringEncoding
+GSPrivateICUCStringEncoding() GS_ATTRIB_PRIVATE;
 
 /* Function used by the NSRunLoop and friends for processing
  * queued notifications which should be processed at the first safe moment.
@@ -571,7 +577,17 @@ uint32_t
 GSPrivateFinishHash(uint32_t s0, uint32_t s1, uint32_t totalLength)
   GS_ATTRIB_PRIVATE;
 
-/* Return the current thread ID as an unsigned long.
+@class  NSHashTable;
+/* If 'self' is not a member of 'exclude', adds to the hash
+ * table and returns the memory footprint of 'self' assuming
+ * it contains no pointers and has no extra memory allocated.
+ * Otherwise returns 0.
+ */
+NSUInteger
+GSPrivateMemorySize(NSObject *self, NSHashTable *exclude)
+  GS_ATTRIB_PRIVATE;
+
+/* Return the current thread ID as an NSUInteger.
  * Ideally, we use the operating-system's notion of a thread ID so
  * that external process monitoring software will be using the same
  * value that we log.  If we don't know the system's mechanism, we
@@ -579,9 +595,17 @@ GSPrivateFinishHash(uint32_t s0, uint32_t s1, uint32_t totalLength)
  * it makes no sense externally, it can still be used to show that
  * different threads generated different logs.
  */
-unsigned long
+NSUInteger
 GSPrivateThreadID()
   GS_ATTRIB_PRIVATE;
+
+/** Function to base64 encode data.  The destination buffer must be of
+ * size (((length + 2) / 3) * 4) or more.
+ */
+void
+GSPrivateEncodeBase64(const uint8_t *src, NSUInteger length, uint8_t *dst)
+  GS_ATTRIB_PRIVATE;
+
 
 #endif /* _GSPrivate_h_ */
 

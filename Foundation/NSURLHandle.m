@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSURLHandle class reference</title>
-   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+   $Date: 2016-03-17 01:12:45 -0700 (Thu, 17 Mar 2016) $ $Revision: 39554 $
 */
 
 #import "common.h"
@@ -559,9 +559,9 @@ static Class		NSURLHandleClass = 0;
 /* Private method ... subclasses override this to enable debug to be
  * turned off and on.
  */
-- (void) setDebug: (BOOL)aFlag
+- (int) setDebug: (int)aFlag
 {
-  return;
+  return NO;
 }
 
 /**

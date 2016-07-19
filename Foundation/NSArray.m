@@ -27,7 +27,7 @@
    Boston, MA 02111 USA.
 
    <title>NSArray class reference</title>
-   $Date: 2015-01-16 07:25:50 -0800 (Fri, 16 Jan 2015) $ $Revision: 38295 $
+   $Date: 2016-05-19 00:21:36 -0700 (Thu, 19 May 2016) $ $Revision: 39779 $
    */
 
 #import "common.h"
@@ -455,7 +455,7 @@ static SEL	rlSel;
 	    {
 	      NSString	*key;
 
-	      key = [NSString stringWithFormat: @"NS.object.%u", i];
+	      key = [NSString stringWithFormat: @"NS.object.%lu", (unsigned long)i];
 	      [(NSKeyedArchiver*)aCoder encodeObject: [self objectAtIndex: i]
 					      forKey: key];
 	    }
@@ -662,12 +662,10 @@ static SEL	rlSel;
 	  objects[i] = [objects[i] copy];
 	}
       self = [self initWithObjects: objects count: c];
-#if GS_WITH_GC == 0
       while (i > 0)
 	{
 	  [objects[--i] release];
 	}
-#endif
     }
   else
     {
@@ -724,14 +722,14 @@ static SEL	rlSel;
 	  id		val;
 
 	  array = [NSMutableArray arrayWithCapacity: 2];
-	  key = [NSString stringWithFormat: @"NS.object.%u", i];
+	  key = [NSString stringWithFormat: @"NS.object.%lu", (unsigned long)i];
 	  val = [(NSKeyedUnarchiver*)aCoder decodeObjectForKey: key];
 
 	  while (val != nil)
 	    {
 	      [array addObject: val];
 	      i++;
-	      key = [NSString stringWithFormat: @"NS.object.%u", i];
+	      key = [NSString stringWithFormat: @"NS.object.%lu", (unsigned long)i];
 	      val = [(NSKeyedUnarchiver*)aCoder decodeObjectForKey: key];
 	    }
 	}
@@ -752,12 +750,10 @@ static SEL	rlSel;
 		  count: items
 		  at: contents];
 	  self = [self initWithObjects: contents count: items];
-#if GS_WITH_GC == 0
 	  while (items-- > 0)
 	    {
 	      [contents[items] release];
 	    }
-#endif
 	  GS_ENDIDBUF();
 	}
       else
@@ -914,9 +910,9 @@ static SEL	rlSel;
   return nil;
 }
 
-- (id) objectAtIndexedSubscript: (size_t)anIndex
+- (id) objectAtIndexedSubscript: (NSUInteger)anIndex
 {
-  return [self objectAtIndex: (NSUInteger)anIndex];
+  return [self objectAtIndex: anIndex];
 }
 
 - (NSArray *) objectsAtIndexes: (NSIndexSet *)indexes
@@ -931,7 +927,7 @@ static SEL	rlSel;
       i = [indexes indexGreaterThanIndex: i];
     }
 
-  return [group makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(group);
 }
 
 - (BOOL) isEqual: (id)anObject
@@ -1117,7 +1113,7 @@ compare(id elem1, id elem2, void* context)
     NSDefaultMallocZone()] initWithArray: self copyItems: NO]);
   [sortedArray sortUsingFunction: comparator context: context];
 
-  return [sortedArray makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(sortedArray);
 }
 
 
@@ -1130,7 +1126,7 @@ compare(id elem1, id elem2, void* context)
     NSDefaultMallocZone()] initWithArray: self copyItems: NO]);
   [sortedArray sortWithOptions: options usingComparator: comparator];
 
-  return [sortedArray makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(sortedArray);
 }
 
 - (NSArray*) sortedArrayUsingComparator: (NSComparator)comparator
@@ -1245,7 +1241,7 @@ compare(id elem1, id elem2, void* context)
 	  [s appendString: [[self objectAtIndex: i] description]];
 	}
     }
-  return [s makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(s);
 }
 
 /**
@@ -1273,7 +1269,7 @@ compare(id elem1, id elem2, void* context)
 	    }
 	}
     }
-  return [a makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(a);
 }
 
 /**
@@ -1480,7 +1476,7 @@ compare(id elem1, id elem2, void* context)
   else if ([key isEqualToString: @"count"] == YES)
     {
       GSOnceMLog(
-@"[NSArray-valueForKey:] called wth 'count' is deprecated .. use '@count'");
+@"[NSArray-valueForKey:] called with 'count' is deprecated .. use '@count'");
       result = [NSNumber numberWithUnsignedInteger: [self count]];
     }
   else
@@ -1688,7 +1684,7 @@ compare(id elem1, id elem2, void* context)
                       o = [o valueForKeyPath: rem];
                       [result addObjectsFromArray: o];
                     }
-                  [result makeImmutableCopyOnFail: NO];
+                  result = GS_IMMUTABLE(result);
                 }
               else
                 {
@@ -1708,7 +1704,7 @@ compare(id elem1, id elem2, void* context)
                       o = [o valueForKeyPath: rem];
                       [result addObject: o];
                     }
-                  [result makeImmutableCopyOnFail: NO];
+                  result = GS_IMMUTABLE(result);
                 }
               else
                 {
@@ -1728,7 +1724,7 @@ compare(id elem1, id elem2, void* context)
                       o = [o valueForKeyPath: rem];
                       [result addObjectsFromArray: [o allObjects]];
                     }
-                  [result makeImmutableCopyOnFail: NO];
+                  result = GS_IMMUTABLE(result);
                 }
               else
                 {
@@ -1771,6 +1767,7 @@ compare(id elem1, id elem2, void* context)
 {
   [self enumerateObjectsWithOptions: 0 usingBlock: aBlock];
 }
+
 - (void) enumerateObjectsWithOptions: (NSEnumerationOptions)opts
 			  usingBlock: (GSEnumeratorBlock)aBlock
 {
@@ -1792,18 +1789,18 @@ compare(id elem1, id elem2, void* context)
   FOR_IN (id, obj, enumerator)
     GS_DISPATCH_SUBMIT_BLOCK(enumQueueGroup, enumQueue, if (YES == shouldStop) {return;}, return, aBlock, obj, count, &shouldStop);
       if (isReverse)
-      {
-        count--;
-      }
+        {
+          count--;
+        }
       else
-      {
-        count++;
-      }
+        {
+          count++;
+        }
 
       if (shouldStop)
-      {
-        break;
-      }
+        {
+          break;
+        }
     END_FOR_IN(enumerator)
     GS_DISPATCH_TEARDOWN_QUEUE_AND_GROUP_FOR_ENUMERATION(enumQueue, opts)
   }
@@ -1888,8 +1885,8 @@ compare(id elem1, id elem2, void* context)
     passingTest: predicate];
 }
 
-- (NSUInteger)indexOfObjectWithOptions: (NSEnumerationOptions)opts
-			   passingTest: (GSPredicateBlock)predicate
+- (NSUInteger) indexOfObjectWithOptions: (NSEnumerationOptions)opts
+			    passingTest: (GSPredicateBlock)predicate
 {
   /* TODO: Concurrency. */
   id<NSFastEnumeration> enumerator = self;
@@ -1954,13 +1951,33 @@ compare(id elem1, id elem2, void* context)
   return [self indexOfObjectWithOptions: 0 passingTest: predicate];
 }
 
-- (NSUInteger)indexOfObjectAtIndexes: (NSIndexSet*)indexSet
-			     options: (NSEnumerationOptions)opts
-			 passingTest: (GSPredicateBlock)predicate
+- (NSUInteger) indexOfObjectAtIndexes: (NSIndexSet*)indexSet
+			      options: (NSEnumerationOptions)opts
+			  passingTest: (GSPredicateBlock)predicate
 {
   return [[self objectsAtIndexes: indexSet]
-    indexOfObjectWithOptions: 0
-    passingTest: predicate];
+        indexOfObjectWithOptions: 0
+                     passingTest: predicate];
+}
+
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger	size = [super sizeInBytesExcluding: exclude];
+
+  if (size > 0)
+    {
+      NSUInteger	count = [self count];
+      GS_BEGINIDBUF(objects, count);
+
+      size += count*sizeof(void*);
+      [self getObjects: objects];
+      while (count-- > 0)
+	{
+	  size += [objects[count] sizeInBytesExcluding: exclude];
+	}
+      GS_ENDIDBUF();
+    }
+  return size;
 }
 @end
 
@@ -2034,9 +2051,16 @@ compare(id elem1, id elem2, void* context)
   [self subclassResponsibility: _cmd];
 }
 
-- (void) setObject: (id)anObject atIndexedSubscript: (size_t)anIndex
+- (void) setObject: (id)anObject atIndexedSubscript: (NSUInteger)anIndex
 {
-  [self replaceObjectAtIndex: (NSUInteger)anIndex withObject: anObject];
+  if ([self count] == anIndex)
+    {
+      [self addObject: anObject];
+    }
+  else
+    {
+      [self replaceObjectAtIndex: anIndex withObject: anObject];
+    }
 }
 
 /** Replaces the values in the receiver at the locations given by the
@@ -2240,12 +2264,10 @@ compare(id elem1, id elem2, void* context)
 	      (*rem)(self, remSel, i);
 	    }
 	}
-#if GS_WITH_GC == 0
       if (rem != 0)
 	{
 	  RELEASE(anObject);
 	}
-#endif
     }
 }
 
@@ -2332,12 +2354,10 @@ compare(id elem1, id elem2, void* context)
 	      (*rem)(self, remSel, i);
 	    }
 	}
-#if GS_WITH_GC == 0
       if (rem != 0)
 	{
 	  RELEASE(anObject);
 	}
-#endif
     }
 }
 

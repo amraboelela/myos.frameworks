@@ -3,7 +3,9 @@
 
    Written by:  Richard Frith-Macdonald <richard@brainstorm.co.uk>
    Created: October 1998
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2015
+ 
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
@@ -22,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSDistributedNotificationCenter class reference</title>
-   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+   $Date: 2016-06-24 03:44:40 -0700 (Fri, 24 Jun 2016) $ $Revision: 39917 $
    */
 
 #import	"common.h"
@@ -736,7 +738,7 @@ static NSDistributedNotificationCenter	*netCenter = nil;
 	    }
 	  [NSTask launchedTaskWithLaunchPath: cmd arguments: args];
 
-	  limit = [NSDate dateWithTimeIntervalSinceNow: 5.0];
+	  limit = [NSDate dateWithTimeIntervalSinceNow: 10.0];
 	  while (_remote == nil && [limit timeIntervalSinceNow] > 0)
 	    {
               NSAutoreleasePool	*pool = [NSAutoreleasePool new];
@@ -756,12 +758,10 @@ static NSDistributedNotificationCenter	*netCenter = nil;
 		@"I attempted to start it at '%@'\n", cmd];
 	    }
 	}
-#if	!GS_WITH_GC
       else
         {
           [_remote retain];
         }
-#endif
 
       c = [_remote connectionForProxy];
       [_remote setProtocolForProxy: p];

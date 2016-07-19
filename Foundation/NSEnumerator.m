@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSEnumerator class reference</title>
-   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+   $Date: 2016-06-28 04:17:25 -0700 (Tue, 28 Jun 2016) $ $Revision: 39939 $
 */
 
 #import "common.h"
@@ -104,7 +104,6 @@
  */
 void objc_enumerationMutation(id obj)
 {
-	[NSException raise: NSGenericException 
-	               format: @"Collection %@ was mutated while being enumerated", 
-	                       obj];
+  [NSException raise: NSGenericException 
+    format: @"Collection %@ was mutated while being enumerated", obj];
 }

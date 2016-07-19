@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSDate class reference</title>
-   $Date: 2014-12-22 16:31:46 -0800 (Mon, 22 Dec 2014) $ $Revision: 38257 $
+   $Date: 2016-03-15 12:04:51 -0700 (Tue, 15 Mar 2016) $ $Revision: 39549 $
    */
 
 #import "common.h"
@@ -1412,6 +1412,18 @@ otherTime(NSDate* other)
 	          format: @"[%@-%@] interval is not a number",
 	NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
     }
+
+#if	GS_SIZEOF_VOIDP == 4
+  if (secs <= DISTANT_PAST)
+    {
+      secs = DISTANT_PAST;
+    }
+  else if (secs >= DISTANT_FUTURE)
+    {
+      secs = DISTANT_FUTURE;
+    }
+#endif
+
   _seconds_since_ref = secs;
   return self;
 }

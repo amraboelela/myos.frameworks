@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSScanner class reference</title>
-   $Date: 2014-11-29 03:02:23 -0800 (Sat, 29 Nov 2014) $ $Revision: 38213 $
+   $Date: 2015-06-26 01:52:23 -0700 (Fri, 26 Jun 2015) $ $Revision: 38693 $
 */
 
 #import "common.h"

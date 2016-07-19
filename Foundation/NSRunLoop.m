@@ -28,7 +28,7 @@
    Boston, MA 02111 USA.
 
    <title>NSRunLoop class reference</title>
-   $Date: 2014-11-22 14:23:57 -0800 (Sat, 22 Nov 2014) $ $Revision: 38196 $
+   $Date: 2016-07-12 04:31:45 -0700 (Tue, 12 Jul 2016) $ $Revision: 39983 $
 */
 
 #import "common.h"
@@ -63,6 +63,15 @@
 #endif
 #include <math.h>
 #include <time.h>
+
+#if HAVE_DISPATCH_GET_MAIN_QUEUE_HANDLE_NP && HAVE_DISPATCH_MAIN_QUEUE_DRAIN_NP
+#  define RL_INTEGRATE_DISPATCH 1
+#  ifdef HAVE_DISPATCH_H
+#    include <dispatch.h>
+#  elif HAVE_DISPATCH_DISPATCH_H
+#    include <dispatch/dispatch.h>
+#  endif
+#endif
 
 
 NSString * const NSDefaultRunLoopMode = @"NSDefaultRunLoopMode";
@@ -114,10 +123,12 @@ static NSDate	*theFuture = nil;
   NS_HANDLER
     {
       NSLog(@"*** NSRunLoop ignoring exception '%@' (reason '%@') "
-        @"raised during performSelector... with target %p "
-        @"and selector '%@'",
-        [localException name], [localException reason], target,
-        NSStringFromSelector([target selector]));
+        @"raised during performSelector... with target %s(%s) "
+        @"and selector '%s'",
+        [localException name], [localException reason],
+        GSClassNameFromObject(target),
+        GSObjCIsInstance(target) ? "instance" : "class",
+        sel_getName(selector));
     }
   NS_ENDHANDLER
 }
@@ -254,13 +265,8 @@ static NSDate	*theFuture = nil;
 #ifndef GSI_ARRAY_TYPES
 #define GSI_ARRAY_TYPES       GSUNION_OBJ
 
-#if	GS_WITH_GC == 0
 #define GSI_ARRAY_RELEASE(A, X)	[(X).obj release]
 #define GSI_ARRAY_RETAIN(A, X)	[(X).obj retain]
-#else
-#define GSI_ARRAY_RELEASE(A, X)	
-#define GSI_ARRAY_RETAIN(A, X)	
-#endif
 
 #include "GNUstepBase/GSIArray.h"
 #endif
@@ -400,7 +406,26 @@ static inline BOOL timerInvalidated(NSTimer *t)
 
 @end
 
-
+#ifdef RL_INTEGRATE_DISPATCH
+@interface GSMainQueueDrainer : NSObject <RunLoopEvents>
++ (void*) mainQueueFileDescriptor;
+@end
+
+@implementation GSMainQueueDrainer
++ (void*) mainQueueFileDescriptor
+{
+  return (void*)(uintptr_t)dispatch_get_main_queue_handle_np();
+}
+
+- (void) receivedEvent: (void*)data
+		              type: (RunLoopEventType)type
+		             extra: (void*)extra
+	             forMode: (NSString*)mode
+{
+  dispatch_main_queue_drain_np();
+}
+@end
+#endif
 
 @interface NSRunLoop (Private)
 
@@ -568,12 +593,8 @@ static inline BOOL timerInvalidated(NSTimer *t)
 					 NSObjectMapValueCallBacks, 0);
       _timedPerformers = [[NSMutableArray alloc] initWithCapacity: 8];
 #ifdef	HAVE_POLL_F
-#if	GS_WITH_GC
-      _extra = NSAllocateCollectable(sizeof(pollextra), NSScannedOption);
-#else
       _extra = NSZoneMalloc(NSDefaultMallocZone(), sizeof(pollextra));
       memset(_extra, '\0', sizeof(pollextra));
-#endif
 #endif
     }
   return self;
@@ -762,7 +783,7 @@ static inline BOOL timerInvalidated(NSTimer *t)
           [inv setSelector: sel];
           [inv setArgument: &not atIndex: 2];
           [inv retainArguments];
-            
+
           context = NSMapGet(current->_contextMap, NSDefaultRunLoopMode);
           if (context == nil)
             {
@@ -784,6 +805,18 @@ static inline BOOL timerInvalidated(NSTimer *t)
                                            userInfo: nil
                                             repeats: YES];
           context->housekeeper = timer;
+
+          #ifdef RL_INTEGRATE_DISPATCH
+          // We leak the queue drainer, because it's integral part of RL
+          // operations
+          GSMainQueueDrainer *drain =
+            [NSObject leak: [[GSMainQueueDrainer new] autorelease]];
+          [current addEvent: [GSMainQueueDrainer mainQueueFileDescriptor]
+                       type: ET_RDESC
+                    watcher: drain
+                    forMode: NSDefaultRunLoopMode];
+
+          #endif
           [arp drain];
         }
     }
@@ -970,7 +1003,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
  * without timeouts.<br />
  * Returns nil if the loop contains neither timers nor input sources.
  */
-- (NSDate *)limitDateForMode:(NSString *)mode
+- (NSDate*) limitDateForMode: (NSString*)mode
 {
     GSRunLoopCtxt		*context;
     NSDate		*when = nil;
@@ -979,6 +1012,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
         //DLog(); //both thread
         NSString		*savedMode = _currentMode;
         NSAutoreleasePool	*arp = [NSAutoreleasePool new];
+        
         _currentMode = mode;
         //NS_DURING
         //{
@@ -991,6 +1025,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
             NSTimeInterval	ei;
             unsigned              c;
             unsigned              i;
+            
             ei = 0.0;	// Only needed to avoid compiler warning
             
             /*
@@ -1003,20 +1038,23 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
              * this method.
              */
             now = GSPrivateTimeNow();
-        
+            
             /* Fire housekeeping timer as necessary
              */
         if ((t = context->housekeeper) != nil) {
             //DLog(); //main thread
             if (timerInvalidated(t)) {
                     DESTROY(context->housekeeper);
-            } else if ([(d=timerDate(t)) timeIntervalSinceReferenceDate] <= now) {
+                }
+                else if ([(d=timerDate(t)) timeIntervalSinceReferenceDate] <= now)
+                {
                     [t fire];
                     GSPrivateNotifyASAP(_currentMode);
                     IF_NO_GC([arp emptyPool];)
                     updateTimer(t, d, now);
                 }
             }
+            
             /* Fire the oldest/first valid timer whose fire date has passed
              * and fire it.
              * We fire timers in the order in which they were added to the
@@ -1058,6 +1096,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                     }
                 }
             }
+            
             /* Now, find the earliest remaining timer date while removing
              * any invalidated timers.  We iterate from the end of the
              * array to minimise the amount of array alteration needed.
@@ -1120,12 +1159,11 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
                 //DLog(@"when: %@", when);
             }
         }
-#if	!GS_WITH_GC
         else
         {
             AUTORELEASE(when);
         }
-#endif
+        
         NSDebugMLLog(@"NSRunLoop", @"limit date %f in %@",
                      nil == when ? 0.0 : [when timeIntervalSinceReferenceDate], mode);
     }
@@ -1255,12 +1293,12 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     //[arp drain];
 }
 
-- (BOOL)runMode:(NSString *)mode beforeDate:(NSDate *)date
+- (BOOL) runMode: (NSString*)mode beforeDate: (NSDate*)date
 {
-    NSAutoreleasePool *arp = [NSAutoreleasePool new];
-    NSString *savedMode = _currentMode;
-    GSRunLoopCtxt *context;
-    NSDate *d;
+    NSAutoreleasePool	*arp = [NSAutoreleasePool new];
+    NSString              *savedMode = _currentMode;
+    GSRunLoopCtxt		*context;
+    NSDate		*d;
     
     NSAssert(mode != nil, NSInvalidArgumentException);
     
@@ -1268,6 +1306,7 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
      */
     GSPrivateCheckTasks();
     GSPrivateNotifyASAP(mode);
+    
     /* And process any performers scheduled in the loop (eg something from
      * another thread.
      */
@@ -1278,26 +1317,23 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
     //DLog();
     /* Find out how long we can wait before first limit date.
      */
-    d = [self limitDateForMode:mode];
-    //DLog();
-    if (d == nil) {
-        [self acceptInputForMode:mode beforeDate:date];
+    d = [self limitDateForMode: mode];
+    if (nil == d || nil == date)
+    {
         [arp drain];
         return NO;
     }
+    
     /* Use the earlier of the two dates we have.
      * Retain the date in case the firing of a timer (or some other event)
      * releases it.
      */
-    if (date != nil) {
-        d = [d earlierDate: date];
-    }
+    d = [d earlierDate: date];
     [d retain];
-
     
     /* Wait, listening to our input sources. */
-    [self acceptInputForMode:mode beforeDate:d];
-
+    [self acceptInputForMode: mode beforeDate: d];
+    
     [d release];
     [arp drain];
     return YES;
@@ -1318,19 +1354,18 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
  * -runMode:beforeDate: while there are still input sources.  Exits when no
  * more input sources remain, or date is reached, whichever occurs first.
  */
-- (void)runUntilDate:(NSDate *)date
+- (void) runUntilDate: (NSDate*)date
 {
-    double	ti = [date timeIntervalSinceNow];
-    BOOL mayDoMore = YES;
-
+    BOOL		mayDoMore = YES;
+    
     /* Positive values are in the future. */
-    while (ti > 0 && mayDoMore == YES) {
-        //DLog();
-        NSDebugMLLog(@"NSRunLoop", @"run until date %f seconds from now", ti);
-        //DLog(@"run until date %f seconds from now", ti);
-        mayDoMore = [self runMode:NSDefaultRunLoopMode beforeDate:date];
-        ti = [date timeIntervalSinceNow];
-        //DLog();
+    while (YES == mayDoMore)
+    {
+        mayDoMore = [self runMode: NSDefaultRunLoopMode beforeDate: date];
+        if (nil == date || [date timeIntervalSinceNow] <= 0.0)
+        {
+            mayDoMore = NO;
+        }
     }
 }
 
@@ -1539,4 +1574,3 @@ updateTimer(NSTimer *t, NSDate *d, NSTimeInterval now)
 }
 
 @end
-

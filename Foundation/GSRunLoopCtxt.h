@@ -22,7 +22,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2012-03-01 01:14:08 -0800 (Thu, 01 Mar 2012) $ $Revision: 34852 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
 */
 
 #import "common.h"
@@ -36,13 +36,8 @@
 
 #define GSI_ARRAY_TYPES       GSUNION_OBJ
 
-#if	GS_WITH_GC == 0
 #define GSI_ARRAY_RELEASE(A, X)	[(X).obj release]
 #define GSI_ARRAY_RETAIN(A, X)	[(X).obj retain]
-#else
-#define GSI_ARRAY_RELEASE(A, X)	
-#define GSI_ARRAY_RETAIN(A, X)	
-#endif
 
 #include "GNUstepBase/GSIArray.h"
 
@@ -69,7 +64,7 @@ typedef struct{
   unsigned	maxWatchers;
   NSTimer	*housekeeper;	/** Housekeeping timer for loop.	*/
 @private
-#if	defined(__MINGW__)
+#if	defined(_WIN32)
   NSMapTable    *handleMap;     
   NSMapTable	*winMsgMap;
 #else

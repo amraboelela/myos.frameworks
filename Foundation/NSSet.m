@@ -3,7 +3,9 @@
 
    Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
    Created: Sep 1995
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2015
+ 
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
@@ -22,11 +24,12 @@
    Boston, MA 02111 USA.
 
    <title>NSSet class reference</title>
-   $Date: 2015-01-16 07:25:50 -0800 (Fri, 16 Jan 2015) $ $Revision: 38295 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
    */
 
 #import "common.h"
 #import "Foundation/NSArray.h"
+#import "Foundation/NSAutoreleasePool.h"
 #import "Foundation/NSSet.h"
 #import "Foundation/NSCoder.h"
 #import "Foundation/NSArray.h"
@@ -266,12 +269,10 @@ static Class NSMutableSet_concrete_class;
 	      [aCoder decodeValueOfObjCType: @encode(id) at: &objs[i]];
 	    }
 	  self = [self initWithObjects: objs count: count];
-#if	GS_WITH_GC == 0
 	  while (count-- > 0)
 	    {
 	      [objs[count] release];
 	    }
-#endif
 	  GS_ENDIDBUF();
 	}
     }
@@ -417,11 +418,13 @@ static Class NSMutableSet_concrete_class;
       i++;
     }
   self = [self initWithObjects: os count: c];
-#if	!GS_WITH_GC
   if (flag)
-    while (i--)
-      [os[i] release];
-#endif
+    {
+      while (i--)
+        {
+          [os[i] release];
+        }
+    }
   GS_ENDIDBUF();
   return self;
 }
@@ -628,9 +631,9 @@ static Class NSMutableSet_concrete_class;
 /**
  *  Returns listing of objects in set.
  */
-- (NSString *)description
+- (NSString*) description
 {
-    return [self descriptionWithLocale: nil];
+  return [self descriptionWithLocale: nil];
 }
 
 /**
@@ -833,7 +836,7 @@ static Class NSMutableSet_concrete_class;
                       o = [o valueForKeyPath: rem];
                       [result addObjectsFromArray: o];
                     }
-                  [result makeImmutableCopyOnFail: NO];
+                  result = GS_IMMUTABLE(result);
                 }
               else
                 {
@@ -853,7 +856,7 @@ static Class NSMutableSet_concrete_class;
                       o = [o valueForKeyPath: rem];
                       [result addObject: o];
                     }
-                  [result makeImmutableCopyOnFail: NO];
+                  result = GS_IMMUTABLE(result);
                 }
               else
                 {
@@ -873,7 +876,7 @@ static Class NSMutableSet_concrete_class;
                       o = [o valueForKeyPath: rem];
                       [result addObjectsFromArray: [o allObjects]];
                     }
-                  [result makeImmutableCopyOnFail: NO];
+                  result = GS_IMMUTABLE(result);
                 }
               else
                 {
@@ -947,7 +950,7 @@ static Class NSMutableSet_concrete_class;
     }
   END_FOR_IN(enumerator)
     
-  return [resultSet makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(resultSet);
 }
 
 /** Return a set formed by adding anObject to the receiver.
@@ -999,6 +1002,30 @@ static Class NSMutableSet_concrete_class;
     [self subclassResponsibility: _cmd];
     return 0;
 }
+
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger    size = [super sizeInBytesExcluding: exclude];
+
+  if (size > 0)
+    {
+      NSUInteger        count = [self count];
+
+      size += 3 * sizeof(void*) * count;
+      if (count > 0)
+        {
+          NSEnumerator          *enumerator = [self objectEnumerator];
+          NSObject              *o;
+
+          while ((o = [enumerator nextObject]) != nil)
+            {
+              size += [o sizeInBytesExcluding: exclude];
+            }
+        }
+    }
+  return size;
+}
+
 @end
 
 

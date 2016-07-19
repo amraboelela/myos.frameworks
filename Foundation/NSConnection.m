@@ -26,7 +26,7 @@
    Boston, MA 02111 USA.
 
    <title>NSConnection class reference</title>
-   $Date: 2014-05-15 23:30:51 -0700 (Thu, 15 May 2014) $ $Revision: 37883 $
+   $Date: 2016-05-17 23:11:00 -0700 (Tue, 17 May 2016) $ $Revision: 39774 $
    */
 
 #import "common.h"
@@ -103,20 +103,13 @@ skip_argspec(const char *ptr)
  */
 #define	GSI_MAP_KTYPES	GSUNION_PTR | GSUNION_OBJ | GSUNION_NSINT
 #define	GSI_MAP_VTYPES	GSUNION_PTR | GSUNION_OBJ
-#define	GSI_MAP_RETAIN_KEY(M, X)	
-#define	GSI_MAP_RELEASE_KEY(M, X)	
-#define	GSI_MAP_RETAIN_VAL(M, X)	
-#define	GSI_MAP_RELEASE_VAL(M, X)	
+#define	GSI_MAP_RETAIN_KEY(M, X)
+#define	GSI_MAP_RELEASE_KEY(M, X)
+#define	GSI_MAP_RETAIN_VAL(M, X)
+#define	GSI_MAP_RELEASE_VAL(M, X)
 #define	GSI_MAP_HASH(M, X)	((X).nsu ^ ((X).nsu >> 3))
 #define	GSI_MAP_EQUAL(M, X,Y)	((X).ptr == (Y).ptr)
 #define	GSI_MAP_NOCLEAN	1
-#if	GS_WITH_GC
-// FIXME ... 
-#include	<gc/gc_typed.h>
-static GC_descr	nodeDesc;	// Type descriptor for map node.
-#define	GSI_MAP_NODES(M, X) \
-(GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), nodeDesc)
-#endif
 
 
 #include "GNUstepBase/GSIMap.h"
@@ -174,7 +167,7 @@ GSRunLoopForThread(NSThread *aThread)
 
 @interface NSConnection (GNUstepExtensions)
 - (void) finalize;
-- (void) forwardInvocation: (NSInvocation *)inv 
+- (void) forwardInvocation: (NSInvocation *)inv
 		  forProxy: (NSDistantObject*)object;
 - (const char *) typeForSelector: (SEL)sel remoteTarget: (unsigned)target;
 @end
@@ -335,7 +328,7 @@ GS_PRIVATE_INTERNAL(NSConnection)
 
 - (void) handlePortMessage: (NSPortMessage*)msg;
 - (void) _runInNewThread;
-+ (void) setDebug: (int)val;
++ (int) setDebug: (int)val;
 - (void) _enableKeepalive;
 
 - (void) addLocalObject: (NSDistantObject*)anObj;
@@ -643,16 +636,6 @@ static NSLock	*cached_proxies_gate = nil;
     {
       NSNotificationCenter	*nc;
 
-#if	GS_WITH_GC
-      /* We create a typed memory descriptor for map nodes.
-       * FIXME
-       */
-      GC_word	w[GC_BITMAP_SIZE(GSIMapNode_t)] = {0};
-      GC_set_bit(w, GC_WORD_OFFSET(GSIMapNode_t, key));
-      GC_set_bit(w, GC_WORD_OFFSET(GSIMapNode_t, value));
-      nodeDesc = GC_make_descriptor(w, GC_WORD_LEN(GSIMapNode_t));
-#endif
-
       GSMakeWeakPointer(self, "delegate");
       connectionClass = self;
       dateClass = [NSDate class];
@@ -765,7 +748,7 @@ static NSLock	*cached_proxies_gate = nil;
   return AUTORELEASE(proxy);
 }
 
-+ (id) serviceConnectionWithName: (NSString *)name 
++ (id) serviceConnectionWithName: (NSString *)name
                       rootObject: (id)root
 {
   return [self serviceConnectionWithName: name
@@ -773,7 +756,7 @@ static NSLock	*cached_proxies_gate = nil;
     usingNameServer: [NSPortNameServer systemDefaultPortNameServer]];
 }
 
-+ (id) serviceConnectionWithName: (NSString *)name 
++ (id) serviceConnectionWithName: (NSString *)name
                       rootObject: (id)root
                  usingNameServer: (NSPortNameServer *)server
 {
@@ -896,7 +879,7 @@ static NSLock	*cached_proxies_gate = nil;
  */
 - (id) delegate
 {
-  return GS_GC_UNHIDE(Idelegate);
+  return Idelegate;
 }
 
 - (NSString*) description
@@ -1080,13 +1063,7 @@ static NSLock	*cached_proxies_gate = nil;
    * This maps request sequence numbers to the NSPortCoder objects representing
    * replies arriving from the remote connection.
    */
-#if	GS_WITH_GC
-  IreplyMap
-    = (GSIMapTable)NSAllocateCollectable(sizeof(GSIMapTable_t),
-    NSScannedOption);
-#else
   IreplyMap = (GSIMapTable)NSZoneMalloc(z, sizeof(GSIMapTable_t));
-#endif
   GSIMapInitWithZoneAndCapacity(IreplyMap, z, 4);
 
   /*
@@ -1094,40 +1071,22 @@ static NSLock	*cached_proxies_gate = nil;
    * We use this instead of an NSHashTable because we only care about
    * the object's address, and don't want to send the -hash message to it.
    */
-#if	GS_WITH_GC
-  IlocalObjects
-    = (GSIMapTable)NSAllocateCollectable(sizeof(GSIMapTable_t),
-    NSScannedOption);
-#else
   IlocalObjects
     = (GSIMapTable)NSZoneMalloc(z, sizeof(GSIMapTable_t));
-#endif
   GSIMapInitWithZoneAndCapacity(IlocalObjects, z, 4);
 
   /*
    * This maps handles for local objects to their local proxies.
    */
-#if	GS_WITH_GC
-  IlocalTargets
-    = (GSIMapTable)NSAllocateCollectable(sizeof(GSIMapTable_t),
-    NSScannedOption);
-#else
   IlocalTargets
     = (GSIMapTable)NSZoneMalloc(z, sizeof(GSIMapTable_t));
-#endif
   GSIMapInitWithZoneAndCapacity(IlocalTargets, z, 4);
 
   /*
    * This maps targets to remote proxies.
    */
-#if	GS_WITH_GC
-  IremoteProxies
-    = (GSIMapTable)NSAllocateCollectable(sizeof(GSIMapTable_t),
-    NSScannedOption);
-#else
   IremoteProxies
     = (GSIMapTable)NSZoneMalloc(z, sizeof(GSIMapTable_t));
-#endif
   GSIMapInitWithZoneAndCapacity(IremoteProxies, z, 4);
 
   IrequestDepth = 0;
@@ -1284,7 +1243,7 @@ static NSLock	*cached_proxies_gate = nil;
   /*
    * Make sure we are not registered.
    */
-#if	!defined(__MINGW__)
+#if	!defined(_WIN32)
   if ([IreceivePort isKindOfClass: [NSMessagePort class]])
     {
       [self registerName: nil
@@ -1421,14 +1380,16 @@ static NSLock	*cached_proxies_gate = nil;
  */
 - (NSArray*) localObjects
 {
-  NSMutableArray	*c;
+  NSArray	*a;
 
   /* Don't assert (IisValid); */
   GS_M_LOCK(IrefGate);
   if (IlocalObjects != 0)
     {
+
       GSIMapEnumerator_t	enumerator;
       GSIMapNode 		node;
+      NSMutableArray            *c;
 
       enumerator = GSIMapEnumeratorForMap(IlocalObjects);
       node = GSIMapEnumeratorNextNode(&enumerator);
@@ -1439,13 +1400,14 @@ static NSLock	*cached_proxies_gate = nil;
 	  [c addObject: node->key.obj];
 	  node = GSIMapEnumeratorNextNode(&enumerator);
 	}
+      a = c;
     }
   else
     {
-      c = [NSArray array];
+      a = [NSArray array];
     }
   GSM_UNLOCK(IrefGate);
-  return c;
+  return a;
 }
 
 /**
@@ -1729,7 +1691,7 @@ static NSLock	*cached_proxies_gate = nil;
  */
 - (void) setDelegate: (id)anObj
 {
-  Idelegate = GS_GC_HIDE(anObj);
+  Idelegate = anObj;
   IauthenticateIn =
     [anObj respondsToSelector: @selector(authenticateComponents:withData:)];
   IauthenticateOut =
@@ -1803,7 +1765,7 @@ static NSLock	*cached_proxies_gate = nil;
 - (void) setRootObject: (id)anObj
 {
   setRootObjectForInPort(anObj, IreceivePort);
-#if	defined(__MINGW__)
+#if	defined(_WIN32)
   /* On ms-windows, the operating system does not inform us when the remote
    * client of a message port goes away ... so we need to enable keepalive
    * to detect that condition.
@@ -2105,7 +2067,7 @@ static NSLock	*cached_proxies_gate = nil;
 	    format: @"connection waiting for request was shut down"];
 	}
       aRmc = [self _getReplyRmc: seq];
- 
+
       /*
        * Find out if the server is returning an exception instead
        * of the return values.
@@ -2136,7 +2098,7 @@ static NSLock	*cached_proxies_gate = nil;
 
 	  /* If there is a return value, decode it, and put it in datum. */
 	  if (*tmptype != _C_VOID || (flags & _F_ONEWAY) == 0)
-	    {	
+	    {
 	      switch (*tmptype)
 		{
 		  case _C_ID:
@@ -2463,9 +2425,12 @@ static NSLock	*cached_proxies_gate = nil;
   [loop run];
 }
 
-+ (void) setDebug: (int)val
++ (int) setDebug: (int)val
 {
+  int   old = debug_connection;
+
   debug_connection = val;
+  return old;
 }
 
 - (void) _keepalive: (NSNotification*)n
@@ -2586,7 +2551,7 @@ static NSLock	*cached_proxies_gate = nil;
        */
       object = [decoder decodeObject];
 
-      /* Decode the selector, (which is the second argument to a method). */ 
+      /* Decode the selector, (which is the second argument to a method). */
       /* xxx @encode(SEL) produces "^v" in gcc 2.5.8.  It should be ":" */
       [decoder decodeValueOfObjCType: @encode(SEL) at: &selector];
 
@@ -2606,14 +2571,14 @@ static NSLock	*cached_proxies_gate = nil;
 	    object, sel_getName(selector)];
 	}
       type = [sig methodType];
-      
+
       /* Make sure we successfully got the method type, and that its
 	 types match the ENCODED_TYPES. */
       NSCParameterAssert (type);
       if (GSSelectorTypesMatch(encoded_types, type) == NO)
 	{
 	  [NSException raise: NSInvalidArgumentException
-	    format: @"NSConection types (%s / %s) missmatch for %s", 
+	    format: @"NSConection types (%s / %s) mismatch for %s",
 	    encoded_types, type, sel_getName(selector)];
 	}
 
@@ -3057,7 +3022,7 @@ static NSLock	*cached_proxies_gate = nil;
   p = [self includesLocalTarget: target];
   o = (p != nil) ? p->_object : nil;
 
-  /* xxx We should make sure that APP_TYPE is a valid object. */
+  /* xxx We should make sure that TARGET is a valid object. */
   /* Not actually a Proxy, but we avoid the warnings "id" would have made. */
   m = GSGetMethod(object_getClass(o), sel, YES, YES);
   /* Perhaps I need to be more careful in the line above to get the
@@ -3394,7 +3359,7 @@ static NSLock	*cached_proxies_gate = nil;
 			    sendPort:IsendPort
 			  components: nil];
   [coder encodeValueOfObjCType: @encode(int) at: &sno];
-  NSDebugMLLog(@"NSConnection", 
+  NSDebugMLLog(@"NSConnection",
     @"Make out RMC %u on %@", sno, self);
   return coder;
 }
@@ -3441,7 +3406,7 @@ static NSLock	*cached_proxies_gate = nil;
 	break;
     }
 
-  NSDebugMLLog(@"NSConnection", 
+  NSDebugMLLog(@"NSConnection",
     @"Sending %@ on %@", stringFromMsgType(msgid), self);
 
   limit = [dateClass dateWithTimeIntervalSinceNow: IrequestTimeout];
@@ -4035,7 +4000,7 @@ static NSLock	*cached_proxies_gate = nil;
        * We enumerate an array copy of the contents of the hash table
        * as we know we can do that safely outside the locked region.
        * The temporary array and the enumerator are autoreleased and
-       * will be deallocated with the threads autorelease pool. 
+       * will be deallocated with the threads autorelease pool.
        */
       while ((c = [enumerator nextObject]) != nil)
 	{
@@ -4044,4 +4009,3 @@ static NSLock	*cached_proxies_gate = nil;
     }
 }
 @end
-

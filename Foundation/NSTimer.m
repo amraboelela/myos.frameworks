@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSTimer class reference</title>
-   $Date: 2010-09-25 14:28:07 -0700 (Sat, 25 Sep 2010) $ $Revision: 31420 $
+   $Date: 2015-10-03 11:56:08 -0700 (Sat, 03 Oct 2015) $ $Revision: 39024 $
    */
 
 #import "common.h"
@@ -244,9 +244,11 @@ static Class	NSDate_class;
 	  NS_HANDLER
 	    {
 	      NSLog(@"*** NSTimer ignoring exception '%@' (reason '%@') "
-	        @"raised during posting of timer with target %p "
+	        @"raised during posting of timer with target %s(%s) "
 		@"and selector '%@'",
-		[localException name], [localException reason], target,
+		[localException name], [localException reason],
+                GSClassNameFromObject(target),
+                GSObjCIsInstance(target) ? "instance" : "class",
 		NSStringFromSelector([target selector]));
 	    }
 	  NS_ENDHANDLER

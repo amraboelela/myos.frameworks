@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSCharacterSet class reference</title>
-   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+   $Date: 2015-11-01 15:37:11 -0800 (Sun, 01 Nov 2015) $ $Revision: 39115 $
 */
 
 #import "common.h"
@@ -40,7 +40,7 @@
 #import "Foundation/NSCharacterSet.h"
 #import "Foundation/NSData.h"
 
-/* Using and index set to hold a characterset is more space efficient but
+/* Using an index set to hold a characterset is more space efficient but
  * on the intel core-2 system I benchmarked on, it made my applications
  * about 20% slower.
  * It only makes sense to build base to use index charactersets on machines

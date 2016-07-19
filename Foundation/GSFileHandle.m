@@ -3,7 +3,9 @@
 
    Written by:  Richard Frith-Macdonald <richard@brainstorm.co.uk>
    Date: 1997, 2002
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: July 2016
+ 
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
@@ -96,9 +98,9 @@
 #define	NETBUF_SIZE	(1024 * 16)
 #define	READ_SIZE	NETBUF_SIZE*10
 
-static GSFileHandle*	fh_stdin = nil;
-static GSFileHandle*	fh_stdout = nil;
-static GSFileHandle*	fh_stderr = nil;
+static GSFileHandle     *fh_stdin = nil;
+static GSFileHandle     *fh_stdout = nil;
+static GSFileHandle     *fh_stderr = nil;
 
 @interface      GSTcpTune : NSObject
 - (int) delay;
@@ -359,11 +361,14 @@ static GSTcpTune        *tune = nil;
   DESTROY(address);
   DESTROY(service);
   DESTROY(protocol);
-
-  [self finalize];
-
   DESTROY(readInfo);
   DESTROY(writeInfo);
+
+  /* Finalize *after* destroying readInfo and writeInfo so that, if the
+   * file handle needs to be closed, we don't generate any notifications
+   * containing the deallocated object.  Tnanks to david for this fix.
+   */
+  [self finalize];
   [super dealloc];
 }
 
@@ -1205,7 +1210,7 @@ NSString * const GSSOCKSRecvAddr = @"GSSOCKSRecvAddr";
 
       if (fstat(desc, &sbuf) < 0)
 	{
-#if	defined(__MINGW__)
+#if	defined(_WIN32)
 	  /* On windows, an fstat will fail if the descriptor is a pipe
 	   * or socket, so we simply mark the descriptor as not being a
 	   * standard file.
@@ -1984,34 +1989,34 @@ NSString * const GSSOCKSRecvAddr = @"GSSOCKSRecvAddr";
 
 - (void) watchReadDescriptorForModes: (NSArray*)modes;
 {
-    NSRunLoop	*l;
-    
-    if (descriptor < 0)
+  NSRunLoop	*l;
+
+  if (descriptor < 0)
     {
-        return;
+      return;
     }
-    
-    l = [NSRunLoop currentRunLoop];
-    [self setNonBlocking: YES];
-    if (modes && [modes count])
+
+  l = [NSRunLoop currentRunLoop];
+  [self setNonBlocking: YES];
+  if (modes && [modes count])
     {
-        unsigned int	i;
-        
-        for (i = 0; i < [modes count]; i++)
-        {
-            [l addEvent: (void*)(uintptr_t)descriptor
-                   type: ET_RDESC
-                watcher: self
-                forMode: [modes objectAtIndex: i]];
+      unsigned int	i;
+
+      for (i = 0; i < [modes count]; i++)
+	{
+	  [l addEvent: (void*)(uintptr_t)descriptor
+		 type: ET_RDESC
+	      watcher: self
+	      forMode: [modes objectAtIndex: i]];
         }
-        [readInfo setObject: modes forKey: NSFileHandleNotificationMonitorModes];
+      [readInfo setObject: modes forKey: NSFileHandleNotificationMonitorModes];
     }
-    else
+  else
     {
-        [l addEvent: (void*)(uintptr_t)descriptor
-               type: ET_RDESC
-            watcher: self
-            forMode: NSDefaultRunLoopMode];
+      [l addEvent: (void*)(uintptr_t)descriptor
+	     type: ET_RDESC
+	  watcher: self
+	  forMode: NSDefaultRunLoopMode];
     }
 }
 
@@ -2054,98 +2059,98 @@ NSString * const GSSOCKSRecvAddr = @"GSSOCKSRecvAddr";
 
 - (void) receivedEventRead
 {
-    NSString	*operation;
-    
-    operation = [readInfo objectForKey: NotificationKey];
-    if (operation == NSFileHandleConnectionAcceptedNotification)
+  NSString	*operation;
+
+  operation = [readInfo objectForKey: NotificationKey];
+  if (operation == NSFileHandleConnectionAcceptedNotification)
     {
-        struct sockaddr	buf;
-        int			desc;
-        unsigned int		blen = sizeof(buf);
+      struct sockaddr	buf;
+      int			desc;
+      unsigned int		blen = sizeof(buf);
+
+      desc = accept(descriptor, &buf, &blen);
+      if (desc == -1)
+	{
+	  NSString	*s;
+
+	  s = [NSString stringWithFormat: @"Accept attempt failed - %@",
+	    [NSError _last]];
+	  [readInfo setObject: s forKey: GSFileHandleNotificationError];
+	}
+      else
+	{ // Accept attempt completed.
+	  GSFileHandle		*h;
+	  struct sockaddr	sin;
+	  unsigned int		size = sizeof(sin);
+
+          [tune tune: (void*)(intptr_t)desc];
         
-        desc = accept(descriptor, &buf, &blen);
-        if (desc == -1)
-        {
-            NSString	*s;
-            
-            s = [NSString stringWithFormat: @"Accept attempt failed - %@",
-                 [NSError _last]];
-            [readInfo setObject: s forKey: GSFileHandleNotificationError];
-        }
-        else
-        { // Accept attempt completed.
-            GSFileHandle		*h;
-            struct sockaddr	sin;
-            unsigned int		size = sizeof(sin);
-            
-            [tune tune: (void*)(intptr_t)desc];
-            
-            h = [[[self class] alloc] initWithFileDescriptor: desc
-                                              closeOnDealloc: YES];
-            h->isSocket = YES;
-            getpeername(desc, &sin, &size);
-            [h setAddr: &sin];
-            [readInfo setObject: h
-                         forKey: NSFileHandleNotificationFileHandleItem];
-            RELEASE(h);
-        }
-        [self postReadNotification];
+	  h = [[[self class] alloc] initWithFileDescriptor: desc
+					    closeOnDealloc: YES];
+	  h->isSocket = YES;
+	  getpeername(desc, &sin, &size);
+	  [h setAddr: &sin];
+	  [readInfo setObject: h
+		   forKey: NSFileHandleNotificationFileHandleItem];
+	  RELEASE(h);
+	}
+      [self postReadNotification];
     }
-    else if (operation == NSFileHandleDataAvailableNotification)
+  else if (operation == NSFileHandleDataAvailableNotification)
     {
-        [self postReadNotification];
+      [self postReadNotification];
     }
-    else
+  else
     {
-        NSMutableData	*item;
-        int		length;
-        int		received = 0;
-        int		rmax = [tune recvSize];
-        char		buf[rmax];
-        
-        item = [readInfo objectForKey: NSFileHandleNotificationDataItem];
-        /*
-         * We may have a maximum data size set...
-         */
-        if (readMax > 0)
+      NSMutableData	*item;
+      int		length;
+      int		received = 0;
+      int		rmax = [tune recvSize];
+      char		buf[rmax];
+
+      item = [readInfo objectForKey: NSFileHandleNotificationDataItem];
+      /*
+       * We may have a maximum data size set...
+       */
+      if (readMax > 0)
         {
-            length = (unsigned int)readMax - [item length];
-            if (length > (int)sizeof(buf))
+          length = (unsigned int)readMax - [item length];
+          if (length > (int)sizeof(buf))
             {
-                length = sizeof(buf);
-            }
-        }
-        else
-        {
-            length = sizeof(buf);
-        }
-        
-        received = [self read: buf length: length];
-        if (received == 0)
+	      length = sizeof(buf);
+	    }
+	}
+      else
+	{
+	  length = sizeof(buf);
+	}
+
+      received = [self read: buf length: length];
+      if (received == 0)
         { // Read up to end of file.
-            [self postReadNotification];
+          [self postReadNotification];
         }
-        else if (received < 0)
+      else if (received < 0)
         {
-            if (errno != EAGAIN && errno != EINTR)
+          if (errno != EAGAIN && errno != EINTR)
             {
-                NSString	*s;
-                
-                s = [NSString stringWithFormat: @"Read attempt failed - %@",
-                     [NSError _last]];
-                [readInfo setObject: s forKey: GSFileHandleNotificationError];
-                [self postReadNotification];
-            }
-        }
-        else
-        {
-            [item appendBytes: buf length: received];
-            if (readMax < 0 || (readMax > 0 && (int)[item length] == readMax))
-            {
-                // Read a single chunk of data
-                [self postReadNotification];
-            }
-        }
+	      NSString	*s;
+
+	      s = [NSString stringWithFormat: @"Read attempt failed - %@",
+		[NSError _last]];
+	      [readInfo setObject: s forKey: GSFileHandleNotificationError];
+	      [self postReadNotification];
+	    }
+	}
+      else
+	{
+	  [item appendBytes: buf length: received];
+	  if (readMax < 0 || (readMax > 0 && (int)[item length] == readMax))
+	    {
+	      // Read a single chunk of data
+	      [self postReadNotification];
+	    }
+	}
     }
 }
 

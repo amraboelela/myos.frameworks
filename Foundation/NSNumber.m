@@ -216,6 +216,11 @@ return NSOrderedSame;
 @end
 
 @implementation	NSBoolNumber
+- (void) getValue: (void*)buffer
+{
+  BOOL *ptr = (BOOL*)buffer;
+  *ptr = VALUE;
+}
 - (const char *) objCType
 {
   return @encode(BOOL);
@@ -350,9 +355,11 @@ return NSOrderedSame;
 
 #ifdef OBJC_SMALL_OBJECT_SHIFT
 static BOOL useSmallInt;
+#if OBJC_SMALL_OBJECT_SHIFT == 3
 static BOOL useSmallExtendedDouble;
 static BOOL useSmallRepeatingDouble;
 static BOOL useSmallFloat;
+#endif
 #define SMALL_INT_MASK 1
 #define SMALL_EXTENDED_DOUBLE_MASK 2
 #define SMALL_REPEATING_DOUBLE_MASK 3
@@ -479,8 +486,7 @@ boxDouble(double d, uintptr_t mask)
 #define FORMAT @"%0.16g"
 #include "NSNumberMethods.h"
 
-+ (void)
-load
++ (void) load
 {
   useSmallExtendedDouble = objc_registerSmallObjectClass_np
     (self, SMALL_EXTENDED_DOUBLE_MASK);
@@ -814,11 +820,12 @@ if (aValue >= -1 && aValue <= 12)\
 
   CHECK_SINGLETON (aValue);
 #ifdef OBJC_SMALL_OBJECT_SHIFT
-  if (useSmallInt &&
-      (aValue < (INT_MAX>>OBJC_SMALL_OBJECT_SHIFT)) &&
-      (aValue > -(INT_MAX>>OBJC_SMALL_OBJECT_SHIFT)))
+  if (useSmallInt
+    && (aValue < (INT_MAX>>OBJC_SMALL_OBJECT_SHIFT))
+    && (aValue > -(INT_MAX>>OBJC_SMALL_OBJECT_SHIFT)))
     {
-       return (id)((((NSInteger)aValue) << OBJC_SMALL_OBJECT_SHIFT) | SMALL_INT_MASK);
+      return (id)((((NSInteger)aValue) << OBJC_SMALL_OBJECT_SHIFT)
+        | SMALL_INT_MASK);
     }
 #endif
   n = NSAllocateObject (NSIntNumberClass, 0, 0);
@@ -901,27 +908,23 @@ if (aValue >= -1 && aValue <= 12)\
 
 + (NSNumber *) numberWithFloat: (float)aValue
 {
-    NSFloatNumber *n;
-    
-    //DLog();
-    if (self != NSNumberClass)
+  NSFloatNumber *n;
+
+  if (self != NSNumberClass)
     {
-        DLog(@"self != NSNumberClass");
-        return [[[self alloc] initWithBytes: (const void *)&aValue
-                                   objCType: @encode(float)] autorelease];
+      return [[[self alloc] initWithBytes: (const void *)&aValue
+        objCType: @encode(float)] autorelease];
     }
     //DLog();
 #if OBJC_SMALL_OBJECT_SHIFT == 3
-    if (useSmallFloat)
+  if (useSmallFloat)
     {
-        //DLog(@"useSmallRepeatingDouble");
-        return boxDouble(aValue, SMALL_FLOAT_MASK);
+      return boxDouble(aValue, SMALL_FLOAT_MASK);
     }
 #endif
-    //DLog();
-    n = NSAllocateObject (NSFloatNumberClass, 0, 0);
-    n->value = aValue;
-    return AUTORELEASE(n);
+  n = NSAllocateObject (NSFloatNumberClass, 0, 0);
+  n->value = aValue;
+  return AUTORELEASE(n);
 }
 
 + (NSNumber *) numberWithDouble: (double)aValue
@@ -1029,14 +1032,44 @@ if (aValue >= -1 && aValue <= 12)\
 - (void) encodeWithCoder: (NSCoder *) coder
 {
   const char *type = [self objCType];
-  char buffer[16] __attribute__ ((aligned (16)));
+  unsigned char charbuf;
+  unsigned short shortbuf;
+  unsigned int intbuf;
+  unsigned long longbuf;
+  unsigned long long llongbuf;
+  float floatbuf;
+  double doublebuf;
+  void  *buffer;
 
-  [coder encodeValueOfObjCType: @encode (char) at: type];
-  /* The most we currently store in an NSNumber is 8 bytes (double or long
-   * long), but we may add support for vectors or long doubles in future, so
-   * make this 16 bytes now so stuff doesn't break in fun and exciting ways
-   * later.
-   */
+  [coder encodeValueOfObjCType: @encode(char) at: type];
+
+  switch (type[0])
+    {
+      case 'c':
+      case 'C':
+        buffer = &charbuf; break;
+      case 's':
+      case 'S':
+        buffer = &shortbuf; break;
+      case 'i':
+      case 'I':
+        buffer = &intbuf; break;
+      case 'l':
+      case 'L':
+        buffer = &longbuf; break;
+      case 'q':
+      case 'Q':
+        buffer = &llongbuf; break;
+      case 'f':
+        buffer = &floatbuf; break;
+      case 'd':
+        buffer = &doublebuf; break;
+      default:
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"unknown NSNumber type '%s'", type];
+        return; // Avoid spurious compiler warning.
+    }
+
   [self getValue: buffer];
   [coder encodeValueOfObjCType: type at: buffer];
 }
@@ -1050,17 +1083,49 @@ if (aValue >= -1 && aValue <= 12)\
 - (id) initWithCoder: (NSCoder *) coder
 {
   char type[2] = { 0 };
-  char buffer[16] __attribute__ ((aligned (16)));
+  unsigned char charbuf;
+  unsigned short shortbuf;
+  unsigned int intbuf;
+  unsigned long longbuf;
+  unsigned long long llongbuf;
+  float floatbuf;
+  double doublebuf;
+  void *buffer;
 
-  [coder decodeValueOfObjCType: @encode (char) at: type];
+  [coder decodeValueOfObjCType: @encode(char) at: type];
+  switch (type[0])
+    {
+      case 'c':
+      case 'C':
+        buffer = &charbuf; break;
+      case 's':
+      case 'S':
+        buffer = &shortbuf; break;
+      case 'i':
+      case 'I':
+        buffer = &intbuf; break;
+      case 'l':
+      case 'L':
+        buffer = &longbuf; break;
+      case 'q':
+      case 'Q':
+        buffer = &llongbuf; break;
+      case 'f':
+        buffer = &floatbuf; break;
+      case 'd':
+        buffer = &doublebuf; break;
+      default:
+        [NSException raise: NSInternalInconsistencyException
+                    format: @"unknown NSNumber type '%c'", type[0]];
+        return nil;     // Avoid spurious compiler warning.
+     }
   [coder decodeValueOfObjCType: type at: buffer];
   return [self initWithBytes: buffer objCType: type];
 }
 
 - (NSString *) description
 {
-    return [NSString stringWithFormat:@"<%@: %p; value: %@>", [self class], self, [self stringValue]];
-    //return [self stringValue];
+  return [self stringValue];
 }
 
 /* Return nil for an NSNumber that is allocated and initialized without

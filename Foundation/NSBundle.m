@@ -30,7 +30,7 @@
 
 
    <title>NSBundle class reference</title>
-   $Date: 2014-01-14 06:13:31 -0800 (Tue, 14 Jan 2014) $ $Revision: 37602 $
+   $Date: 2016-06-27 12:06:12 -0700 (Mon, 27 Jun 2016) $ $Revision: 39933 $
 */
 
 #define	EXPOSE_NSBundle_IVARS	1
@@ -53,6 +53,7 @@
 #import "Foundation/NSData.h"
 #import "Foundation/NSURL.h"
 #import "Foundation/NSValue.h"
+#import "Foundation/NSSet.h"
 #import "GNUstepBase/NSString+GNUstepBase.h"
 #import "GNUstepBase/NSTask+GNUstepBase.h"
 
@@ -175,8 +176,6 @@ static NSLock *pathCacheLock = nil;
 static NSMutableDictionary *pathCache = nil;
 
 @interface NSObject (PrivateFrameworks)
-+ (NSString*) frameworkEnv;
-+ (NSString*) frameworkPath;
 + (NSString*) frameworkVersion;
 + (NSString**) frameworkClasses;
 @end
@@ -274,7 +273,7 @@ AbsolutePathOfExecutable(NSString *path, BOOL atLaunch)
 	{
 	  pathlist = [env objectForKey:@"Path"];
 	}
-#if defined(__MINGW__)
+#if defined(_WIN32)
       patharr = [pathlist componentsSeparatedByString:@";"];
 #else
       patharr = [pathlist componentsSeparatedByString:@":"];
@@ -305,7 +304,7 @@ AbsolutePathOfExecutable(NSString *path, BOOL atLaunch)
 	      result = [prefix stringByStandardizingPath];
 	      break;
 	    }
-#if defined(__WIN32__)
+#if defined(_WIN32)
 	  else
 	    {
 	      NSString	*extension = [path pathExtension];
@@ -351,53 +350,53 @@ AbsolutePathOfExecutable(NSString *path, BOOL atLaunch)
 NSString *
 GSPrivateExecutablePath()
 {
-    static NSString	*executablePath = nil;
-    static BOOL		beenHere = NO;
-    
-    if (beenHere == NO)
+  static NSString	*executablePath = nil;
+  static BOOL		beenHere = NO;
+
+  if (beenHere == NO)
     {
-        [load_lock lock];
-        if (beenHere == NO)
-        {
+      [load_lock lock];
+      if (beenHere == NO)
+	{
 #if	defined(PROCFS_EXE_LINK)
-            executablePath = [manager()
-                              pathContentOfSymbolicLinkAtPath:
-                              [NSString stringWithUTF8String: PROCFS_EXE_LINK]];
-            
-            /*
-             On some systems, the link is of the form "[device]:inode", which
-             can be used to open the executable, but is useless if you want
-             the path to it. Thus we check that the path is an actual absolute
-             path. (Using '/' here is safe; it isn't the path separator
-             everywhere, but it is on all systems that have PROCFS_EXE_LINK.)
-             */
-            if ([executablePath length] > 0
-                && [executablePath characterAtIndex: 0] != '/')
-            {
-                executablePath = nil;
-            }
+	  executablePath = [manager()
+	    pathContentOfSymbolicLinkAtPath:
+              [NSString stringWithUTF8String: PROCFS_EXE_LINK]];
+
+	  /*
+	  On some systems, the link is of the form "[device]:inode", which
+	  can be used to open the executable, but is useless if you want
+	  the path to it. Thus we check that the path is an actual absolute
+	  path. (Using '/' here is safe; it isn't the path separator
+	  everywhere, but it is on all systems that have PROCFS_EXE_LINK.)
+	  */
+	  if ([executablePath length] > 0
+	    && [executablePath characterAtIndex: 0] != '/')
+	    {
+	      executablePath = nil;
+	    }
 #endif
-            if (executablePath == nil || [executablePath length] == 0)
-            {
-                executablePath
-                = [[[NSProcessInfo processInfo] arguments] objectAtIndex: 0];
-            }
-            if (NO == [executablePath isAbsolutePath])
-            {
-                executablePath = AbsolutePathOfExecutable(executablePath, YES);
-            }
-            else
-            {
-                executablePath = [executablePath stringByResolvingSymlinksInPath];
-                executablePath = [executablePath stringByStandardizingPath];
-            }
-            IF_NO_GC([executablePath retain];)
-            beenHere = YES;
-        }
-        [load_lock unlock];
-        NSCAssert(executablePath != nil, NSInternalInconsistencyException);
+	  if (executablePath == nil || [executablePath length] == 0)
+	    {
+	      executablePath
+		= [[[NSProcessInfo processInfo] arguments] objectAtIndex: 0];
+	    }
+	  if (NO == [executablePath isAbsolutePath])
+	    {
+	      executablePath = AbsolutePathOfExecutable(executablePath, YES);
+	    }
+	  else
+	    {
+	      executablePath = [executablePath stringByResolvingSymlinksInPath];
+	      executablePath = [executablePath stringByStandardizingPath];
+	    }
+	  IF_NO_GC([executablePath retain];)
+	  beenHere = YES;
+	}
+      [load_lock unlock];
+      NSCAssert(executablePath != nil, NSInternalInconsistencyException);
     }
-    return executablePath;
+  return executablePath;
 }
 
 static NSArray *
@@ -466,7 +465,7 @@ bundle_object_name(NSString *path, NSString* executable)
     return path1;
   else if ([mgr isReadableFileAtPath: path0] == YES)
     return path0;
-#if defined(__MINGW__)
+#if defined(_WIN32)
   /* If we couldn't find the binary, and we are on windows, and the name
    * has no path extension, then let's try looking for a dll.
    */
@@ -780,19 +779,13 @@ _find_main_bundle_for_tool(NSString *toolName)
 	    {
 	      bundlePath = [bundlePath stringByDeletingLastPathComponent];
 	    }
-	  /* target os */
+	  /* target directory */
 	  pathComponent = [bundlePath lastPathComponent];
-	  if ([pathComponent isEqual: gnustep_target_os])
+	  if ([pathComponent isEqual: gnustep_target_dir])
 	    {
 	      bundlePath = [bundlePath stringByDeletingLastPathComponent];
 	    }
-	  /* target cpu */
-	  pathComponent = [bundlePath lastPathComponent];
-	  if ([pathComponent isEqual: gnustep_target_cpu])
-	    {
-	      bundlePath = [bundlePath stringByDeletingLastPathComponent];
-	    }
-#if defined(__MINGW__)
+#if defined(_WIN32)
 	  /* On windows, the library (dll) is in the Tools area rather than
 	   * in the framework, so we can adjust the path here.
 	   */
@@ -827,7 +820,7 @@ _find_main_bundle_for_tool(NSString *toolName)
 		  if (bundlePath)
 		    bundle = [[self alloc] initWithPath: bundlePath];
 		}
-#if !defined(__MINGW__)
+#if !defined(_WIN32)
 	    }
 #endif
 
@@ -1183,6 +1176,9 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
 	gnustep_target_dir = RETAIN(str);
       else if ((str = [env objectForKey: @"GNUSTEP_HOST_DIR"]) != nil)
 	gnustep_target_dir = RETAIN(str);
+      else if (gnustep_target_cpu != nil && gnustep_target_os != nil)
+	gnustep_target_dir = [[NSString alloc] initWithFormat: @"%@-%@",
+          gnustep_target_cpu, gnustep_target_os];
 
       if ((str = [env objectForKey: @"LIBRARY_COMBO"]) != nil)
 	library_combo = RETAIN(str);
@@ -1352,7 +1348,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
          the executable name here - just in case it turns out it's a
          tool.  */
         NSString *toolName = [GSPrivateExecutablePath() lastPathComponent];
-#if defined(__WIN32__) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__)
         toolName = [toolName stringByDeletingPathExtension];
 #endif
         
@@ -1360,7 +1356,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
         path = [GSPrivateExecutablePath() stringByDeletingLastPathComponent];
         //DLog(@"path: %@", path);
         /* We now need to chop off the extra subdirectories, the library
-         combo and the target cpu/os if they exist.  The executable
+         combo and the target directory if they exist.  The executable
          and this library should match so that is why we can use the
          compiled-in settings. */
         /* library combo */
@@ -1369,15 +1365,9 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
         {
             path = [path stringByDeletingLastPathComponent];
         }
-        /* target os */
+        /* target dir */
         s = [path lastPathComponent];
-        if ([s isEqual: gnustep_target_os])
-        {
-            path = [path stringByDeletingLastPathComponent];
-        }
-        /* target cpu */
-        s = [path lastPathComponent];
-        if ([s isEqual: gnustep_target_cpu])
+        if ([s isEqual: gnustep_target_dir])
         {
             path = [path stringByDeletingLastPathComponent];
         }
@@ -1488,7 +1478,7 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
          mainBundle, because we don't want it to be ever released.  */
         _mainBundle = [self alloc];
         /* Please note that _mainBundle should *not* be nil.  */
-        _mainBundle = [_mainBundle initWithPath:path];
+        _mainBundle = [_mainBundle initWithPath: path];
         NSAssert(_mainBundle != nil, NSInternalInconsistencyException);
     }
     
@@ -1505,9 +1495,10 @@ _bundle_load_callback(Class theClass, struct objc_category *theCategory)
   void		*key;
   NSBundle	*bundle;
   NSMapEnumerator enumerate;
-    if (!aClass) {
+
+  if (!aClass)
     return nil;
-    }
+
   /* This is asked relatively frequently inside gnustep-base itself;
    * shortcut it.
    */
@@ -1665,6 +1656,7 @@ IF_NO_GC(
       [self dealloc];
       return nil;
     }
+
   /*
    * Make sure we have an absolute and fully expanded path,
    * so we can manipulate it without having to worry about
@@ -1677,7 +1669,8 @@ IF_NO_GC(
     {
       NSWarnMLog(@"NSBundle -initWithPath: requires absolute path names, "
 	@"given '%@'", path);
-#if defined(__MINGW__)
+
+#if defined(_WIN32)
       if ([path length] > 0 &&
 	([path characterAtIndex: 0]=='/' || [path characterAtIndex: 0]=='\\'))
 	{
@@ -1863,7 +1856,7 @@ IF_NO_GC(
 		    {
 		      [pathCache removeObjectForKey: path];
 		    }
-#if defined(__MINGW__)
+#if defined(_WIN32)
 		  else if ('\\' == c)
 		    {
 		      [pathCache removeObjectForKey: path];
@@ -1884,8 +1877,8 @@ IF_NO_GC(
 
 - (NSString*) description
 {
-    return [NSString stringWithFormat:@"<%@: %p; bundlePath: %@; isLoaded:%d>", [self class], self, [self bundlePath], [self isLoaded]];
-    /*return  [[super description] stringByAppendingFormat: @" <%@>%@", [self bundlePath], [self isLoaded] ? @" (loaded)" : @""];*/
+  return  [[super description] stringByAppendingFormat:
+    @" <%@>%@", [self bundlePath], [self isLoaded] ? @" (loaded)" : @""];
 }
 
 - (NSString*) bundlePath
@@ -2257,7 +2250,8 @@ IF_NO_GC(
 		   inDirectory: (NSString *)subPath
 {
   NSString *rootPath;
-#if !defined(__MINGW__)
+
+#if !defined(_WIN32)
   if (_frameworkVersion)
     rootPath = [NSString stringWithFormat:@"%@/Versions/%@", [self bundlePath],
       _frameworkVersion];
@@ -2317,6 +2311,7 @@ IF_NO_GC(
   NSString *path;
   NSMutableArray *resources;
   NSEnumerator *pathlist;
+
   pathlist = [[NSBundle _bundleResourcePathsWithRootPath: bundlePath
     subPath: subPath localization: localization] objectEnumerator];
   resources = [NSMutableArray arrayWithCapacity: 2];
@@ -2465,7 +2460,7 @@ IF_NO_GC(
   /* I guess this is arbitrary if we can't find a match? */
   if ([array count] == 0 && [localizationsArray count] > 0)
     [array addObject: [localizationsArray objectAtIndex: 0]];
-  return [array makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(array);
 }
 
 - (NSDictionary*) localizedInfoDictionary
@@ -2529,7 +2524,7 @@ IF_NO_GC(
       locale = [[locale lastPathComponent] stringByDeletingPathExtension];
       [array addObject: locale];
     }
-  return [array makeImmutableCopyOnFail: NO];
+  return GS_IMMUTABLE(array);
 }
 
 - (NSArray *) preferredLocalizations
@@ -2700,7 +2695,9 @@ IF_NO_GC(
 - (NSString *) executablePath
 {
   NSString *object, *path;
-    if (!_mainBundle) {
+
+  if (!_mainBundle)
+    {
       [NSBundle mainBundle];
     }
   if (self == _mainBundle)
@@ -2733,7 +2730,7 @@ IF_NO_GC(
       mangledName = [mangledName stringByReplacingString: @"+"
 				 withString: @"_1"];
 
-#if !defined(__MINGW__)
+#if !defined(_WIN32)
       path = [_path stringByAppendingPathComponent:@"Versions/Current"];
 #else
       path = _path;
@@ -2766,7 +2763,7 @@ IF_NO_GC(
 
   if (_bundleType == NSBUNDLE_FRAMEWORK)
     {
-#if !defined(__MINGW__)
+#if !defined(_WIN32)
       return [_path stringByAppendingPathComponent:
                       [NSString stringWithFormat:@"Versions/%@/%@",
                       version, executableName]];
@@ -2795,12 +2792,12 @@ IF_NO_GC(
 
   if (_bundleType == NSBUNDLE_FRAMEWORK)
     {
-#if !defined(__MINGW__)
+#if !defined(_WIN32)
       return [_path stringByAppendingPathComponent:
 		      [NSString stringWithFormat:@"Versions/%@/Resources",
 				version]];
 #else
-      /* No Versions (that require symlinks) on MINGW */
+      /* No Versions (that require symlinks) on mswindows */
       return [_path stringByAppendingPathComponent: @"Resources"];
 #endif
     }
@@ -2852,7 +2849,7 @@ IF_NO_GC(
 
   if (_bundleType == NSBUNDLE_FRAMEWORK)
     {
-#if !defined(__MINGW__)
+#if !defined(_WIN32)
       return [_path stringByAppendingPathComponent:
                       [NSString stringWithFormat:@"Versions/%@/PlugIns",
                       version]];
@@ -2880,7 +2877,7 @@ IF_NO_GC(
 
   if (_bundleType == NSBUNDLE_FRAMEWORK)
     {
-#if !defined(__MINGW__)
+#if !defined(_WIN32)
       return [_path stringByAppendingPathComponent:
                       [NSString stringWithFormat:@"Versions/%@/PrivateFrameworks",
                       version]];
@@ -2949,7 +2946,7 @@ IF_NO_GC(
    */
   libraryName = [libraryName lastPathComponent];
 
-#if defined(__MINGW__)
+#if defined(_WIN32)
   /* A dll is usually of the form 'xxx-maj_min.dll'
    * so we can extract the version info and use it.
    */

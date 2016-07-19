@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSProxy class reference</title>
-   $Date: 2013-04-13 03:40:15 -0700 (Sat, 13 Apr 2013) $ $Revision: 36517 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
    */
 
 #import "common.h"
@@ -217,9 +217,7 @@
  */
 - (id) autorelease
 {
-#if	GS_WITH_GC == 0
   [NSAutoreleasePool addObject: self];
-#endif
   return self;
 }
 
@@ -455,7 +453,6 @@
  */
 - (oneway void) release
 {
-#if	(GS_WITH_GC == 0)
   if (NSDecrementExtraRefCountWasZero(self))
     {
 #  ifdef OBJC_CAP_ARC
@@ -463,7 +460,6 @@
 #  endif
       [self dealloc];
     }
-#endif
 }
 
 /**

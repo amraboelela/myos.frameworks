@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSInvocation class reference</title>
-   $Date: 2014-05-22 09:55:18 -0700 (Thu, 22 May 2014) $ $Revision: 37904 $
+   $Date: 2016-03-09 05:16:16 -0800 (Wed, 09 Mar 2016) $ $Revision: 39492 $
    */
 
 #import "common.h"
@@ -79,7 +79,7 @@
 #if     defined(HAVE_MMAP)
       munmap(buffer, size);
 #else
-#if     !defined(__MINGW__) && defined(HAVE_MPROTECT)
+#if     !defined(_WIN32) && defined(HAVE_MPROTECT)
       if (mprotect(buffer, NSPageSize(), PROT_READ|PROT_WRITE) == -1)
 	{
 	  NSLog(@"Failed to protect memory as writable: %@", [NSError _last]);
@@ -159,7 +159,7 @@
 - (void) protect
 {
 #if	!defined(HAVE_FFI_PREP_CLOSURE_LOC)
-#if	defined(__MINGW__)
+#if	defined(_WIN32)
   DWORD old;
   if (VirtualProtect(buffer, size, PAGE_EXECUTE, &old) == 0)
     {

@@ -78,10 +78,10 @@ typedef NSUInteger NSStreamEvent;
  * Creates and returns by reference an NSInputStream object and NSOutputStream 
  * object for a socket connection with the specified port on host.
  */
-+ (void) getStreamsToHost:(NSHost *)host
-                     port:(NSInteger)port
-              inputStream:(NSInputStream **)inputStream
-             outputStream:(NSOutputStream **)outputStream;
++ (void) getStreamsToHost: (NSHost *)host 
+                     port: (NSInteger)port 
+              inputStream: (NSInputStream **)inputStream 
+             outputStream: (NSOutputStream **)outputStream;
 
 /**
  * Closes the receiver.<br />

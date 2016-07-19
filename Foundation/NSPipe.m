@@ -21,7 +21,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2011-10-14 08:46:13 -0700 (Fri, 14 Oct 2011) $ $Revision: 33993 $
+   $Date: 2016-03-09 05:16:16 -0800 (Wed, 09 Mar 2016) $ $Revision: 39492 $
    */
 
 #import "common.h"
@@ -64,7 +64,7 @@
   self = [super init];
   if (self != nil)
     {
-#ifndef __MINGW__
+#ifndef _WIN32
       int	p[2];
 
       if (pipe(p) == 0)

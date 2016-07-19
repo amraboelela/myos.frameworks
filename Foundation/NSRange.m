@@ -1,5 +1,5 @@
 /** NSRange - range functions
- * Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+ * Copyright (C) 1993-2015 Free Software Foundation, Inc.
  *
  * Written by:  Adam Fedor <fedor@boulder.colorado.edu>
  * Date: Mar 1995
@@ -22,7 +22,7 @@
  * Boston, MA 02111 USA.
 
    <title>NSRange class reference</title>
-   $Date: 2013-07-02 23:46:41 -0700 (Tue, 02 Jul 2013) $ $Revision: 36810 $
+   $Date: 2015-11-12 16:06:18 -0800 (Thu, 12 Nov 2015) $ $Revision: 39169 $
  */
 
 #import "common.h"
@@ -36,10 +36,10 @@
 
 static Class	NSStringClass = 0;
 static Class	NSScannerClass = 0;
-static SEL	scanIntSel;
+static SEL	scanIntegerSel;
 static SEL	scanStringSel;
 static SEL	scannerSel;
-static BOOL	(*scanIntImp)(NSScanner*, SEL, int*);
+static BOOL	(*scanIntegerImp)(NSScanner*, SEL, NSInteger*);
 static BOOL	(*scanStringImp)(NSScanner*, SEL, NSString*, NSString**);
 static id 	(*scannerImp)(Class, SEL, NSString*);
 
@@ -50,11 +50,11 @@ setupCache(void)
     {
       NSStringClass = [NSString class];
       NSScannerClass = [NSScanner class];
-      scanIntSel = @selector(scanInt:);
+      scanIntegerSel = @selector(scanInteger:);
       scanStringSel = @selector(scanString:intoString:);
       scannerSel = @selector(scannerWithString:);
-      scanIntImp = (BOOL (*)(NSScanner*, SEL, int*))
-	[NSScannerClass instanceMethodForSelector: scanIntSel];
+      scanIntegerImp = (BOOL (*)(NSScanner*, SEL, NSInteger*))
+	[NSScannerClass instanceMethodForSelector: scanIntegerSel];
       scanStringImp = (BOOL (*)(NSScanner*, SEL, NSString*, NSString**))
 	[NSScannerClass instanceMethodForSelector: scanStringSel];
       scannerImp = (id (*)(Class, SEL, NSString*))
@@ -73,11 +73,11 @@ NSRangeFromString(NSString *aString)
   if ((*scanStringImp)(scanner, scanStringSel, @"{", NULL)
     && (*scanStringImp)(scanner, scanStringSel, @"location", NULL)
     && (*scanStringImp)(scanner, scanStringSel, @"=", NULL)
-    && (*scanIntImp)(scanner, scanIntSel, (int*)&range.location)
+    && (*scanIntegerImp)(scanner, scanIntegerSel, (NSInteger*)&range.location)
     && (*scanStringImp)(scanner, scanStringSel, @",", NULL)
     && (*scanStringImp)(scanner, scanStringSel, @"length", NULL)
     && (*scanStringImp)(scanner, scanStringSel, @"=", NULL)
-    && (*scanIntImp)(scanner, scanIntSel, (int*)&range.length)
+    && (*scanIntegerImp)(scanner, scanIntegerSel, (NSInteger*)&range.length)
     && (*scanStringImp)(scanner, scanStringSel, @"}", NULL))
     return range;
   else

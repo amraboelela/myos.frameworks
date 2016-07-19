@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSLog reference</title>
-   $Date: 2015-03-01 11:37:28 -0800 (Sun, 01 Mar 2015) $ $Revision: 38370 $
+   $Date: 2016-03-09 05:16:16 -0800 (Wed, 09 Mar 2016) $ $Revision: 39492 $
    */
 
 #import "common.h"
@@ -89,6 +89,8 @@ extern NSThread	*GSCurrentThread();
 int _NSLogDescriptor = 1;
 
 static NSRecursiveLock	*myLock = nil;
+static IMP              lockImp = 0;
+static IMP              unlockImp = 0;
 
 /**
  * Returns the lock used to protect the GNUstep NSLogv() implementation.
@@ -105,6 +107,8 @@ GSLogLock()
       if (myLock == nil)
 	{
 	  myLock = [NSRecursiveLock new];
+          lockImp = [myLock methodForSelector: @selector(lock)];
+          unlockImp = [myLock methodForSelector: @selector(unlock)];
 	}
       [gnustep_global_lock unlock];
     }
@@ -117,7 +121,7 @@ _NSLog_standard_printf_handler(NSString* message)
   NSData	*d;
   const char	*buf;
   unsigned	len;
-#if	defined(__MINGW__)
+#if	defined(_WIN32)
   LPCWSTR	null_terminated_buf;
 #else
 #if	defined(HAVE_SYSLOG) || defined(HAVE_SLOGF)
@@ -150,7 +154,7 @@ _NSLog_standard_printf_handler(NSString* message)
       len = [d length];
     }
 
-#if	defined(__MINGW__)
+#if	defined(_WIN32)
   null_terminated_buf = UNISTR(message);
 
   OutputDebugStringW(null_terminated_buf);
@@ -231,7 +235,7 @@ _NSLog_standard_printf_handler(NSString* message)
     //printf("_NSLogDescriptor\n");
   write(_NSLogDescriptor, buf, len);
 #endif
-#endif // __MINGW__
+#endif // _WIN32
 }
 
 /**
@@ -336,8 +340,8 @@ NSLogv(NSString* format, va_list args)
   NSMutableString	*prefix;
   NSString              *message;
   NSString              *threadName = nil;
+  NSThread              *t = nil;
   static int		pid = 0;
-  NSAutoreleasePool	*arp = [NSAutoreleasePool new];
 
   if (_NSLog_printf_handler == NULL)
     {
@@ -346,7 +350,7 @@ NSLogv(NSString* format, va_list args)
 
   if (pid == 0)
     {
-#if defined(__MINGW__)
+#if defined(_WIN32)
       pid = (int)GetCurrentProcessId();
 #else
       pid = (int)getpid();
@@ -355,31 +359,32 @@ NSLogv(NSString* format, va_list args)
   //printf("NSLogv\n");
   if (GSPrivateDefaultsFlag(GSLogThread) == YES)
     {
-      NSThread  *t = GSCurrentThread();
-
-      threadName = [t name];
-      /* If no name has been set for the current thread, we log the address
-       * of the NSThread object instead.
+      /* If no name has been set for the current thread,
+       * we log the address of the NSThread object instead.
        */
-      if ([threadName length] == 0)
-        {
-          threadName = [NSString stringWithFormat: @"%lu", (unsigned long)t];
-        }
+      t = GSCurrentThread();
+      threadName = [t name];
     }
 
-  prefix = [NSMutableString stringWithCapacity: 1000];
+  prefix = [[NSMutableString alloc] initWithCapacity: 1000];
 
 #ifdef	HAVE_SYSLOG
-  //printf("HAVE_SYSLOG\n");
   if (GSPrivateDefaultsFlag(GSLogSyslog) == YES)
     {
-      if (nil != threadName)
+      if (nil == t)
         {
-          [prefix appendFormat: @"[thread:%lu,%@] ", GSPrivateThreadID(), threadName];
+          [prefix appendFormat: @"[thread:%"PRIuPTR"] ",
+            GSPrivateThreadID()];
+        }
+      else if (nil == threadName)
+        {
+          [prefix appendFormat: @"[thread:%"PRIuPTR",%p] ",
+            GSPrivateThreadID(), t];
         }
       else
         {
-          [prefix appendFormat: @"[thread:%lu] ", GSPrivateThreadID()];
+          [prefix appendFormat: @"[thread:%"PRIuPTR",%@] ",
+            GSPrivateThreadID(), threadName];
         }
     }
   else
@@ -401,14 +406,19 @@ NSLogv(NSString* format, va_list args)
       [prefix appendString: cal];
       [prefix appendString: @" "];
       [prefix appendString: [[NSProcessInfo processInfo] processName]];
-      if (nil == threadName)
+      if (nil == t)
         {
-          [prefix appendFormat: @"[%d:%lu] ",
+          [prefix appendFormat: @"[%d:%"PRIuPTR"] ",
             pid, GSPrivateThreadID()];
+        }
+      else if (nil == threadName)
+        {
+          [prefix appendFormat: @"[%d:%"PRIuPTR",%p] ",
+            pid, GSPrivateThreadID(), t];
         }
       else
         {
-          [prefix appendFormat: @"[%d:%lu,%@] ",
+          [prefix appendFormat: @"[%d:%"PRIuPTR",%@] ",
             pid, GSPrivateThreadID(), threadName];
         }
     }
@@ -422,17 +432,17 @@ NSLogv(NSString* format, va_list args)
       [prefix appendString: @"\n"];
     }
 
-  if (myLock == nil)
+  if (nil == myLock)
     {
       GSLogLock();
     }
 
-  [myLock lock];
-  //printf("_NSLog_printf_handler\n");
+  (*lockImp)(myLock, @selector(lock));
+
   _NSLog_printf_handler(prefix);
 
-  [myLock unlock];
+  (*unlockImp)(myLock, @selector(unlock));
 
-  [arp drain];
+  [prefix release];
 }
 

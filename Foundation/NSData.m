@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSData class reference</title>
-   $Date: 2014-07-25 05:06:34 -0700 (Fri, 25 Jul 2014) $ $Revision: 38015 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
    */
 
 /* NOTES	-	Richard Frith-Macdonald 1997
@@ -64,7 +64,7 @@
  *	Since all the other subclasses are based on NSDataMalloc or
  *	NSMutableDataMalloc, we can put most methods in here and not
  *	bother with duplicating them in the other classes.
- *		
+ *
  */
 
 #import "common.h"
@@ -118,10 +118,6 @@
 @class	NSDataMalloc;
 @class	NSDataStatic;
 @class	NSMutableDataMalloc;
-#if	GS_WITH_GC
-@class	NSDataFinalized;
-@class	NSMutableDataFinalized;
-#endif
 
 /*
  *	Some static variables to cache classes and methods for quick access -
@@ -132,10 +128,6 @@ static Class	dataMalloc;
 static Class	mutableDataMalloc;
 static Class	NSDataAbstract;
 static Class	NSMutableDataAbstract;
-#if	GS_WITH_GC
-static Class	dataFinalized;
-static Class	mutableDataFinalized;
-#endif
 static SEL	appendSel;
 static IMP	appendImp;
 
@@ -150,8 +142,14 @@ decodebase64(unsigned char *dst, const unsigned char *src)
 static char b64[]
   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+static const int crlf64 = NSDataBase64EncodingEndLineWithCarriageReturn
+  | NSDataBase64EncodingEndLineWithLineFeed;
+
 static NSUInteger
-encodebase64(unsigned char **dstRef, const unsigned char *src, NSUInteger length, NSDataBase64EncodingOptions options)
+encodebase64(unsigned char **dstRef,
+  const unsigned char *src,
+  NSUInteger length,
+  NSDataBase64EncodingOptions options)
 {
   unsigned char *dst;
   NSUInteger dIndex = 0;
@@ -160,17 +158,18 @@ encodebase64(unsigned char **dstRef, const unsigned char *src, NSUInteger length
   NSUInteger lineLength;
   NSUInteger destLen;
 
-  lineLength = 0;  
+  lineLength = 0;
   if (options & NSDataBase64Encoding64CharacterLineLength)
     lineLength = 64;
   else if (options & NSDataBase64Encoding76CharacterLineLength)
     lineLength = 76;
 
-  /* if no EndLine options are set but a line length is given, CR+LF is implied */
-  if (lineLength && !(options & NSDataBase64EncodingEndLineWithCarriageReturn) && !(options & NSDataBase64EncodingEndLineWithLineFeed))
+  /* if no EndLine options are set but a line length is given,
+   * CR+LF is implied
+   */
+  if (lineLength && !(options & crlf64))
     {
-      options |= NSDataBase64EncodingEndLineWithCarriageReturn;
-      options |= NSDataBase64EncodingEndLineWithLineFeed;
+      options |= crlf64;
     }
 
   /* estimate destination length */
@@ -178,17 +177,13 @@ encodebase64(unsigned char **dstRef, const unsigned char *src, NSUInteger length
   /* we need to take in account line-endings */
   if (lineLength)
     {
-      if (options & (NSDataBase64EncodingEndLineWithCarriageReturn | NSDataBase64EncodingEndLineWithLineFeed))
-        destLen += (destLen / lineLength)*2;
+      if ((options & crlf64) == crlf64)
+        destLen += (destLen / lineLength)*2;    // CR and LF
       else
-        destLen += (destLen / lineLength);
+        destLen += (destLen / lineLength);      // CR or LF
     }
 
-#if	GS_WITH_GC
-  dst = NSAllocateCollectable(destLen, 0);
-#else
   dst = NSZoneMalloc(NSDefaultMallocZone(), destLen);
-#endif
 
   for (sIndex = 0; sIndex < length; sIndex += 3)
     {
@@ -232,32 +227,32 @@ encodebase64(unsigned char **dstRef, const unsigned char *src, NSUInteger length
 static BOOL
 readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
 {
-#if defined(__MINGW__)
+#if defined(_WIN32)
   const unichar	*thePath = 0;
 #else
   const char	*thePath = 0;
-#endif	
+#endif
   FILE		*theFile = 0;
   void		*tmp = 0;
   int		c;
   off_t        fileLength;
-	
-#if defined(__MINGW__)
+
+#if defined(_WIN32)
   thePath = (const unichar*)[path fileSystemRepresentation];
 #else
   thePath = [path fileSystemRepresentation];
-#endif	
+#endif
   if (thePath == 0)
     {
       NSWarnFLog(@"Open (%@) attempt failed - bad path", path);
       return NO;
     }
-	
-#if defined(__MINGW__)
+
+#if defined(_WIN32)
   theFile = _wfopen(thePath, L"rb");
 #else
   theFile = fopen(thePath, "rb");
-#endif	
+#endif
 
   if (theFile == 0)		/* We failed to open the file. */
     {
@@ -275,7 +270,7 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
 	[NSError _last]);
       goto failure;
     }
-	
+
   /*
    *	Determine the length of the file (having seeked to the end of the
    *	file) by calling ftello().
@@ -286,7 +281,7 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
       NSWarnFLog(@"Ftell on %@ failed - %@", path, [NSError _last]);
       goto failure;
     }
-	
+
   /*
    *	Rewind the file pointer to the beginning, preparing to read in
    *	the file.
@@ -303,7 +298,7 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
   if (fileLength == 0)
     {
       unsigned char	buf[BUFSIZ];
-     
+
       /*
        * Special case ... a file of length zero may be a named pipe or some
        * file in the /proc filesystem, which will return us data if we read
@@ -311,16 +306,6 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
        */
       while ((c = fread(buf, 1, BUFSIZ, theFile)) != 0)
 	{
-#if	GS_WITH_GC
-	  if (tmp == 0)
-	    {
-	      tmp = NSAllocateCollectable(c, 0);
-	    }
-	  else
-	    {
-	      tmp = NSReallocateCollectable(tmp, fileLength + c, 0);
-	    }
-#else
 	  if (tmp == 0)
 	    {
 	      tmp = NSZoneMalloc(zone, c);
@@ -329,7 +314,6 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
 	    {
 	      tmp = NSZoneRealloc(zone, tmp, fileLength + c);
 	    }
-#endif
 	  if (tmp == 0)
 	    {
 	      NSLog(@"Malloc failed for file (%@) of length %jd - %@", path,
@@ -344,18 +328,14 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
     {
       off_t	offset = 0;
 
-#if	GS_WITH_GC
-      tmp = NSAllocateCollectable(fileLength, 0);
-#else
       tmp = NSZoneMalloc(zone, fileLength);
-#endif
       if (tmp == 0)
 	{
 	  NSLog(@"Malloc failed for file (%@) of length %jd - %@", path,
 	    (intmax_t)fileLength, [NSError _last]);
 	  goto failure;
 	}
-	    
+
       while (offset < fileLength
 	&& (c = fread(tmp + offset, 1, fileLength - offset, theFile)) != 0)
 	{
@@ -364,11 +344,7 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
       if (offset < fileLength)
 	{
           fileLength = offset;
-#if	GS_WITH_GC
-	  tmp = NSReallocateCollectable(tmp, fileLength, 0);
-#else
 	  tmp = NSZoneRealloc(zone, tmp, fileLength);
-#endif
 	}
     }
   if (ferror(theFile))
@@ -382,17 +358,14 @@ readContentsOfFile(NSString* path, void** buf, off_t* len, NSZone* zone)
   *len = fileLength;
   fclose(theFile);
   return YES;
-  
+
   /*
    *	Just in case the failure action needs to be changed.
    */
 failure:
-#if	!GS_WITH_GC
-  if (tmp != 0)
     {
       NSZoneFree(zone, tmp);
     }
-#endif
   if (theFile != 0)
     {
       fclose(theFile);
@@ -421,25 +394,13 @@ failure:
 {
   NSUInteger	length;
   __strong void	*bytes;
-#if	GS_WITH_GC
-  BOOL		owned;
-#else
   NSZone	*zone;
-#endif
   NSUInteger	capacity;
   NSUInteger	growth;
 }
 /* Increase capacity to at least the specified minimum value.	*/
 - (void) _grow: (NSUInteger)minimum;
 @end
-
-#if	GS_WITH_GC
-@interface	NSDataFinalized : NSDataMalloc
-@end
-
-@interface	NSMutableDataFinalized : NSMutableDataMalloc
-@end
-#endif
 
 #ifdef	HAVE_MMAP
 @interface	NSDataMappedFile : NSDataMalloc
@@ -485,10 +446,6 @@ failure:
       dataStatic = [NSDataStatic class];
       dataMalloc = [NSDataMalloc class];
       mutableDataMalloc = [NSMutableDataMalloc class];
-#if	GS_WITH_GC
-      dataFinalized = [NSDataFinalized class];
-      mutableDataFinalized = [NSMutableDataFinalized class];
-#endif
       appendSel = @selector(appendBytes:length:);
       appendImp = [mutableDataMalloc instanceMethodForSelector: appendSel];
     }
@@ -712,6 +669,14 @@ failure:
               c = *src++;
               if (c != '=')
                 {
+                  if (options & NSDataBase64DecodingIgnoreUnknownCharacters)
+                    {
+                      if (!isupper(c) && !islower(c) && !isdigit(c)
+                        && c != '/' && c != '+')
+                        {
+                          continue;     // An unknown character
+                        }
+                    }
                   free(result);
                   DESTROY(self);
                   return nil;
@@ -869,18 +834,11 @@ failure:
   void		*fileBytes;
   off_t         fileLength;
 
-#if	GS_WITH_GC
-  if (readContentsOfFile(path, &fileBytes, &fileLength, 0) == NO)
-    {
-      return nil;
-    }
-#else
   if (readContentsOfFile(path, &fileBytes, &fileLength, [self zone]) == NO)
     {
       DESTROY(self);
       return nil;
     }
-#endif
   self = [self initWithBytesNoCopy: fileBytes
 			    length: (NSUInteger)fileLength
 		      freeWhenDone: YES];
@@ -1026,11 +984,7 @@ failure:
 
   GS_RANGE_CHECK(aRange, l);
 
-#if	GS_WITH_GC
-  buffer = NSAllocateCollectable(aRange.length, 0);
-#else
   buffer = NSZoneMalloc(NSDefaultMallocZone(), aRange.length);
-#endif
   if (buffer == 0)
     {
       [NSException raise: NSMallocException
@@ -1041,28 +995,37 @@ failure:
   return [NSData dataWithBytesNoCopy: buffer length: aRange.length];
 }
 
-- (NSData *)base64EncodedDataWithOptions:(NSDataBase64EncodingOptions)options
+- (NSData *) base64EncodedDataWithOptions: (NSDataBase64EncodingOptions)options
 {
-  void *srcBytes = (void*)[self bytes];
-  NSUInteger length = [self length];
-  NSUInteger resLen;
+  void          *srcBytes = (void*)[self bytes];
+  NSUInteger    length = [self length];
+  NSUInteger    resLen;
   unsigned char *resBytes;
+  NSData        *result;
 
   resLen = encodebase64(&resBytes, srcBytes, length, options);
-  return AUTORELEASE([[NSData alloc] initWithBytesNoCopy: resBytes length: resLen freeWhenDone: YES]);
+  result = [[NSData alloc] initWithBytesNoCopy: resBytes
+                                        length: resLen
+                                  freeWhenDone: YES];
+  return AUTORELEASE(result);
 }
 
-- (NSString *)base64EncodedStringWithOptions:(NSDataBase64EncodingOptions)options
+- (NSString *) base64EncodedStringWithOptions:
+  (NSDataBase64EncodingOptions)options
 {
-  void *srcBytes = (void*)[self bytes];
-  NSUInteger length = [self length];
-  NSUInteger resLen;
+  void          *srcBytes = (void*)[self bytes];
+  NSUInteger    length = [self length];
+  NSUInteger    resLen;
   unsigned char *resBytes;
+  NSString      *result;
 
   resLen = encodebase64(&resBytes, srcBytes, length, options);
-  return AUTORELEASE([[NSString alloc] initWithBytesNoCopy: resBytes length: resLen encoding: NSASCIIStringEncoding freeWhenDone: YES]);
+  result = [[NSString alloc] initWithBytesNoCopy: resBytes
+                                          length: resLen
+                                        encoding: NSASCIIStringEncoding
+                                    freeWhenDone: YES];
+  return AUTORELEASE(result);
 }
-
 
 - (NSUInteger) hash
 {
@@ -1216,11 +1179,7 @@ failure:
 	    {
 	      unsigned	len = (length+1)*sizeof(char);
 
-#if	GS_WITH_GC
-	      *(char**)data = (char*)NSAllocateCollectable(len, 0);
-#else
 	      *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
-#endif
 	      if (*(char**)data == 0)
 	        {
 		  [NSException raise: NSMallocException
@@ -1281,11 +1240,7 @@ failure:
 	{
 	  unsigned	len = objc_sizeof_type(++type);
 
-#if	GS_WITH_GC
-	  *(char**)data = (char*)NSAllocateCollectable(len, 0);
-#else
 	  *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
-#endif
 	  if (*(char**)data == 0)
 	    {
 	      [NSException raise: NSMallocException
@@ -1369,6 +1324,15 @@ failure:
 	  *(double*)data = NSSwapBigDoubleToHost(nd);
 	  return;
 	}
+#if __GNUC__ > 2 && defined(_C_BOOL)
+      case _C_BOOL:
+	{
+	  [self deserializeBytes: data
+			  length: sizeof(_Bool)
+			atCursor: cursor];
+	  return;
+	}
+#endif
       case _C_CLASS:
 	{
 	  uint16_t ni;
@@ -1573,14 +1537,10 @@ failure:
              options: (NSUInteger)writeOptionsMask
                error: (NSError **)errorPtr
 {
-#if defined(__MINGW__)
+#if defined(_WIN32)
   NSUInteger	length = [path length];
   unichar	wthePath[length + 100];
   unichar	wtheRealPath[length + 100];
-#else
-  char		thePath[BUFSIZ*2+8];
-  char		theRealPath[BUFSIZ*2];
-#endif
   int		c;
   FILE		*theFile;
   BOOL		useAuxiliaryFile = NO;
@@ -1590,30 +1550,218 @@ failure:
     {
       useAuxiliaryFile = YES;
     }
-#if defined(__MINGW__)
   [path getCharacters: wtheRealPath];
   wtheRealPath[length] = L'\0';
   error_BadPath = (length <= 0);
-#else
-  if ([path canBeConvertedToEncoding: [NSString defaultCStringEncoding]])
-    {	
-      const char *local_c_path = [path cString];
-
-      if (local_c_path != 0 && strlen(local_c_path) < (BUFSIZ*2))
-	{	
-	  strncpy(theRealPath, local_c_path, sizeof(theRealPath) - 1);
-	  theRealPath[sizeof(theRealPath) - 1] = '\0';
-	  error_BadPath = NO;
-	}	
-    }
-#endif
   if (error_BadPath)
     {
       NSWarnMLog(@"Open (%@) attempt failed - bad path",path);
       return NO;
     }
 
-#ifdef	HAVE_MKSTEMP
+  if (useAuxiliaryFile)
+    {
+      /* Use the path name of the destination file as a prefix for the
+       * _wmktemp() call so that we can be sure that both files are on
+       * the same filesystem and the subsequent rename() will work. */
+      wcscpy(wthePath, wtheRealPath);
+      wcscat(wthePath, L"XXXXXX");
+      if (_wmktemp(wthePath) == 0)
+	{
+	  NSWarnMLog(@"mktemp (%@) failed - %@",
+	  [NSString stringWithCharacters: wthePath length: wcslen(wthePath)],
+	    [NSError _last]);
+	  goto failure;
+	}
+    }
+  else
+    {
+      wcscpy(wthePath,wtheRealPath);
+    }
+  theFile = _wfopen(wthePath, L"wb");
+
+  if (theFile == 0)
+    {
+      /* Something went wrong; we weren't
+       * even able to open the file. */
+      NSWarnMLog(@"Open (%@) failed - %@",
+	[NSString stringWithCharacters: wthePath length: wcslen(wthePath)],
+	  [NSError _last]);
+      goto failure;
+    }
+
+  /* Now we try and write the NSData's bytes to the file.  Here `c' is
+   * the number of bytes which were successfully written to the file
+   * in the fwrite() call. */
+  c = fwrite([self bytes], sizeof(char), [self length], theFile);
+
+  if (c < (int)[self length])        /* We failed to write everything for
+                                 * some reason. */
+    {
+      NSWarnMLog(@"Fwrite (%@) failed - %@",
+	[NSString stringWithCharacters: wthePath length: wcslen(wthePath)],
+	[NSError _last]);
+      goto failure;
+    }
+
+  /* We're done, so close everything up. */
+  c = fclose(theFile);
+
+  if (c != 0)                   /* I can't imagine what went wrong
+                                 * closing the file, but we got here,
+                                 * so we need to deal with it. */
+    {
+      NSWarnMLog(@"Fclose (%@) failed - %@",
+	[NSString stringWithCharacters: wthePath length: wcslen(wthePath)],
+	[NSError _last]);
+      goto failure;
+    }
+
+  /* If we used a temporary file, we still need to rename() it be the
+   * real file.  Also, we need to try to retain the file attributes of
+   * the original file we are overwriting (if we are) */
+  if (useAuxiliaryFile)
+    {
+      NSFileManager		*mgr = [NSFileManager defaultManager];
+      NSMutableDictionary	*att = nil;
+      NSUInteger		perm;
+
+      if ([mgr fileExistsAtPath: path])
+	{
+	  att = [[mgr fileAttributesAtPath: path
+			      traverseLink: YES] mutableCopy];
+	  IF_NO_GC(AUTORELEASE(att));
+	}
+
+      /* To replace the existing file on windows, it must be writable.
+       */
+      perm = [att filePosixPermissions];
+      if (perm != NSNotFound && (perm & 0200) == 0)
+	{
+          [mgr changeFileAttributes: [NSDictionary dictionaryWithObjectsAndKeys:
+	    [NSNumber numberWithUnsignedInt: 0777], NSFilePosixPermissions,
+	    nil] atPath: path];
+	}
+      /*
+       * The windoze implementation of the POSIX rename() function is buggy
+       * and doesn't work if the destination file already exists ... so we
+       * use a windoze specific move file function instead.
+       */
+      if (MoveFileExW(wthePath, wtheRealPath, MOVEFILE_REPLACE_EXISTING) != 0)
+	{
+	  c = 0;
+	}
+	/* Windows 9x does not support MoveFileEx */
+      else if (GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+	{
+	  unichar	secondaryFile[length + 100];
+
+	  wcscpy(secondaryFile, wthePath);
+	  wcscat(secondaryFile, L"-delete");
+	  // Delete the intermediate name just in case
+	  DeleteFileW(secondaryFile);
+	  // Move the existing file to the temp name
+	  if (MoveFileW(wtheRealPath, secondaryFile) != 0)
+	    {
+	      if (MoveFileW(wthePath, wtheRealPath) != 0)
+		{
+		  c = 0;
+		  // Delete the old file if possible
+		  DeleteFileW(secondaryFile);
+		}
+	      else
+		{
+		  c = -1; // failure, restore the old file if possible
+		  MoveFileW(secondaryFile, wtheRealPath);
+		}
+	    }
+	  else
+	    {
+	      c = -1; // failure
+	    }
+	}
+      else
+	{
+	  c = -1;
+	}
+
+      if (c != 0)               /* Many things could go wrong, I guess. */
+        {
+          NSWarnMLog(@"Rename ('%@' to '%@') failed - %@",
+	    [NSString stringWithCharacters: wthePath
+				    length: wcslen(wthePath)],
+	    [NSString stringWithCharacters: wtheRealPath
+				    length: wcslen(wtheRealPath)],
+	    [NSError _last]);
+          goto failure;
+        }
+
+      if (att != nil)
+	{
+	  /*
+	   * We have created a new file - so we attempt to make it's
+	   * attributes match that of the original.
+	   */
+	  [att removeObjectForKey: NSFileSize];
+	  [att removeObjectForKey: NSFileModificationDate];
+	  [att removeObjectForKey: NSFileReferenceCount];
+	  [att removeObjectForKey: NSFileSystemNumber];
+	  [att removeObjectForKey: NSFileSystemFileNumber];
+	  [att removeObjectForKey: NSFileDeviceIdentifier];
+	  [att removeObjectForKey: NSFileType];
+	  if ([mgr changeFileAttributes: att atPath: path] == NO)
+	    {
+	      NSWarnMLog(@"Unable to correctly set all attributes for '%@'",
+		path);
+	    }
+	}
+    }
+
+  /* success: */
+  return YES;
+
+  /* Just in case the failure action needs to be changed. */
+failure:
+  /*
+   * Attempt to tidy up by removing temporary file on failure.
+   */
+  if (useAuxiliaryFile)
+    {
+      _wunlink(wthePath);
+    }
+  return NO;
+
+#else
+
+  char		thePath[BUFSIZ*2+8];
+  char		theRealPath[BUFSIZ*2];
+  int		c;
+  FILE		*theFile;
+  BOOL		useAuxiliaryFile = NO;
+  BOOL		error_BadPath = YES;
+
+  if (writeOptionsMask & NSDataWritingAtomic)
+    {
+      useAuxiliaryFile = YES;
+    }
+  if ([path canBeConvertedToEncoding: [NSString defaultCStringEncoding]])
+    {
+      const char *local_c_path = [path cString];
+
+      if (local_c_path != 0 && strlen(local_c_path) < (BUFSIZ*2))
+	{
+	  strncpy(theRealPath, local_c_path, sizeof(theRealPath) - 1);
+	  theRealPath[sizeof(theRealPath) - 1] = '\0';
+	  error_BadPath = NO;
+	}
+    }
+  if (error_BadPath)
+    {
+      NSWarnMLog(@"Open (%@) attempt failed - bad path",path);
+      return NO;
+    }
+
+#  if   defined(HAVE_MKSTEMP)
   if (useAuxiliaryFile)
     {
       int	desc;
@@ -1641,23 +1789,12 @@ failure:
       thePath[sizeof(thePath) - 1] = '\0';
       theFile = fopen(thePath, "wb");
     }
-#else
+#  else
   if (useAuxiliaryFile)
     {
       /* Use the path name of the destination file as a prefix for the
        * mktemp() call so that we can be sure that both files are on
        * the same filesystem and the subsequent rename() will work. */
-#if defined(__MINGW__)
-      wcscpy(wthePath, wtheRealPath);
-      wcscat(wthePath, L"XXXXXX");
-      if (_wmktemp(wthePath) == 0)
-	{
-	  NSWarnMLog(@"mktemp (%@) failed - %@",
-	  [NSString stringWithCharacters: wthePath length: wcslen(wthePath)],
-	    [NSError _last]);
-	  goto failure;
-	}
-#else
       strncpy(thePath, theRealPath, sizeof(thePath) - 1);
       thePath[sizeof(thePath) - 1] = '\0';
       strncat(thePath, "XXXXXX", 6);
@@ -1666,37 +1803,20 @@ failure:
           NSWarnMLog(@"mktemp (%s) failed - %@", thePath, [NSError _last]);
           goto failure;
 	}
-#endif
     }
   else
     {
-#if defined(__MINGW__)
-      wcscpy(wthePath,wtheRealPath);
-#else
       strncpy(thePath, theRealPath, sizeof(thePath) - 1);
       thePath[sizeof(thePath) - 1] = '\0';
-#endif
     }
-
-  /* Open the file (whether temp or real) for writing. */
-#if defined(__MINGW__)
-  theFile = _wfopen(wthePath, L"wb");
-#else
   theFile = fopen(thePath, "wb");
-#endif
-#endif
+#  endif
 
   if (theFile == 0)
     {
       /* Something went wrong; we weren't
        * even able to open the file. */
-#if defined(__MINGW__)
-      NSWarnMLog(@"Open (%@) failed - %@",
-	[NSString stringWithCharacters: wthePath length: wcslen(wthePath)],
-	  [NSError _last]);
-#else
       NSWarnMLog(@"Open (%s) failed - %@", thePath, [NSError _last]);
-#endif
       goto failure;
     }
 
@@ -1708,13 +1828,7 @@ failure:
   if (c < (int)[self length])        /* We failed to write everything for
                                  * some reason. */
     {
-#if defined(__MINGW__)
-      NSWarnMLog(@"Fwrite (%@) failed - %@",
-	[NSString stringWithCharacters: wthePath length: wcslen(wthePath)],
-	[NSError _last]);
-#else
       NSWarnMLog(@"Fwrite (%s) failed - %@", thePath, [NSError _last]);
-#endif
       goto failure;
     }
 
@@ -1725,13 +1839,7 @@ failure:
                                  * closing the file, but we got here,
                                  * so we need to deal with it. */
     {
-#if defined(__MINGW__)
-      NSWarnMLog(@"Fclose (%@) failed - %@",
-	[NSString stringWithCharacters: wthePath length: wcslen(wthePath)],
-	[NSError _last]);
-#else
       NSWarnMLog(@"Fclose (%s) failed - %@", thePath, [NSError _last]);
-#endif
       goto failure;
     }
 
@@ -1741,121 +1849,42 @@ failure:
   if (useAuxiliaryFile)
     {
       NSFileManager		*mgr = [NSFileManager defaultManager];
-      NSMutableDictionary	*att = nil;
-#if defined(__MINGW__)
-      NSUInteger		perm;
-#endif
+      NSDictionary	  *att = nil;
 
       if ([mgr fileExistsAtPath: path])
 	{
-	  att = [[mgr fileAttributesAtPath: path
-			      traverseLink: YES] mutableCopy];
-	  IF_NO_GC(AUTORELEASE(att));
+	  att = [mgr fileAttributesAtPath: path traverseLink: YES];
 	}
 
-#if defined(__MINGW__)
-      /* To replace the existing file on windows, it must be writable.
-       */
-      perm = [att filePosixPermissions];
-      if (perm != NSNotFound && (perm & 0200) == 0)
-	{
-          [mgr changeFileAttributes: [NSDictionary dictionaryWithObjectsAndKeys:
-	    [NSNumber numberWithUnsignedInt: 0777], NSFilePosixPermissions,
-	    nil] atPath: path];
-	}
-      /*
-       * The windoze implementation of the POSIX rename() function is buggy
-       * and doesn't work if the destination file already exists ... so we
-       * try to use a windoze specific function instead.
-       */
-#if 0
-      if (ReplaceFile(theRealPath, thePath, 0,
-	REPLACEFILE_IGNORE_MERGE_ERRORS, 0, 0) != 0)
-	{
-	  c = 0;
-	}
-      else
-	{
-	  c = -1;
-	}
-#else
-      if (MoveFileExW(wthePath, wtheRealPath, MOVEFILE_REPLACE_EXISTING) != 0)
-	{
-	  c = 0;
-	}
-	/* Windows 9x does not support MoveFileEx */
-      else if (GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
-	{
-	  unichar	secondaryFile[length + 100];
-
-	  wcscpy(secondaryFile, wthePath);
-	  wcscat(secondaryFile, L"-delete");
-	  // Delete the intermediate name just in case
-	  DeleteFileW(secondaryFile);
-	  // Move the existing file to the temp name
-	  if (MoveFileW(wtheRealPath, secondaryFile) != 0)
-	    {
-	      if (MoveFileW(wthePath, wtheRealPath) != 0)
-		{
-		  c = 0;
-		  // Delete the old file if possible
-		  DeleteFileW(secondaryFile);	
-		}
-	      else
-		{
-		  c = -1; // failure, restore the old file if possible
-		  MoveFileW(secondaryFile, wtheRealPath);
-		}
-	    }
-	  else
-	    {
-	      c = -1; // failure
-	    }
-	}
-      else
-	{
-	  c = -1;
-	}
-#endif
-#else
       c = rename(thePath, theRealPath);
-#endif
       if (c != 0)               /* Many things could go wrong, I guess. */
         {
-#if defined(__MINGW__)
-          NSWarnMLog(@"Rename ('%@' to '%@') failed - %@",
-	    [NSString stringWithCharacters: wthePath
-				    length: wcslen(wthePath)],
-	    [NSString stringWithCharacters: wtheRealPath
-				    length: wcslen(wtheRealPath)],
-	    [NSError _last]);
-#else
 	  NSWarnMLog(@"Rename ('%s' to '%s') failed - %@",
 	    thePath, theRealPath, [NSError _last]);
-#endif
           goto failure;
         }
 
       if (att != nil)
 	{
+    NSMutableDictionary *mAtt = [att mutableCopy];
+    IF_NO_GC(AUTORELEASE(mAtt));
 	  /*
 	   * We have created a new file - so we attempt to make it's
 	   * attributes match that of the original.
 	   */
-	  [att removeObjectForKey: NSFileSize];
-	  [att removeObjectForKey: NSFileModificationDate];
-	  [att removeObjectForKey: NSFileReferenceCount];
-	  [att removeObjectForKey: NSFileSystemNumber];
-	  [att removeObjectForKey: NSFileSystemFileNumber];
-	  [att removeObjectForKey: NSFileDeviceIdentifier];
-	  [att removeObjectForKey: NSFileType];
-	  if ([mgr changeFileAttributes: att atPath: path] == NO)
+	  [mAtt removeObjectForKey: NSFileSize];
+	  [mAtt removeObjectForKey: NSFileModificationDate];
+	  [mAtt removeObjectForKey: NSFileReferenceCount];
+	  [mAtt removeObjectForKey: NSFileSystemNumber];
+	  [mAtt removeObjectForKey: NSFileSystemFileNumber];
+	  [mAtt removeObjectForKey: NSFileDeviceIdentifier];
+	  [mAtt removeObjectForKey: NSFileType];
+	  if ([mgr changeFileAttributes: mAtt atPath: path] == NO)
 	    {
 	      NSWarnMLog(@"Unable to correctly set all attributes for '%@'",
 		path);
 	    }
 	}
-#ifndef __MINGW__
       else if (geteuid() == 0 && [@"root" isEqualToString: NSUserName()] == NO)
 	{
 	  att = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -1865,7 +1894,6 @@ failure:
 	      NSWarnMLog(@"Unable to correctly set ownership for '%@'", path);
 	    }
 	}
-#endif
     }
 
   /* success: */
@@ -1878,13 +1906,10 @@ failure:
    */
   if (useAuxiliaryFile)
     {
-#if defined(__MINGW__)
-      _wunlink(wthePath);
-#else
       unlink(thePath);
-#endif
     }
   return NO;
+#endif
 }
 
 - (BOOL) writeToURL: (NSURL *)url
@@ -1903,6 +1928,18 @@ failure:
     }
   return NO;
 }
+
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger    size = [super sizeInBytesExcluding: exclude];
+
+  if (size > 0)
+    {
+      size += [self length];
+    }
+  return size;
+}
+
 @end
 
 /**
@@ -2144,10 +2181,10 @@ failure:
     {
       [aCoder encodeBytes: bytes
                    length: length
-                   forKey: @"NS.data"]; 
+                   forKey: @"NS.data"];
     }
   else
-    {  
+    {
       [aCoder encodeValueOfObjCType: @encode(NSUInteger)
 			         at: &length];
       if (length)
@@ -2179,23 +2216,19 @@ failure:
 
 
       data = [aCoder decodeBytesForKey: @"NS.data"
-                        returnedLength: &l]; 
+                        returnedLength: &l];
       self = [self initWithBytes: data length: l];
     }
   else
-    {  
+    {
       NSUInteger  l;
 
       [aCoder decodeValueOfObjCType: @encode(NSUInteger) at: &l];
       if (l)
         {
           void *b;
-          
-#if	GS_WITH_GC
-          b = NSAllocateCollectable(l, 0);
-#else
+
           b = NSZoneMalloc([self zone], l);
-#endif
           if (b == 0)
             {
               NSLog(@"[NSDataMalloc -initWithCoder:] unable to get %u bytes",
@@ -2574,6 +2607,11 @@ failure:
 	  [self appendBytes: &nd length: sizeof(NSSwappedDouble)];
 	  return;
 	}
+#if __GNUC__ > 2 && defined(_C_BOOL)
+      case _C_BOOL:
+	[self appendBytes: data length: sizeof(_Bool)];
+	return;
+#endif
       case _C_CLASS:
 	{
 	  const char  *name = *(Class*)data?class_getName(*(Class*)data):"";
@@ -2920,11 +2958,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	    }
 	  else
 	    {
-#if	GS_WITH_GC
-	      *(char**)data = (char*)NSAllocateCollectable(len+1, 0);
-#else
 	      *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len+1);
-#endif
 	      if (*(char**)data == 0)
 	        {
 		  [NSException raise: NSMallocException
@@ -2982,11 +3016,7 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	{
 	  unsigned	len = objc_sizeof_type(++type);
 
-#if	GS_WITH_GC
-	  *(char**)data = (char*)NSAllocateCollectable(len, 0);
-#else
 	  *(char**)data = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
-#endif
 	  if (*(char**)data == 0)
 	    {
 	      [NSException raise: NSMallocException
@@ -3056,6 +3086,13 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	  *(double*)data = NSSwapBigDoubleToHost(nd);
 	  return;
 	}
+#if __GNUC__ > 2 && defined(_C_BOOL)
+      case _C_BOOL:
+	{
+	  getBytes(data, bytes, sizeof(_Bool), length, cursor);
+	  return;
+	}
+#endif
       case _C_CLASS:
 	{
 	  uint16_t	ni;
@@ -3205,6 +3242,13 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     }
 }
 
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger    size = GSPrivateMemorySize(self, exclude);
+
+  return size;
+}
+
 @end
 
 
@@ -3251,29 +3295,24 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     {
       GSClassSwizzle(self, dataStatic);
     }
-#if	GS_WITH_GC
-  else if (aBuffer != 0 && GSPrivateIsCollectable(aBuffer) == NO)
-    {
-      GSClassSwizzle(self, dataFinalized);
-    }
-#endif
   bytes = aBuffer;
   length = bufferSize;
   return self;
 }
 
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger    size = GSPrivateMemorySize(self, exclude);
+
+  if (size > 0)
+    {
+      size += length;
+    }
+  return size;
+}
+
 @end
 
-#if	GS_WITH_GC
-@implementation	NSDataFinalized
-- (void) finalize
-{
-  NSZoneFree(NSDefaultMallocZone(), bytes);
-  [super finalize];
-}
-@end
-#endif
- 
 
 #ifdef	HAVE_MMAP
 @implementation	NSDataMappedFile
@@ -3307,21 +3346,21 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 {
   off_t		off;
   int		fd;
-	
-#if defined(__MINGW__)
+
+#if defined(_WIN32)
   const unichar	*thePath = (const unichar*)[path fileSystemRepresentation];
 #else
   const char	*thePath = [path fileSystemRepresentation];
 #endif
 
-  if (thePath == 0)	
+  if (thePath == 0)
     {
       NSWarnMLog(@"Open (%@) attempt failed - bad path", path);
       DESTROY(self);
       return nil;
     }
 
-#if defined(__MINGW__)
+#if defined(_WIN32)
   fd = _wopen(thePath, _O_RDONLY);
 #else
   fd = open(thePath, O_RDONLY);
@@ -3500,7 +3539,6 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 
 - (void) dealloc
 {
-#if	!GS_WITH_GC
   if (bytes != 0)
     {
       if (zone != 0)
@@ -3509,7 +3547,6 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	}
       bytes = 0;
     }
-#endif
   [super dealloc];
 }
 
@@ -3549,18 +3586,9 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
       [self setLength: 0];
       return self;
     }
-#if	GS_WITH_GC
-  if (shouldFree == YES && GSPrivateIsCollectable(aBuffer) == NO)
-    {
-      GSClassSwizzle(self, mutableDataFinalized);
-    }
-#endif
   self = [self initWithCapacity: 0];
   if (self)
     {
-#if	GS_WITH_GC
-      owned = shouldFree;	// Free memory on finalisation.
-#else
       if (shouldFree == NO)
 	{
 	  zone = 0;		// Don't free this memory.
@@ -3569,7 +3597,6 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	{
           zone = NSZoneFromPointer(aBuffer);
 	}
-#endif
       bytes = aBuffer;
       length = bufferSize;
       capacity = bufferSize;
@@ -3591,12 +3618,8 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 {
   if (size)
     {
-#if	GS_WITH_GC
-      bytes = NSAllocateCollectable(size, 0);
-#else
       zone = [self zone];
       bytes = NSZoneMalloc(zone, size);
-#endif
       if (bytes == 0)
 	{
 	  NSLog(@"[NSMutableDataMalloc -initWithCapacity:] out of memory "
@@ -3872,6 +3895,11 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	  (*appendImp)(self, appendSel, &nd, sizeof(NSSwappedDouble));
 	  return;
 	}
+#if __GNUC__ > 2 && defined(_C_BOOL)
+      case _C_BOOL:
+	(*appendImp)(self, appendSel, data, sizeof(_Bool));
+	return;
+#endif
       case _C_CLASS:
 	{
 	  const char  *name = *(Class*)data?class_getName(*(Class*)data):"";
@@ -4002,23 +4030,6 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
     {
       void	*tmp;
 
-#if	GS_WITH_GC
-      tmp = NSAllocateCollectable(size, 0);
-      if (tmp == 0)
-	{
-	  [NSException raise: NSMallocException
-	    format: @"Unable to set data capacity to '%d'", size];
-	}
-      if (bytes)
-	{
-	  memcpy(tmp, bytes, capacity < size ? capacity : size);
-	  if (owned == YES)
-	    {
-	      NSZoneFree(NSDefaultMallocZone(), bytes);
-	      owned = NO;
-	    }
-	}
-#else
       tmp = NSZoneMalloc(zone, size);
       if (tmp == 0)
 	{
@@ -4041,7 +4052,6 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 	{
 	  zone = NSDefaultMallocZone();
 	}
-#endif
       bytes = tmp;
       capacity = size;
       growth = capacity/2;
@@ -4085,19 +4095,19 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
   length = size;
 }
 
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger    size = GSPrivateMemorySize(self, exclude);
+
+  if (size > 0)
+    {
+      size += capacity;
+    }
+  return size;
+}
+
 @end
 
-#if	GS_WITH_GC
-@implementation	NSMutableDataFinalized
-- (void) finalize
-{
-  if (owned == YES)
-    NSZoneFree(NSDefaultMallocZone(), bytes);
-  [super finalize];
-}
-@end
-#endif
- 
 
 #ifdef	HAVE_SHMCTL
 @implementation	NSMutableDataShared
@@ -4268,4 +4278,3 @@ getBytes(void* dst, void* src, unsigned len, unsigned limit, unsigned *pos)
 
 @end
 #endif	/* HAVE_SHMCTL	*/
-

@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSCountedSet class reference</title>
-   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
    */
 
 #import "common.h"
@@ -205,11 +205,9 @@ static Class NSCountedSet_concrete_class;
 	    (*addImp)(self, @selector(addObject:), os[j]);
 	}
     }
-#if	!GS_WITH_GC
   if (flag)
     while (i--)
       [os[i] release];
-#endif
   return self;
 }
 
@@ -257,13 +255,11 @@ static Class NSCountedSet_concrete_class;
     {
       o = anObject;
     }
-#if	!GS_WITH_GC
   if (o != anObject)
     {
       [anObject release];
       [o retain];
     }
-#endif
   return o;
 }
 @end

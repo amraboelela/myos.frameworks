@@ -61,6 +61,9 @@ typeSize(const char* type)
       case _C_ULNG_LNG:	return sizeof(unsigned long long);
       case _C_FLT:	return sizeof(float);
       case _C_DBL:	return sizeof(double);
+#if __GNUC__ > 2 && defined(_C_BOOL)
+      case _C_BOOL:	return sizeof(_Bool);
+#endif
       case _C_PTR:	return sizeof(void*);
       case _C_CHARPTR:	return sizeof(char*);
       case _C_BFLD:
@@ -83,35 +86,35 @@ typeSize(const char* type)
 - (id) initWithBytes: (const void *)value
 	    objCType: (const char *)type
 {
-    if (!value || !type)
+  if (!value || !type)
     {
-        NSLog(@"Tried to create NSValue with NULL value or NULL type");
-        DESTROY(self);
-        return nil;
+      NSLog(@"Tried to create NSValue with NULL value or NULL type");
+      DESTROY(self);
+      return nil;
     }
-    
-    self = [super init];
-    if (self != nil)
+
+  self = [super init];
+  if (self != nil)
     {
-        int	size = typeSize(type);
-        
-        if (size < 0)
-        {
-            NSLog(@"Tried to create NSValue with invalid Objective-C type");
-            DESTROY(self);
-            return nil;
-        }
-        if (size > 0)
-        {
-            data = (void *)NSZoneMalloc([self zone], size);
-            memcpy(data, value, size);
-        }
-        size = strlen(type);
-        objctype = (char *)NSZoneMalloc([self zone], size + 1);
-        strncpy(objctype, type, size);
-        objctype[size] = '\0';
+      int	size = typeSize(type);
+
+      if (size < 0)
+	{
+	  NSLog(@"Tried to create NSValue with invalid Objective-C type");
+	  DESTROY(self);
+	  return nil;
+	}
+      if (size > 0)
+	{
+	  data = (void *)NSZoneMalloc([self zone], size);
+	  memcpy(data, value, size);
+	}
+      size = strlen(type);
+      objctype = (char *)NSZoneMalloc([self zone], size + 1);
+      strncpy(objctype, type, size);
+      objctype[size] = '\0';
     }
-    return self;
+  return self;
 }
 
 - (void) dealloc

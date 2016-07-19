@@ -29,18 +29,12 @@
 #import "Foundation/NSException.h"
 #import "Foundation/NSPortCoder.h"
 
+#import "GSPrivate.h"
 
 #define	GSI_MAP_RETAIN_VAL(M, X)	
 #define	GSI_MAP_RELEASE_VAL(M, X)	
 #define GSI_MAP_KTYPES	GSUNION_OBJ
 #define GSI_MAP_VTYPES	GSUNION_NSINT
-
-#if	GS_WITH_GC
-#include	<gc/gc_typed.h>
-static GC_descr	nodeDesc;	// Type descriptor for map node.
-#define	GSI_MAP_NODES(M, X) \
-(GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), nodeDesc)
-#endif
 
 #include "GNUstepBase/GSIMap.h"
 
@@ -100,14 +94,6 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
 {
   if (self == [GSCountedSet class])
     {
-#if	GS_WITH_GC
-      /* We create a typed memory descriptor for map nodes.
-       * Only the pointer to the key needs to be scanned.
-       */
-      GC_word	w[GC_BITMAP_SIZE(GSIMapNode_t)] = {0};
-      GC_set_bit(w, GC_WORD_OFFSET(GSIMapNode_t, key));
-      nodeDesc = GC_make_descriptor(w, GC_WORD_LEN(GSIMapNode_t));
-#endif
     }
 }
 
@@ -373,13 +359,11 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
     {
       result = node->key.obj;
       node->value.nsu++;
-#if	!GS_WITH_GC
       if (result != anObject)
 	{
 	  [anObject release];
 	  [result retain];
 	}
-#endif
     }
   _version++;
   return result;
@@ -393,4 +377,25 @@ static GC_descr	nodeDesc;	// Type descriptor for map node.
   return GSIMapCountByEnumeratingWithStateObjectsCount
     (&map, state, stackbuf, len);
 }
+
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger	size = GSPrivateMemorySize(self, exclude);
+
+  if (size > 0)
+    {
+      GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
+      GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+
+      size += GSIMapSize(&map) - sizeof(map);
+      while (node != 0)
+        {
+          size += [node->key.obj sizeInBytesExcluding: exclude];
+          node = GSIMapEnumeratorNextNode(&enumerator);
+        }
+      GSIMapEndEnumerator(&enumerator);
+    }
+  return size;
+}
+
 @end

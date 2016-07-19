@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSPage class reference</title>
-   $Date: 2012-09-03 06:36:45 -0700 (Mon, 03 Sep 2012) $ $Revision: 35503 $
+   $Date: 2016-03-09 05:16:16 -0800 (Wed, 09 Mar 2016) $ $Revision: 39492 $
    */
 
 #import "common.h"
@@ -35,7 +35,7 @@
 #include <malloc.h>
 #endif
 
-#ifdef __MINGW__
+#ifdef _WIN32
 #include <malloc.h>
 static size_t
 getpagesize(void)
@@ -132,7 +132,7 @@ NSRealMemoryAvailable ()
   if ((sysinfo(&info)) != 0)
     return 0;
   return  info.freeram;
-#elif defined(__MINGW__)
+#elif defined(_WIN32)
   MEMORYSTATUSEX memory;
 
   memory.dwLength = sizeof(memory);
@@ -160,7 +160,7 @@ NSAllocateMemoryPages (NSUInteger bytes)
 {
   NSUInteger size = NSRoundUpToMultipleOfPageSize (bytes);
   void *where;
-#if defined(__MINGW__)
+#if defined(_WIN32)
   where = VirtualAlloc(NULL, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
 #elif __mach__
   kern_return_t r;
@@ -189,7 +189,7 @@ NSAllocateMemoryPages (NSUInteger bytes)
 void
 NSDeallocateMemoryPages (void *ptr, NSUInteger bytes)
 {
-#if defined(__MINGW__)
+#if defined(_WIN32)
   VirtualFree(ptr, 0, MEM_RELEASE);
 #elif __mach__
   vm_deallocate (mach_task_self (), ptr, NSRoundUpToMultipleOfPageSize (bytes));

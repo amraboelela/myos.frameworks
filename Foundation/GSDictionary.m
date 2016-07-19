@@ -34,6 +34,8 @@
 
 #import "GNUstepBase/GSObjCRuntime.h"
 
+#import "GSPrivate.h"
+
 /*
  *	The 'Fastmap' stuff provides an inline implementation of a mapping
  *	table - for maximum performance.
@@ -44,13 +46,6 @@
 #define	GSI_MAP_EQUAL(M, X,Y)		[X.obj isEqual: Y.obj]
 #define	GSI_MAP_RETAIN_KEY(M, X)	((X).obj) = \
 				[((id)(X).obj) copyWithZone: map->zone]
-
-#if	GS_WITH_GC
-#include	<gc/gc_typed.h>
-static GC_descr	nodeDesc;	// Type descriptor for map node.
-#define	GSI_MAP_NODES(M, X) \
-(GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), nodeDesc)
-#endif
 
 #include	"GNUstepBase/GSIMap.h"
 
@@ -89,15 +84,6 @@ static SEL	objSel;
 {
   if (self == [GSDictionary class])
     {
-#if	GS_WITH_GC
-      /* We create a typed memory descriptor for map nodes.
-       * The pointers to the key and value need to be scanned.
-       */
-      GC_word	w[GC_BITMAP_SIZE(GSIMapNode_t)] = {0};
-      GC_set_bit(w, GC_WORD_OFFSET(GSIMapNode_t, key));
-      GC_set_bit(w, GC_WORD_OFFSET(GSIMapNode_t, value));
-      nodeDesc = GC_make_descriptor(w, GC_WORD_LEN(GSIMapNode_t));
-#endif
       nxtSel = @selector(nextObject);
       objSel = @selector(objectForKey:);
     }
@@ -336,6 +322,11 @@ static SEL	objSel;
     NSDefaultMallocZone()] initWithDictionary: self]);
 }
 
+- (BOOL) makeImmutable
+{
+  return YES;
+}
+
 - (NSEnumerator*) objectEnumerator
 {
   return AUTORELEASE([[GSDictionaryObjectEnumerator allocWithZone:
@@ -364,6 +355,28 @@ static SEL	objSel;
   return GSIMapCountByEnumeratingWithStateObjectsCount
     (&map, state, stackbuf, len);
 }
+
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger	size = GSPrivateMemorySize(self, exclude);
+
+  if (size > 0)
+    {
+      GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(&map);
+      GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+
+      size += GSIMapSize(&map) - sizeof(map);
+      while (node != 0)
+        {
+          size += [node->key.obj sizeInBytesExcluding: exclude];
+          size += [node->value.obj sizeInBytesExcluding: exclude];
+          node = GSIMapEnumeratorNextNode(&enumerator);
+        }
+      GSIMapEndEnumerator(&enumerator);
+    }
+  return size;
+}
+
 @end
 
 @implementation GSMutableDictionary
@@ -393,6 +406,12 @@ static SEL	objSel;
 {
   GSIMapInitWithZoneAndCapacity(&map, [self zone], cap);
   return self;
+}
+
+- (BOOL) makeImmutable
+{
+  GSClassSwizzle(self, [GSDictionary class]);
+  return YES;
 }
 
 - (id) makeImmutableCopyOnFail: (BOOL)force

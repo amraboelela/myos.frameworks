@@ -3,7 +3,9 @@
 
    Written by:  Andrew Kachites McCallum <mccallum@gnu.ai.mit.edu>
    Date: 1995
-   
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Sep 2015
+ 
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or

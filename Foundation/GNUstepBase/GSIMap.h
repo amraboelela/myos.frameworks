@@ -375,6 +375,11 @@ struct	_GSIMapTable {
   GSI_MAP_EXTRA	extra;
 #endif
 };
+#define GSI_MAP_TABLE_T GSIMapTable_t
+#endif
+
+#ifndef GSI_MAP_TABLE_S
+#define GSI_MAP_TABLE_S sizeof(GSI_MAP_TABLE_T)
 #endif
 
 typedef struct	_GSIMapEnumerator {
@@ -566,15 +571,8 @@ GSIMapMoreNodes(GSIMapTable map, unsigned required)
 {
   GSIMapNode	*newArray;
 
-#if     GS_WITH_GC
-  uintptr_t	arraySize = (map->chunkCount+1)*sizeof(GSIMapNode);
-  /* We don't want our nodes collected before we have finished with them,
-   * so we must keep the array of pointers to memory chunks in scanned memory.
-   */
-  newArray = (GSIMapNode*)NSAllocateCollectable(arraySize, NSScannedOption);
-#else
-  newArray = (GSIMapNode*)NSZoneCalloc(map->zone, (map->chunkCount+1), sizeof(GSIMapNode));
-#endif
+  newArray = (GSIMapNode*)NSZoneCalloc(map->zone,
+    (map->chunkCount+1), sizeof(GSIMapNode));
   if (newArray)
     {
       GSIMapNode	newNodes;
@@ -584,9 +582,7 @@ GSIMapMoreNodes(GSIMapTable map, unsigned required)
 	{
 	  memcpy(newArray, map->nodeChunks,
 	    (map->chunkCount)*sizeof(GSIMapNode));
-#if     !GS_WITH_GC
 	  NSZoneFree(map->zone, map->nodeChunks);
-#endif
 	}
       map->nodeChunks = newArray;
 
@@ -605,12 +601,8 @@ GSIMapMoreNodes(GSIMapTable map, unsigned required)
 	{
 	  chunkCount = required;
 	}
-#if     GS_WITH_GC
-      newNodes = GSI_MAP_NODES(map, chunkCount);
-#else
       newNodes
         = (GSIMapNode)NSZoneCalloc(map->zone, chunkCount, sizeof(GSIMapNode_t));
-#endif
       if (newNodes)
 	{
 	  map->nodeChunks[map->chunkCount++] = newNodes;
@@ -787,30 +779,19 @@ GSIMapResize(GSIMapTable map, uintptr_t new_capacity)
       size++;
     }
 
-#if     GS_WITH_GC
-  /* We don't need to use scanned memory because the nodes are not 'owned'
-   * by the bucket they are in, but rather are in chunks pointed to by
-   * the nodeChunks array.
-   */
-  new_buckets = (GSIMapBucket)NSAllocateCollectable
-    (size * sizeof(GSIMapBucket_t), 0);
-#else
   /* Use the zone specified for this map.
    */
   new_buckets = (GSIMapBucket)NSZoneCalloc(map->zone, size,
     sizeof(GSIMapBucket_t));
-#endif
 
   if (new_buckets != 0)
     {
       GSIMapRemangleBuckets(map, map->buckets, map->bucketCount, new_buckets,
 	size);
-#if     !GS_WITH_GC
       if (map->buckets != 0)
 	{
 	  NSZoneFree(map->zone, map->buckets);
 	}
-#endif
       map->buckets = new_buckets;
       map->bucketCount = size;
     }
@@ -1220,15 +1201,12 @@ GSIMapEmptyMap(GSIMapTable map)
 #endif
   if (map->buckets != 0)
     {
-#if	!GS_WITH_GC
       NSZoneFree(map->zone, map->buckets);
-#endif
       map->buckets = 0;
       map->bucketCount = 0;
     }
   if (map->nodeChunks != 0)
     {
-#if	!GS_WITH_GC
       unsigned int	i;
 
       for (i = 0; i < map->chunkCount; i++)
@@ -1236,7 +1214,6 @@ GSIMapEmptyMap(GSIMapTable map)
 	  NSZoneFree(map->zone, map->nodeChunks[i]);
 	}
       NSZoneFree(map->zone, map->nodeChunks);
-#endif
       map->chunkCount = 0;
       map->nodeChunks = 0;
     }
@@ -1257,6 +1234,37 @@ GSIMapInitWithZoneAndCapacity(GSIMapTable map, NSZone *zone, uintptr_t capacity)
   map->increment = 300000;   // choosen so the chunksize will be less than 4Mb
   GSIMapRightSizeMap(map, capacity);
   GSIMapMoreNodes(map, capacity);
+}
+
+GS_STATIC_INLINE NSUInteger 
+GSIMapSize(GSIMapTable map)
+{
+  NSUInteger    index;
+  NSUInteger    size;
+  GSIMapNode	node;
+
+  /* Map table plus arrays of pointers to chunks
+   */
+  size = GSI_MAP_TABLE_S + map->chunkCount * sizeof(void*);
+
+  /* Add the array of buckets.
+   */
+  size += map->bucketCount * sizeof(GSIMapBucket_t);
+
+  /* Add the free nodes.
+   */
+  for (node = map->freeNodes; 0 != node; node = node->nextInBucket)
+    {
+      size += sizeof(GSIMapNode_t);
+    }
+
+  /* Add the used nodes (in the buckets).
+   */
+  for (index = 0; index < map->bucketCount; index++)
+    {
+      size += sizeof(GSIMapNode_t) * map->buckets[index].nodeCount;
+    }
+  return size;
 }
 
 #if	defined(__cplusplus)

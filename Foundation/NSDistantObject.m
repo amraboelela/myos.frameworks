@@ -23,7 +23,7 @@
    Boston, MA 02111 USA.
 
    <title>NSDistantObject class reference</title>
-   $Date: 2013-04-13 03:40:15 -0700 (Sat, 13 Apr 2013) $ $Revision: 36517 $
+   $Date: 2016-05-14 08:06:32 -0700 (Sat, 14 May 2016) $ $Revision: 39764 $
    */
 
 #import "common.h"
@@ -77,16 +77,19 @@ static Class	distantObjectClass = 0;
 @end
 /*
  * Evil hack ... if a remote system wants to know if we conform
- * to a protocol we usa a local protocol with the same name.
+ * to a protocol we use a local protocol with the same name.
  */
 #ifndef __GNUSTEP_RUNTIME__
+@interface Object (conformsTo)
+- (BOOL) conformsTo: (Protocol*)p;
+@end
 @implementation Object (NSConformsToProtocolNamed)
 - (BOOL) _conformsToProtocolNamed: (const char*)aName
 {
   Protocol	*p;
 
   p = objc_getProtocol(aName);
-  return [self conformsTo: p];
+  return [(id)self conformsTo: p];
 }
 @end
 #endif
@@ -380,13 +383,16 @@ GS_ROOT_CLASS @interface	GSDistantObjectPlaceHolder
 @end
 
 @interface NSDistantObject (Debug)
-+ (void) setDebug: (int)val;
++ (int) setDebug: (int)val;
 @end
 
 @implementation NSDistantObject (Debug)
-+ (void) setDebug: (int)val
++ (int) setDebug: (int)val
 {
+  int   old = debug_proxy;
+
   debug_proxy = val;
+  return old;
 }
 @end
 
@@ -603,6 +609,11 @@ GS_ROOT_CLASS @interface	GSDistantObjectPlaceHolder
       @"You should request NSConnectionDidDieNotification's and\n"
       @"release all references to the proxy's of invalid Connections."];
 
+  /* We could be released while the connection is forwarding, so we need
+   * to retain self.  But, the remote end couild raise an exception, so
+   * we can't rely on being able to release again; use autorelease.
+   */
+  AUTORELEASE(RETAIN(self));
   [_connection forwardInvocation: anInvocation forProxy: self];
 }
 

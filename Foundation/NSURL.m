@@ -25,7 +25,7 @@
    Boston, MA 02111 USA.
 
    <title>NSURL class reference</title>
-   $Date: 2013-12-20 23:56:33 -0800 (Fri, 20 Dec 2013) $ $Revision: 37489 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
 */
 
 /*
@@ -260,11 +260,7 @@ static char *buildURL(parsedURL *base, parsedURL *rel, BOOL standardize)
       len += strlen(rel->fragment) + 1;		// #fragment
     }
 
-#if	GS_WITH_GC
-  ptr = buf = (char*)NSAllocateCollectable(len, 0);
-#else
   ptr = buf = (char*)NSZoneMalloc(NSDefaultMallocZone(), len);
-#endif
 
   if (rel->scheme != 0)
     {
@@ -843,11 +839,7 @@ static NSUInteger	urlAlign;
       BOOL	canBeGeneric = YES;
 
       size += sizeof(parsedURL) + urlAlign + 1;
-#if	GS_WITH_GC
-      buf = _data = (parsedURL*)NSAllocateCollectable(size, 0);
-#else
       buf = _data = (parsedURL*)NSZoneMalloc(NSDefaultMallocZone(), size);
-#endif
       memset(buf, '\0', size);
       start = end = ptr = (char*)&buf[1];
       [_urlString getCString: start
@@ -1495,7 +1487,7 @@ static NSUInteger	urlAlign;
       unescape(buf, buf);
     }
 
-#if	defined(__MINGW__)
+#if	defined(_WIN32)
   /* On windows a file URL path may be of the form C:\xxx (ie we should
    * not insert the leading slash).
    * Also the vertical bar symbol may have been used instead of the

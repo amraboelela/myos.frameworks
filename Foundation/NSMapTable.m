@@ -21,7 +21,7 @@
  * Boston, MA 02111 USA.
  *
  * <title>NSMapTable class reference</title>
- * $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+ * $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
  */
 
 #import "common.h"
@@ -139,10 +139,8 @@ static Class	concreteClass = 0;
   o = [self initWithKeyPointerFunctions: k
 		  valuePointerFunctions: v
 			       capacity: initialCapacity];
-#if	!GS_WITH_GC
   [k release];
   [v release];
-#endif
   return o;
 }
 

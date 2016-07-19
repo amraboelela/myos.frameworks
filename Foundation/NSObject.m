@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSObject class reference</title>
-   $Date: 2015-01-16 06:29:38 -0800 (Fri, 16 Jan 2015) $ $Revision: 38294 $
+   $Date: 2016-06-27 12:05:40 -0700 (Mon, 27 Jun 2016) $ $Revision: 39932 $
    */
 
 /* On some versions of mingw we need to work around bad function declarations
@@ -43,6 +43,7 @@
 #import "Foundation/NSAutoreleasePool.h"
 #import "Foundation/NSArray.h"
 #import "Foundation/NSException.h"
+#import "Foundation/NSHashTable.h"
 #import "Foundation/NSPortCoder.h"
 #import "Foundation/NSDistantObject.h"
 #import "Foundation/NSThread.h"
@@ -65,10 +66,6 @@
 #include <fenv.h>
 #endif
 #endif // __GNUC__
-
-#ifdef __OBJC_GC__
-#include <objc/objc-auto.h>
-#endif
 
 #define	IN_NSOBJECT_M	1
 #import "GSPrivate.h"
@@ -94,14 +91,6 @@ static id autorelease_class = nil;
 static SEL autorelease_sel;
 static IMP autorelease_imp;
 
-
-
-#if GS_WITH_GC
-
-#include	<gc/gc.h>
-#include	<gc/gc_typed.h>
-
-#endif
 
 static SEL finalize_sel;
 static IMP finalize_imp;
@@ -139,7 +128,6 @@ BOOL	NSDeallocateZombies = NO;
 static Class		zombieClass = Nil;
 static NSMapTable	*zombieMap = 0;
 
-#if	!GS_WITH_GC
 static void GSMakeZombie(NSObject *o, Class c)
 {
   object_setClass(o, zombieClass);
@@ -150,7 +138,6 @@ static void GSMakeZombie(NSObject *o, Class c)
       [allocationLock unlock];
     }
 }
-#endif
 
 static void GSLogZombie(id o, SEL sel)
 {
@@ -202,26 +189,8 @@ static void GSLogZombie(id o, SEL sel)
 #endif
 
 
-#if	defined(__MINGW__)
-#ifndef _WIN64
-#undef InterlockedIncrement
-#undef InterlockedDecrement
-LONG WINAPI InterlockedIncrement(LONG volatile *);
-LONG WINAPI InterlockedDecrement(LONG volatile *);
-#endif
 
-/* Set up atomic read, increment and decrement for mswindows
- */
-
-typedef int32_t volatile *gsatomic_t;
-
-#define	GSATOMICREAD(X)	(*(X))
-
-#define	GSAtomicIncrement(X)	InterlockedIncrement((LONG volatile*)X)
-#define	GSAtomicDecrement(X)	InterlockedDecrement((LONG volatile*)X)
-
-
-#elif defined(__llvm__) || (defined(USE_ATOMIC_BUILTINS) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)))
+#if defined(__llvm__) || (defined(USE_ATOMIC_BUILTINS) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)))
 /* Use the GCC atomic operations with recent GCC versions */
 
 typedef int32_t volatile *gsatomic_t;
@@ -229,6 +198,25 @@ typedef int32_t volatile *gsatomic_t;
 #define GSAtomicIncrement(X)    __sync_add_and_fetch(X, 1)
 #define GSAtomicDecrement(X)    __sync_sub_and_fetch(X, 1)
 
+
+#elif	defined(_WIN32)
+
+/* Set up atomic read, increment and decrement for mswindows
+ */
+
+typedef int32_t volatile *gsatomic_t;
+
+#ifndef _WIN64
+#undef InterlockedIncrement
+#undef InterlockedDecrement
+LONG WINAPI InterlockedIncrement(LONG volatile *);
+LONG WINAPI InterlockedDecrement(LONG volatile *);
+#endif
+
+#define	GSATOMICREAD(X)	(*(X))
+
+#define	GSAtomicIncrement(X)	InterlockedIncrement(X)
+#define	GSAtomicDecrement(X)	InterlockedDecrement(X)
 
 #elif	defined(__linux__) && (defined(__i386__) || defined(__x86_64__))
 /* Set up atomic read, increment and decrement for intel style linux
@@ -238,10 +226,10 @@ typedef int32_t volatile *gsatomic_t;
 
 #define	GSATOMICREAD(X)	(*(X))
 
-static __inline__ int
+static __inline__ int32_t
 GSAtomicIncrement(gsatomic_t X)
 {
-  register int tmp;
+  register int32_t tmp;
   __asm__ __volatile__ (
     "movl $1, %0\n"
     "lock xaddl %0, %1"
@@ -251,10 +239,10 @@ GSAtomicIncrement(gsatomic_t X)
   return tmp + 1;
 }
 
-static __inline__ int
+static __inline__ int32_t
 GSAtomicDecrement(gsatomic_t X)
 {
-  register int tmp;
+  register int32_t tmp;
   __asm__ __volatile__ (
     "movl $1, %0\n"
     "negl %0\n"
@@ -271,10 +259,10 @@ typedef int32_t volatile *gsatomic_t;
 
 #define	GSATOMICREAD(X)	(*(X))
 
-static __inline__ int
+static __inline__ int32_t
 GSAtomicIncrement(gsatomic_t X)
 {
-  int tmp;
+  int32_t tmp;
   __asm__ __volatile__ (
     "0:"
     "lwarx %0,0,%1 \n"
@@ -287,10 +275,10 @@ GSAtomicIncrement(gsatomic_t X)
   return tmp;
 }
 
-static __inline__ int
+static __inline__ int32_t
 GSAtomicDecrement(gsatomic_t X)
 {
-  int tmp;
+  int32_t tmp;
   __asm__ __volatile__ (
     "0:"
     "lwarx %0,0,%1 \n"
@@ -309,7 +297,7 @@ typedef int32_t volatile *gsatomic_t;
 
 #define	GSATOMICREAD(X)	(*(X))
 
-static __inline__ int
+static __inline__ int32_t
 GSAtomicIncrement(gsatomic_t X)
 {
   __asm__ __volatile__ (
@@ -318,7 +306,7 @@ GSAtomicIncrement(gsatomic_t X)
     return *X;
 }
 
-static __inline__ int
+static __inline__ int32_t
 GSAtomicDecrement(gsatomic_t X)
 {
   __asm__ __volatile__ (
@@ -333,10 +321,10 @@ typedef int32_t volatile *gsatomic_t;
 
 #define	GSATOMICREAD(X)	(*(X))
 
-static __inline__ int
+static __inline__ int32_t
 GSAtomicIncrement(gsatomic_t X)
 {
-  int tmp;
+  int32_t tmp;
 
   __asm__ __volatile__ (
 #if !defined(__mips64)
@@ -350,10 +338,10 @@ GSAtomicIncrement(gsatomic_t X)
     return tmp;
 }
 
-static __inline__ int
+static __inline__ int32_t
 GSAtomicDecrement(gsatomic_t X)
 {
-  int tmp;
+  int32_t tmp;
 
   __asm__ __volatile__ (
 #if !defined(__mips64)
@@ -406,7 +394,7 @@ static inline NSLock *GSAllocationLockForObject(id p)
  *	(before the start) in each object.
  */
 typedef struct obj_layout_unpadded {
-    NSUInteger	retained;
+  int32_t	retained;
 } unp;
 #define	UNP sizeof(unp)
 
@@ -424,33 +412,12 @@ typedef struct obj_layout_unpadded {
  *	structure correct.
  */
 struct obj_layout {
-    char	padding[__BIGGEST_ALIGNMENT__ - ((UNP % __BIGGEST_ALIGNMENT__)
-      ? (UNP % __BIGGEST_ALIGNMENT__) : __BIGGEST_ALIGNMENT__)];
-    NSUInteger	retained;
+  char	padding[__BIGGEST_ALIGNMENT__ - ((UNP % __BIGGEST_ALIGNMENT__)
+    ? (UNP % __BIGGEST_ALIGNMENT__) : __BIGGEST_ALIGNMENT__)];
+  int32_t	retained;
 };
 typedef	struct obj_layout *obj;
 
-#ifdef __OBJC_GC__
-
-/**
- * If -base is compiled in GC mode, then we want to still support manual
- * reference counting if we are linked with non-GC code.
- */
-static BOOL GSDecrementExtraRefCountWasZero(id anObject);
-
-BOOL
-NSDecrementExtraRefCountWasZero(id anObject)
-{
-  if (!objc_collecting_enabled())
-    {
-      return GSDecrementExtraRefCountWasZero(anObject);
-    }
-  return NO;
-}
-
-
-static BOOL GSDecrementExtraRefCountWasZero(id anObject)
-#else
 /**
  * Examines the extra reference count for the object and, if non-zero
  * decrements it, otherwise leaves it unchanged.<br />
@@ -460,9 +427,7 @@ static BOOL GSDecrementExtraRefCountWasZero(id anObject)
  */
 BOOL
 NSDecrementExtraRefCountWasZero(id anObject)
-#endif
 {
-#if	!GS_WITH_GC
   if (double_release_check_enabled)
     {
       NSUInteger release_count;
@@ -475,7 +440,7 @@ NSDecrementExtraRefCountWasZero(id anObject)
   if (allocationLock != 0)
     {
 #if	defined(GSATOMICREAD)
-      int	result;
+      int32_t	result;
 
       result = GSAtomicDecrement((gsatomic_t)&(((obj)anObject)[-1].retained));
       if (result < 0)
@@ -524,7 +489,6 @@ NSDecrementExtraRefCountWasZero(id anObject)
 	  return NO;
 	}
     }
-#endif /* !GS_WITH_GC */
   return NO;
 }
 
@@ -536,38 +500,9 @@ NSDecrementExtraRefCountWasZero(id anObject)
 inline NSUInteger
 NSExtraRefCount(id anObject)
 {
-#ifdef __OBJC_GC__
-  if (objc_collecting_enabled())
-    {
-      return UINT_MAX-1;
-    }
-#endif
-#if	GS_WITH_GC
-  return UINT_MAX - 1;
-#else	/* GS_WITH_GC */
   return ((obj)anObject)[-1].retained;
-#endif /* GS_WITH_GC */
 }
 
-#ifdef __OBJC_GC__
-
-/**
- * If -base is compiled in GC mode, then we want to still support manual
- * reference counting if we are linked with non-GC code.
- */
-static void GSIncrementExtraRefCount(id anObject);
-
-inline void NSIncrementExtraRefCount(id anObject)
-{
-  if (!objc_collecting_enabled())
-    {
-      GSIncrementExtraRefCount(anObject);
-    }
-}
-
-
-static void GSIncrementExtraRefCount(id anObject)
-#else
 /**
  * Increments the extra reference count for anObject.<br />
  * The GNUstep version raises an exception if the reference count
@@ -576,11 +511,7 @@ static void GSIncrementExtraRefCount(id anObject)
  */
 inline void
 NSIncrementExtraRefCount(id anObject)
-#endif
 {
-#if	GS_WITH_GC || __OBJC_GC__
-  return;
-#else	/* GS_WITH_GC */
   if (allocationLock != 0)
     {
 #if	defined(GSATOMICREAD)
@@ -598,7 +529,7 @@ NSIncrementExtraRefCount(id anObject)
       NSLock *theLock = GSAllocationLockForObject(anObject);
 
       [theLock lock];
-      if (((obj)anObject)[-1].retained == UINT_MAX - 1)
+      if (((obj)anObject)[-1].retained > 0xfffffe)
 	{
 	  [theLock unlock];
 	  [NSException raise: NSInternalInconsistencyException
@@ -610,14 +541,13 @@ NSIncrementExtraRefCount(id anObject)
     }
   else
     {
-      if (((obj)anObject)[-1].retained == UINT_MAX - 1)
+      if (((obj)anObject)[-1].retained > 0xfffffe)
 	{
 	  [NSException raise: NSInternalInconsistencyException
 	    format: @"NSIncrementExtraRefCount() asked to increment too far"];
 	}
       ((obj)anObject)[-1].retained++;
     }
-#endif	/* GS_WITH_GC */
 }
 
 #ifndef	NDEBUG
@@ -668,126 +598,9 @@ callCXXConstructors(Class aClass, id anObject)
  *	depending on what information (if any) we are storing before
  *	the start of each object.
  */
-#if	GS_WITH_GC
 
-static void
-GSFinalize(void* object, void* data)
-{
-  [(id)object finalize];
-  AREM(object_getClass((id)object), (id)object);
-  object_setClass((id)object, (Class)(void*)0xdeadface);
-}
-
-static BOOL
-GSIsFinalizable(Class c)
-{
-  if (class_getMethodImplementation(c, finalize_sel) != finalize_imp
-    && class_respondsToSelector(c, finalize_sel))
-    return YES;
-  return NO;
-}
-
-inline id
-NSAllocateObject(Class aClass, NSUInteger extraBytes, NSZone *zone)
-{
-  id	new;
-  int	size;
-  GC_descr	gc_type;
-
-  NSCAssert((!class_isMetaClass(aClass)), @"Bad class for new object");
-  gc_type = (GC_descr)aClass->gc_object_type;
-  size = class_getInstanceSize(aClass) + extraBytes;
-  if (size % sizeof(void*) != 0)
-    {
-      /* Size must be a multiple of pointer size for the garbage collector
-       * to be able to allocate explicitly typed memory.
-       */
-      size += sizeof(void*) - size % sizeof(void*);
-    }
-
-  if (gc_type == 0)
-    {
-      new = NSZoneCalloc(zone, 1, size);
-      NSLog(@"No garbage collection information for '%s'",
-	class_getName(aClass));
-    }
-  else
-    {
-      new = GC_calloc_explicitly_typed(1, size, gc_type);
-    }
-
-  if (new != nil)
-    {
-      object_setClass(new, aClass);
-
-      /* Don't bother doing this in a thread-safe way, because
-       * the cost of locking will be a lot more than the cost
-       * of doing the same call in two threads.
-       * The returned selector will persist and the runtime will
-       * ensure that both calls return the same selector, so we
-       * don't need to bother doing it ourselves.
-       */
-      if (0 == cxx_construct)
-	{
-	  cxx_construct = sel_registerName(".cxx_construct");
-	  cxx_destruct = sel_registerName(".cxx_destruct");
-	}
-      callCXXConstructors(aClass, new);
-
-      /* We only need to finalize this object if it implements its a
-       * -finalize method or has C++ destructors.
-       */
-      if (GSIsFinalizable(aClass)
-        || class_respondsToSelector(aClass, cxx_destruct))
-	{
-	  /* We only do allocation counting for objects that can be
-	   * finalised - for other objects we have no way of decrementing
-	   * the count when the object is collected.
-	   */
-	  AADD(aClass, new);
-	  GC_REGISTER_FINALIZER (new, GSFinalize, NULL, NULL, NULL);
-	}
-    }
-  return new;
-}
-
-inline void
-NSDeallocateObject(id anObject)
-{
-}
-
-#else	/* GS_WITH_GC */
-
-#if __OBJC_GC__
-static inline id
-GSAllocateObject (Class aClass, NSUInteger extraBytes, NSZone *zone);
-
-inline id
-NSAllocateObject(Class aClass, NSUInteger extraBytes, NSZone *zone)
-{
-  id    new;
-
-  if (!objc_collecting_enabled())
-    {
-      new = GSAllocateObject(aClass, extraBytes, zone);
-    }
-  else
-    {
-      new = class_createInstance(aClass, extraBytes);
-    }
-  if (0 == cxx_construct)
-    {
-      cxx_construct = sel_registerName(".cxx_construct");
-      cxx_destruct = sel_registerName(".cxx_destruct");
-    }
-  return new;
-}
-inline id
-GSAllocateObject (Class aClass, NSUInteger extraBytes, NSZone *zone)
-#else
 inline id
 NSAllocateObject (Class aClass, NSUInteger extraBytes, NSZone *zone)
-#endif
 {
   id	new;
   int	size;
@@ -822,22 +635,9 @@ NSAllocateObject (Class aClass, NSUInteger extraBytes, NSZone *zone)
 
   return new;
 }
-#if __OBJC_GC__
-static void GSDeallocateObject(id anObject);
 
-inline void NSDeallocateObject(id anObject)
-{
-  if (!objc_collecting_enabled())
-    {
-      GSDeallocateObject(anObject);
-    }
-}
-
-static void GSDeallocateObject(id anObject)
-#else
 inline void
 NSDeallocateObject(id anObject)
-#endif
 {
   Class aClass = object_getClass(anObject);
 
@@ -868,20 +668,11 @@ NSDeallocateObject(id anObject)
   return;
 }
 
-#endif	/* GS_WITH_GC */
-
 BOOL
 NSShouldRetainWithZone (NSObject *anObject, NSZone *requestedZone)
 {
-#if	GS_WITH_GC || __OBJC_GC__
-  // If we're running in hybrid mode, we disable all of the clever zone stuff
-  // for non-GC code, so this is always true if we're compiled for GC, even if
-  // we're compiled for GC but not using GC.
-  return YES;
-#else
   return (!requestedZone || requestedZone == NSDefaultMallocZone()
     || [anObject zone] == requestedZone);
-#endif
 }
 
 
@@ -964,20 +755,6 @@ NSShouldRetainWithZone (NSObject *anObject, NSZone *requestedZone)
     }
 }
 
-#if	GS_WITH_GC
-/* Function to log Boehm GC warnings
- * NB. This must not allocate any collectable memory as it may result
- * in a deadlock in the garbage collecting library.
- */
-static void
-GSGarbageCollectorLog(char *msg, GC_word arg)
-{
-  char	buf[strlen(msg)+1024];
-  snprintf(buf, sizeof(buf), msg, (unsigned long)arg);
-  fprintf(stderr, "Garbage collector: %s", buf);
-}
-#endif
-
 /**
  * Semi-private function in libobjc2 that initialises the classes used for
  * blocks.
@@ -1004,21 +781,13 @@ static id gs_weak_load(id obj)
 {
   if (self == [NSObject class])
     {
-#if	GS_WITH_GC
-      /* Make sure that the garbage collection library is initialised.
-       * This is not necessary on most platforms, but is good practice.
-       */
-      GC_init();
-      GC_set_warn_proc(GSGarbageCollectorLog);
-#endif
-
-#ifdef __MINGW__
+#ifdef _WIN32
       {
         // See libgnustep-base-entry.m
         extern void gnustep_base_socket_init(void);
         gnustep_base_socket_init();
       }
-#else /* __MINGW__ */
+#else /* _WIN32 */
 
 #ifdef	SIGPIPE
     /*
@@ -1060,7 +829,7 @@ static id gs_weak_load(id obj)
       }
 #endif /* HAVE_SIGACTION */
 #endif /* SIGPIPE */
-#endif /* __MINGW__ */
+#endif /* _WIN32 */
 
       finalize_sel = @selector(finalize);
       finalize_imp = class_getMethodImplementation(self, finalize_sel);
@@ -1141,11 +910,6 @@ static id gs_weak_load(id obj)
 	   selector: @selector(_becomeMultiThreaded:)
 	       name: NSWillBecomeMultiThreadedNotification
 	     object: nil];
-
-      /* It is also safer to set upo the user defaults system before doing
-       * other stuff which might use it.
-       */
-      [NSUserDefaults class];
     }
   return;
 }
@@ -1860,7 +1624,6 @@ static id gs_weak_load(id obj)
  */
 - (id) autorelease
 {
-#if	!GS_WITH_GC
   if (double_release_check_enabled)
     {
       NSUInteger release_count;
@@ -1875,7 +1638,6 @@ static id gs_weak_load(id obj)
     }
 
   (*autorelease_imp)(autorelease_class, autorelease_sel, self);
-#endif
   return self;
 }
 
@@ -2012,8 +1774,8 @@ static id gs_weak_load(id obj)
   if (!msg)
     {
       [NSException raise: NSGenericException
-		   format: @"invalid selector passed to %s",
-		     sel_getName(_cmd)];
+		   format: @"invalid selector '%s' passed to %s",
+		     sel_getName(aSelector), sel_getName(_cmd)];
       return nil;
     }
   return (*msg)(self, aSelector);
@@ -2025,7 +1787,7 @@ static id gs_weak_load(id obj)
  * The method must be one which takes one argument and returns an object.
  * <br />Raises NSInvalidArgumentException if given a null selector.
  */
-- (id) performSelector: (SEL)aSelector withObject: (id) anObject
+- (id) performSelector: (SEL)aSelector withObject: (id)anObject
 {
   IMP msg;
 
@@ -2036,7 +1798,7 @@ static id gs_weak_load(id obj)
   /* The Apple runtime API would do:
    * msg = class_getMethodImplementation(object_getClass(self), aSelector);
    * but this cannot ask self for information about any method reached by
-   * forwarding, so the returned forwarding function would ge a generic one
+   * forwarding, so the returned forwarding function would be a generic one
    * rather than one aware of hardware issues with returning structures
    * and floating points.  We therefore prefer the GNU API which is able to
    * use forwarding callbacks to get better type information.
@@ -2045,8 +1807,8 @@ static id gs_weak_load(id obj)
   if (!msg)
     {
       [NSException raise: NSGenericException
-		   format: @"invalid selector passed to %s",
-		   sel_getName(_cmd)];
+		   format: @"invalid selector '%s' passed to %s",
+                   sel_getName(aSelector), sel_getName(_cmd)];
       return nil;
     }
 
@@ -2081,7 +1843,8 @@ static id gs_weak_load(id obj)
   if (!msg)
     {
       [NSException raise: NSGenericException
-		  format: @"invalid selector passed to %s", sel_getName(_cmd)];
+		   format: @"invalid selector '%s' passed to %s",
+                   sel_getName(aSelector), sel_getName(_cmd)];
       return nil;
     }
 
@@ -2100,7 +1863,6 @@ static id gs_weak_load(id obj)
  */
 - (oneway void) release
 {
-#if	(GS_WITH_GC == 0)
   if (NSDecrementExtraRefCountWasZero(self))
     {
 #  ifdef OBJC_CAP_ARC
@@ -2108,7 +1870,6 @@ static id gs_weak_load(id obj)
 #  endif
       [self dealloc];
     }
-#endif
 }
 
 /**
@@ -2167,9 +1928,7 @@ static id gs_weak_load(id obj)
  */
 - (id) retain
 {
-#if	(GS_WITH_GC == 0)
   NSIncrementExtraRefCount(self);
-#endif
   return self;
 }
 
@@ -2194,11 +1953,7 @@ static id gs_weak_load(id obj)
  */
 - (NSUInteger) retainCount
 {
-#if	GS_WITH_GC
-  return UINT_MAX;
-#else
   return NSExtraRefCount(self) + 1;
-#endif
 }
 
 /**
@@ -2224,21 +1979,13 @@ static id gs_weak_load(id obj)
  */
 - (NSZone*) zone
 {
-#if	GS_WITH_GC || __OBJC_GC__
-  /* MacOS-X 10.5 seems to return the default malloc zone if GC is enabled.
-   */
-  return NSDefaultMallocZone();
-#else
   return NSZoneFromPointer(self);
-#endif
 }
 
-#if	!GS_WITH_GC && !__OBJC_GC__
 + (NSZone *) zone
 {
   return NSDefaultMallocZone();
 }
-#endif
 
 /**
  * Called to encode the instance variables of the receiver to aCoder.<br />
@@ -2398,13 +2145,13 @@ static id gs_weak_load(id obj)
 
 - (id) perform: (SEL)sel with: (id)anObject
 {
-  return [self performSelector:sel withObject:anObject];
+  return [self performSelector: sel withObject: anObject];
 }
 
 - (id) perform: (SEL)sel with: (id)anObject with: (id)anotherObject
 {
-  return [self performSelector:sel withObject:anObject
-	       withObject:anotherObject];
+  return [self performSelector: sel withObject: anObject
+                    withObject: anotherObject];
 }
 
 @end
@@ -2611,3 +2358,24 @@ static id gs_weak_load(id obj)
 }
 @end
 
+NSUInteger
+GSPrivateMemorySize(NSObject *self, NSHashTable *exclude)
+{
+  if (0 == NSHashGet(exclude, self))
+    {
+      NSHashInsert(exclude, self);
+      return class_getInstanceSize(object_getClass(self));
+    }
+  return 0;
+}
+
+@implementation	NSObject (MemoryFootprint)
++ (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  return 0;
+}
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  return GSPrivateMemorySize(self, exclude);
+}
+@end

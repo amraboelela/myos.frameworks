@@ -201,6 +201,8 @@ static NSArray	*empty = nil;
     {
       NSOperation	*op;
 
+      [self removeObserver: self
+                forKeyPath: @"isFinished"];
       while ((op = [internal->dependencies lastObject]) != nil)
 	{
 	  [self removeDependency: op];
@@ -239,6 +241,11 @@ static NSArray	*empty = nil;
       internal->threadPriority = 0.5;
       internal->ready = YES;
       internal->lock = [NSRecursiveLock new];
+      internal->cond = [[NSConditionLock alloc] initWithCondition: 0];
+      [self addObserver: self
+             forKeyPath: @"isFinished"
+                options: NSKeyValueObservingOptionNew
+                context: NULL];
     }
   return self;
 }
@@ -280,13 +287,6 @@ static NSArray	*empty = nil;
 {
   [internal->lock lock];
 
-  /* We only observe isFinished changes, and we can remove self as an
-   * observer once we know the operation has finished since it can never
-   * become unfinished.
-   */
-  [object removeObserver: self
-	      forKeyPath: @"isFinished"];
-
   if (object == self)
     {
       /* We have finished and need to unlock the condition lock so that
@@ -294,8 +294,18 @@ static NSArray	*empty = nil;
        */
       [internal->cond lock];
       [internal->cond unlockWithCondition: 1];
+      [internal->lock unlock];
+      return;
     }
-  else if (NO == internal->ready)
+
+  /* We only observe isFinished changes, and we can remove self as an
+   * observer once we know the operation has finished since it can never
+   * become unfinished.
+   */
+  [object removeObserver: self
+	      forKeyPath: @"isFinished"];
+
+  if (NO == internal->ready)
     {
       NSEnumerator	*en;
       NSOperation	*op;
@@ -413,6 +423,7 @@ static NSArray	*empty = nil;
   NSAutoreleasePool	*pool = [NSAutoreleasePool new];
   double		prio = [NSThread  threadPriority];
 
+  AUTORELEASE(RETAIN(self));	// Make sure we exist while running.
   [internal->lock lock];
   NS_DURING
     {
@@ -481,33 +492,8 @@ static NSArray	*empty = nil;
 
 - (void) waitUntilFinished
 {
-  if (NO == [self isFinished])
-    {
-      [internal->lock lock];
-      if (nil == internal->cond)
-	{
-	  /* Set up condition to wait on and observer to unblock.
-	   */
-	  internal->cond = [[NSConditionLock alloc] initWithCondition: 0];
-	  [self addObserver: self
-		 forKeyPath: @"isFinished"
-		    options: NSKeyValueObservingOptionNew
-		    context: NULL];
-	  /* Some other thread could have marked us as finished while we
-	   * were setting up ... so we can fake the observation if needed.
-	   */
-          if (YES == [self isFinished])
-	    {
-	      [self observeValueForKeyPath: @"isFinished"
-				  ofObject: self
-				    change: nil
-				   context: nil];
-	    }
-	}
-      [internal->lock unlock];
-      [internal->cond lockWhenCondition: 1];	// Wait for finish
-      [internal->cond unlockWithCondition: 1];	// Signal any other watchers
-    }
+  [internal->cond lockWhenCondition: 1];	// Wait for finish
+  [internal->cond unlockWithCondition: 1];	// Signal any other watchers
 }
 @end
 
@@ -738,12 +724,13 @@ static NSOperationQueue *mainQueue = nil;
 
 - (void) dealloc
 {
-  [internal->operations release];
-  [internal->starting release];
-  [internal->waiting release];
-  [internal->name release];
-  [internal->cond release];
-  [internal->lock release];
+  [self cancelAllOperations];
+  DESTROY(internal->operations);
+  DESTROY(internal->starting);
+  DESTROY(internal->waiting);
+  DESTROY(internal->name);
+  DESTROY(internal->cond);
+  DESTROY(internal->lock);
   GS_DESTROY_INTERNAL(NSOperationQueue);
   [super dealloc];
 }
@@ -886,9 +873,12 @@ static NSOperationQueue *mainQueue = nil;
       internal->executing--;
       [object removeObserver: self
 		  forKeyPath: @"isFinished"];
+      [internal->lock unlock];
       [self willChangeValueForKey: @"operations"];
       [self willChangeValueForKey: @"operationCount"];
+      [internal->lock lock];
       [internal->operations removeObjectIdenticalTo: object];
+      [internal->lock unlock];
       [self didChangeValueForKey: @"operationCount"];
       [self didChangeValueForKey: @"operations"];
     }
@@ -897,8 +887,8 @@ static NSOperationQueue *mainQueue = nil;
       [object removeObserver: self
 		  forKeyPath: @"isReady"];
       [internal->waiting addObject: object];
+      [internal->lock unlock];
     }
-  [internal->lock unlock];
   [self _execute];
 }
 
@@ -916,7 +906,7 @@ static NSOperationQueue *mainQueue = nil;
 
       when = [[NSDate alloc] initWithTimeIntervalSinceNow: 5.0];
       found = [internal->cond lockWhenCondition: 1 beforeDate: when];
-      [when release];
+      RELEASE(when);
       if (NO == found)
 	{
 	  break;	// Idle for 5 seconds ... exit thread.
@@ -924,7 +914,7 @@ static NSOperationQueue *mainQueue = nil;
 
       if ([internal->starting count] > 0)
 	{
-          op = [internal->starting objectAtIndex: 0];
+          op = RETAIN([internal->starting objectAtIndex: 0]);
 	  [internal->starting removeObjectAtIndex: 0];
 	}
       else
@@ -954,7 +944,7 @@ static NSOperationQueue *mainQueue = nil;
 		  [NSThread setThreadPriority: [op threadPriority]];
 		  [op main];
 		}
-	      [opPool release];
+	      RELEASE(opPool);
 	    }
           NS_HANDLER
 	    {
@@ -963,6 +953,7 @@ static NSOperationQueue *mainQueue = nil;
 	    }
           NS_ENDHANDLER
 	  [op _finish];
+          RELEASE(op);
 	}
     }
 
@@ -970,7 +961,7 @@ static NSOperationQueue *mainQueue = nil;
   [internal->lock lock];
   internal->threadCount--;
   [internal->lock unlock];
-  [pool release];
+  RELEASE(pool);
   [NSThread exit];
 }
 

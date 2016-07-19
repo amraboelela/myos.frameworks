@@ -24,7 +24,7 @@
    Boston, MA 02111 USA.
 
    <title>NSNumberFormatter class reference</title>
-   $Date: 2013-04-15 00:00:42 -0700 (Mon, 15 Apr 2013) $ $Revision: 36536 $
+   $Date: 2016-03-20 04:53:01 -0700 (Sun, 20 Mar 2016) $ $Revision: 39568 $
    */
 
 /* Unfortunately, libicu does not define the maximum values allowed for all
@@ -1100,7 +1100,7 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
            * don't think it matters, because we don't bother with anything
            * smaller than int for NSNumbers
 	   */
-#if	defined(_C_BOOL)
+#if __GNUC__ > 2 && defined(_C_BOOL)
           case _C_BOOL:
             STRING_FROM_NUMBER(unum_format, (int)[anObject boolValue]);
             break;
@@ -1271,16 +1271,18 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
       
       //sort out the padding for the integer part
       intPartRange = [useFormat rangeOfCharacterFromSet: placeHolders];
-      if (NSMaxRange(intPartRange) < ([useFormat length] - 1))
+      if (intPartRange.location != NSNotFound)
         {
+          int nextFormatCharLoc = intPartRange.location;
           while (([placeHolders characterIsMember:
-            [useFormat characterAtIndex: NSMaxRange(intPartRange)]]
+            [useFormat characterAtIndex: nextFormatCharLoc]]
             || [[useFormat substringWithRange:
-              NSMakeRange(NSMaxRange(intPartRange), 1)] isEqual:
+              NSMakeRange(nextFormatCharLoc, 1)] isEqual:
           defaultThousandsSeparator])
-            && NSMaxRange(intPartRange) < [useFormat length] - 1)
+            && nextFormatCharLoc < [useFormat length] - 1)
             {
               intPartRange.length++;
+              nextFormatCharLoc++;
             }
         }
       intPad = [[[useFormat substringWithRange: intPartRange]
@@ -1298,7 +1300,7 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
           NSRange		ipRange;
 
           ipRange =
-            NSMakeRange(0, [intPad length] - [intPartString length] + 1);
+            NSMakeRange(0, [intPad length] - [intPartString length]);
           [intPartString insertString:
             [intPad substringWithRange: ipRange] atIndex: 0];
           [intPartString replaceOccurrencesOfString: @"_"
@@ -1521,16 +1523,17 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
   return internal->_genDecimal; // FIXME
 }
 
-
-- (void) setLocale: (NSLocale *) locale
+- (void) setLocale: (NSLocale *)locale
 {
-  RELEASE(internal->_locale);
-  
-  if (locale == nil)
-    locale = [NSLocale currentLocale];
-  internal->_locale = RETAIN(locale);
-  
-  [self _resetUNumberFormat];
+  if (nil == locale)
+    {
+      locale = [NSLocale currentLocale];
+    }
+  if (NO == [locale isEqual: internal->_locale])
+    {
+      ASSIGN(internal->_locale, locale);
+      [self _resetUNumberFormat];
+    }
 }
 
 - (NSLocale *) locale
@@ -2133,23 +2136,24 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
 - (void) _resetUNumberFormat
 {
 #if GS_USE_ICU == 1
-  unichar buffer[BUFFER_SIZE];
-  NSUInteger length;
-  UNumberFormatStyle style;
-  UErrorCode err = U_ZERO_ERROR;
-  const char *cLocaleId;
-  int32_t idx;
+  unichar               buffer[BUFFER_SIZE];
+  NSUInteger            length;
+  UNumberFormatStyle    style;
+  UErrorCode            err = U_ZERO_ERROR;
+  const char            *cLocaleId;
+  int32_t               idx;
   
   if (internal->_formatter)
-    unum_close(internal->_formatter);
-  
+    {
+      unum_close(internal->_formatter);
+    } 
   cLocaleId = [[internal->_locale localeIdentifier] UTF8String];
   style = NSToICUFormatStyle (internal->_style);
-  
   internal->_formatter = unum_open (style, NULL, 0, cLocaleId, NULL, &err);
   if (U_FAILURE(err))
-    internal->_formatter = NULL;
-  
+    {
+      internal->_formatter = NULL;
+     } 
   // Reset all properties
   for (idx = 0; idx < MAX_SYMBOLS; ++idx)
     {
@@ -2157,7 +2161,9 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
 	{
 	  length = [internal->_symbols[idx] length];
 	  if (length > BUFFER_SIZE)
-	    length = BUFFER_SIZE;
+            {
+              length = BUFFER_SIZE;
+            }
 	  [internal->_symbols[idx] getCharacters: buffer
 					   range: NSMakeRange (0, length)];
 	  unum_setSymbol (internal->_formatter, idx, buffer, length, &err);
@@ -2170,9 +2176,11 @@ static NSUInteger _defaultBehavior = NSNumberFormatterBehavior10_4;
 	{
 	  length = [internal->_textAttributes[idx] length];
 	  if (length > BUFFER_SIZE)
-	    length = BUFFER_SIZE;
+            {
+              length = BUFFER_SIZE;
+            }
 	  [internal->_textAttributes[idx] getCharacters: buffer
-					   range: NSMakeRange (0, length)];
+            range: NSMakeRange (0, length)];
 	  unum_setTextAttribute
 	    (internal->_formatter, idx, buffer, length, &err);
 	}

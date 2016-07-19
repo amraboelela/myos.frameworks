@@ -3,7 +3,9 @@
 
    Written by:  Richard Frith-Macdonald <richard@brainstorm.co.uk>
    Created: October 1998
-
+   Modified by: Amr Aboelela <amraboelela@gmail.com>
+   Date: Apr 2015
+ 
    This file is part of the GNUstep Base Library.
 
    This library is free software; you can redistribute it and/or
@@ -21,12 +23,14 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2014-06-20 07:17:17 -0700 (Fri, 20 Jun 2014) $ $Revision: 37956 $
+   $Date: 2016-05-14 08:06:32 -0700 (Sat, 14 May 2016) $ $Revision: 39764 $
    */
 
-/* define to get system-v functions including inet_aton()
+/* defines to get system-v functions including inet_aton()
+ * The first define is for old versions of glibc, the second for newer ones
  */
 #define _SVID_SOURCE    1
+#define _DEFAULT_SOURCE    1
 
 #import "common.h"
 #define	EXPOSE_NSSocketPortNameServer_IVARS	1
@@ -53,7 +57,7 @@
 
 #import "GSPortPrivate.h"
 
-#ifdef __MINGW__
+#ifdef _WIN32
 #include <winsock2.h>
 #include <wininet.h>
 #else
@@ -183,15 +187,17 @@ typedef enum {
   if (e != nil)
     {
       NSDebugMLLog(@"NSSocketPortNameServer",
-	@"failed connect to gdomap on %@ - %@",
-	[[notification object] socketAddress], e);
+	@"failed connect to gdomap on %@:%@ - %@",
+	[[notification object] socketAddress],
+	[[notification object] socketService],
+        e);
       /*
        * Remove our file handle, then either retry or fail.
        */
       [self close];
       if (launchCmd == nil)
 	{
-	  launchCmd = [NSTask launchPathForTool: @"gdomap"];
+	  launchCmd = RETAIN([NSTask launchPathForTool: @"gdomap"]);
 	}
       if (state == GSPC_LOPEN && launchCmd != nil)
 	{
@@ -251,8 +257,9 @@ typedef enum {
   if (d == nil || [d length] == 0)
     {
       [self fail];
-      NSLog(@"NSSocketPortNameServer lost connection to gdomap on %@",
-	[[notification object] socketAddress]);
+      NSLog(@"NSSocketPortNameServer lost connection to gdomap on %@:%@",
+	[[notification object] socketAddress],
+	[[notification object] socketService]);
     }
   else
     {
@@ -321,8 +328,10 @@ typedef enum {
   if (e != nil)
     {
       [self fail];
-      NSLog(@"NSSocketPortNameServer failed write to gdomap on %@ - %@",
-	[[notification object] socketAddress], e);
+      NSLog(@"NSSocketPortNameServer failed write to gdomap on %@:%@ - %@",
+	[[notification object] socketAddress],
+	[[notification object] socketService],
+        e);
     }
   else
     {

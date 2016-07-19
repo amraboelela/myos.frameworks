@@ -25,7 +25,7 @@
    Boston, MA 02111 USA.
 
    <title>NSNotificationQueue class reference</title>
-   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
    */
 
 #import "common.h"
@@ -228,12 +228,7 @@ add_to_queue(NSNotificationQueueList *queue, NSNotification *notification,
 {
   NSNotificationQueueRegistration	*item;
 
-#if	GS_WITH_GC
-  item = NSAllocateCollectable(sizeof(NSNotificationQueueRegistration),
-    NSScannedOption);
-#else
   item = NSZoneCalloc(_zone, 1, sizeof(NSNotificationQueueRegistration));
-#endif
   if (item == 0)
     {
       [NSException raise: NSMallocException
@@ -336,15 +331,9 @@ static NSArray	*defaultMode = nil;
 
   // init queue
   _center = RETAIN(notificationCenter);
-#if	GS_WITH_GC
-  _asapQueue = NSAllocateCollectable(sizeof(NSNotificationQueueList),
-    NSScannedOption);
-  _idleQueue = NSAllocateCollectable(sizeof(NSNotificationQueueList),
-    NSScannedOption);
-#else
   _asapQueue = NSZoneCalloc(_zone, 1, sizeof(NSNotificationQueueList));
   _idleQueue = NSZoneCalloc(_zone, 1, sizeof(NSNotificationQueueList));
-#endif
+
   if (_asapQueue == 0 || _idleQueue == 0)
     {
       DESTROY(self);

@@ -29,6 +29,7 @@
 #import "common.h"
 
 #import "Foundation/NSArray.h"
+#import "Foundation/NSAutoreleasePool.h"
 #import "Foundation/NSDictionary.h"
 #import "Foundation/NSEnumerator.h"
 #import "Foundation/NSException.h"
@@ -40,6 +41,8 @@
 #import "GSPrivate.h"
 
 static Class	concreteClass = Nil;
+static unsigned instanceSize = 0;
+
 
 /* Here is the interface for the concrete class as used by the functions.
  */
@@ -72,6 +75,7 @@ typedef GSIMapNode_t *GSIMapNode;
 #define	GSI_MAP_HAS_VALUE	0
 #define	GSI_MAP_KTYPES	GSUNION_PTR | GSUNION_OBJ
 #define	GSI_MAP_TABLE_T	NSConcreteHashTable
+#define	GSI_MAP_TABLE_S	instanceSize
 
 #define GSI_MAP_HASH(M, X)\
  (M->legacy ? M->cb.old.hash(M, X.ptr) \
@@ -102,14 +106,6 @@ typedef GSIMapNode_t *GSIMapNode;
  : ((M->cb.pf.options & NSPointerFunctionsZeroingWeakMemory) ? YES : NO))
 
 #define	GSI_MAP_ENUMERATOR	NSHashEnumerator
-
-#if	GS_WITH_GC
-#include	<gc/gc_typed.h>
-static GC_descr	nodeS = 0;
-static GC_descr	nodeW = 0;
-#define	GSI_MAP_NODES(M, X) \
-(GSIMapNode)GC_calloc_explicitly_typed(X, sizeof(GSIMapNode_t), (GC_descr)M->zone)
-#endif
 
 #include "GNUstepBase/GSIMap.h"
 
@@ -252,9 +248,6 @@ NSCopyHashTableWithZone(NSHashTable *table, NSZone *zone)
     {
       t->cb.pf = o->cb.pf;
     }
-#if	GS_WITH_GC
-  zone = ((GSIMapTable)table)->zone;
-#endif
   GSIMapInitWithZoneAndCapacity(t, zone, ((GSIMapTable)table)->nodeCount);
 
   enumerator = GSIMapEnumeratorForMap((GSIMapTable)table);
@@ -329,11 +322,7 @@ NSCreateHashTableWithZone(
   table->legacy = YES;
   table->cb.old = k;
 
-#if	GS_WITH_GC
-  GSIMapInitWithZoneAndCapacity(table, (NSZone*)nodeS, capacity);
-#else
   GSIMapInitWithZoneAndCapacity(table, zone, capacity);
-#endif
 
   return (NSHashTable*)table;
 }
@@ -831,19 +820,8 @@ const NSHashTableCallBacks NSPointerToStructHashCallBacks =
   if (concreteClass == Nil)
     {
       concreteClass = [NSConcreteHashTable class];
+      instanceSize = class_getInstanceSize(concreteClass);
     }
-#if	GS_WITH_GC
-  /* We create a typed memory descriptor for hash nodes.
-   */
-  if (nodeS == 0)
-    {
-      GC_word	w[GC_BITMAP_SIZE(GSIMapNode_t)] = {0};
-
-      nodeW = GC_make_descriptor(w, GC_WORD_LEN(GSIMapNode_t));
-      GC_set_bit(w, GC_WORD_OFFSET(GSIMapNode_t, key));
-      nodeS = GC_make_descriptor(w, GC_WORD_LEN(GSIMapNode_t));
-    }
-#endif
 }
 
 - (void) addObject: (id)anObject
@@ -1065,6 +1043,28 @@ const NSHashTableCallBacks NSPointerToStructHashCallBacks =
     }
 }
 
+- (NSUInteger) sizeInBytesExcluding: (NSHashTable*)exclude
+{
+  NSUInteger	size = [super sizeInBytesExcluding: exclude];
+
+  if (size > 0)
+    {
+/* If we knew that this table held objects, we could return their size...
+ *
+ *    GSIMapEnumerator_t	enumerator = GSIMapEnumeratorForMap(self);
+ *    GSIMapNode 		node = GSIMapEnumeratorNextNode(&enumerator);
+ *
+ *    while (node != 0)
+ *      {
+ *        node = GSIMapEnumeratorNextNode(&enumerator);
+ *        size += [node->key.obj sizeInBytesExcluding: exclude];
+ *      }
+ *    GSIMapEndEnumerator(&enumerator);
+ */
+      size += GSIMapSize(self) - instanceSize;
+    }
+  return size;
+}
 @end
 
 @implementation NSConcreteHashTableEnumerator

@@ -22,7 +22,7 @@
    Boston, MA 02111 USA.
 
    <title>NSSerializer class reference</title>
-   $Date: 2013-08-22 08:44:54 -0700 (Thu, 22 Aug 2013) $ $Revision: 37003 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
    */
 
 #import "common.h"
@@ -61,11 +61,6 @@
 #define	GSI_MAP_HASH(M, X)	[(X).obj hash]
 #define	GSI_MAP_EQUAL(M, X,Y)	[(X).obj isEqualToString: (Y).obj]
 #define	GSI_MAP_NOCLEAN	1
-
-#if	GS_WITH_GC
-#define	GSI_MAP_NODES(M, X) \
-(GSIMapNode)NSAllocateCollectable(X * sizeof(GSIMapNode_t), 0)
-#endif
 
 #include "GNUstepBase/GSIMap.h"
 
@@ -555,11 +550,7 @@ deserializeFromInfo(_NSDeserializerInfo* info)
 	  char		*b;
 	
 	  size = (*info->deiImp)(info->data, deiSel, info->cursor);
-#if	GS_WITH_GC
-	  b = NSAllocateCollectable(size, 0);
-#else
 	  b = NSZoneMalloc(NSDefaultMallocZone(), size);
-#endif
 	  (*info->debImp)(info->data, debSel, b, size, info->cursor);
 	  s = [[StringClass alloc] initWithBytesNoCopy: b
 						length: size - 1
@@ -591,11 +582,7 @@ deserializeFromInfo(_NSDeserializerInfo* info)
 	  unichar	*b;
 	
 	  size = (*info->deiImp)(info->data, deiSel, info->cursor);
-#if	GS_WITH_GC
-	  b = NSAllocateCollectable(size*sizeof(unichar), 0);
-#else
 	  b = NSZoneMalloc(NSDefaultMallocZone(), size*sizeof(unichar));
-#endif
 	  (*info->debImp)(info->data, debSel, b, size*sizeof(unichar),
 	    info->cursor);
 	  s = [[StringClass alloc] initWithBytesNoCopy: b
@@ -648,7 +635,7 @@ deserializeFromInfo(_NSDeserializerInfo* info)
 		}
 	      if (code != ST_MARRAY && info->mutable == NO)
 		{
-		  [a makeImmutableCopyOnFail: NO];
+                  a = GS_IMMUTABLE(a);
 		}
 	    }
 	  return a;
@@ -701,7 +688,7 @@ deserializeFromInfo(_NSDeserializerInfo* info)
 		}
 	      if (code != ST_MDICT && info->mutable == NO)
 		{
-		  [d makeImmutableCopyOnFail: NO];
+                  d = GS_IMMUTABLE(d);
 		}
 	    }
 	  return d;
