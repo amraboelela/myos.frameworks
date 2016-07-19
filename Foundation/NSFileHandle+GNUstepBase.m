@@ -109,75 +109,75 @@ getAddr(NSString* name, NSString* svc, NSString* pcl, struct addrinfo **ai, stru
 		    protocol: (NSString*)p
 {
 #ifndef    BROKEN_SO_REUSEADDR
-    int    status = 1;
+  int    status = 1;
 #endif
-    int    net;
-    struct addrinfo *ai;
-    struct addrinfo hints;
-    memset (&hints, '\0', sizeof (hints));
-    
-    if (getAddr(a, s, p, &ai, &hints) == NO)
+  int    net;
+  struct addrinfo *ai;
+  struct addrinfo hints;
+  memset (&hints, '\0', sizeof (hints));
+
+  if (getAddr(a, s, p, &ai, &hints) == NO)
     {
-        DESTROY(self);
-        NSLog(@"bad address-service-protocol combination");
-        return  nil;
+      DESTROY(self);
+      NSLog(@"bad address-service-protocol combination");
+      return  nil;
     }
-    
-    if ((net = socket (ai->ai_family, ai->ai_socktype,
-                       ai->ai_protocol)) < 0)
+
+  if ((net = socket (ai->ai_family, ai->ai_socktype,
+                     ai->ai_protocol)) < 0)
     {
-        NSLog(@"unable to create socket ai_family: %@ socktype:%@ protocol:%d - %@", (ai->ai_family == PF_INET6 ? @"PF_INET6":@"PF_INET"),
-              (ai->ai_socktype == SOCK_STREAM ? @"SOCK_STREAM":@"whatever"),
-              ai->ai_protocol,
-              [NSError _last]);
-        DESTROY(self);
-        return nil;
+      NSLog(@"unable to create socket ai_family: %@ socktype:%@ protocol:%d - %@", (ai->ai_family == PF_INET6 ? @"PF_INET6":@"PF_INET"),
+            (ai->ai_socktype == SOCK_STREAM ? @"SOCK_STREAM":@"whatever"),
+            ai->ai_protocol,            
+            [NSError _last]);
+      DESTROY(self);
+      return nil;
     }
-    
+
 #ifndef    BROKEN_SO_REUSEADDR
-    /*
-     * Under decent systems, SO_REUSEADDR means that the port can be  reused
-     * immediately that this process exits.  Under some it means
-     * that multiple processes can serve the same port simultaneously.
-     * We don't want that broken behavior!
-     */
-    setsockopt(net, SOL_SOCKET, SO_REUSEADDR, (char *)&status,  sizeof(status));
+  /*
+   * Under decent systems, SO_REUSEADDR means that the port can be  reused
+   * immediately that this process exits.  Under some it means
+   * that multiple processes can serve the same port simultaneously.
+   * We don't want that broken behavior!
+   */
+  setsockopt(net, SOL_SOCKET, SO_REUSEADDR, (char *)&status,  sizeof(status));
 #endif
-    
-    if (bind(net, ai->ai_addr, ai->ai_addrlen) != 0)
+
+  if (bind(net, ai->ai_addr, ai->ai_addrlen) != 0)
     {
-        NSLog(@"unable to bind to port %@", [NSError _last]);
-        goto cleanup;
+      NSLog(@"unable to bind to port %@", [NSError _last]);
+      goto cleanup;
     }
-    
-    if (listen(net, 5) < 0)
+
+  if (listen(net, 5) < 0)
     {
-        NSLog(@"unable to listen on port - %@",  [NSError _last]);
-        goto cleanup;
+      NSLog(@"unable to listen on port - %@",  [NSError _last]);
+      goto cleanup;
     }
-    
-    // 	struct sockaddr_storeage sstore;
-    // 	int slen = sizeof(ss);
-    
-    
-    //  if (getsockname(net,(struct sockaddr *)&sstore, &slen) < 0)
-    //    {
-    //      NSLog(@"unable to get socket name - %@",  [NSError _last]);
-    //      goto cleanup;
-    //    }
-    
-    freeaddrinfo (ai);
-    
-    self = [self initWithFileDescriptor: net closeOnDealloc: YES];
-    
-    return self;
-    
+
+  // 	struct sockaddr_storeage sstore;
+  // 	int slen = sizeof(ss);
+
+
+//  if (getsockname(net,(struct sockaddr *)&sstore, &slen) < 0)
+//    {
+//      NSLog(@"unable to get socket name - %@",  [NSError _last]);
+//      goto cleanup;
+//    }
+
+  freeaddrinfo (ai);
+  
+  self = [self initWithFileDescriptor: net closeOnDealloc: YES];
+
+  return self;
+  
 cleanup:
-    (void) close(net);
-    freeaddrinfo (ai);
-    DESTROY(self);
-    
-    return nil;
+  (void) close(net);
+  freeaddrinfo (ai);
+  DESTROY(self);
+  
+  return nil;
 }
 
 + (id) fileHandleAsServerAtAddress: (NSString*)address

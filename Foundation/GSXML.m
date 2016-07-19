@@ -2078,9 +2078,15 @@ static NSString	*endMarker = @"At end of incremental parse";
 - (id) initWithSAXHandler: (GSSAXHandler*)handler
 		 withData: (NSData*)data
 {
-  if (data == nil || [data isKindOfClass: [NSData class]] == NO)
+  if (nil == data)
     {
-      NSLog(@"Bad NSData passed to initialize GSXMLParser");
+      NSLog(@"Nil NSData passed to initialize GSXMLParser");
+      DESTROY(self);
+      return nil;
+    }
+  if ([data isKindOfClass: [NSData class]] == NO)
+    {
+      NSLog(@"Non NSData passed to initialize GSXMLParser; %@", data);
       DESTROY(self);
       return nil;
     }
@@ -2878,7 +2884,15 @@ startElementNsFunction(void *ctx, const unsigned char *name,
       for (i = j = 0; i < nb_attributes; i++, j += 5)
 	{
 	  NSString	*key = UTF8Str(atts[j]);
-	  NSString	*obj = UTF8StrLen(atts[j+3], atts[j+4]-atts[j+3]);
+          NSString      *obj = nil;
+          // We need to append the namespace prefix
+          if (atts[j+1] != NULL)
+            {
+              key =
+               [[UTF8Str(atts[j+1]) stringByAppendingString: @":"]
+                                      stringByAppendingString: key];
+            }
+	  obj = UTF8StrLen(atts[j+3], atts[j+4]-atts[j+3]);
 
 	  [adict setObject: obj forKey: key];
 	}
@@ -5446,14 +5460,15 @@ static void indentation(unsigned level, NSMutableString *str)
   return YES;
 }
 
-- (void) setDebug: (BOOL)flag
+- (int) setDebug: (int)flag
 {
 #ifdef GNUSTEP
   if ([handle respondsToSelector: _cmd] == YES)
     {
-      [(id)handle setDebug: flag];
+      return [(id)handle setDebug: flag];
     }
 #endif
+  return NO;
 }
 
 - (void) setCompact: (BOOL)flag

@@ -22,7 +22,7 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02111 USA.
 
-   $Date: 2011-07-24 06:09:22 -0700 (Sun, 24 Jul 2011) $ $Revision: 33621 $
+   $Date: 2016-03-25 04:15:28 -0700 (Fri, 25 Mar 2016) $ $Revision: 39608 $
 */
 
 #import "common.h"
@@ -72,19 +72,11 @@
   locked = -1;
 }
 
-#ifdef __GS_WITH_GC__
-- (void) finalize
-{
-  [[NSNotificationCenter defaultCenter] removeObserver: self];
-  [super finalize];
-}
-#else
 - (void) dealloc
 {
   [[NSNotificationCenter defaultCenter] removeObserver: self];
   [super dealloc];
 }
-#endif
 
 - (id) init
 {
@@ -222,22 +214,11 @@
   counter = -1;
 }
 
-#ifdef __GS_WITH_GC__
-- (void) finalize
-{
-  if (counter >= 0)
-    {
-      [[NSNotificationCenter defaultCenter] removeObserver: self];
-    }
-  [super finalize];
-}
-#else
 - (void) dealloc
 {
   [[NSNotificationCenter defaultCenter] removeObserver: self];
   [super dealloc];
 }
-#endif
 
 - (id) init
 {
